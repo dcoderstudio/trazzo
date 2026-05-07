@@ -310,14 +310,14 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 
 <script>
 // ── PANEL + HERO ──────────────────────────────────────
-let panelOpen=true;
+let panelOpen=false;
 function togglePanel(){
   panelOpen=!panelOpen;
   document.getElementById('rpanel').classList.toggle('collapsed',!panelOpen);
   document.getElementById('toggleBtn').classList.toggle('flipped',!panelOpen);
   document.getElementById('hero').classList.toggle('panel-open',panelOpen);
 }
-document.getElementById('hero').classList.add('panel-open');
+document.getElementById('rpanel').classList.add('collapsed');
 
 let csAbove=false,csDY=0;
 const csEl=document.getElementById('clockStats');
