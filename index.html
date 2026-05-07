@@ -96,14 +96,17 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 .slot-mod.s-circle{border-radius:50%;}
 .slot-mod.s-squircle{border-radius:10px;}
 .slot-mod.s-quad{border-radius:16px;}
-.cell-fill{width:100%;height:100%;display:flex;flex-direction:column;justify-content:flex-end;padding:14px;position:relative;}
-.s-circle .cell-fill{justify-content:center;align-items:center;padding:12px;border-radius:50%;}
+.cell-fill{width:100%;height:100%;display:flex;flex-direction:column;justify-content:space-between;padding:14px;position:relative;overflow:hidden;}
+.cell-glow{position:absolute;width:120px;height:120px;border-radius:50%;top:-20px;right:-20px;pointer-events:none;filter:blur(22px);opacity:0.85;}
+.s-circle .cell-fill{justify-content:center;align-items:center;padding:12px;border-radius:50%;overflow:hidden;}
 .s-quad .cell-fill{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:4px;padding:4px;}
 .quad-item{border-radius:8px;display:flex;align-items:center;justify-content:center;}
-.mod-label{font-size:12px;font-weight:700;color:#fff;line-height:1.2;margin-top:5px;}
-.mod-sub{font-size:9px;color:rgba(255,255,255,0.45);margin-top:1px;}
+.mod-top{display:flex;align-items:flex-start;justify-content:space-between;position:relative;z-index:1;}
+.mod-bottom{display:flex;align-items:flex-end;justify-content:space-between;position:relative;z-index:1;}
+.mod-label{font-size:11px;font-weight:600;color:rgba(255,255,255,0.75);line-height:1.3;}
+.mod-sub{font-size:9px;color:rgba(255,255,255,0.38);margin-top:2px;}
 .s-circle .mod-label{text-align:center;font-size:10px;}
-.mod-badge{position:absolute;top:10px;right:10px;font-size:8px;font-weight:700;padding:2px 7px;border-radius:20px;background:rgba(0,0,0,0.3);color:rgba(255,255,255,0.9);}
+.mod-badge{font-size:11px;font-weight:800;color:#fff;letter-spacing:-0.02em;}
 .slot-data{position:absolute;top:0;left:0;width:290px;height:140px;border-radius:20px;padding:16px 18px;display:flex;flex-direction:column;cursor:grab;user-select:none;overflow:hidden;z-index:3;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:0.5px solid rgba(255,255,255,0.08);}
 .slot-data:hover{border-color:rgba(255,255,255,0.18);}
 .slot-data:active{cursor:grabbing;}
@@ -247,17 +250,44 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 
 <script>
 const MODS=[
-  {id:'proyectos', label:'Proyectos',   sub:'Gestión',    badge:'',  color:'#1A6FD4', icon:'<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>'},
-  {id:'calendario',label:'Calendario',  sub:'Entregas',   badge:'3', color:'#E8A020', icon:'<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>'},
-  {id:'finanzas',  label:'Finanzas',    sub:'Ingresos',   badge:'',  color:'#1D9E75', icon:'<line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>'},
-  {id:'equipo',    label:'Equipo',      sub:'Tareas',     badge:'8', color:'#D85A30', icon:'<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>'},
-  {id:'cotiz',     label:'Cotizaciones',sub:'Propuestas', badge:'2', color:'#7B6FD0', icon:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/>'},
-  {id:'flujos',    label:'Flujos',      sub:'Workflows',  badge:'',  color:'#27AE72', icon:'<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>'},
-  {id:'proveedores',label:'Proveedores',sub:'Directorio', badge:'',  color:'#B8760F', icon:'<rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8h4l3 5v3h-7V8z"/>'},
-  {id:'ventas',    label:'Ventas',      sub:'Pipeline',   badge:'',  color:'#C0436E', icon:'<line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>'},
-  {id:'clientes',  label:'Clientes',    sub:'Carpetas',   badge:'7', color:'#555450', icon:'<path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>'},
+  {id:'proyectos', label:'Proyectos',   sub:'Gestión',    badge:'',  color:'#1A6FD4',
+   grad:'linear-gradient(145deg,rgba(20,70,180,0.95) 0%,rgba(6,16,55,0.98) 100%)',
+   glow:'rgba(80,150,255,0.7)',
+   icon:'<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>'},
+  {id:'calendario',label:'Calendario',  sub:'Entregas',   badge:'3', color:'#E8A020',
+   grad:'linear-gradient(145deg,rgba(210,130,15,0.95) 0%,rgba(110,40,8,0.98) 100%)',
+   glow:'rgba(255,190,50,0.7)',
+   icon:'<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>'},
+  {id:'finanzas',  label:'Finanzas',    sub:'Ingresos',   badge:'',  color:'#1D9E75',
+   grad:'linear-gradient(145deg,rgba(15,130,90,0.95) 0%,rgba(4,45,30,0.98) 100%)',
+   glow:'rgba(40,210,140,0.65)',
+   icon:'<line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>'},
+  {id:'equipo',    label:'Equipo',      sub:'Tareas',     badge:'8', color:'#D85A30',
+   grad:'linear-gradient(145deg,rgba(200,70,25,0.95) 0%,rgba(75,15,8,0.98) 100%)',
+   glow:'rgba(255,110,50,0.7)',
+   icon:'<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>'},
+  {id:'cotiz',     label:'Cotizaciones',sub:'Propuestas', badge:'2', color:'#7B6FD0',
+   grad:'linear-gradient(145deg,rgba(130,70,210,0.95) 0%,rgba(50,8,80,0.98) 100%)',
+   glow:'rgba(190,110,255,0.7)',
+   icon:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/>'},
+  {id:'flujos',    label:'Flujos',      sub:'Workflows',  badge:'',  color:'#27AE72',
+   grad:'linear-gradient(145deg,rgba(20,170,90,0.95) 0%,rgba(4,55,28,0.98) 100%)',
+   glow:'rgba(50,230,130,0.65)',
+   icon:'<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>'},
+  {id:'proveedores',label:'Proveedores',sub:'Directorio', badge:'',  color:'#B8760F',
+   grad:'linear-gradient(145deg,rgba(170,110,10,0.95) 0%,rgba(65,30,4,0.98) 100%)',
+   glow:'rgba(220,160,35,0.65)',
+   icon:'<rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8h4l3 5v3h-7V8z"/>'},
+  {id:'ventas',    label:'Ventas',      sub:'Pipeline',   badge:'',  color:'#C0436E',
+   grad:'linear-gradient(145deg,rgba(190,40,90,0.95) 0%,rgba(75,8,45,0.98) 100%)',
+   glow:'rgba(255,70,140,0.7)',
+   icon:'<line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>'},
+  {id:'clientes',  label:'Clientes',    sub:'Carpetas',   badge:'7', color:'#555450',
+   grad:'linear-gradient(145deg,rgba(70,68,65,0.95) 0%,rgba(18,18,18,0.98) 100%)',
+   glow:'rgba(130,128,125,0.6)',
+   icon:'<path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>'},
   {id:'quad_misc', label:'Mixto',       sub:'',           badge:'',  color:'#333',
-    quadItems:[{color:'#1A6FD4',icon:'<rect x="3" y="3" width="7" height="7" rx="1"/>'},{color:'#E8A020',icon:'<circle cx="12" cy="12" r="5"/>'},{color:'#D4537E',icon:'<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>'},{color:'#27AE72',icon:'<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>'}]},
+    quadItems:[{color:'linear-gradient(135deg,#1A6FD4,#0a1a50)',icon:'<rect x="3" y="3" width="7" height="7" rx="1"/>'},{color:'linear-gradient(135deg,#E8A020,#7a3a08)',icon:'<circle cx="12" cy="12" r="5"/>'},{color:'linear-gradient(135deg,#D4537E,#6a1040)',icon:'<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>'},{color:'linear-gradient(135deg,#27AE72,#083a20)',icon:'<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>'}]},
 ];
 
 const DATA=[
@@ -327,12 +357,23 @@ function buildGrid(){
 }
 
 function modHTML(m,shape){
+  const bg=m.grad||`linear-gradient(145deg,${m.color}ee,${m.color}55)`;
+  const glow=m.glow||m.color;
   if(shape==='quad'){
-    if(m.quadItems) return `<div class="cell-fill" style="background:#181818;">${m.quadItems.map(q=>`<div class="quad-item" style="background:${q.color}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">${q.icon}</svg></div>`).join('')}</div>`;
-    return `<div class="cell-fill" style="background:#181818;">${[0,1,2,3].map(()=>`<div class="quad-item" style="background:${m.color}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${m.icon}</svg></div>`).join('')}</div>`;
+    if(m.quadItems) return `<div class="cell-fill" style="background:#111;">${m.quadItems.map(q=>`<div class="quad-item" style="background:${q.color}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.85)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${q.icon}</svg></div>`).join('')}</div>`;
+    return `<div class="cell-fill" style="background:#111;">${[0,1,2,3].map(()=>`<div class="quad-item" style="background:${bg}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${m.icon}</svg></div>`).join('')}</div>`;
   }
-  if(shape==='circle') return `<div class="cell-fill" style="background:${m.color};border-radius:50%;">${m.badge?`<div class="mod-badge">${m.badge}</div>`:''}<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:6px">${m.icon}</svg><div class="mod-label">${m.label}</div></div>`;
-  return `<div class="cell-fill" style="background:${m.color};">${m.badge?`<div class="mod-badge">${m.badge}</div>`:''}<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:auto;margin-top:2px">${m.icon}</svg><div><div class="mod-label">${m.label}</div><div class="mod-sub">${m.sub}</div></div></div>`;
+  if(shape==='circle') return `<div class="cell-fill" style="background:${bg};border-radius:50%;"><div class="cell-glow" style="background:${glow};"></div><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.8)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="position:relative;z-index:1;margin-bottom:6px">${m.icon}</svg><div class="mod-label" style="text-align:center">${m.label}</div></div>`;
+  return `<div class="cell-fill" style="background:${bg};">
+    <div class="cell-glow" style="background:${glow};"></div>
+    <div class="mod-top">
+      <div><div class="mod-label">${m.label}</div><div class="mod-sub">${m.sub}</div></div>
+      ${m.badge?`<span class="mod-badge">${m.badge}</span>`:''}
+    </div>
+    <div class="mod-bottom">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.55)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${m.icon}</svg>
+    </div>
+  </div>`;
 }
 
 const G=document.getElementById('ghost');
