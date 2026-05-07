@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Proyectos — Dcoder Studio</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,800&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-serif;overflow:hidden;}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:0 28px;height:52px;border-bottom:0.5px solid rgba(255,255,255,0.06);flex-shrink:0;}
+.logo{display:flex;align-items:center;gap:10px;}
+.logo-pill{background:#fff;color:#0c0c0c;font-size:11px;font-weight:800;padding:5px 10px;border-radius:8px;}
+.logo-name{font-size:14px;font-weight:700;letter-spacing:.04em;}
+.nav-btn{background:none;border:none;color:rgba(255,255,255,0.28);font-size:12px;font-weight:500;padding:6px 16px;border-radius:20px;cursor:pointer;font-family:'Inter',sans-serif;}
+.nav-btn.active{background:rgba(255,255,255,0.1);color:#fff;}
+.new-btn{background:#fff;color:#0c0c0c;border:none;font-size:12px;font-weight:700;padding:7px 16px;border-radius:20px;cursor:pointer;font-family:'Inter',sans-serif;}
+.new-btn:hover{background:#e0e0e0;}
+.subbar{display:flex;align-items:center;gap:8px;padding:0 28px;height:48px;border-bottom:0.5px solid rgba(255,255,255,0.06);flex-shrink:0;}
+.tabs{display:flex;gap:4px;align-items:center;overflow-x:auto;flex:1;}
+.tabs::-webkit-scrollbar{display:none;}
+.tab{padding:5px 14px;border-radius:20px;border:0.5px solid rgba(255,255,255,0.08);background:transparent;color:rgba(255,255,255,0.35);font-size:11px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;white-space:nowrap;display:flex;align-items:center;gap:6px;transition:all .15s;}
+.tab:hover{background:rgba(255,255,255,0.06);color:#fff;}
+.tab.active{color:#fff;border-color:rgba(255,255,255,0.3);background:rgba(255,255,255,0.08);}
+.tab-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.tab-add{padding:5px 12px;border-radius:20px;border:1px dashed rgba(255,255,255,0.15);background:transparent;color:rgba(255,255,255,0.25);font-size:11px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s;}
+.tab-add:hover{border-color:rgba(255,255,255,0.35);color:rgba(255,255,255,0.6);}
+.count-pill{font-size:11px;color:rgba(255,255,255,0.25);background:rgba(255,255,255,0.05);padding:4px 10px;border-radius:20px;white-space:nowrap;flex-shrink:0;}
+.board-scroll{flex:1;overflow-y:auto;overflow-x:hidden;}
+.board-scroll::-webkit-scrollbar{width:4px;}
+.board-scroll::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:2px;}
+.section{padding:20px 28px 0;}
+.sol-section{background:linear-gradient(135deg,rgba(39,174,114,0.1) 0%,rgba(39,174,114,0.03) 60%,transparent 100%);border-left:3px solid #27AE72;border-bottom:1px solid rgba(39,174,114,0.18);margin-bottom:8px;}
+.section-header{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
+.section-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.section-title{font-size:13px;font-weight:700;color:rgba(255,255,255,0.7);}
+.section-count{font-size:11px;color:rgba(255,255,255,0.25);background:rgba(255,255,255,0.05);padding:2px 8px;border-radius:10px;}
+.section-divider{flex:1;height:0.5px;background:rgba(255,255,255,0.05);}
+.section-lanes{display:flex;gap:10px;overflow-x:auto;padding-bottom:20px;}
+.section-lanes::-webkit-scrollbar{height:6px;}
+.section-lanes::-webkit-scrollbar-track{background:rgba(255,255,255,0.03);border-radius:3px;}
+.section-lanes::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.15);border-radius:3px;}
+.section-lanes::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,0.28);}
+.col{flex-shrink:0;width:210px;display:flex;flex-direction:column;gap:6px;}
+.col-header{display:flex;align-items:center;justify-content:space-between;padding:0 2px;margin-bottom:4px;}
+.col-title{font-size:10px;font-weight:700;color:rgba(255,255,255,0.4);letter-spacing:.08em;text-transform:uppercase;}
+.col-count{font-size:10px;font-weight:700;color:rgba(255,255,255,0.2);background:rgba(255,255,255,0.05);width:18px;height:18px;border-radius:5px;display:flex;align-items:center;justify-content:center;}
+.col-body{display:flex;flex-direction:column;gap:6px;min-height:80px;padding:3px;border-radius:12px;transition:background .15s;}
+.col-body.drag-over{background:rgba(255,255,255,0.04);}
+.add-card-btn{width:100%;padding:8px;border-radius:10px;border:1px dashed rgba(255,255,255,0.08);background:transparent;color:rgba(255,255,255,0.18);font-size:11px;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:5px;}
+.add-card-btn:hover{border-color:rgba(255,255,255,0.2);color:rgba(255,255,255,0.45);}
+.add-card-btn svg{width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;}
+/* single board */
+.single-wrap{display:flex;gap:14px;padding:24px 28px;overflow-x:auto;height:100%;}
+.single-wrap::-webkit-scrollbar{height:6px;}
+.single-wrap::-webkit-scrollbar-track{background:rgba(255,255,255,0.03);border-radius:3px;}
+.single-wrap::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.15);border-radius:3px;}
+.single-wrap::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,0.28);}
+/* modal */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(8px);z-index:500;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s;}
+.overlay.open{opacity:1;pointer-events:all;}
+.modal{background:#161616;border:0.5px solid rgba(255,255,255,0.1);border-radius:20px;padding:28px;width:440px;max-width:90vw;display:flex;flex-direction:column;gap:16px;transform:translateY(8px);transition:transform .2s;}
+.overlay.open .modal{transform:none;}
+.modal-title{font-size:15px;font-weight:700;}
+.ml{font-size:10px;font-weight:700;color:rgba(255,255,255,0.3);letter-spacing:.07em;text-transform:uppercase;margin-bottom:5px;}
+.mi{background:#1e1e1e;border:0.5px solid rgba(255,255,255,0.1);border-radius:10px;padding:9px 13px;font-size:13px;color:#fff;font-family:'Inter',sans-serif;outline:none;width:100%;transition:border-color .15s;}
+.mi:focus{border-color:rgba(255,255,255,0.3);}
+.mi::placeholder{color:rgba(255,255,255,0.18);}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.mf{display:flex;gap:8px;justify-content:flex-end;margin-top:4px;}
+.btn-c{background:rgba(255,255,255,0.07);border:none;color:rgba(255,255,255,0.45);font-size:12px;font-weight:600;padding:8px 16px;border-radius:10px;cursor:pointer;font-family:'Inter',sans-serif;}
+.btn-ok{background:#fff;border:none;color:#0c0c0c;font-size:12px;font-weight:700;padding:8px 16px;border-radius:10px;cursor:pointer;font-family:'Inter',sans-serif;}
+.color-row{display:flex;gap:8px;flex-wrap:wrap;}
+.color-swatch{width:28px;height:28px;border-radius:8px;cursor:pointer;border:2px solid transparent;transition:border-color .15s;}
+.color-swatch.selected{border-color:#fff;}
+.layout{display:flex;flex-direction:column;height:calc(100vh - 52px);}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="logo"><div class="logo-pill">D/</div><span class="logo-name">Dcoder Studio</span></div>
+  <div style="display:flex;gap:2px;">
+    <button class="nav-btn" onclick="location.href='index.html'">Inicio</button>
+    <button class="nav-btn active">Proyectos</button>
+    <button class="nav-btn">Equipo</button>
+    <button class="nav-btn">Finanzas</button>
+    <button class="nav-btn">Clientes</button>
+    <button class="nav-btn" onclick="location.href='cotizacion.html'">Cotizaciones</button>
+  </div>
+  <button class="new-btn" id="newProjBtn">+ Nuevo proyecto</button>
+</div>
+
+<div class="layout">
+  <div class="subbar">
+    <div class="tabs" id="tabs"></div>
+    <button class="tab-add" id="addCatBtn">+ Categoría</button>
+    <span class="count-pill" id="countPill">0 proyectos</span>
+  </div>
+  <div class="board-scroll" id="boardScroll">
+    <div id="boardInner"></div>
+  </div>
+</div>
+
+<!-- PROJECT MODAL -->
+<div class="overlay" id="projOverlay">
+  <div class="modal">
+    <div class="modal-title" id="projModalTitle">Nuevo proyecto</div>
+    <div><div class="ml">Nombre</div><input class="mi" id="mName" placeholder="Nombre del proyecto"></div>
+    <div><div class="ml">Cliente</div><input class="mi" id="mClient" placeholder="Nombre del cliente"></div>
+    <div class="grid2">
+      <div><div class="ml">Categoría</div><select class="mi" id="mType"></select></div>
+      <div><div class="ml">Deadline</div><input class="mi" id="mDeadline" type="date"></div>
+    </div>
+    <div><div class="ml">Responsable</div>
+      <select class="mi" id="mResp">
+        <option value="AR">Ana Ramírez</option>
+        <option value="LM">Luis Mora</option>
+        <option value="SV">Sofía Vega</option>
+        <option value="RG">Rodrigo Gil</option>
+      </select>
+    </div>
+    <div id="montoRow"><div class="ml">Monto estimado</div><input class="mi" id="mMonto" placeholder="$0.00"></div>
+    <div id="tipoRow"><div class="ml">Tipo de proyecto (al aceptar)</div><select class="mi" id="mTipo"></select></div>
+    <div class="mf">
+      <button class="btn-c" id="cancelProjBtn">Cancelar</button>
+      <button class="btn-ok" id="createProjBtn">Crear</button>
+    </div>
+  </div>
+</div>
+
+<!-- CATEGORY MODAL -->
+<div class="overlay" id="catOverlay">
+  <div class="modal">
+    <div class="modal-title">Nueva categoría</div>
+    <div><div class="ml">Nombre</div><input class="mi" id="catName" placeholder="Ej. Motion / Video"></div>
+    <div><div class="ml">Color</div><div class="color-row" id="colorRow"></div></div>
+    <div><div class="ml">Etapas (separadas por coma)</div><input class="mi" id="catStages" placeholder="Brief, Concepto, Diseño, Revisión, Entrega"></div>
+    <div class="mf">
+      <button class="btn-c" id="cancelCatBtn">Cancelar</button>
+      <button class="btn-ok" id="createCatBtn">Crear categoría</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  var PALETTE = ['#1A6FD4','#7B6FD0','#E8A020','#D4537E','#1D9E75','#D85A30','#B8760F','#27AE72','#C0436E','#555450'];
+  var AV_COLORS = {AR:'#1A6FD4',LM:'#7B6FD0',SV:'#D4537E',RG:'#E8A020'};
+  var selColor = PALETTE[0];
+  var activeFilter = 'all';
+  var dragId = null;
+  var solCollapsed = false;
+  var nextId = 14;
+  var catIdCounter = 20;
+  var presetCat = null;
+  var presetStage = null;
+
+  var categories = [
+    {id:'cotizaciones', label:'Solicitudes', color:'#27AE72', stages:['Solicitud recibida','En proceso','Enviado','Negociación','Aceptado','Rechazado']},
+    {id:'industrial',   label:'Diseño Industrial', color:'#1A6FD4', stages:['Brief','Concepto','Desarrollo','Prototipo','Pruebas','Revisión','Aprobación','Entrega']},
+    {id:'proyectos',    label:'Diseño de Proyectos', color:'#7B6FD0', stages:['Brief','Concepto','Desarrollo','Documentación','Revisión','Aprobación','Entrega']},
+    {id:'senaletica',   label:'Señalética', color:'#E8A020', stages:['Brief','Recorrido de sitio','Concepto','Desarrollo','Fabricación','Instalación','Entrega']},
+    {id:'branding',     label:'Branding', color:'#D4537E', stages:['Brief','Estrategia','Concepto','Diseño','Revisión','Aprobación','Entrega']},
+    {id:'ui',           label:'UI / UX', color:'#1D9E75', stages:['Brief','Wireframes','Concepto','UI Design','Testing','Revisión','Entrega']}
+  ];
+
+  var projects = [
+    {id:1,  name:'Señalética Museo Nacional',      client:'INBA',               catId:'senaletica',    stage:'Desarrollo',          deadline:'2026-05-15', team:['AR','LM']},
+    {id:2,  name:'Identidad — Estudio Forma',      client:'Estudio Forma',      catId:'branding',      stage:'Concepto',            deadline:'2026-05-20', team:['SV']},
+    {id:3,  name:'App de gestión interna',         client:'Dcoder Studio',      catId:'ui',            stage:'Wireframes',          deadline:'2026-06-01', team:['LM','RG']},
+    {id:4,  name:'Mobiliario urbano Parque Central',client:'Municipio Norte',   catId:'industrial',    stage:'Brief',               deadline:'2026-05-30', team:['AR']},
+    {id:5,  name:'Señalética hospitalaria',        client:'Hospital Ángeles',   catId:'senaletica',    stage:'Recorrido de sitio',  deadline:'2026-05-10', team:['AR','SV']},
+    {id:6,  name:'Rediseño marca — Cafetería Lúa', client:'Cafetería Lúa',     catId:'branding',      stage:'Aprobación',          deadline:'2026-05-08', team:['SV','LM']},
+    {id:7,  name:'Prototipo silla ergonómica',     client:'Muebles Nico',       catId:'industrial',    stage:'Prototipo',           deadline:'2026-06-15', team:['RG']},
+    {id:8,  name:'Campus universitario',           client:'UNAM',               catId:'proyectos',     stage:'Documentación',       deadline:'2026-07-01', team:['AR','RG','LM']},
+    {id:9,  name:'Sistema señalético exterior',    client:'Plaza Comercial',    catId:'cotizaciones',  stage:'Solicitud recibida',  deadline:'',           team:['AR'], monto:'$45,000', tipoCat:'senaletica'},
+    {id:10, name:'Identidad corporativa',          client:'Grupo Helix',        catId:'cotizaciones',  stage:'Enviado',             deadline:'2026-05-12', team:['SV'], monto:'$32,000', tipoCat:'branding'},
+    {id:11, name:'Mobiliario retail',              client:'Tienda Nómada',      catId:'cotizaciones',  stage:'Negociación',         deadline:'2026-05-18', team:['RG'], monto:'$78,000', tipoCat:'industrial'},
+    {id:12, name:'App de reservaciones',           client:'Hotel Kali',         catId:'cotizaciones',  stage:'Aceptado',            deadline:'2026-06-01', team:['LM'], monto:'$55,000', tipoCat:'ui'},
+    {id:13, name:'Señalética de emergencia',       client:'Edificio Zentrum',   catId:'cotizaciones',  stage:'Rechazado',           deadline:'',           team:['AR'], monto:'$18,000', tipoCat:'senaletica'}
+  ];
+
+  // ── HELPERS ───────────────────────────────────────────
+  function deadlineCls(dl) {
+    if (!dl) return '';
+    var diff = (new Date(dl) - new Date()) / (1000*60*60*24);
+    return diff < 5 ? 'urgent' : diff < 10 ? 'soon' : '';
+  }
+  function fmtDate(dl) {
+    if (!dl) return '—';
+    return new Date(dl).toLocaleDateString('es-MX', {day:'numeric', month:'short'});
+  }
+
+  // ── TABS ─────────────────────────────────────────────
+  function renderTabs() {
+    var tabs = document.getElementById('tabs');
+    tabs.innerHTML = '';
+    var all = document.createElement('button');
+    all.className = 'tab' + (activeFilter === 'all' ? ' active' : '');
+    all.textContent = 'Todos';
+    all.onclick = function() { setFilter('all'); };
+    tabs.appendChild(all);
+    categories.forEach(function(cat) {
+      var t = document.createElement('button');
+      t.className = 'tab' + (activeFilter === cat.id ? ' active' : '');
+      if (cat.id === 'cotizaciones' && activeFilter === cat.id) {
+        t.style.cssText = 'border-color:rgba(39,174,114,0.5);background:rgba(39,174,114,0.12);color:#27AE72;';
+      }
+      t.innerHTML = '<span class="tab-dot" style="background:' + cat.color + '"></span>' + cat.label;
+      t.onclick = (function(id) { return function() { setFilter(id); }; })(cat.id);
+      tabs.appendChild(t);
+    });
+  }
+
+  function setFilter(f) {
+    activeFilter = f;
+    renderTabs();
+    renderBoard();
+  }
+
+  // ── BOARD ─────────────────────────────────────────────
+  function renderBoard() {
+    var inner = document.getElementById('boardInner');
+    inner.innerHTML = '';
+
+    if (activeFilter === 'all') {
+      inner.style.cssText = '';
+      categories.forEach(function(cat) {
+        var isSol = cat.id === 'cotizaciones';
+        var catProjects = projects.filter(function(p) { return p.catId === cat.id; });
+        var section = document.createElement('div');
+        section.className = 'section' + (isSol ? ' sol-section' : '');
+
+        // header
+        var hdr = document.createElement('div');
+        hdr.className = 'section-header';
+
+        if (isSol) {
+          hdr.innerHTML =
+            '<div class="section-dot" style="background:#27AE72;width:12px;height:12px;box-shadow:0 0 8px rgba(39,174,114,0.6);flex-shrink:0;"></div>'
+            + '<span style="font-size:17px;font-weight:900;font-style:italic;color:#27AE72;letter-spacing:-.01em;">Solicitudes</span>'
+            + '<span style="font-size:10px;font-weight:700;color:#27AE72;background:rgba(39,174,114,0.15);padding:3px 12px;border-radius:20px;border:0.5px solid rgba(39,174,114,0.35);">Pipeline de ventas</span>'
+            + '<span style="font-size:11px;color:#27AE72;background:rgba(39,174,114,0.15);padding:2px 8px;border-radius:10px;">' + catProjects.length + '</span>'
+            + '<div style="flex:1;height:0.5px;background:rgba(39,174,114,0.2);"></div>'
+            + '<button id="solToggleBtn" style="background:rgba(39,174,114,0.12);border:0.5px solid rgba(39,174,114,0.3);border-radius:20px;color:#27AE72;font-size:11px;font-weight:700;padding:4px 14px;cursor:pointer;font-family:Inter,sans-serif;white-space:nowrap;flex-shrink:0;">'
+            + (solCollapsed ? '▼ Mostrar' : '▲ Ocultar') + '</button>';
+        } else {
+          hdr.innerHTML =
+            '<div class="section-dot" style="background:' + cat.color + ';flex-shrink:0;"></div>'
+            + '<span class="section-title">' + cat.label + '</span>'
+            + '<span class="section-count">' + catProjects.length + '</span>'
+            + '<div class="section-divider"></div>';
+        }
+        section.appendChild(hdr);
+
+        // lanes
+        var lanes = document.createElement('div');
+        lanes.className = 'section-lanes';
+        if (isSol && solCollapsed) {
+          lanes.style.display = 'none';
+        } else {
+          cat.stages.forEach(function(stage) {
+            lanes.appendChild(buildCol(cat, stage, catProjects));
+          });
+        }
+        section.appendChild(lanes);
+        inner.appendChild(section);
+
+        // attach toggle after DOM insert
+        if (isSol) {
+          var btn = document.getElementById('solToggleBtn');
+          if (btn) {
+            btn.onclick = function() {
+              solCollapsed = !solCollapsed;
+              renderBoard();
+            };
+          }
+        }
+      });
+
+    } else {
+      inner.style.cssText = 'display:flex;gap:14px;padding:24px 28px;overflow-x:auto;height:calc(100vh - 52px - 48px);';
+      var cat = null;
+      for (var i = 0; i < categories.length; i++) {
+        if (categories[i].id === activeFilter) { cat = categories[i]; break; }
+      }
+      if (!cat) return;
+      var catProjects = projects.filter(function(p) { return p.catId === activeFilter; });
+      cat.stages.forEach(function(stage) {
+        inner.appendChild(buildCol(cat, stage, catProjects));
+      });
+    }
+
+    var vis = activeFilter === 'all' ? projects : projects.filter(function(p) { return p.catId === activeFilter; });
+    document.getElementById('countPill').textContent = vis.length + ' proyecto' + (vis.length !== 1 ? 's' : '');
+  }
+
+  // ── COLUMN ────────────────────────────────────────────
+  function buildCol(cat, stage, catProjects) {
+    var cards = catProjects.filter(function(p) { return p.stage === stage; });
+    var col = document.createElement('div');
+    col.className = 'col';
+    var hdr = document.createElement('div');
+    hdr.className = 'col-header';
+    hdr.innerHTML = '<span class="col-title">' + stage + '</span><span class="col-count">' + cards.length + '</span>';
+    col.appendChild(hdr);
+
+    var body = document.createElement('div');
+    body.className = 'col-body';
+    cards.forEach(function(p) { body.appendChild(buildCard(p, cat)); });
+
+    body.addEventListener('dragover', function(e) { e.preventDefault(); body.classList.add('drag-over'); });
+    body.addEventListener('dragleave', function() { body.classList.remove('drag-over'); });
+    body.addEventListener('drop', function(e) {
+      e.preventDefault();
+      body.classList.remove('drag-over');
+      if (dragId === null) return;
+      var p = null;
+      for (var i = 0; i < projects.length; i++) { if (projects[i].id === dragId) { p = projects[i]; break; } }
+      if (!p || p.catId !== cat.id) return;
+      p.stage = stage;
+      renderBoard();
+    });
+
+    col.appendChild(body);
+
+    var addBtn = document.createElement('button');
+    addBtn.className = 'add-card-btn';
+    addBtn.innerHTML = '<svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Agregar';
+    addBtn.onclick = (function(cId, st) { return function() { openProjModal(cId, st); }; })(cat.id, stage);
+    col.appendChild(addBtn);
+    return col;
+  }
+
+  // ── CARD ─────────────────────────────────────────────
+  function buildCard(p, cat) {
+    var isCot = cat.id === 'cotizaciones';
+    var isAccepted = isCot && p.stage === 'Aceptado';
+    var isRejected = isCot && p.stage === 'Rechazado';
+    var dlCls = deadlineCls(p.deadline);
+    var dlColor = dlCls === 'urgent' ? '#E24B4A' : dlCls === 'soon' ? '#E8A020' : 'rgba(255,255,255,0.25)';
+
+    var tipoCat = null;
+    if (isCot && p.tipoCat) {
+      for (var i = 0; i < categories.length; i++) {
+        if (categories[i].id === p.tipoCat) { tipoCat = categories[i]; break; }
+      }
+    }
+
+    var card = document.createElement('div');
+    card.dataset.id = p.id;
+    card.draggable = !isRejected;
+    card.style.cssText = 'background:' + (isRejected ? '#0f0f0f' : '#181818') + ';'
+      + 'border:0.5px solid ' + (isAccepted ? 'rgba(39,174,114,0.4)' : isRejected ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.07)') + ';'
+      + 'border-radius:12px;padding:12px;cursor:' + (isRejected ? 'default' : 'grab') + ';'
+      + 'user-select:none;transition:transform .15s,box-shadow .15s;position:relative;overflow:hidden;'
+      + 'opacity:' + (isRejected ? '.4' : '1') + ';';
+
+    var avatarsHTML = '';
+    p.team.forEach(function(a) {
+      avatarsHTML += '<div style="width:20px;height:20px;border-radius:50%;background:' + (AV_COLORS[a] || '#555') + ';'
+        + 'display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:700;'
+        + 'color:#fff;border:1.5px solid #181818;margin-left:-4px;">' + a + '</div>';
+    });
+
+    var html = '<div style="position:absolute;top:0;left:0;width:3px;height:100%;background:' + (isRejected ? '#333' : cat.color) + ';border-radius:3px 0 0 3px;"></div>';
+
+    if (isCot && p.monto) {
+      html += '<div style="position:absolute;top:10px;right:10px;font-size:10px;font-weight:700;color:'
+        + (isAccepted ? '#27AE72' : isRejected ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.4)') + ';">' + p.monto + '</div>';
+    }
+
+    html += '<div style="font-size:12px;font-weight:600;color:' + (isRejected ? 'rgba(255,255,255,0.4)' : 'rgba(255,255,255,0.88)') + ';'
+      + 'line-height:1.3;margin-bottom:7px;padding-left:6px;padding-right:' + (isCot ? '52px' : '0') + '">' + p.name + '</div>';
+    html += '<div style="font-size:10px;color:rgba(255,255,255,0.3);margin-bottom:8px;padding-left:6px;">' + p.client + '</div>';
+
+    if (isCot && tipoCat) {
+      html += '<div style="font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:' + tipoCat.color + ';padding-left:6px;margin-bottom:8px;">' + tipoCat.label + '</div>';
+    }
+
+    html += '<div style="display:flex;align-items:center;justify-content:space-between;padding-left:6px;">'
+      + '<div style="font-size:9px;font-weight:600;color:' + dlColor + ';display:flex;align-items:center;gap:3px;">'
+      + (p.deadline ? '<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg>' + fmtDate(p.deadline) : 'Sin fecha')
+      + '</div><div style="display:flex;">' + avatarsHTML + '</div></div>';
+
+    if (isAccepted) {
+      if (p.converted) {
+        html += '<div style="margin-top:10px;width:100%;background:rgba(39,174,114,0.1);color:rgba(39,174,114,0.6);border-radius:8px;padding:7px;font-size:10px;font-weight:700;text-align:center;">✓ Proyecto creado</div>';
+      } else {
+        html += '<button class="conv-btn" data-pid="' + p.id + '" style="margin-top:10px;width:100%;background:#27AE72;color:#fff;border:none;border-radius:8px;padding:7px;font-size:10px;font-weight:700;cursor:pointer;font-family:Inter,sans-serif;">→ Convertir a proyecto</button>';
+      }
+    }
+
+    card.innerHTML = html;
+
+    // convert button
+    if (isAccepted && !p.converted) {
+      var convBtn = card.querySelector('.conv-btn');
+      if (convBtn) {
+        convBtn.addEventListener('click', function(e) {
+          e.stopPropagation();
+          convertirAProyecto(parseInt(convBtn.dataset.pid));
+        });
+      }
+    }
+
+    if (!isRejected) {
+      card.addEventListener('mouseenter', function() { card.style.transform = 'translateY(-2px)'; card.style.boxShadow = '0 6px 20px rgba(0,0,0,.4)'; });
+      card.addEventListener('mouseleave', function() { card.style.transform = ''; card.style.boxShadow = ''; });
+      card.addEventListener('dragstart', function() { dragId = p.id; setTimeout(function() { card.style.opacity = '.25'; }, 0); });
+      card.addEventListener('dragend', function() { card.style.opacity = isRejected ? '.4' : ''; dragId = null; document.querySelectorAll('.col-body').forEach(function(b) { b.classList.remove('drag-over'); }); renderBoard(); });
+    }
+    return card;
+  }
+
+  // ── CONVERT ──────────────────────────────────────────
+  function convertirAProyecto(id) {
+    var p = null;
+    for (var i = 0; i < projects.length; i++) { if (projects[i].id === id) { p = projects[i]; break; } }
+    if (!p || !p.tipoCat) { alert('Define el tipo de proyecto.'); return; }
+    var cat = null;
+    for (var j = 0; j < categories.length; j++) { if (categories[j].id === p.tipoCat) { cat = categories[j]; break; } }
+    if (!cat) { alert('Categoría no encontrada.'); return; }
+    p.converted = true;
+    projects.push({id: nextId++, name: p.name, client: p.client, catId: p.tipoCat, stage: cat.stages[0], deadline: p.deadline || '', team: p.team});
+    renderBoard();
+  }
+
+  // ── PROJECT MODAL ─────────────────────────────────────
+  function openProjModal(catId, stage) {
+    presetCat = catId || null;
+    presetStage = stage || null;
+    var isCot = catId === 'cotizaciones';
+    document.getElementById('projModalTitle').textContent = isCot ? 'Nueva solicitud' : 'Nuevo proyecto';
+    document.getElementById('montoRow').style.display = isCot ? '' : 'none';
+    document.getElementById('tipoRow').style.display = isCot ? '' : 'none';
+    var sel = document.getElementById('mType');
+    sel.innerHTML = '';
+    categories.forEach(function(c) {
+      var opt = document.createElement('option');
+      opt.value = c.id; opt.textContent = c.label;
+      if (c.id === catId) opt.selected = true;
+      sel.appendChild(opt);
+    });
+    sel.onchange = function() {
+      var v = sel.value === 'cotizaciones';
+      document.getElementById('montoRow').style.display = v ? '' : 'none';
+      document.getElementById('tipoRow').style.display = v ? '' : 'none';
+    };
+    var tipoSel = document.getElementById('mTipo');
+    tipoSel.innerHTML = '';
+    categories.forEach(function(c) {
+      if (c.id !== 'cotizaciones') {
+        var opt = document.createElement('option');
+        opt.value = c.id; opt.textContent = c.label;
+        tipoSel.appendChild(opt);
+      }
+    });
+    document.getElementById('projOverlay').classList.add('open');
+    setTimeout(function() { document.getElementById('mName').focus(); }, 100);
+  }
+
+  function closeProjModal() {
+    document.getElementById('projOverlay').classList.remove('open');
+    ['mName','mClient','mDeadline','mMonto'].forEach(function(id) { document.getElementById(id).value = ''; });
+  }
+
+  function createProject() {
+    var name = document.getElementById('mName').value.trim();
+    var client = document.getElementById('mClient').value.trim();
+    var catId = document.getElementById('mType').value;
+    var deadline = document.getElementById('mDeadline').value;
+    var resp = document.getElementById('mResp').value;
+    var monto = document.getElementById('mMonto').value;
+    var tipoCat = document.getElementById('mTipo').value;
+    if (!name) return;
+    var cat = null;
+    for (var i = 0; i < categories.length; i++) { if (categories[i].id === catId) { cat = categories[i]; break; } }
+    var stage = (presetStage && cat.stages.indexOf(presetStage) >= 0) ? presetStage : cat.stages[0];
+    var proj = {id: nextId++, name: name, client: client || '—', catId: catId, stage: stage, deadline: deadline, team: [resp]};
+    if (catId === 'cotizaciones') { proj.monto = monto; proj.tipoCat = tipoCat; }
+    projects.push(proj);
+    closeProjModal();
+    renderBoard();
+  }
+
+  // ── CATEGORY MODAL ────────────────────────────────────
+  function openCatModal() {
+    selColor = PALETTE[0];
+    buildColorPicker();
+    document.getElementById('catName').value = '';
+    document.getElementById('catStages').value = 'Brief, Concepto, Desarrollo, Revisión, Aprobación, Entrega';
+    document.getElementById('catOverlay').classList.add('open');
+    setTimeout(function() { document.getElementById('catName').focus(); }, 100);
+  }
+
+  function closeCatModal() { document.getElementById('catOverlay').classList.remove('open'); }
+
+  function buildColorPicker() {
+    var row = document.getElementById('colorRow');
+    row.innerHTML = '';
+    PALETTE.forEach(function(c) {
+      var sw = document.createElement('div');
+      sw.className = 'color-swatch' + (c === selColor ? ' selected' : '');
+      sw.style.background = c;
+      sw.onclick = (function(col) { return function() { selColor = col; buildColorPicker(); }; })(c);
+      row.appendChild(sw);
+    });
+  }
+
+  function createCategory() {
+    var name = document.getElementById('catName').value.trim();
+    var stagesRaw = document.getElementById('catStages').value;
+    if (!name) return;
+    var stages = stagesRaw.split(',').map(function(s) { return s.trim(); }).filter(Boolean);
+    if (!stages.length) return;
+    categories.push({id: 'cat_' + (++catIdCounter), label: name, color: selColor, stages: stages});
+    closeCatModal();
+    renderTabs();
+    renderBoard();
+  }
+
+  // ── EVENTS ────────────────────────────────────────────
+  document.getElementById('newProjBtn').onclick = function() { openProjModal(null, null); };
+  document.getElementById('addCatBtn').onclick = openCatModal;
+  document.getElementById('cancelProjBtn').onclick = closeProjModal;
+  document.getElementById('createProjBtn').onclick = createProject;
+  document.getElementById('cancelCatBtn').onclick = closeCatModal;
+  document.getElementById('createCatBtn').onclick = createCategory;
+  document.getElementById('projOverlay').addEventListener('click', function(e) { if (e.target === document.getElementById('projOverlay')) closeProjModal(); });
+  document.getElementById('catOverlay').addEventListener('click', function(e) { if (e.target === document.getElementById('catOverlay')) closeCatModal(); });
+
+  // ── INIT ─────────────────────────────────────────────
+  renderTabs();
+  renderBoard();
+
+})();
+</script>
+</body>
+</html>
