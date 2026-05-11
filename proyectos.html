@@ -95,9 +95,12 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 .phase-flow-wrap::-webkit-scrollbar{height:4px;}
 .phase-flow-wrap::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:2px;}
 .phase-flow{display:flex;align-items:stretch;gap:0;min-width:max-content;}
-.phase-card{background:#1e1e1e;border:0.5px solid rgba(255,255,255,0.1);border-radius:12px;width:148px;flex-shrink:0;overflow:hidden;transition:border-color .15s;}
+.phase-card{background:#1e1e1e;border:0.5px solid rgba(255,255,255,0.1);border-radius:12px;width:148px;flex-shrink:0;overflow:hidden;transition:border-color .15s,opacity .15s,box-shadow .15s;cursor:grab;}
+.phase-card:active{cursor:grabbing;}
 .phase-card:hover{border-color:rgba(255,255,255,0.22);}
-.phase-card-bar{height:6px;}
+.phase-card.dragging{opacity:0.25;border-color:rgba(255,255,255,0.05);}
+.phase-card.drag-over{border-color:rgba(255,255,255,0.6);box-shadow:0 0 0 2px rgba(255,255,255,0.15);background:#262626;}
+.phase-card-bar{height:8px;display:flex;align-items:center;justify-content:center;}
 .phase-card-body{padding:11px 12px 10px;}
 .phase-name-input{background:none;border:none;color:#fff;font-size:12px;font-weight:600;font-family:'Inter',sans-serif;width:100%;outline:none;margin-bottom:9px;border-bottom:1px solid rgba(255,255,255,0.07);padding-bottom:5px;}
 .phase-name-input:focus{border-bottom-color:rgba(255,255,255,0.28);}
@@ -258,6 +261,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
   var deletingCatId = null;
   var editingPhases = [];
   var editingCatColor2 = PALETTE[0];
+  var phaseDragIdx = -1;
   var activeFilter = 'all';
   var dragId = null;
   var solCollapsed = false;
@@ -779,26 +783,62 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
         }
         var card = document.createElement('div');
         card.className = 'phase-card';
-        card.innerHTML = '<div class="phase-card-bar" style="background:' + editingCatColor2 + ';"></div>'
+        card.draggable = true;
+        card.innerHTML = '<div class="phase-card-bar" style="background:' + editingCatColor2 + ';">'
+          + '<span style="color:rgba(255,255,255,0.35);font-size:8px;letter-spacing:3px;pointer-events:none;">⠿⠿</span>'
+          + '</div>'
           + '<div class="phase-card-body">'
           + '<input class="phase-name-input" value="' + editingPhases[idx].replace(/"/g,'&quot;') + '">'
           + '<div class="phase-card-actions">'
-          + '<button class="phase-btn" data-act="left"' + (idx === 0 ? ' disabled' : '') + '>&#8592;</button>'
-          + '<button class="phase-btn" data-act="right"' + (idx === editingPhases.length - 1 ? ' disabled' : '') + '>&#8594;</button>'
           + '<button class="phase-btn pdel" data-act="del"' + (editingPhases.length <= 1 ? ' disabled' : '') + '>&#215;</button>'
           + '</div></div>';
+
         card.querySelector('.phase-name-input').oninput = (function(i){ return function(){ editingPhases[i] = this.value; }; })(idx);
-        card.querySelectorAll('.phase-btn').forEach(function(btn) {
-          btn.onclick = function(e) {
-            e.stopPropagation();
-            if (btn.disabled) return;
-            var act = btn.dataset.act;
-            var tmp;
-            if (act === 'left' && idx > 0) { tmp = editingPhases[idx-1]; editingPhases[idx-1] = editingPhases[idx]; editingPhases[idx] = tmp; renderPhaseFlow(); }
-            else if (act === 'right' && idx < editingPhases.length-1) { tmp = editingPhases[idx+1]; editingPhases[idx+1] = editingPhases[idx]; editingPhases[idx] = tmp; renderPhaseFlow(); }
-            else if (act === 'del') { editingPhases.splice(idx, 1); renderPhaseFlow(); }
-          };
+        card.querySelector('.phase-name-input').addEventListener('mousedown', function(e){ e.stopPropagation(); });
+
+        card.querySelector('.phase-btn').onclick = function(e) {
+          e.stopPropagation();
+          if (editingPhases.length <= 1) return;
+          editingPhases.splice(idx, 1);
+          renderPhaseFlow();
+        };
+
+        card.addEventListener('dragstart', function(e) {
+          phaseDragIdx = idx;
+          e.dataTransfer.effectAllowed = 'move';
+          e.dataTransfer.setData('text/plain', String(idx));
+          setTimeout(function(){ card.classList.add('dragging'); }, 0);
         });
+
+        card.addEventListener('dragend', function() {
+          card.classList.remove('dragging');
+          phaseDragIdx = -1;
+          flow.querySelectorAll('.phase-card').forEach(function(c){ c.classList.remove('drag-over'); });
+        });
+
+        card.addEventListener('dragover', function(e) {
+          e.preventDefault();
+          e.dataTransfer.dropEffect = 'move';
+          if (idx === phaseDragIdx) return;
+          flow.querySelectorAll('.phase-card').forEach(function(c){ c.classList.remove('drag-over'); });
+          card.classList.add('drag-over');
+        });
+
+        card.addEventListener('dragleave', function(e) {
+          if (!card.contains(e.relatedTarget)) card.classList.remove('drag-over');
+        });
+
+        card.addEventListener('drop', function(e) {
+          e.preventDefault();
+          card.classList.remove('drag-over');
+          if (phaseDragIdx === -1 || phaseDragIdx === idx) return;
+          var moved = editingPhases.splice(phaseDragIdx, 1)[0];
+          var newIdx = phaseDragIdx < idx ? idx - 1 : idx;
+          editingPhases.splice(newIdx, 0, moved);
+          phaseDragIdx = -1;
+          renderPhaseFlow();
+        });
+
         flow.appendChild(card);
       })(i);
     }
