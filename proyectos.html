@@ -461,9 +461,9 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     body.className = 'col-body';
     cards.forEach(function(p) { body.appendChild(buildCard(p, cat)); });
 
-    body.addEventListener('dragover', function(e) { e.preventDefault(); body.classList.add('drag-over'); });
-    body.addEventListener('dragleave', function() { body.classList.remove('drag-over'); });
-    body.addEventListener('drop', function(e) {
+    col.appendChild(body);
+
+    function dropHandler(e) {
       e.preventDefault();
       body.classList.remove('drag-over');
       if (dragId === null) return;
@@ -473,9 +473,15 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
       p.stage = stage;
       saveData();
       renderBoard();
+    }
+    col.addEventListener('dragover', function(e) {
+      e.preventDefault();
+      body.classList.add('drag-over');
     });
-
-    col.appendChild(body);
+    col.addEventListener('dragleave', function(e) {
+      if (!col.contains(e.relatedTarget)) body.classList.remove('drag-over');
+    });
+    col.addEventListener('drop', dropHandler);
 
     var addBtn = document.createElement('button');
     addBtn.className = 'add-card-btn';
