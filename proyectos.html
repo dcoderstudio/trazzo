@@ -717,7 +717,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     if (total > 0) {
       var pillCls = pending === 0 ? 'fin' : 'pnd';
       var pillTxt = pending === 0 ? '✓ Todo listo' : pending + ' pendiente' + (pending !== 1 ? 's' : '');
-      html += '<div style="padding-left:6px;"><span class="card-task-pill ' + pillCls + '">' + pillTxt + '</span></div>';
+      html += '<div data-task-badge style="padding-left:6px;"><span class="card-task-pill ' + pillCls + '">' + pillTxt + '</span></div>';
     }
 
     card.innerHTML = html;
@@ -933,7 +933,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
         + '<span class="tk-text">' + task.text.replace(/</g,'&lt;') + '</span>'
         + '<span class="tk-dl' + (task.deadline ? ' ' + dlClass(task.deadline) : '') + '">' + fmtDl(task.deadline) + '</span>'
         + '<button class="tk-del">×</button>';
-      row.querySelector('.tk-check').onclick = function() { task.done = !task.done; saveData(); renderTaskPanel(); };
+      row.querySelector('.tk-check').onclick = function() { task.done = !task.done; saveData(); renderTaskPanel(); updateCardBadge(taskPanelProjectId); };
       row.querySelector('.tk-dl').onclick = function() {
         var sp = row.querySelector('.tk-dl');
         var inp = document.createElement('input');
@@ -945,13 +945,35 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
       };
       row.querySelector('.tk-del').onclick = function() {
         p.stageTasks[p.stage] = p.stageTasks[p.stage].filter(function(t){ return t.id !== task.id; });
-        saveData(); renderTaskPanel();
+        saveData(); renderTaskPanel(); updateCardBadge(taskPanelProjectId);
       };
       list.appendChild(row);
     });
     document.getElementById('tpSummary').textContent = done + ' de ' + tasks.length + ' completada' + (tasks.length !== 1 ? 's' : '');
     document.getElementById('tpNewInp').value = '';
     document.getElementById('tpNewDl').value = '';
+  }
+
+  function updateCardBadge(projectId) {
+    var cardEl = document.querySelector('[data-id="' + projectId + '"]');
+    if (!cardEl) return;
+    var p = null;
+    for (var i = 0; i < projects.length; i++) { if (projects[i].id === projectId) { p = projects[i]; break; } }
+    if (!p) return;
+    var stTasks = p.stageTasks && p.stageTasks[p.stage] ? p.stageTasks[p.stage] : [];
+    var pending = stTasks.filter(function(t){ return !t.done; }).length;
+    var total = stTasks.length;
+    var existing = cardEl.querySelector('[data-task-badge]');
+    if (existing) existing.remove();
+    if (total > 0) {
+      var pillCls = pending === 0 ? 'fin' : 'pnd';
+      var pillTxt = pending === 0 ? '✓ Todo listo' : pending + ' pendiente' + (pending !== 1 ? 's' : '');
+      var div = document.createElement('div');
+      div.setAttribute('data-task-badge', '');
+      div.style.paddingLeft = '6px';
+      div.innerHTML = '<span class="card-task-pill ' + pillCls + '">' + pillTxt + '</span>';
+      cardEl.appendChild(div);
+    }
   }
 
   function addTaskToPanel() {
@@ -964,7 +986,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     if (!p.stageTasks) p.stageTasks = {};
     if (!p.stageTasks[p.stage]) p.stageTasks[p.stage] = [];
     p.stageTasks[p.stage].push({id: Date.now(), text: text, done: false, deadline: dl});
-    saveData(); renderTaskPanel();
+    saveData(); renderTaskPanel(); updateCardBadge(taskPanelProjectId);
   }
 
   // ── SOLICITUD MODAL ──────────────────────────────────
