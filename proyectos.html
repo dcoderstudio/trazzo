@@ -567,6 +567,8 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 
     var body = document.createElement('div');
     body.className = 'col-body';
+    body.dataset.stage = stage;
+    body.dataset.catid = cat.id;
     if (isEntregadoCol && entregadoCollapsed) {
       body.style.display = 'none';
     } else {
@@ -600,11 +602,13 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     col.addEventListener('dragover', function(e) {
       e.preventDefault();
       body.classList.add('drag-over');
+      var dragging = document.querySelector('.card-dragging');
+      if (dragging && !body.contains(dragging)) body.appendChild(dragging);
     });
     col.addEventListener('dragleave', function(e) {
       if (!col.contains(e.relatedTarget)) body.classList.remove('drag-over');
     });
-    col.addEventListener('drop', dropHandler);
+    col.addEventListener('drop', function(e){ e.preventDefault(); });
 
     if (!isEntregadoCol) {
       var addBtn = document.createElement('button');
@@ -703,34 +707,52 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     card.addEventListener('mouseleave', function() { card.style.transform = ''; card.style.boxShadow = ''; });
     card._dragged = false;
     card.addEventListener('click', function(e) { if (card._dragged) return; openTaskPanel(p.id); });
-    card.addEventListener('dragstart', function() { card._dragged = true; dragId = p.id; setTimeout(function() { card.style.opacity = '.25'; }, 0); });
-    card.addEventListener('dragend', function() { setTimeout(function(){ card._dragged = false; }, 150); card.style.opacity = isRejected || isEntregado ? '.4' : ''; dragId = null; card.classList.remove('drop-above','drop-below'); document.querySelectorAll('.col-body').forEach(function(b) { b.classList.remove('drag-over'); }); renderBoard(); });
-      card.addEventListener('dragover', function(e) {
-        e.preventDefault(); e.stopPropagation();
-        if (dragId === null || dragId === p.id) return;
-        var rect = card.getBoundingClientRect();
-        card.classList.remove('drop-above','drop-below');
-        card.classList.add(e.clientY < rect.top + rect.height/2 ? 'drop-above' : 'drop-below');
-        var b = card.closest('.col-body'); if (b) b.classList.add('drag-over');
+    card.addEventListener('dragstart', function() {
+      card._dragged = true;
+      card.classList.add('card-dragging');
+      dragId = p.id;
+      setTimeout(function() { card.style.opacity = '.25'; }, 0);
+    });
+    card.addEventListener('dragend', function() {
+      card.classList.remove('card-dragging');
+      setTimeout(function(){ card._dragged = false; }, 150);
+      card.style.opacity = isRejected || isEntregado ? '.4' : '';
+      document.querySelectorAll('.col-body').forEach(function(b){ b.classList.remove('drag-over'); });
+      // Leer estado final del DOM y actualizar projects
+      var visibleIds = [];
+      document.querySelectorAll('.col-body').forEach(function(colBody) {
+        var cStage = colBody.dataset.stage;
+        var cCatId = colBody.dataset.catid;
+        Array.from(colBody.querySelectorAll('[data-id]')).forEach(function(cardEl) {
+          var pid = parseInt(cardEl.dataset.id);
+          for (var k = 0; k < projects.length; k++) {
+            if (projects[k].id === pid) { projects[k].stage = cStage; visibleIds.push(pid); break; }
+          }
+        });
       });
-      card.addEventListener('dragleave', function(e) {
-        if (!card.contains(e.relatedTarget)) card.classList.remove('drop-above','drop-below');
-      });
-      card.addEventListener('drop', function(e) {
-        e.preventDefault(); e.stopPropagation();
-        var above = card.classList.contains('drop-above');
-        card.classList.remove('drop-above','drop-below');
-        if (dragId === null || dragId === p.id) return;
-        var dragProj = null, dragIdx = -1;
-        for (var k = 0; k < projects.length; k++) { if (projects[k].id === dragId) { dragProj = projects[k]; dragIdx = k; break; } }
-        if (!dragProj || dragProj.catId !== p.catId) return;
-        dragProj.stage = p.stage;
-        projects.splice(dragIdx, 1);
-        var newTargetIdx = -1;
-        for (var k = 0; k < projects.length; k++) { if (projects[k].id === p.id) { newTargetIdx = k; break; } }
-        projects.splice(above ? newTargetIdx : newTargetIdx + 1, 0, dragProj);
-        saveData();
-      });
+      var visible = visibleIds.map(function(pid){ for (var k=0;k<projects.length;k++){ if(projects[k].id===pid) return projects[k]; } }).filter(Boolean);
+      var hidden = projects.filter(function(proj){ return visibleIds.indexOf(proj.id) === -1; });
+      projects = visible.concat(hidden);
+      dragId = null;
+      saveData();
+      renderBoard();
+    });
+    card.addEventListener('dragover', function(e) {
+      e.preventDefault(); e.stopPropagation();
+      var dragging = document.querySelector('.card-dragging');
+      if (!dragging || dragging === card) return;
+      var colBody = card.closest('.col-body');
+      if (!colBody) return;
+      colBody.classList.add('drag-over');
+      var rect = card.getBoundingClientRect();
+      if (e.clientY < rect.top + rect.height / 2) {
+        colBody.insertBefore(dragging, card);
+      } else {
+        var next = card.nextElementSibling;
+        colBody.insertBefore(dragging, next || null);
+      }
+    });
+    card.addEventListener('drop', function(e){ e.preventDefault(); e.stopPropagation(); });
     return card;
   }
 
