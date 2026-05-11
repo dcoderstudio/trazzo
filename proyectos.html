@@ -79,6 +79,8 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 .color-swatch{width:28px;height:28px;border-radius:8px;cursor:pointer;border:2px solid transparent;transition:border-color .15s;}
 .color-swatch.selected{border-color:#fff;}
 .layout{display:flex;flex-direction:column;height:calc(100vh - 52px);}
+.drop-above{box-shadow:0 -3px 0 rgba(255,255,255,0.55),0 6px 20px rgba(0,0,0,.4)!important;}
+.drop-below{box-shadow:0 3px 0 rgba(255,255,255,0.55),0 6px 20px rgba(0,0,0,.4)!important;}
 .sec-btn{background:none;border:none;cursor:pointer;font-size:12px;color:rgba(255,255,255,0.2);padding:3px 7px;border-radius:6px;font-family:'Inter',sans-serif;transition:all .15s;flex-shrink:0;}
 .sec-btn:hover{background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.7);}
 .sec-del:hover{background:rgba(226,75,74,0.1)!important;color:#E24B4A!important;}
@@ -567,7 +569,33 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
       card.addEventListener('mouseenter', function() { card.style.transform = 'translateY(-2px)'; card.style.boxShadow = '0 6px 20px rgba(0,0,0,.4)'; });
       card.addEventListener('mouseleave', function() { card.style.transform = ''; card.style.boxShadow = ''; });
       card.addEventListener('dragstart', function() { dragId = p.id; setTimeout(function() { card.style.opacity = '.25'; }, 0); });
-      card.addEventListener('dragend', function() { card.style.opacity = isRejected ? '.4' : ''; dragId = null; document.querySelectorAll('.col-body').forEach(function(b) { b.classList.remove('drag-over'); }); renderBoard(); });
+      card.addEventListener('dragend', function() { card.style.opacity = isRejected ? '.4' : ''; dragId = null; card.classList.remove('drop-above','drop-below'); document.querySelectorAll('.col-body').forEach(function(b) { b.classList.remove('drag-over'); }); renderBoard(); });
+      card.addEventListener('dragover', function(e) {
+        e.preventDefault(); e.stopPropagation();
+        if (dragId === null || dragId === p.id) return;
+        var rect = card.getBoundingClientRect();
+        card.classList.remove('drop-above','drop-below');
+        card.classList.add(e.clientY < rect.top + rect.height/2 ? 'drop-above' : 'drop-below');
+        var b = card.closest('.col-body'); if (b) b.classList.add('drag-over');
+      });
+      card.addEventListener('dragleave', function(e) {
+        if (!card.contains(e.relatedTarget)) card.classList.remove('drop-above','drop-below');
+      });
+      card.addEventListener('drop', function(e) {
+        e.preventDefault(); e.stopPropagation();
+        var above = card.classList.contains('drop-above');
+        card.classList.remove('drop-above','drop-below');
+        if (dragId === null || dragId === p.id) return;
+        var dragProj = null, dragIdx = -1;
+        for (var k = 0; k < projects.length; k++) { if (projects[k].id === dragId) { dragProj = projects[k]; dragIdx = k; break; } }
+        if (!dragProj || dragProj.catId !== p.catId) return;
+        dragProj.stage = p.stage;
+        projects.splice(dragIdx, 1);
+        var newTargetIdx = -1;
+        for (var k = 0; k < projects.length; k++) { if (projects[k].id === p.id) { newTargetIdx = k; break; } }
+        projects.splice(above ? newTargetIdx : newTargetIdx + 1, 0, dragProj);
+        saveData();
+      });
     }
     return card;
   }
