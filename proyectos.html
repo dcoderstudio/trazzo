@@ -170,6 +170,32 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
   </div>
 </div>
 
+<!-- SOLICITUD MODAL -->
+<div class="overlay" id="solOverlay">
+  <div class="modal">
+    <div class="modal-title">Nueva solicitud</div>
+    <div><div class="ml">Nombre del proyecto</div><input class="mi" id="solName" placeholder="Nombre del proyecto" onkeydown="if(event.key==='Enter')createSolicitud()"></div>
+    <div><div class="ml">Cliente</div><input class="mi" id="solClient" placeholder="Nombre del cliente"></div>
+    <div class="grid2">
+      <div><div class="ml">Fecha estimada</div><input class="mi" id="solDeadline" type="date"></div>
+      <div><div class="ml">Monto estimado</div><input class="mi" id="solMonto" placeholder="$0.00"></div>
+    </div>
+    <div><div class="ml">Tipo de proyecto</div><select class="mi" id="solTipo"></select></div>
+    <div><div class="ml">Responsable</div>
+      <select class="mi" id="solResp">
+        <option value="AR">Ana Ramírez</option>
+        <option value="LM">Luis Mora</option>
+        <option value="SV">Sofía Vega</option>
+        <option value="RG">Rodrigo Gil</option>
+      </select>
+    </div>
+    <div class="mf">
+      <button class="btn-c" id="cancelSolBtn">Cancelar</button>
+      <button class="btn-ok" id="createSolBtn">Crear solicitud</button>
+    </div>
+  </div>
+</div>
+
 <!-- DELETE CONFIRM MODAL -->
 <div class="overlay" id="deleteCatOverlay">
   <div class="modal">
@@ -318,11 +344,9 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     all.onclick = function() { setFilter('all'); };
     tabs.appendChild(all);
     categories.forEach(function(cat) {
+      if (cat.id === 'cotizaciones') return;
       var t = document.createElement('button');
       t.className = 'tab' + (activeFilter === cat.id ? ' active' : '');
-      if (cat.id === 'cotizaciones' && activeFilter === cat.id) {
-        t.style.cssText = 'border-color:rgba(39,174,114,0.5);background:rgba(39,174,114,0.12);color:#27AE72;';
-      }
       t.innerHTML = '<span class="tab-dot" style="background:' + cat.color + '"></span>' + cat.label
         + '<span class="tab-actions">'
         + '<button class="tab-edit" title="Editar etapas">✎</button>'
@@ -360,7 +384,8 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 
         if (isSol) {
           hdr.innerHTML =
-            '<div class="section-dot" style="background:#27AE72;width:12px;height:12px;box-shadow:0 0 8px rgba(39,174,114,0.6);flex-shrink:0;"></div>'
+            '<button id="newSolBtn" style="background:#27AE72;border:none;border-radius:20px;color:#0c0c0c;font-size:11px;font-weight:700;padding:5px 14px;cursor:pointer;font-family:Inter,sans-serif;white-space:nowrap;flex-shrink:0;">+ Nueva solicitud</button>'
+            + '<div class="section-dot" style="background:#27AE72;width:12px;height:12px;box-shadow:0 0 8px rgba(39,174,114,0.6);flex-shrink:0;margin-left:10px;"></div>'
             + '<span style="font-size:17px;font-weight:900;font-style:italic;color:#27AE72;letter-spacing:-.01em;">Solicitudes</span>'
             + '<span style="font-size:10px;font-weight:700;color:#27AE72;background:rgba(39,174,114,0.15);padding:3px 12px;border-radius:20px;border:0.5px solid rgba(39,174,114,0.35);">Pipeline de ventas</span>'
             + '<span style="font-size:11px;color:#27AE72;background:rgba(39,174,114,0.15);padding:2px 8px;border-radius:10px;">' + catProjects.length + '</span>'
@@ -396,15 +421,12 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
         section.appendChild(lanes);
         inner.appendChild(section);
 
-        // attach toggle after DOM insert
+        // attach toggle and new sol button after DOM insert
         if (isSol) {
           var btn = document.getElementById('solToggleBtn');
-          if (btn) {
-            btn.onclick = function() {
-              solCollapsed = !solCollapsed;
-              renderBoard();
-            };
-          }
+          if (btn) { btn.onclick = function() { solCollapsed = !solCollapsed; renderBoard(); }; }
+          var newSolBtn = document.getElementById('newSolBtn');
+          if (newSolBtn) { newSolBtn.onclick = openSolModal; }
         }
       });
 
@@ -622,6 +644,39 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     renderBoard();
   }
 
+  // ── SOLICITUD MODAL ──────────────────────────────────
+  function openSolModal() {
+    var tipoSel = document.getElementById('solTipo');
+    tipoSel.innerHTML = '';
+    categories.forEach(function(c) {
+      if (c.id === 'cotizaciones') return;
+      var opt = document.createElement('option');
+      opt.value = c.id; opt.textContent = c.label;
+      tipoSel.appendChild(opt);
+    });
+    ['solName','solClient','solMonto'].forEach(function(id){ document.getElementById(id).value = ''; });
+    document.getElementById('solDeadline').value = '';
+    document.getElementById('solOverlay').classList.add('open');
+    setTimeout(function(){ document.getElementById('solName').focus(); }, 100);
+  }
+
+  function createSolicitud() {
+    var name = document.getElementById('solName').value.trim();
+    if (!name) return;
+    var client = document.getElementById('solClient').value.trim();
+    var deadline = document.getElementById('solDeadline').value;
+    var monto = document.getElementById('solMonto').value;
+    var tipoCat = document.getElementById('solTipo').value;
+    var resp = document.getElementById('solResp').value;
+    var solCat = null;
+    for (var i = 0; i < categories.length; i++) { if (categories[i].id === 'cotizaciones') { solCat = categories[i]; break; } }
+    if (!solCat) return;
+    projects.push({id: nextId++, name: name, client: client || '—', catId: 'cotizaciones', stage: solCat.stages[0], deadline: deadline, team: [resp], monto: monto, tipoCat: tipoCat});
+    saveData();
+    document.getElementById('solOverlay').classList.remove('open');
+    renderBoard();
+  }
+
   // ── PROJECT MODAL ─────────────────────────────────────
   function openProjModal(catId, stage) {
     presetCat = catId || null;
@@ -633,6 +688,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     var sel = document.getElementById('mType');
     sel.innerHTML = '';
     categories.forEach(function(c) {
+      if (c.id === 'cotizaciones') return;
       var opt = document.createElement('option');
       opt.value = c.id; opt.textContent = c.label;
       if (c.id === catId) opt.selected = true;
@@ -889,6 +945,9 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
   document.getElementById('cancelEditCatBtn').onclick = function(){ document.getElementById('editCatOverlay').classList.remove('open'); };
   document.getElementById('saveEditCatBtn').onclick = saveEditCategory;
   document.getElementById('editCatOverlay').addEventListener('click', function(e){ if (e.target === document.getElementById('editCatOverlay')) document.getElementById('editCatOverlay').classList.remove('open'); });
+  document.getElementById('cancelSolBtn').onclick = function(){ document.getElementById('solOverlay').classList.remove('open'); };
+  document.getElementById('createSolBtn').onclick = createSolicitud;
+  document.getElementById('solOverlay').addEventListener('click', function(e){ if(e.target===document.getElementById('solOverlay')) document.getElementById('solOverlay').classList.remove('open'); });
   document.getElementById('cancelDeleteCatBtn').onclick = function(){ document.getElementById('deleteCatOverlay').classList.remove('open'); deletingCatId = null; };
   document.getElementById('confirmDeleteCatBtn').onclick = executeDeleteCategory;
   document.getElementById('deleteConfirmInput').oninput = function(){ document.getElementById('confirmDeleteCatBtn').disabled = this.value.toLowerCase() !== 'eliminar'; };
