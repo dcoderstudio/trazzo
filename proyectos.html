@@ -31,6 +31,9 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 .board-scroll::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:2px;}
 .section{padding:20px 28px 0;}
 .sol-section{background:linear-gradient(160deg,rgba(39,174,114,0.14) 0%,rgba(39,174,114,0.05) 50%,rgba(12,12,12,0.0) 100%);border:1px solid rgba(39,174,114,0.28);border-left:4px solid #27AE72;border-radius:16px;margin:8px 20px 16px;padding:20px 24px 0;box-shadow:0 0 60px rgba(39,174,114,0.05) inset;}
+.tab-sol{color:#27AE72;border-color:rgba(39,174,114,0.3);background:rgba(39,174,114,0.06);}
+.tab-sol:hover{color:#27AE72;border-color:rgba(39,174,114,0.5);background:rgba(39,174,114,0.12);}
+.tab-sol.active{background:rgba(39,174,114,0.18)!important;border-color:rgba(39,174,114,0.55)!important;color:#27AE72!important;}
 .tab-actions{display:none;align-items:center;gap:2px;margin-left:4px;}
 .tab:hover .tab-actions,.tab.active .tab-actions{display:flex;}
 .tab-edit,.tab-del{background:none;border:none;cursor:pointer;font-size:12px;color:rgba(255,255,255,0.3);padding:1px 4px;border-radius:4px;font-family:'Inter',sans-serif;line-height:1;transition:color .15s;}
@@ -345,6 +348,18 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     all.textContent = 'Todos';
     all.onclick = function() { setFilter('all'); };
     tabs.appendChild(all);
+    var solCat = null;
+    for (var si = 0; si < categories.length; si++) { if (categories[si].id === 'cotizaciones') { solCat = categories[si]; break; } }
+    if (solCat) {
+      var solCount = projects.filter(function(p){ return p.catId === 'cotizaciones'; }).length;
+      var solTab = document.createElement('button');
+      solTab.className = 'tab tab-sol' + (activeFilter === 'cotizaciones' ? ' active' : '');
+      solTab.innerHTML = '<span class="tab-dot" style="background:#27AE72;box-shadow:0 0 5px rgba(39,174,114,0.7);"></span>Solicitudes'
+        + (solCount ? '<span style="background:rgba(39,174,114,0.2);color:#27AE72;font-size:9px;font-weight:700;padding:1px 6px;border-radius:10px;margin-left:2px;">' + solCount + '</span>' : '');
+      solTab.onclick = function() { setFilter('cotizaciones'); };
+      tabs.appendChild(solTab);
+    }
+
     categories.forEach(function(cat) {
       if (cat.id === 'cotizaciones') return;
       var t = document.createElement('button');
@@ -510,10 +525,10 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 
     var card = document.createElement('div');
     card.dataset.id = p.id;
-    card.draggable = !isRejected;
+    card.draggable = true;
     card.style.cssText = 'background:' + (isRejected ? '#0f0f0f' : '#181818') + ';'
       + 'border:0.5px solid ' + (isAccepted ? 'rgba(39,174,114,0.4)' : isRejected ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.07)') + ';'
-      + 'border-radius:12px;padding:12px;cursor:' + (isRejected ? 'default' : 'grab') + ';'
+      + 'border-radius:12px;padding:12px;cursor:grab;'
       + 'user-select:none;transition:transform .15s,box-shadow .15s;position:relative;overflow:hidden;'
       + 'opacity:' + (isRejected ? '.4' : '1') + ';';
 
@@ -565,11 +580,10 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
       }
     }
 
-    if (!isRejected) {
-      card.addEventListener('mouseenter', function() { card.style.transform = 'translateY(-2px)'; card.style.boxShadow = '0 6px 20px rgba(0,0,0,.4)'; });
-      card.addEventListener('mouseleave', function() { card.style.transform = ''; card.style.boxShadow = ''; });
-      card.addEventListener('dragstart', function() { dragId = p.id; setTimeout(function() { card.style.opacity = '.25'; }, 0); });
-      card.addEventListener('dragend', function() { card.style.opacity = isRejected ? '.4' : ''; dragId = null; card.classList.remove('drop-above','drop-below'); document.querySelectorAll('.col-body').forEach(function(b) { b.classList.remove('drag-over'); }); renderBoard(); });
+    card.addEventListener('mouseenter', function() { card.style.transform = 'translateY(-2px)'; card.style.boxShadow = '0 6px 20px rgba(0,0,0,.4)'; });
+    card.addEventListener('mouseleave', function() { card.style.transform = ''; card.style.boxShadow = ''; });
+    card.addEventListener('dragstart', function() { dragId = p.id; setTimeout(function() { card.style.opacity = '.25'; }, 0); });
+    card.addEventListener('dragend', function() { card.style.opacity = isRejected ? '.4' : ''; dragId = null; card.classList.remove('drop-above','drop-below'); document.querySelectorAll('.col-body').forEach(function(b) { b.classList.remove('drag-over'); }); renderBoard(); });
       card.addEventListener('dragover', function(e) {
         e.preventDefault(); e.stopPropagation();
         if (dragId === null || dragId === p.id) return;
@@ -596,7 +610,6 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
         projects.splice(above ? newTargetIdx : newTargetIdx + 1, 0, dragProj);
         saveData();
       });
-    }
     return card;
   }
 
