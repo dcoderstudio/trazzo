@@ -102,7 +102,50 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 .phase-flow{display:flex;align-items:center;gap:0;min-width:max-content;}
 .phase-item{display:flex;align-items:center;}
 .phase-item:first-child > .phase-arrow-sep{display:none;}
-.phase-card{background:#1e1e1e;border:0.5px solid rgba(255,255,255,0.1);border-radius:12px;width:148px;flex-shrink:0;overflow:hidden;transition:border-color .15s,opacity .15s,box-shadow .15s;cursor:grab;}
+.phase-card{background:#1e1e1e;border:0.5px solid rgba(255,255,255,0.1);border-radius:12px;width:170px;flex-shrink:0;overflow:hidden;transition:border-color .15s,opacity .15s,box-shadow .15s;cursor:grab;}
+.phase-tasks-section{border-top:0.5px solid rgba(255,255,255,0.07);padding:7px 12px 10px;}
+.phase-tasks-label{font-size:8px;font-weight:700;color:rgba(255,255,255,0.18);text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px;}
+.phase-tasks-list{display:flex;flex-direction:column;gap:3px;max-height:100px;overflow-y:auto;}
+.phase-task-row{display:flex;align-items:center;gap:4px;}
+.phase-task-inp{flex:1;background:none;border:none;border-bottom:0.5px solid rgba(255,255,255,0.07);color:rgba(255,255,255,0.45);font-size:10px;font-family:'Inter',sans-serif;outline:none;padding:2px 0;min-width:0;}
+.phase-task-inp:focus{color:rgba(255,255,255,0.8);border-bottom-color:rgba(255,255,255,0.22);}
+.phase-task-inp::placeholder{color:rgba(255,255,255,0.13);}
+.phase-task-del-btn{background:none;border:none;cursor:pointer;color:rgba(255,255,255,0.12);font-size:11px;padding:0 2px;line-height:1;flex-shrink:0;}
+.phase-task-del-btn:hover{color:#E24B4A;}
+.phase-task-add-btn{background:none;border:none;color:rgba(255,255,255,0.2);font-size:9px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;padding:4px 0;transition:color .15s;text-align:left;}
+.phase-task-add-btn:hover{color:rgba(255,255,255,0.5);}
+.task-panel{background:#161616;border:0.5px solid rgba(255,255,255,0.1);border-radius:20px;padding:24px;width:460px;max-width:92vw;max-height:82vh;display:flex;flex-direction:column;gap:12px;transform:translateY(8px);transition:transform .2s;overflow:hidden;}
+.overlay.open .task-panel{transform:none;}
+.tp-title{font-size:15px;font-weight:700;}
+.tp-stage{display:inline-block;font-size:10px;font-weight:700;padding:2px 9px;border-radius:10px;margin-top:5px;}
+.tp-task-list{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:4px;}
+.tp-task-list::-webkit-scrollbar{width:3px;}
+.tp-task-list::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:2px;}
+.tk-row{display:flex;align-items:center;gap:9px;padding:9px 11px;border-radius:10px;background:#1e1e1e;border:0.5px solid rgba(255,255,255,0.06);transition:background .15s;}
+.tk-row:hover{background:#222;}
+.tk-done{opacity:.45;}
+.tk-check{width:18px;height:18px;border-radius:50%;border:1.5px solid rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:all .15s;}
+.tk-check.on{background:#27AE72;border-color:#27AE72;}
+.tk-check svg{width:9px;height:9px;stroke:#fff;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;opacity:0;}
+.tk-check.on svg{opacity:1;}
+.tk-text{flex:1;font-size:12px;color:rgba(255,255,255,0.75);word-break:break-word;}
+.tk-done .tk-text{text-decoration:line-through;color:rgba(255,255,255,0.3);}
+.tk-dl{font-size:9px;color:rgba(255,255,255,0.25);cursor:pointer;white-space:nowrap;padding:2px 6px;border-radius:6px;border:0.5px solid rgba(255,255,255,0.08);transition:all .15s;}
+.tk-dl:hover{border-color:rgba(255,255,255,0.2);color:rgba(255,255,255,0.5);}
+.tk-dl.tku{color:#E24B4A;border-color:rgba(226,75,74,0.3);}
+.tk-dl.tks{color:#E8A020;border-color:rgba(232,160,32,0.3);}
+.tk-dl-inp{background:#1a1a1a;border:0.5px solid rgba(255,255,255,0.15);border-radius:6px;padding:2px 5px;font-size:9px;color:#fff;font-family:'Inter',sans-serif;outline:none;width:110px;}
+.tk-del{background:none;border:none;cursor:pointer;color:rgba(255,255,255,0.1);font-size:14px;padding:1px 4px;transition:color .15s;opacity:0;flex-shrink:0;}
+.tk-row:hover .tk-del{opacity:1;}
+.tk-del:hover{color:#E24B4A;}
+.tp-summary{font-size:11px;color:rgba(255,255,255,0.25);border-top:0.5px solid rgba(255,255,255,0.06);padding-top:8px;}
+.tp-add-row{display:flex;gap:8px;}
+.tp-new-inp{flex:1;background:#1e1e1e;border:0.5px solid rgba(255,255,255,0.1);border-radius:10px;padding:9px 12px;font-size:12px;color:#fff;font-family:'Inter',sans-serif;outline:none;}
+.tp-new-inp:focus{border-color:rgba(255,255,255,0.25);}
+.tp-new-dl{background:#1e1e1e;border:0.5px solid rgba(255,255,255,0.1);border-radius:10px;padding:8px 10px;font-size:11px;color:rgba(255,255,255,0.4);font-family:'Inter',sans-serif;outline:none;width:125px;flex-shrink:0;}
+.card-task-pill{font-size:9px;font-weight:700;padding:2px 7px;border-radius:10px;background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.28);display:inline-block;margin-top:5px;cursor:pointer;}
+.card-task-pill.pnd{background:rgba(232,160,32,0.12);color:#E8A020;}
+.card-task-pill.fin{background:rgba(39,174,114,0.12);color:#27AE72;}
 .phase-card:active{cursor:grabbing;}
 .phase-card:hover{border-color:rgba(255,255,255,0.22);}
 .phase-card.dragging{opacity:0.25;border-color:rgba(255,255,255,0.05);}
@@ -171,6 +214,26 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     <div class="mf">
       <button class="btn-c" id="cancelProjBtn">Cancelar</button>
       <button class="btn-ok" id="createProjBtn">Crear</button>
+    </div>
+  </div>
+</div>
+
+<!-- TASK PANEL MODAL -->
+<div class="overlay" id="taskPanelOverlay">
+  <div class="task-panel">
+    <div>
+      <div class="tp-title" id="tpTitle"></div>
+      <span class="tp-stage" id="tpStage"></span>
+    </div>
+    <div class="tp-task-list" id="tpTaskList"></div>
+    <div class="tp-summary" id="tpSummary"></div>
+    <div class="tp-add-row">
+      <input class="tp-new-inp" id="tpNewInp" placeholder="Nueva tarea..." onkeydown="if(event.key==='Enter')addTaskToPanel()">
+      <input class="tp-new-dl" id="tpNewDl" type="date">
+      <button class="btn-ok" onclick="addTaskToPanel()" style="padding:8px 14px;">+</button>
+    </div>
+    <div class="mf">
+      <button class="btn-ok" onclick="document.getElementById('taskPanelOverlay').classList.remove('open')">Listo</button>
     </div>
   </div>
 </div>
@@ -295,6 +358,8 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
   var editingPhases = [];
   var editingCatColor2 = PALETTE[0];
   var phaseDragIdx = -1;
+  var editingPhaseTemplates = [];
+  var taskPanelProjectId = null;
   var activeFilter = 'all';
   var dragId = null;
   var solCollapsed = false;
@@ -611,6 +676,16 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
       }
     }
 
+    // Task badge
+    var stTasks = p.stageTasks && p.stageTasks[p.stage] ? p.stageTasks[p.stage] : [];
+    var pending = stTasks.filter(function(t){ return !t.done; }).length;
+    var total = stTasks.length;
+    if (total > 0) {
+      var pillCls = pending === 0 ? 'fin' : 'pnd';
+      var pillTxt = pending === 0 ? '✓ Todo listo' : pending + ' pendiente' + (pending !== 1 ? 's' : '');
+      html += '<div style="padding-left:6px;"><span class="card-task-pill ' + pillCls + '">' + pillTxt + '</span></div>';
+    }
+
     card.innerHTML = html;
 
     // convert button
@@ -626,8 +701,10 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 
     card.addEventListener('mouseenter', function() { card.style.transform = 'translateY(-2px)'; card.style.boxShadow = '0 6px 20px rgba(0,0,0,.4)'; });
     card.addEventListener('mouseleave', function() { card.style.transform = ''; card.style.boxShadow = ''; });
-    card.addEventListener('dragstart', function() { dragId = p.id; setTimeout(function() { card.style.opacity = '.25'; }, 0); });
-    card.addEventListener('dragend', function() { card.style.opacity = isRejected ? '.4' : ''; dragId = null; card.classList.remove('drop-above','drop-below'); document.querySelectorAll('.col-body').forEach(function(b) { b.classList.remove('drag-over'); }); renderBoard(); });
+    card._dragged = false;
+    card.addEventListener('click', function(e) { if (card._dragged) return; openTaskPanel(p.id); });
+    card.addEventListener('dragstart', function() { card._dragged = true; dragId = p.id; setTimeout(function() { card.style.opacity = '.25'; }, 0); });
+    card.addEventListener('dragend', function() { setTimeout(function(){ card._dragged = false; }, 150); card.style.opacity = isRejected || isEntregado ? '.4' : ''; dragId = null; card.classList.remove('drop-above','drop-below'); document.querySelectorAll('.col-body').forEach(function(b) { b.classList.remove('drag-over'); }); renderBoard(); });
       card.addEventListener('dragover', function(e) {
         e.preventDefault(); e.stopPropagation();
         if (dragId === null || dragId === p.id) return;
@@ -733,6 +810,94 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     document.getElementById('editCatOverlay').classList.remove('open');
     renderTabs();
     renderBoard();
+  }
+
+  // ── TASK PANEL ───────────────────────────────────────
+  function getProjectTasks(p) {
+    if (!p.stageTasks) p.stageTasks = {};
+    if (!p.stageTasks[p.stage]) {
+      var cat = null;
+      for (var i = 0; i < categories.length; i++) { if (categories[i].id === p.catId) { cat = categories[i]; break; } }
+      var tpl = cat && cat.templates && cat.templates[p.stage] ? cat.templates[p.stage] : [];
+      var base = Date.now();
+      p.stageTasks[p.stage] = tpl.map(function(text, i) { return {id: base + i, text: text, done: false, deadline: ''}; });
+    }
+    return p.stageTasks[p.stage];
+  }
+
+  function fmtDl(dl) {
+    if (!dl) return '📅 Fecha';
+    var d = new Date(dl + 'T00:00:00');
+    return d.getDate() + '/' + (d.getMonth()+1);
+  }
+
+  function dlClass(dl) {
+    if (!dl) return '';
+    var diff = (new Date(dl + 'T00:00:00') - new Date()) / (1000*60*60*24);
+    return diff < 2 ? 'tku' : diff < 5 ? 'tks' : '';
+  }
+
+  function openTaskPanel(projectId) {
+    taskPanelProjectId = projectId;
+    renderTaskPanel();
+    document.getElementById('taskPanelOverlay').classList.add('open');
+    setTimeout(function(){ document.getElementById('tpNewInp').focus(); }, 100);
+  }
+
+  function renderTaskPanel() {
+    var p = null;
+    for (var i = 0; i < projects.length; i++) { if (projects[i].id === taskPanelProjectId) { p = projects[i]; break; } }
+    if (!p) return;
+    var cat = null;
+    for (var i = 0; i < categories.length; i++) { if (categories[i].id === p.catId) { cat = categories[i]; break; } }
+    var tasks = getProjectTasks(p);
+    document.getElementById('tpTitle').textContent = p.name;
+    var stEl = document.getElementById('tpStage');
+    stEl.textContent = p.stage;
+    stEl.style.background = cat ? cat.color + '22' : 'rgba(255,255,255,0.1)';
+    stEl.style.color = cat ? cat.color : '#fff';
+    var list = document.getElementById('tpTaskList');
+    list.innerHTML = '';
+    var done = tasks.filter(function(t){ return t.done; }).length;
+    tasks.forEach(function(task) {
+      var row = document.createElement('div');
+      row.className = 'tk-row' + (task.done ? ' tk-done' : '');
+      row.innerHTML = '<div class="tk-check' + (task.done ? ' on' : '') + '"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div>'
+        + '<span class="tk-text">' + task.text.replace(/</g,'&lt;') + '</span>'
+        + '<span class="tk-dl' + (task.deadline ? ' ' + dlClass(task.deadline) : '') + '">' + fmtDl(task.deadline) + '</span>'
+        + '<button class="tk-del">×</button>';
+      row.querySelector('.tk-check').onclick = function() { task.done = !task.done; saveData(); renderTaskPanel(); };
+      row.querySelector('.tk-dl').onclick = function() {
+        var sp = row.querySelector('.tk-dl');
+        var inp = document.createElement('input');
+        inp.type = 'date'; inp.className = 'tk-dl-inp'; inp.value = task.deadline || '';
+        row.replaceChild(inp, sp);
+        inp.focus();
+        function finish() { task.deadline = inp.value; saveData(); renderTaskPanel(); }
+        inp.onchange = finish; inp.onblur = finish;
+      };
+      row.querySelector('.tk-del').onclick = function() {
+        p.stageTasks[p.stage] = p.stageTasks[p.stage].filter(function(t){ return t.id !== task.id; });
+        saveData(); renderTaskPanel();
+      };
+      list.appendChild(row);
+    });
+    document.getElementById('tpSummary').textContent = done + ' de ' + tasks.length + ' completada' + (tasks.length !== 1 ? 's' : '');
+    document.getElementById('tpNewInp').value = '';
+    document.getElementById('tpNewDl').value = '';
+  }
+
+  function addTaskToPanel() {
+    var text = document.getElementById('tpNewInp').value.trim();
+    if (!text) return;
+    var dl = document.getElementById('tpNewDl').value;
+    var p = null;
+    for (var i = 0; i < projects.length; i++) { if (projects[i].id === taskPanelProjectId) { p = projects[i]; break; } }
+    if (!p) return;
+    if (!p.stageTasks) p.stageTasks = {};
+    if (!p.stageTasks[p.stage]) p.stageTasks[p.stage] = [];
+    p.stageTasks[p.stage].push({id: Date.now(), text: text, done: false, deadline: dl});
+    saveData(); renderTaskPanel();
   }
 
   // ── SOLICITUD MODAL ──────────────────────────────────
@@ -900,6 +1065,9 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     editingCatId = id || null;
     editingPhases = cat ? cat.stages.slice() : ['Brief', 'Desarrollo', 'Revisión', 'Entrega'];
     editingCatColor2 = cat ? cat.color : PALETTE[0];
+    editingPhaseTemplates = editingPhases.map(function(stage) {
+      return cat && cat.templates && cat.templates[stage] ? cat.templates[stage].slice() : [];
+    });
     document.getElementById('phaseCatName').value = cat ? cat.label : '';
     buildPhaseColorPicker();
     renderPhaseFlow();
@@ -952,8 +1120,58 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
           e.stopPropagation();
           if (editingPhases.length <= 1) return;
           editingPhases.splice(idx, 1);
+          editingPhaseTemplates.splice(idx, 1);
           renderPhaseFlow();
         };
+
+        // Tasks template section
+        if (!editingPhaseTemplates[idx]) editingPhaseTemplates[idx] = [];
+        var tsec = document.createElement('div');
+        tsec.className = 'phase-tasks-section';
+        var tlbl = document.createElement('div');
+        tlbl.className = 'phase-tasks-label';
+        tlbl.textContent = 'Pasos por defecto';
+        tsec.appendChild(tlbl);
+        var tlist = document.createElement('div');
+        tlist.className = 'phase-tasks-list';
+        tsec.appendChild(tlist);
+
+        (function(pIdx) {
+          function renderPhaseTasks() {
+            tlist.innerHTML = '';
+            var tpl = editingPhaseTemplates[pIdx] || [];
+            tpl.forEach(function(txt, ti) {
+              (function(tIdx) {
+                var tr = document.createElement('div');
+                tr.className = 'phase-task-row';
+                var inp = document.createElement('input');
+                inp.className = 'phase-task-inp';
+                inp.placeholder = 'Paso ' + (tIdx + 1);
+                inp.value = txt;
+                inp.oninput = function() { editingPhaseTemplates[pIdx][tIdx] = this.value; };
+                inp.addEventListener('mousedown', function(e) { e.stopPropagation(); });
+                var db = document.createElement('button');
+                db.className = 'phase-task-del-btn';
+                db.innerHTML = '×';
+                db.onclick = function(e) { e.stopPropagation(); editingPhaseTemplates[pIdx].splice(tIdx, 1); renderPhaseTasks(); };
+                tr.appendChild(inp); tr.appendChild(db);
+                tlist.appendChild(tr);
+              })(ti);
+            });
+          }
+          renderPhaseTasks();
+          var addBtn = document.createElement('button');
+          addBtn.className = 'phase-task-add-btn';
+          addBtn.textContent = '+ Paso';
+          addBtn.onclick = function(e) {
+            e.stopPropagation();
+            if (!editingPhaseTemplates[pIdx]) editingPhaseTemplates[pIdx] = [];
+            editingPhaseTemplates[pIdx].push('');
+            renderPhaseTasks();
+          };
+          tsec.appendChild(addBtn);
+        })(idx);
+        card.appendChild(tsec);
 
         card.addEventListener('dragstart', function(e) {
           item.dataset.dragging = '1';
@@ -966,9 +1184,14 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
           delete item.dataset.dragging;
           item.style.opacity = '';
           var items = Array.from(flow.querySelectorAll('.phase-item:not(.phase-add-item)'));
-          editingPhases = items.map(function(it){
-            return it.querySelector('.phase-name-input').value;
+          var newPhases = [], newTemplates = [];
+          items.forEach(function(it) {
+            newPhases.push(it.querySelector('.phase-name-input').value);
+            var oi = parseInt(it.dataset.idx);
+            newTemplates.push(editingPhaseTemplates[oi] ? editingPhaseTemplates[oi].slice() : []);
           });
+          editingPhases = newPhases;
+          editingPhaseTemplates = newTemplates;
           renderPhaseFlow();
         });
 
@@ -1003,7 +1226,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     var addCard = document.createElement('div');
     addCard.className = 'phase-add-card';
     addCard.innerHTML = '<span style="font-size:20px;opacity:.4">+</span>Agregar fase';
-    addCard.onclick = function() { editingPhases.push('Nueva fase'); renderPhaseFlow(); };
+    addCard.onclick = function() { editingPhases.push('Nueva fase'); editingPhaseTemplates.push([]); renderPhaseFlow(); };
     addItem.appendChild(addCard);
     flow.appendChild(addItem);
   }
@@ -1013,12 +1236,17 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     if (!name) { document.getElementById('phaseCatName').focus(); return; }
     var phases = editingPhases.map(function(s){ return s.trim(); }).filter(Boolean);
     if (!phases.length) return;
+    var templates = {};
+    phases.forEach(function(phase, i) {
+      var tpl = editingPhaseTemplates[i] ? editingPhaseTemplates[i].filter(function(t){ return t.trim(); }) : [];
+      if (tpl.length) templates[phase] = tpl;
+    });
     if (editingCatId) {
       for (var i = 0; i < categories.length; i++) {
-        if (categories[i].id === editingCatId) { categories[i].label = name; categories[i].color = editingCatColor2; categories[i].stages = phases; break; }
+        if (categories[i].id === editingCatId) { categories[i].label = name; categories[i].color = editingCatColor2; categories[i].stages = phases; categories[i].templates = templates; break; }
       }
     } else {
-      categories.push({id: 'cat_' + (++catIdCounter), label: name, color: editingCatColor2, stages: phases});
+      categories.push({id: 'cat_' + (++catIdCounter), label: name, color: editingCatColor2, stages: phases, templates: templates});
     }
     saveData();
     document.getElementById('phaseOverlay').classList.remove('open');
@@ -1036,6 +1264,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
   document.getElementById('cancelEditCatBtn').onclick = function(){ document.getElementById('editCatOverlay').classList.remove('open'); };
   document.getElementById('saveEditCatBtn').onclick = saveEditCategory;
   document.getElementById('editCatOverlay').addEventListener('click', function(e){ if (e.target === document.getElementById('editCatOverlay')) document.getElementById('editCatOverlay').classList.remove('open'); });
+  document.getElementById('taskPanelOverlay').addEventListener('click', function(e){ if(e.target===document.getElementById('taskPanelOverlay')) document.getElementById('taskPanelOverlay').classList.remove('open'); });
   document.getElementById('cancelSolBtn').onclick = function(){ document.getElementById('solOverlay').classList.remove('open'); };
   document.getElementById('createSolBtn').onclick = createSolicitud;
   document.getElementById('solOverlay').addEventListener('click', function(e){ if(e.target===document.getElementById('solOverlay')) document.getElementById('solOverlay').classList.remove('open'); });
