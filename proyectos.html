@@ -298,13 +298,14 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
   var activeFilter = 'all';
   var dragId = null;
   var solCollapsed = false;
+  var entregadoCollapsed = false;
   var nextId = 14;
   var catIdCounter = 20;
   var presetCat = null;
   var presetStage = null;
 
   var categories = [
-    {id:'cotizaciones', label:'Solicitudes', color:'#27AE72', stages:['Solicitud recibida','En proceso','Enviado','Negociación','Aceptado','Rechazado']},
+    {id:'cotizaciones', label:'Solicitudes', color:'#27AE72', stages:['Solicitud recibida','En proceso','Enviado','Negociación','Aceptado','Rechazado','Entregado']},
     {id:'industrial',   label:'Diseño Industrial', color:'#1A6FD4', stages:['Brief','Concepto','Desarrollo','Prototipo','Pruebas','Revisión','Aprobación','Entrega']},
     {id:'proyectos',    label:'Diseño de Proyectos', color:'#7B6FD0', stages:['Brief','Concepto','Desarrollo','Documentación','Revisión','Aprobación','Entrega']},
     {id:'senaletica',   label:'Señalética', color:'#E8A020', stages:['Brief','Recorrido de sitio','Concepto','Desarrollo','Fabricación','Instalación','Entrega']},
@@ -484,16 +485,39 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
   // ── COLUMN ────────────────────────────────────────────
   function buildCol(cat, stage, catProjects) {
     var cards = catProjects.filter(function(p) { return p.stage === stage; });
+    var isEntregadoCol = cat.id === 'cotizaciones' && stage === 'Entregado';
     var col = document.createElement('div');
     col.className = 'col';
     var hdr = document.createElement('div');
     hdr.className = 'col-header';
-    hdr.innerHTML = '<span class="col-title">' + stage + '</span><span class="col-count">' + cards.length + '</span>';
+    if (isEntregadoCol) {
+      hdr.innerHTML = '<span class="col-title" style="color:rgba(255,255,255,0.3);">' + stage + '</span>'
+        + '<span class="col-count">' + cards.length + '</span>'
+        + '<button class="entregado-toggle" style="background:none;border:none;cursor:pointer;color:rgba(255,255,255,0.25);font-size:10px;font-weight:600;font-family:Inter,sans-serif;padding:2px 6px;border-radius:6px;transition:color .15s;margin-left:auto;">'
+        + (entregadoCollapsed ? '▼ Mostrar' : '▲ Ocultar') + '</button>';
+    } else {
+      hdr.innerHTML = '<span class="col-title">' + stage + '</span><span class="col-count">' + cards.length + '</span>';
+    }
     col.appendChild(hdr);
 
     var body = document.createElement('div');
     body.className = 'col-body';
-    cards.forEach(function(p) { body.appendChild(buildCard(p, cat)); });
+    if (isEntregadoCol && entregadoCollapsed) {
+      body.style.display = 'none';
+    } else {
+      cards.forEach(function(p) { body.appendChild(buildCard(p, cat)); });
+    }
+
+    if (isEntregadoCol) {
+      var toggleBtn = hdr.querySelector('.entregado-toggle');
+      if (toggleBtn) {
+        toggleBtn.onclick = function(e) {
+          e.stopPropagation();
+          entregadoCollapsed = !entregadoCollapsed;
+          renderBoard();
+        };
+      }
+    }
 
     col.appendChild(body);
 
@@ -517,11 +541,13 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     });
     col.addEventListener('drop', dropHandler);
 
-    var addBtn = document.createElement('button');
-    addBtn.className = 'add-card-btn';
-    addBtn.innerHTML = '<svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Agregar';
-    addBtn.onclick = (function(cId, st) { return function() { openProjModal(cId, st); }; })(cat.id, stage);
-    col.appendChild(addBtn);
+    if (!isEntregadoCol) {
+      var addBtn = document.createElement('button');
+      addBtn.className = 'add-card-btn';
+      addBtn.innerHTML = '<svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Agregar';
+      addBtn.onclick = (function(cId, st) { return function() { openProjModal(cId, st); }; })(cat.id, stage);
+      col.appendChild(addBtn);
+    }
     return col;
   }
 
@@ -530,6 +556,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     var isCot = cat.id === 'cotizaciones';
     var isAccepted = isCot && p.stage === 'Aceptado';
     var isRejected = isCot && p.stage === 'Rechazado';
+    var isEntregado = isCot && p.stage === 'Entregado';
     var dlCls = deadlineCls(p.deadline);
     var dlColor = dlCls === 'urgent' ? '#E24B4A' : dlCls === 'soon' ? '#E8A020' : 'rgba(255,255,255,0.25)';
 
@@ -547,7 +574,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
       + 'border:0.5px solid ' + (isAccepted ? 'rgba(39,174,114,0.4)' : isRejected ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.07)') + ';'
       + 'border-radius:12px;padding:12px;cursor:grab;'
       + 'user-select:none;transition:transform .15s,box-shadow .15s;position:relative;overflow:hidden;'
-      + 'opacity:' + (isRejected ? '.4' : '1') + ';';
+      + 'opacity:' + (isRejected || isEntregado ? '.4' : '1') + ';';
 
     var avatarsHTML = '';
     p.team.forEach(function(a) {
@@ -1030,6 +1057,17 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
       if (d.categories && d.categories.length) categories = d.categories;
       if (d.nextId) nextId = d.nextId;
       if (d.catIdCounter) catIdCounter = d.catIdCounter;
+    }
+    // Migración: asegurar que cotizaciones tenga 'Entregado' como última etapa
+    for (var mi = 0; mi < categories.length; mi++) {
+      if (categories[mi].id === 'cotizaciones') {
+        var st = categories[mi].stages;
+        if (st[st.length - 1] !== 'Entregado') {
+          categories[mi].stages = st.filter(function(s){ return s !== 'Entregado'; }).concat(['Entregado']);
+          saveData();
+        }
+        break;
+      }
     }
     renderTabs();
     renderBoard();
