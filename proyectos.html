@@ -139,7 +139,6 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 
 <div class="layout">
   <div class="subbar">
-    <button id="newSolSubbarBtn" onclick="openSolModal()" style="display:none;background:#27AE72;border:none;border-radius:20px;color:#0c0c0c;font-size:11px;font-weight:700;padding:5px 14px;cursor:pointer;font-family:Inter,sans-serif;white-space:nowrap;flex-shrink:0;">+ Nueva solicitud</button>
     <div class="tabs" id="tabs"></div>
     <button class="tab-add" id="addCatBtn">+ Categoría</button>
     <span class="count-pill" id="countPill">0 proyectos</span>
@@ -344,8 +343,6 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
   function renderTabs() {
     var tabs = document.getElementById('tabs');
     tabs.innerHTML = '';
-    var newSolSubbarBtn = document.getElementById('newSolSubbarBtn');
-    if (newSolSubbarBtn) newSolSubbarBtn.style.display = activeFilter === 'cotizaciones' ? '' : 'none';
     var all = document.createElement('button');
     all.className = 'tab' + (activeFilter === 'all' ? ' active' : '');
     all.textContent = 'Todos';
@@ -451,16 +448,33 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
       });
 
     } else {
-      inner.style.cssText = 'display:flex;gap:14px;padding:24px 28px;overflow-x:auto;height:calc(100vh - 52px - 48px);';
+      inner.style.cssText = 'display:flex;flex-direction:column;height:calc(100vh - 52px - 48px);';
       var cat = null;
       for (var i = 0; i < categories.length; i++) {
         if (categories[i].id === activeFilter) { cat = categories[i]; break; }
       }
       if (!cat) return;
       var catProjects = projects.filter(function(p) { return p.catId === activeFilter; });
+
+      if (activeFilter === 'cotizaciones') {
+        var solHdr = document.createElement('div');
+        solHdr.className = 'section-header';
+        solHdr.style.cssText = 'padding:16px 28px 10px;flex-shrink:0;';
+        solHdr.innerHTML =
+          '<button onclick="openSolModal()" style="background:#27AE72;border:none;border-radius:20px;color:#0c0c0c;font-size:11px;font-weight:700;padding:5px 14px;cursor:pointer;font-family:Inter,sans-serif;white-space:nowrap;">+ Nueva solicitud</button>'
+          + '<div class="section-dot" style="background:#27AE72;width:10px;height:10px;box-shadow:0 0 6px rgba(39,174,114,0.6);margin-left:10px;"></div>'
+          + '<span style="font-size:15px;font-weight:900;font-style:italic;color:#27AE72;">Solicitudes</span>'
+          + '<div style="flex:1;height:0.5px;background:rgba(39,174,114,0.2);"></div>'
+          + '<span style="font-size:11px;color:#27AE72;background:rgba(39,174,114,0.15);padding:2px 8px;border-radius:10px;">' + catProjects.length + '</span>';
+        inner.appendChild(solHdr);
+      }
+
+      var lanesWrap = document.createElement('div');
+      lanesWrap.style.cssText = 'display:flex;gap:14px;padding:8px 28px 24px;overflow-x:auto;flex:1;';
       cat.stages.forEach(function(stage) {
-        inner.appendChild(buildCol(cat, stage, catProjects));
+        lanesWrap.appendChild(buildCol(cat, stage, catProjects));
       });
+      inner.appendChild(lanesWrap);
     }
 
     var vis = activeFilter === 'all' ? projects : projects.filter(function(p) { return p.catId === activeFilter; });
