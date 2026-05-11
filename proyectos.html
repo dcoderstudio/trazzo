@@ -155,6 +155,27 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 .card-task-pill{font-size:9px;font-weight:700;padding:2px 7px;border-radius:10px;background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.28);display:inline-block;margin-top:5px;cursor:pointer;}
 .card-task-pill.pnd{background:rgba(232,160,32,0.12);color:#E8A020;}
 .card-task-pill.fin{background:rgba(39,174,114,0.12);color:#27AE72;}
+.pdm{background:#161616;border:0.5px solid rgba(255,255,255,0.1);border-radius:20px;width:min(94vw,740px);max-height:88vh;display:flex;flex-direction:column;transform:translateY(8px);transition:transform .2s;overflow:hidden;}
+.overlay.open .pdm{transform:none;}
+.pdm-header{padding:18px 20px 14px;border-bottom:0.5px solid rgba(255,255,255,0.06);display:flex;align-items:center;gap:10px;flex-shrink:0;}
+.pdm-title{flex:1;background:none;border:none;border-bottom:1px solid transparent;color:#fff;font-size:17px;font-weight:800;font-family:'Inter',sans-serif;outline:none;letter-spacing:-.01em;padding:2px 0;}
+.pdm-title:focus{border-bottom-color:rgba(255,255,255,0.2);}
+.pdm-cat-pill{font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;white-space:nowrap;flex-shrink:0;}
+.pdm-close{background:rgba(255,255,255,0.07);border:none;color:rgba(255,255,255,0.5);font-size:18px;width:28px;height:28px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;}
+.pdm-close:hover{background:rgba(255,255,255,0.12);color:#fff;}
+.pdm-body{display:flex;flex:1;overflow:hidden;min-height:0;}
+.pdm-info{width:250px;flex-shrink:0;padding:16px 18px;border-right:0.5px solid rgba(255,255,255,0.06);overflow-y:auto;display:flex;flex-direction:column;gap:12px;}
+.pdm-info::-webkit-scrollbar,.pdm-tasks-col::-webkit-scrollbar{width:3px;}
+.pdm-info::-webkit-scrollbar-thumb,.pdm-tasks-col::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);}
+.pdm-tasks-col{flex:1;padding:16px 18px;overflow-y:auto;display:flex;flex-direction:column;gap:10px;min-width:0;}
+.pdm-field{display:flex;flex-direction:column;gap:4px;}
+.pdm-lbl{font-size:9px;font-weight:700;color:rgba(255,255,255,0.22);text-transform:uppercase;letter-spacing:.08em;}
+.pdm-inp{background:#1e1e1e;border:0.5px solid rgba(255,255,255,0.1);border-radius:8px;padding:8px 10px;font-size:12px;color:#fff;font-family:'Inter',sans-serif;outline:none;width:100%;transition:border-color .15s;}
+.pdm-inp:focus{border-color:rgba(255,255,255,0.28);}
+.pdm-stat{background:rgba(255,255,255,0.04);border-radius:8px;padding:8px 10px;}
+.pdm-task-lbl{font-size:10px;font-weight:700;color:rgba(255,255,255,0.28);text-transform:uppercase;letter-spacing:.08em;flex-shrink:0;}
+.pdm-footer{padding:10px 18px;border-top:0.5px solid rgba(255,255,255,0.06);display:flex;justify-content:space-between;align-items:center;flex-shrink:0;}
+.pdm-footer-info{font-size:10px;color:rgba(255,255,255,0.2);}
 .phase-card:active{cursor:grabbing;}
 .phase-card:hover{border-color:rgba(255,255,255,0.22);}
 .phase-card.dragging{opacity:0.25;border-color:rgba(255,255,255,0.05);}
@@ -338,6 +359,51 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
   </div>
 </div>
 
+<!-- PROJECT DETAIL PANEL -->
+<div class="overlay" id="projDetailOverlay">
+  <div class="pdm">
+    <div class="pdm-header">
+      <input class="pdm-title" id="pdmName" placeholder="Nombre del proyecto">
+      <span class="pdm-cat-pill" id="pdmCatPill"></span>
+      <button class="pdm-close" id="pdmClose">×</button>
+    </div>
+    <div class="pdm-body">
+      <div class="pdm-info">
+        <div class="pdm-field"><div class="pdm-lbl">Cliente</div><input class="pdm-inp" id="pdmClient" placeholder="Nombre del cliente"></div>
+        <div class="pdm-field"><div class="pdm-lbl">Fase actual</div><select class="pdm-inp" id="pdmStage"></select></div>
+        <div class="pdm-field"><div class="pdm-lbl">Fecha de entrega</div><input class="pdm-inp" type="date" id="pdmDeadline"></div>
+        <div class="pdm-field"><div class="pdm-lbl">Responsable</div>
+          <select class="pdm-inp" id="pdmResp">
+            <option value="AR">Ana Ramírez</option>
+            <option value="LM">Luis Mora</option>
+            <option value="SV">Sofía Vega</option>
+            <option value="RG">Rodrigo Gil</option>
+          </select>
+        </div>
+        <div id="pdmMontoRow" class="pdm-field" style="display:none;"><div class="pdm-lbl">Monto estimado</div><input class="pdm-inp" id="pdmMonto" placeholder="$0.00"></div>
+        <div id="pdmTimeInfo"></div>
+      </div>
+      <div class="pdm-tasks-col">
+        <div class="pdm-task-lbl">Tareas en esta fase</div>
+        <div class="tp-task-list" id="pdmTaskList"></div>
+        <div class="tp-summary" id="pdmTaskSummary"></div>
+        <div class="tp-add-row">
+          <input class="tp-new-inp" id="pdmNewInp" placeholder="Nueva tarea...">
+          <input class="tp-new-dl" id="pdmNewDl" type="date">
+          <button class="btn-ok" id="pdmAddBtn" style="padding:8px 14px;">+</button>
+        </div>
+      </div>
+    </div>
+    <div class="pdm-footer">
+      <span class="pdm-footer-info" id="pdmFooterInfo"></span>
+      <div style="display:flex;gap:8px;">
+        <button class="btn-c" id="pdmClose2">Cerrar</button>
+        <button class="btn-ok" id="pdmSaveBtn">Guardar cambios</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 <script>
@@ -370,6 +436,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
   var editingPhaseTemplates = [];
   var editingPhaseDays = [];
   var taskPanelProjectId = null;
+  var detailProjectId = null;
   var activeFilter = 'all';
   var dragId = null;
   var solCollapsed = false;
@@ -742,7 +809,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     card.addEventListener('mouseenter', function() { card.style.transform = 'translateY(-2px)'; card.style.boxShadow = '0 6px 20px rgba(0,0,0,.4)'; });
     card.addEventListener('mouseleave', function() { card.style.transform = ''; card.style.boxShadow = ''; });
     card._dragged = false;
-    card.addEventListener('click', function(e) { if (card._dragged) return; openTaskPanel(p.id); });
+    card.addEventListener('click', function(e) { if (card._dragged) return; openProjDetail(p.id); });
     card.addEventListener('dragstart', function() {
       card._dragged = true;
       card._originalStage = p.stage;
@@ -1363,6 +1430,133 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     renderBoard();
   }
 
+  // ── PROJECT DETAIL PANEL ─────────────────────────────
+  function openProjDetail(projectId) {
+    detailProjectId = projectId;
+    renderProjDetail();
+    document.getElementById('projDetailOverlay').classList.add('open');
+  }
+
+  function renderProjDetail() {
+    var p = null;
+    for (var i = 0; i < projects.length; i++) { if (projects[i].id === detailProjectId) { p = projects[i]; break; } }
+    if (!p) return;
+    var cat = null;
+    for (var i = 0; i < categories.length; i++) { if (categories[i].id === p.catId) { cat = categories[i]; break; } }
+
+    document.getElementById('pdmName').value = p.name;
+    var pill = document.getElementById('pdmCatPill');
+    pill.textContent = cat ? cat.label : '';
+    pill.style.background = cat ? cat.color + '22' : 'rgba(255,255,255,0.1)';
+    pill.style.color = cat ? cat.color : '#fff';
+    document.getElementById('pdmClient').value = p.client || '';
+    document.getElementById('pdmDeadline').value = p.deadline || '';
+    document.getElementById('pdmResp').value = p.team && p.team[0] ? p.team[0] : 'AR';
+    var montoRow = document.getElementById('pdmMontoRow');
+    if (p.catId === 'cotizaciones') { montoRow.style.display = ''; document.getElementById('pdmMonto').value = p.monto || ''; }
+    else { montoRow.style.display = 'none'; }
+
+    var stageSel = document.getElementById('pdmStage');
+    stageSel.innerHTML = '';
+    if (cat) { cat.stages.forEach(function(st) { var o = document.createElement('option'); o.value = st; o.textContent = st; if (st === p.stage) o.selected = true; stageSel.appendChild(o); }); }
+
+    var timeHtml = '';
+    var sd = cat && cat.stageDays && cat.stageDays[p.stage] ? cat.stageDays[p.stage] : null;
+    if (sd) {
+      var ed = p.stageEntryDates && p.stageEntryDates[p.stage];
+      if (ed) {
+        var rem = Math.ceil((new Date(ed+'T00:00:00').getTime() + sd*86400000 - Date.now()) / 86400000);
+        var tc = rem > 1 ? 'time-ok' : rem >= 0 ? 'time-warn' : 'time-late';
+        var tt = rem > 1 ? rem+' días restantes' : rem===1 ? '1 día restante' : rem===0 ? 'Vence hoy' : Math.abs(rem)+' días fuera de fase';
+        timeHtml += '<div class="pdm-field"><div class="pdm-lbl">Tiempo en fase</div><div class="pdm-stat"><span class="'+tc+'" style="font-size:13px;font-weight:700;">⏱ '+tt+'</span></div></div>';
+      } else {
+        timeHtml += '<div class="pdm-field"><div class="pdm-lbl">Tiempo en fase</div><div class="pdm-stat"><span style="font-size:12px;font-weight:700;color:rgba(255,255,255,0.4);">⏱ '+sd+' días estimados</span></div></div>';
+      }
+    }
+    if (p.deadline) {
+      var dlDiff = Math.ceil((new Date(p.deadline+'T00:00:00') - new Date()) / 86400000);
+      var dlCol = dlDiff > 7 ? '#1A6FD4' : dlDiff >= 4 ? '#27AE72' : dlDiff >= 1 ? '#E8A020' : '#E24B4A';
+      var dlTxt = dlDiff > 0 ? dlDiff+' días' : dlDiff===0 ? 'Hoy' : Math.abs(dlDiff)+' días de retraso';
+      timeHtml += '<div class="pdm-field"><div class="pdm-lbl">Días hasta entrega</div><div class="pdm-stat"><span style="font-size:13px;font-weight:700;color:'+dlCol+';">📅 '+dlTxt+'</span></div></div>';
+    }
+    if (p.stageEntryDates && p.stageEntryDates[p.stage]) {
+      timeHtml += '<div class="pdm-field"><div class="pdm-lbl">Entró a esta fase</div><div style="font-size:11px;color:rgba(255,255,255,0.35);">'+p.stageEntryDates[p.stage]+'</div></div>';
+    }
+    document.getElementById('pdmTimeInfo').innerHTML = timeHtml;
+    document.getElementById('pdmFooterInfo').textContent = (cat ? cat.label : '') + (p.stage ? ' · ' + p.stage : '');
+
+    renderDetailTasks();
+  }
+
+  function renderDetailTasks() {
+    var p = null;
+    for (var i = 0; i < projects.length; i++) { if (projects[i].id === detailProjectId) { p = projects[i]; break; } }
+    if (!p) return;
+    var tasks = getProjectTasks(p);
+    var list = document.getElementById('pdmTaskList');
+    list.innerHTML = '';
+    var done = tasks.filter(function(t){ return t.done; }).length;
+    tasks.forEach(function(task) {
+      var row = document.createElement('div');
+      row.className = 'tk-row' + (task.done ? ' tk-done' : '');
+      row.innerHTML = '<div class="tk-check' + (task.done ? ' on' : '') + '"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div>'
+        + '<span class="tk-text">' + task.text.replace(/</g,'&lt;') + '</span>'
+        + '<span class="tk-dl' + (task.deadline ? ' '+dlClass(task.deadline) : '') + '">' + fmtDl(task.deadline) + '</span>'
+        + '<button class="tk-del">×</button>';
+      row.querySelector('.tk-check').onclick = function() { task.done = !task.done; saveData(); renderDetailTasks(); updateCardBadge(detailProjectId); };
+      row.querySelector('.tk-dl').onclick = function() {
+        var sp = row.querySelector('.tk-dl');
+        var inp = document.createElement('input'); inp.type = 'date'; inp.className = 'tk-dl-inp'; inp.value = task.deadline || '';
+        row.replaceChild(inp, sp); inp.focus();
+        function fin() { task.deadline = inp.value; saveData(); renderDetailTasks(); }
+        inp.onchange = fin; inp.onblur = fin;
+      };
+      row.querySelector('.tk-del').onclick = function() {
+        p.stageTasks[p.stage] = p.stageTasks[p.stage].filter(function(t){ return t.id !== task.id; });
+        saveData(); renderDetailTasks(); updateCardBadge(detailProjectId);
+      };
+      list.appendChild(row);
+    });
+    document.getElementById('pdmTaskSummary').textContent = done + ' de ' + tasks.length + ' tarea' + (tasks.length !== 1 ? 's' : '') + ' completada' + (tasks.length !== 1 ? 's' : '');
+  }
+
+  function addDetailTask() {
+    var text = document.getElementById('pdmNewInp').value.trim();
+    if (!text) return;
+    var dl = document.getElementById('pdmNewDl').value;
+    var p = null;
+    for (var i = 0; i < projects.length; i++) { if (projects[i].id === detailProjectId) { p = projects[i]; break; } }
+    if (!p) return;
+    if (!p.stageTasks) p.stageTasks = {};
+    if (!p.stageTasks[p.stage]) p.stageTasks[p.stage] = [];
+    p.stageTasks[p.stage].push({id: Date.now(), text: text, done: false, deadline: dl});
+    document.getElementById('pdmNewInp').value = '';
+    document.getElementById('pdmNewDl').value = '';
+    saveData(); renderDetailTasks(); updateCardBadge(detailProjectId);
+  }
+
+  function saveProjDetail() {
+    var p = null;
+    for (var i = 0; i < projects.length; i++) { if (projects[i].id === detailProjectId) { p = projects[i]; break; } }
+    if (!p) return;
+    var oldStage = p.stage;
+    var newName = document.getElementById('pdmName').value.trim();
+    if (newName) p.name = newName;
+    p.client = document.getElementById('pdmClient').value.trim() || '—';
+    p.deadline = document.getElementById('pdmDeadline').value;
+    p.team[0] = document.getElementById('pdmResp').value;
+    var newStage = document.getElementById('pdmStage').value;
+    if (newStage && newStage !== oldStage) {
+      p.stage = newStage;
+      if (!p.stageEntryDates) p.stageEntryDates = {};
+      p.stageEntryDates[newStage] = new Date().toISOString().split('T')[0];
+    }
+    if (p.catId === 'cotizaciones') p.monto = document.getElementById('pdmMonto').value;
+    saveData();
+    renderProjDetail();
+    renderBoard();
+  }
+
   // ── EVENTS ────────────────────────────────────────────
   document.getElementById('newProjBtn').onclick = function() { openProjModal(null, null); };
   document.getElementById('addCatBtn').onclick = function(){ openPhaseModal(null); };
@@ -1389,6 +1583,12 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
   document.getElementById('phaseOverlay').addEventListener('click', function(e){ if(e.target === document.getElementById('phaseOverlay')) document.getElementById('phaseOverlay').classList.remove('open'); });
   document.getElementById('projOverlay').addEventListener('click', function(e) { if (e.target === document.getElementById('projOverlay')) closeProjModal(); });
   document.getElementById('catOverlay').addEventListener('click', function(e) { if (e.target === document.getElementById('catOverlay')) closeCatModal(); });
+  document.getElementById('pdmClose').onclick = function(){ document.getElementById('projDetailOverlay').classList.remove('open'); };
+  document.getElementById('pdmClose2').onclick = function(){ document.getElementById('projDetailOverlay').classList.remove('open'); };
+  document.getElementById('pdmSaveBtn').onclick = saveProjDetail;
+  document.getElementById('pdmAddBtn').onclick = addDetailTask;
+  document.getElementById('pdmNewInp').addEventListener('keydown', function(e){ if(e.key==='Enter') addDetailTask(); });
+  document.getElementById('projDetailOverlay').addEventListener('click', function(e){ if(e.target===document.getElementById('projDetailOverlay')) document.getElementById('projDetailOverlay').classList.remove('open'); });
 
   // ── INIT ─────────────────────────────────────────────
   DOC.get().then(function(snap) {
