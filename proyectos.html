@@ -305,7 +305,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
   var presetStage = null;
 
   var categories = [
-    {id:'cotizaciones', label:'Solicitudes', color:'#27AE72', stages:['Solicitud recibida','En proceso','Enviado','Negociación','Aceptado','Rechazado','Entregado']},
+    {id:'cotizaciones', label:'Solicitudes', color:'#27AE72', stages:['Solicitud recibida','En proceso','Enviado','Aceptado','Rechazado','Entregado']},
     {id:'industrial',   label:'Diseño Industrial', color:'#1A6FD4', stages:['Brief','Concepto','Desarrollo','Prototipo','Pruebas','Revisión','Aprobación','Entrega']},
     {id:'proyectos',    label:'Diseño de Proyectos', color:'#7B6FD0', stages:['Brief','Concepto','Desarrollo','Documentación','Revisión','Aprobación','Entrega']},
     {id:'senaletica',   label:'Señalética', color:'#E8A020', stages:['Brief','Recorrido de sitio','Concepto','Desarrollo','Fabricación','Instalación','Entrega']},
@@ -1058,17 +1058,25 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
       if (d.nextId) nextId = d.nextId;
       if (d.catIdCounter) catIdCounter = d.catIdCounter;
     }
-    // Migración: asegurar que cotizaciones tenga 'Entregado' como última etapa
+    // Migración: quitar Negociación y asegurar Entregado al final
+    var migrated = false;
     for (var mi = 0; mi < categories.length; mi++) {
       if (categories[mi].id === 'cotizaciones') {
         var st = categories[mi].stages;
-        if (st[st.length - 1] !== 'Entregado') {
-          categories[mi].stages = st.filter(function(s){ return s !== 'Entregado'; }).concat(['Entregado']);
-          saveData();
+        var hasNeg = st.indexOf('Negociación') >= 0;
+        var hasEnt = st[st.length - 1] === 'Entregado';
+        if (hasNeg || !hasEnt) {
+          categories[mi].stages = st.filter(function(s){ return s !== 'Negociación' && s !== 'Entregado'; }).concat(['Entregado']);
+          migrated = true;
         }
         break;
       }
     }
+    // Mover tarjetas en Negociación a Enviado
+    projects.forEach(function(p) {
+      if (p.catId === 'cotizaciones' && p.stage === 'Negociación') { p.stage = 'Enviado'; migrated = true; }
+    });
+    if (migrated) saveData();
     renderTabs();
     renderBoard();
   }).catch(function(e) {
