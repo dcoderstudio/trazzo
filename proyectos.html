@@ -143,8 +143,26 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
   </div>
 </div>
 
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 <script>
 (function() {
+  firebase.initializeApp({
+    apiKey: "AIzaSyC3LG6e_7YAbYQhdPe6IC_Mq3SFop0XPsk",
+    authDomain: "trazzo-c9eaf.firebaseapp.com",
+    projectId: "trazzo-c9eaf",
+    storageBucket: "trazzo-c9eaf.firebasestorage.app",
+    messagingSenderId: "106264633340",
+    appId: "1:106264633340:web:4b2560a57e75321c709c79"
+  });
+  var db = firebase.firestore();
+  var DOC = db.collection('workspace').doc('proyectos');
+
+  function saveData() {
+    DOC.set({projects: projects, categories: categories, nextId: nextId, catIdCounter: catIdCounter})
+      .catch(function(e){ console.warn('Error al guardar:', e); });
+  }
+
   var PALETTE = ['#1A6FD4','#7B6FD0','#E8A020','#D4537E','#1D9E75','#D85A30','#B8760F','#27AE72','#C0436E','#555450'];
   var AV_COLORS = {AR:'#1A6FD4',LM:'#7B6FD0',SV:'#D4537E',RG:'#E8A020'};
   var selColor = PALETTE[0];
@@ -320,6 +338,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
       for (var i = 0; i < projects.length; i++) { if (projects[i].id === dragId) { p = projects[i]; break; } }
       if (!p || p.catId !== cat.id) return;
       p.stage = stage;
+      saveData();
       renderBoard();
     });
 
@@ -424,6 +443,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     if (!cat) { alert('Categoría no encontrada.'); return; }
     p.converted = true;
     projects.push({id: nextId++, name: p.name, client: p.client, catId: p.tipoCat, stage: cat.stages[0], deadline: p.deadline || '', team: p.team});
+    saveData();
     renderBoard();
   }
 
@@ -481,6 +501,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     var proj = {id: nextId++, name: name, client: client || '—', catId: catId, stage: stage, deadline: deadline, team: [resp]};
     if (catId === 'cotizaciones') { proj.monto = monto; proj.tipoCat = tipoCat; }
     projects.push(proj);
+    saveData();
     closeProjModal();
     renderBoard();
   }
@@ -516,6 +537,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     var stages = stagesRaw.split(',').map(function(s) { return s.trim(); }).filter(Boolean);
     if (!stages.length) return;
     categories.push({id: 'cat_' + (++catIdCounter), label: name, color: selColor, stages: stages});
+    saveData();
     closeCatModal();
     renderTabs();
     renderBoard();
@@ -532,8 +554,21 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
   document.getElementById('catOverlay').addEventListener('click', function(e) { if (e.target === document.getElementById('catOverlay')) closeCatModal(); });
 
   // ── INIT ─────────────────────────────────────────────
-  renderTabs();
-  renderBoard();
+  DOC.get().then(function(snap) {
+    if (snap.exists) {
+      var d = snap.data();
+      if (d.projects && d.projects.length) projects = d.projects;
+      if (d.categories && d.categories.length) categories = d.categories;
+      if (d.nextId) nextId = d.nextId;
+      if (d.catIdCounter) catIdCounter = d.catIdCounter;
+    }
+    renderTabs();
+    renderBoard();
+  }).catch(function(e) {
+    console.warn('Error al cargar:', e);
+    renderTabs();
+    renderBoard();
+  });
 
 })();
 </script>
