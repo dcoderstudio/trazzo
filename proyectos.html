@@ -30,7 +30,12 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 .board-scroll::-webkit-scrollbar{width:4px;}
 .board-scroll::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:2px;}
 .section{padding:20px 28px 0;}
-.sol-section{background:linear-gradient(135deg,rgba(39,174,114,0.1) 0%,rgba(39,174,114,0.03) 60%,transparent 100%);border-left:3px solid #27AE72;border-bottom:1px solid rgba(39,174,114,0.18);margin-bottom:8px;}
+.sol-section{background:linear-gradient(160deg,rgba(39,174,114,0.14) 0%,rgba(39,174,114,0.05) 50%,rgba(12,12,12,0.0) 100%);border:1px solid rgba(39,174,114,0.28);border-left:4px solid #27AE72;border-radius:16px;margin:8px 20px 16px;padding:20px 24px 0;box-shadow:0 0 60px rgba(39,174,114,0.05) inset;}
+.tab-actions{display:none;align-items:center;gap:2px;margin-left:4px;}
+.tab:hover .tab-actions,.tab.active .tab-actions{display:flex;}
+.tab-edit,.tab-del{background:none;border:none;cursor:pointer;font-size:12px;color:rgba(255,255,255,0.3);padding:1px 4px;border-radius:4px;font-family:'Inter',sans-serif;line-height:1;transition:color .15s;}
+.tab-edit:hover{color:rgba(255,255,255,0.8);}
+.tab-del:hover{color:#E24B4A;}
 .section-header{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
 .section-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
 .section-title{font-size:13px;font-weight:700;color:rgba(255,255,255,0.7);}
@@ -129,6 +134,20 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
   </div>
 </div>
 
+<!-- EDIT CATEGORY MODAL -->
+<div class="overlay" id="editCatOverlay">
+  <div class="modal">
+    <div class="modal-title">Editar categoría</div>
+    <div><div class="ml">Nombre</div><input class="mi" id="editCatName" placeholder="Nombre de la categoría"></div>
+    <div><div class="ml">Color</div><div class="color-row" id="editColorRow"></div></div>
+    <div><div class="ml">Etapas (separadas por coma)</div><input class="mi" id="editCatStages" placeholder="Brief, Diseño, Revisión, Entrega"></div>
+    <div class="mf">
+      <button class="btn-c" id="cancelEditCatBtn">Cancelar</button>
+      <button class="btn-ok" id="saveEditCatBtn">Guardar cambios</button>
+    </div>
+  </div>
+</div>
+
 <!-- CATEGORY MODAL -->
 <div class="overlay" id="catOverlay">
   <div class="modal">
@@ -166,6 +185,8 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
   var PALETTE = ['#1A6FD4','#7B6FD0','#E8A020','#D4537E','#1D9E75','#D85A30','#B8760F','#27AE72','#C0436E','#555450'];
   var AV_COLORS = {AR:'#1A6FD4',LM:'#7B6FD0',SV:'#D4537E',RG:'#E8A020'};
   var selColor = PALETTE[0];
+  var selEditColor = PALETTE[0];
+  var editingCatId = null;
   var activeFilter = 'all';
   var dragId = null;
   var solCollapsed = false;
@@ -225,8 +246,14 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
       if (cat.id === 'cotizaciones' && activeFilter === cat.id) {
         t.style.cssText = 'border-color:rgba(39,174,114,0.5);background:rgba(39,174,114,0.12);color:#27AE72;';
       }
-      t.innerHTML = '<span class="tab-dot" style="background:' + cat.color + '"></span>' + cat.label;
+      t.innerHTML = '<span class="tab-dot" style="background:' + cat.color + '"></span>' + cat.label
+        + '<span class="tab-actions">'
+        + '<button class="tab-edit" title="Editar etapas">✎</button>'
+        + '<button class="tab-del" title="Eliminar">×</button>'
+        + '</span>';
       t.onclick = (function(id) { return function() { setFilter(id); }; })(cat.id);
+      t.querySelector('.tab-edit').onclick = (function(id){return function(e){e.stopPropagation();openEditCatModal(id);};})(cat.id);
+      t.querySelector('.tab-del').onclick = (function(id){return function(e){e.stopPropagation();deleteCategory(id);};})(cat.id);
       tabs.appendChild(t);
     });
   }
@@ -447,6 +474,70 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     renderBoard();
   }
 
+  // ── DELETE CATEGORY ──────────────────────────────────
+  function deleteCategory(id) {
+    var cat = null;
+    for (var i = 0; i < categories.length; i++) { if (categories[i].id === id) { cat = categories[i]; break; } }
+    if (!cat) return;
+    var count = projects.filter(function(p){ return p.catId === id; }).length;
+    var msg = count > 0
+      ? '¿Eliminar "' + cat.label + '"? Se eliminarán también los ' + count + ' proyectos asociados.'
+      : '¿Eliminar la categoría "' + cat.label + '"?';
+    if (!confirm(msg)) return;
+    categories = categories.filter(function(c){ return c.id !== id; });
+    projects = projects.filter(function(p){ return p.catId !== id; });
+    if (activeFilter === id) activeFilter = 'all';
+    saveData();
+    renderTabs();
+    renderBoard();
+  }
+
+  // ── EDIT CATEGORY ─────────────────────────────────────
+  function openEditCatModal(id) {
+    var cat = null;
+    for (var i = 0; i < categories.length; i++) { if (categories[i].id === id) { cat = categories[i]; break; } }
+    if (!cat) return;
+    editingCatId = id;
+    selEditColor = cat.color;
+    document.getElementById('editCatName').value = cat.label;
+    document.getElementById('editCatStages').value = cat.stages.join(', ');
+    buildEditColorPicker();
+    document.getElementById('editCatOverlay').classList.add('open');
+    setTimeout(function(){ document.getElementById('editCatName').focus(); }, 100);
+  }
+
+  function buildEditColorPicker() {
+    var row = document.getElementById('editColorRow');
+    row.innerHTML = '';
+    PALETTE.forEach(function(c) {
+      var sw = document.createElement('div');
+      sw.className = 'color-swatch' + (c === selEditColor ? ' selected' : '');
+      sw.style.background = c;
+      sw.onclick = (function(col){ return function(){ selEditColor = col; buildEditColorPicker(); }; })(c);
+      row.appendChild(sw);
+    });
+  }
+
+  function saveEditCategory() {
+    var name = document.getElementById('editCatName').value.trim();
+    var stagesRaw = document.getElementById('editCatStages').value;
+    if (!name) return;
+    var stages = stagesRaw.split(',').map(function(s){ return s.trim(); }).filter(Boolean);
+    if (!stages.length) return;
+    for (var i = 0; i < categories.length; i++) {
+      if (categories[i].id === editingCatId) {
+        categories[i].label = name;
+        categories[i].color = selEditColor;
+        categories[i].stages = stages;
+        break;
+      }
+    }
+    saveData();
+    document.getElementById('editCatOverlay').classList.remove('open');
+    renderTabs();
+    renderBoard();
+  }
+
   // ── PROJECT MODAL ─────────────────────────────────────
   function openProjModal(catId, stage) {
     presetCat = catId || null;
@@ -550,6 +641,9 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
   document.getElementById('createProjBtn').onclick = createProject;
   document.getElementById('cancelCatBtn').onclick = closeCatModal;
   document.getElementById('createCatBtn').onclick = createCategory;
+  document.getElementById('cancelEditCatBtn').onclick = function(){ document.getElementById('editCatOverlay').classList.remove('open'); };
+  document.getElementById('saveEditCatBtn').onclick = saveEditCategory;
+  document.getElementById('editCatOverlay').addEventListener('click', function(e){ if (e.target === document.getElementById('editCatOverlay')) document.getElementById('editCatOverlay').classList.remove('open'); });
   document.getElementById('projOverlay').addEventListener('click', function(e) { if (e.target === document.getElementById('projOverlay')) closeProjModal(); });
   document.getElementById('catOverlay').addEventListener('click', function(e) { if (e.target === document.getElementById('catOverlay')) closeCatModal(); });
 
