@@ -79,6 +79,37 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 .color-swatch{width:28px;height:28px;border-radius:8px;cursor:pointer;border:2px solid transparent;transition:border-color .15s;}
 .color-swatch.selected{border-color:#fff;}
 .layout{display:flex;flex-direction:column;height:calc(100vh - 52px);}
+.sec-btn{background:none;border:none;cursor:pointer;font-size:12px;color:rgba(255,255,255,0.2);padding:3px 7px;border-radius:6px;font-family:'Inter',sans-serif;transition:all .15s;flex-shrink:0;}
+.sec-btn:hover{background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.7);}
+.sec-del:hover{background:rgba(226,75,74,0.1)!important;color:#E24B4A!important;}
+.delete-warning{background:rgba(226,75,74,0.07);border:0.5px solid rgba(226,75,74,0.2);border-radius:10px;padding:12px 14px;font-size:12px;color:rgba(255,255,255,0.55);line-height:1.6;}
+.btn-danger{background:#E24B4A;border:none;color:#fff;font-size:12px;font-weight:700;padding:8px 16px;border-radius:10px;cursor:pointer;font-family:'Inter',sans-serif;transition:background .15s;}
+.btn-danger:not([disabled]):hover{background:#c73838;}
+.btn-danger[disabled]{background:rgba(226,75,74,0.25);cursor:default;color:rgba(255,255,255,0.35);}
+.phase-modal{background:#161616;border:0.5px solid rgba(255,255,255,0.1);border-radius:24px;padding:28px;width:min(94vw,920px);max-height:90vh;display:flex;flex-direction:column;gap:18px;transform:translateY(8px);transition:transform .2s;overflow:hidden;}
+.overlay.open .phase-modal{transform:none;}
+.phase-modal-title{font-size:17px;font-weight:800;letter-spacing:-.02em;}
+.phase-modal-sub{font-size:12px;color:rgba(255,255,255,0.3);margin-top:3px;}
+.phase-cat-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.phase-flow-wrap{overflow-x:auto;padding:4px 2px 12px;flex-shrink:0;}
+.phase-flow-wrap::-webkit-scrollbar{height:4px;}
+.phase-flow-wrap::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:2px;}
+.phase-flow{display:flex;align-items:stretch;gap:0;min-width:max-content;}
+.phase-card{background:#1e1e1e;border:0.5px solid rgba(255,255,255,0.1);border-radius:12px;width:148px;flex-shrink:0;overflow:hidden;transition:border-color .15s;}
+.phase-card:hover{border-color:rgba(255,255,255,0.22);}
+.phase-card-bar{height:6px;}
+.phase-card-body{padding:11px 12px 10px;}
+.phase-name-input{background:none;border:none;color:#fff;font-size:12px;font-weight:600;font-family:'Inter',sans-serif;width:100%;outline:none;margin-bottom:9px;border-bottom:1px solid rgba(255,255,255,0.07);padding-bottom:5px;}
+.phase-name-input:focus{border-bottom-color:rgba(255,255,255,0.28);}
+.phase-card-actions{display:flex;gap:3px;}
+.phase-btn{background:rgba(255,255,255,0.05);border:none;cursor:pointer;color:rgba(255,255,255,0.35);border-radius:5px;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;transition:all .15s;font-family:'Inter',sans-serif;flex-shrink:0;}
+.phase-btn:not([disabled]):hover{background:rgba(255,255,255,0.12);color:#fff;}
+.phase-btn.pdel:not([disabled]):hover{background:rgba(226,75,74,0.2);color:#E24B4A;}
+.phase-btn[disabled]{opacity:.18;cursor:default;}
+.phase-arrow-sep{width:28px;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.18);font-size:15px;}
+.phase-add-card{border:1.5px dashed rgba(255,255,255,0.12);border-radius:12px;width:120px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;color:rgba(255,255,255,0.28);font-size:11px;font-weight:600;font-family:'Inter',sans-serif;transition:all .15s;gap:5px;min-height:88px;}
+.phase-add-card:hover{border-color:rgba(255,255,255,0.3);color:rgba(255,255,255,0.65);background:rgba(255,255,255,0.03);}
+.phase-footer{display:flex;gap:8px;justify-content:flex-end;padding-top:8px;border-top:0.5px solid rgba(255,255,255,0.06);}
 </style>
 </head>
 <body>
@@ -130,6 +161,43 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     <div class="mf">
       <button class="btn-c" id="cancelProjBtn">Cancelar</button>
       <button class="btn-ok" id="createProjBtn">Crear</button>
+    </div>
+  </div>
+</div>
+
+<!-- DELETE CONFIRM MODAL -->
+<div class="overlay" id="deleteCatOverlay">
+  <div class="modal">
+    <div class="modal-title" style="color:#E24B4A;">⚠ Eliminar categoría</div>
+    <div class="delete-warning" id="deleteWarningText"></div>
+    <div>
+      <div class="ml">Escribe "eliminar" para confirmar</div>
+      <input class="mi" id="deleteConfirmInput" placeholder="eliminar" autocomplete="off">
+    </div>
+    <div class="mf">
+      <button class="btn-c" id="cancelDeleteCatBtn">Cancelar</button>
+      <button class="btn-danger" id="confirmDeleteCatBtn" disabled>Eliminar definitivamente</button>
+    </div>
+  </div>
+</div>
+
+<!-- PHASE MANAGER MODAL -->
+<div class="overlay" id="phaseOverlay">
+  <div class="phase-modal">
+    <div>
+      <div class="phase-modal-title">Configuración de fases</div>
+      <div class="phase-modal-sub">Define y ordena las etapas de tu categoría</div>
+    </div>
+    <div class="phase-cat-row">
+      <input class="mi" id="phaseCatName" placeholder="Nombre de la categoría" style="max-width:220px;">
+      <div class="color-row" id="phaseColorRow"></div>
+    </div>
+    <div class="phase-flow-wrap">
+      <div class="phase-flow" id="phaseFlow"></div>
+    </div>
+    <div class="phase-footer">
+      <button class="btn-c" id="cancelPhaseBtn">Cancelar</button>
+      <button class="btn-ok" id="savePhaseBtn">Guardar</button>
     </div>
   </div>
 </div>
@@ -187,6 +255,9 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
   var selColor = PALETTE[0];
   var selEditColor = PALETTE[0];
   var editingCatId = null;
+  var deletingCatId = null;
+  var editingPhases = [];
+  var editingCatColor2 = PALETTE[0];
   var activeFilter = 'all';
   var dragId = null;
   var solCollapsed = false;
@@ -252,8 +323,8 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
         + '<button class="tab-del" title="Eliminar">×</button>'
         + '</span>';
       t.onclick = (function(id) { return function() { setFilter(id); }; })(cat.id);
-      t.querySelector('.tab-edit').onclick = (function(id){return function(e){e.stopPropagation();openEditCatModal(id);};})(cat.id);
-      t.querySelector('.tab-del').onclick = (function(id){return function(e){e.stopPropagation();deleteCategory(id);};})(cat.id);
+      t.querySelector('.tab-edit').onclick = (function(id){return function(e){e.stopPropagation();openPhaseModal(id);};})(cat.id);
+      t.querySelector('.tab-del').onclick = (function(id){return function(e){e.stopPropagation();confirmDeleteCategory(id);};})(cat.id);
       tabs.appendChild(t);
     });
   }
@@ -295,9 +366,16 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
             '<div class="section-dot" style="background:' + cat.color + ';flex-shrink:0;"></div>'
             + '<span class="section-title">' + cat.label + '</span>'
             + '<span class="section-count">' + catProjects.length + '</span>'
-            + '<div class="section-divider"></div>';
+            + '<div class="section-divider"></div>'
+            + '<button class="sec-btn" title="Editar etapas">✎</button>'
+            + '<button class="sec-btn sec-del" title="Eliminar categoría">✕</button>';
         }
         section.appendChild(hdr);
+        if (!isSol) {
+          var btns = hdr.querySelectorAll('.sec-btn');
+          btns[0].onclick = (function(id){return function(){openPhaseModal(id);};})(cat.id);
+          btns[1].onclick = (function(id){return function(){confirmDeleteCategory(id);};})(cat.id);
+        }
 
         // lanes
         var lanes = document.createElement('div');
@@ -634,9 +712,128 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     renderBoard();
   }
 
+  // ── CONFIRM DELETE ───────────────────────────────────
+  function confirmDeleteCategory(id) {
+    var cat = null;
+    for (var i = 0; i < categories.length; i++) { if (categories[i].id === id) { cat = categories[i]; break; } }
+    if (!cat) return;
+    deletingCatId = id;
+    var count = projects.filter(function(p){ return p.catId === id; }).length;
+    var msg = 'La categoría <strong>' + cat.label + '</strong> será eliminada permanentemente.';
+    if (count > 0) msg += '<br>Junto con ella se eliminarán <strong>' + count + ' proyecto' + (count !== 1 ? 's' : '') + '</strong> asociado' + (count !== 1 ? 's' : '') + '. Esta acción no se puede deshacer.';
+    document.getElementById('deleteWarningText').innerHTML = msg;
+    document.getElementById('deleteConfirmInput').value = '';
+    document.getElementById('confirmDeleteCatBtn').disabled = true;
+    document.getElementById('deleteCatOverlay').classList.add('open');
+    setTimeout(function(){ document.getElementById('deleteConfirmInput').focus(); }, 100);
+  }
+
+  function executeDeleteCategory() {
+    if (!deletingCatId) return;
+    categories = categories.filter(function(c){ return c.id !== deletingCatId; });
+    projects = projects.filter(function(p){ return p.catId !== deletingCatId; });
+    if (activeFilter === deletingCatId) activeFilter = 'all';
+    saveData();
+    deletingCatId = null;
+    document.getElementById('deleteCatOverlay').classList.remove('open');
+    renderTabs();
+    renderBoard();
+  }
+
+  // ── PHASE MODAL ──────────────────────────────────────
+  function openPhaseModal(id) {
+    var cat = null;
+    if (id) { for (var i = 0; i < categories.length; i++) { if (categories[i].id === id) { cat = categories[i]; break; } } }
+    editingCatId = id || null;
+    editingPhases = cat ? cat.stages.slice() : ['Brief', 'Desarrollo', 'Revisión', 'Entrega'];
+    editingCatColor2 = cat ? cat.color : PALETTE[0];
+    document.getElementById('phaseCatName').value = cat ? cat.label : '';
+    buildPhaseColorPicker();
+    renderPhaseFlow();
+    document.getElementById('phaseOverlay').classList.add('open');
+    setTimeout(function(){ document.getElementById('phaseCatName').focus(); }, 100);
+  }
+
+  function buildPhaseColorPicker() {
+    var row = document.getElementById('phaseColorRow');
+    row.innerHTML = '';
+    PALETTE.forEach(function(c) {
+      var sw = document.createElement('div');
+      sw.className = 'color-swatch' + (c === editingCatColor2 ? ' selected' : '');
+      sw.style.background = c;
+      sw.onclick = (function(col){ return function(){ editingCatColor2 = col; buildPhaseColorPicker(); renderPhaseFlow(); }; })(c);
+      row.appendChild(sw);
+    });
+  }
+
+  function renderPhaseFlow() {
+    var flow = document.getElementById('phaseFlow');
+    flow.innerHTML = '';
+    for (var i = 0; i < editingPhases.length; i++) {
+      (function(idx) {
+        if (idx > 0) {
+          var arr = document.createElement('div');
+          arr.className = 'phase-arrow-sep';
+          arr.innerHTML = '&#8594;';
+          flow.appendChild(arr);
+        }
+        var card = document.createElement('div');
+        card.className = 'phase-card';
+        card.innerHTML = '<div class="phase-card-bar" style="background:' + editingCatColor2 + ';"></div>'
+          + '<div class="phase-card-body">'
+          + '<input class="phase-name-input" value="' + editingPhases[idx].replace(/"/g,'&quot;') + '">'
+          + '<div class="phase-card-actions">'
+          + '<button class="phase-btn" data-act="left"' + (idx === 0 ? ' disabled' : '') + '>&#8592;</button>'
+          + '<button class="phase-btn" data-act="right"' + (idx === editingPhases.length - 1 ? ' disabled' : '') + '>&#8594;</button>'
+          + '<button class="phase-btn pdel" data-act="del"' + (editingPhases.length <= 1 ? ' disabled' : '') + '>&#215;</button>'
+          + '</div></div>';
+        card.querySelector('.phase-name-input').oninput = (function(i){ return function(){ editingPhases[i] = this.value; }; })(idx);
+        card.querySelectorAll('.phase-btn').forEach(function(btn) {
+          btn.onclick = function(e) {
+            e.stopPropagation();
+            if (btn.disabled) return;
+            var act = btn.dataset.act;
+            var tmp;
+            if (act === 'left' && idx > 0) { tmp = editingPhases[idx-1]; editingPhases[idx-1] = editingPhases[idx]; editingPhases[idx] = tmp; renderPhaseFlow(); }
+            else if (act === 'right' && idx < editingPhases.length-1) { tmp = editingPhases[idx+1]; editingPhases[idx+1] = editingPhases[idx]; editingPhases[idx] = tmp; renderPhaseFlow(); }
+            else if (act === 'del') { editingPhases.splice(idx, 1); renderPhaseFlow(); }
+          };
+        });
+        flow.appendChild(card);
+      })(i);
+    }
+    var sep = document.createElement('div');
+    sep.className = 'phase-arrow-sep';
+    sep.innerHTML = '&#8594;';
+    flow.appendChild(sep);
+    var addCard = document.createElement('div');
+    addCard.className = 'phase-add-card';
+    addCard.innerHTML = '<span style="font-size:20px;opacity:.4">+</span>Agregar fase';
+    addCard.onclick = function() { editingPhases.push('Nueva fase'); renderPhaseFlow(); };
+    flow.appendChild(addCard);
+  }
+
+  function savePhaseModal() {
+    var name = document.getElementById('phaseCatName').value.trim();
+    if (!name) { document.getElementById('phaseCatName').focus(); return; }
+    var phases = editingPhases.map(function(s){ return s.trim(); }).filter(Boolean);
+    if (!phases.length) return;
+    if (editingCatId) {
+      for (var i = 0; i < categories.length; i++) {
+        if (categories[i].id === editingCatId) { categories[i].label = name; categories[i].color = editingCatColor2; categories[i].stages = phases; break; }
+      }
+    } else {
+      categories.push({id: 'cat_' + (++catIdCounter), label: name, color: editingCatColor2, stages: phases});
+    }
+    saveData();
+    document.getElementById('phaseOverlay').classList.remove('open');
+    renderTabs();
+    renderBoard();
+  }
+
   // ── EVENTS ────────────────────────────────────────────
   document.getElementById('newProjBtn').onclick = function() { openProjModal(null, null); };
-  document.getElementById('addCatBtn').onclick = openCatModal;
+  document.getElementById('addCatBtn').onclick = function(){ openPhaseModal(null); };
   document.getElementById('cancelProjBtn').onclick = closeProjModal;
   document.getElementById('createProjBtn').onclick = createProject;
   document.getElementById('cancelCatBtn').onclick = closeCatModal;
@@ -644,6 +841,13 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
   document.getElementById('cancelEditCatBtn').onclick = function(){ document.getElementById('editCatOverlay').classList.remove('open'); };
   document.getElementById('saveEditCatBtn').onclick = saveEditCategory;
   document.getElementById('editCatOverlay').addEventListener('click', function(e){ if (e.target === document.getElementById('editCatOverlay')) document.getElementById('editCatOverlay').classList.remove('open'); });
+  document.getElementById('cancelDeleteCatBtn').onclick = function(){ document.getElementById('deleteCatOverlay').classList.remove('open'); deletingCatId = null; };
+  document.getElementById('confirmDeleteCatBtn').onclick = executeDeleteCategory;
+  document.getElementById('deleteConfirmInput').oninput = function(){ document.getElementById('confirmDeleteCatBtn').disabled = this.value.toLowerCase() !== 'eliminar'; };
+  document.getElementById('deleteCatOverlay').addEventListener('click', function(e){ if(e.target === document.getElementById('deleteCatOverlay')){ document.getElementById('deleteCatOverlay').classList.remove('open'); deletingCatId = null; } });
+  document.getElementById('cancelPhaseBtn').onclick = function(){ document.getElementById('phaseOverlay').classList.remove('open'); };
+  document.getElementById('savePhaseBtn').onclick = savePhaseModal;
+  document.getElementById('phaseOverlay').addEventListener('click', function(e){ if(e.target === document.getElementById('phaseOverlay')) document.getElementById('phaseOverlay').classList.remove('open'); });
   document.getElementById('projOverlay').addEventListener('click', function(e) { if (e.target === document.getElementById('projOverlay')) closeProjModal(); });
   document.getElementById('catOverlay').addEventListener('click', function(e) { if (e.target === document.getElementById('catOverlay')) closeCatModal(); });
 
