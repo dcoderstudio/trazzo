@@ -94,7 +94,9 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 .phase-flow-wrap{overflow-x:auto;padding:4px 2px 12px;flex-shrink:0;}
 .phase-flow-wrap::-webkit-scrollbar{height:4px;}
 .phase-flow-wrap::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:2px;}
-.phase-flow{display:flex;align-items:stretch;gap:0;min-width:max-content;}
+.phase-flow{display:flex;align-items:center;gap:0;min-width:max-content;}
+.phase-item{display:flex;align-items:center;}
+.phase-item:first-child > .phase-arrow-sep{display:none;}
 .phase-card{background:#1e1e1e;border:0.5px solid rgba(255,255,255,0.1);border-radius:12px;width:148px;flex-shrink:0;overflow:hidden;transition:border-color .15s,opacity .15s,box-shadow .15s;cursor:grab;}
 .phase-card:active{cursor:grabbing;}
 .phase-card:hover{border-color:rgba(255,255,255,0.22);}
@@ -775,22 +777,25 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     flow.innerHTML = '';
     for (var i = 0; i < editingPhases.length; i++) {
       (function(idx) {
-        if (idx > 0) {
-          var arr = document.createElement('div');
-          arr.className = 'phase-arrow-sep';
-          arr.innerHTML = '&#8594;';
-          flow.appendChild(arr);
-        }
+        var item = document.createElement('div');
+        item.className = 'phase-item';
+
+        var arr = document.createElement('div');
+        arr.className = 'phase-arrow-sep';
+        arr.innerHTML = '&#8594;';
+        item.appendChild(arr);
+
         var card = document.createElement('div');
         card.className = 'phase-card';
         card.draggable = true;
-        card.innerHTML = '<div class="phase-card-bar" style="background:' + editingCatColor2 + ';">'
-          + '<span style="color:rgba(255,255,255,0.35);font-size:8px;letter-spacing:3px;pointer-events:none;">⠿⠿</span>'
+        card.innerHTML =
+          '<div class="phase-card-bar" style="background:' + editingCatColor2 + ';">'
+          + '<span style="color:rgba(255,255,255,0.3);font-size:8px;letter-spacing:3px;pointer-events:none;">⠿⠿</span>'
           + '</div>'
           + '<div class="phase-card-body">'
           + '<input class="phase-name-input" value="' + editingPhases[idx].replace(/"/g,'&quot;') + '">'
           + '<div class="phase-card-actions">'
-          + '<button class="phase-btn pdel" data-act="del"' + (editingPhases.length <= 1 ? ' disabled' : '') + '>&#215;</button>'
+          + '<button class="phase-btn pdel"' + (editingPhases.length <= 1 ? ' disabled' : '') + '>&#215;</button>'
           + '</div></div>';
 
         card.querySelector('.phase-name-input').oninput = (function(i){ return function(){ editingPhases[i] = this.value; }; })(idx);
@@ -804,53 +809,56 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
         };
 
         card.addEventListener('dragstart', function(e) {
-          phaseDragIdx = idx;
+          item.dataset.dragging = '1';
           e.dataTransfer.effectAllowed = 'move';
-          e.dataTransfer.setData('text/plain', String(idx));
-          setTimeout(function(){ card.classList.add('dragging'); }, 0);
+          e.dataTransfer.setData('text/plain', '1');
+          setTimeout(function(){ item.style.opacity = '0.3'; }, 0);
         });
 
         card.addEventListener('dragend', function() {
-          card.classList.remove('dragging');
-          phaseDragIdx = -1;
-          flow.querySelectorAll('.phase-card').forEach(function(c){ c.classList.remove('drag-over'); });
-        });
-
-        card.addEventListener('dragover', function(e) {
-          e.preventDefault();
-          e.dataTransfer.dropEffect = 'move';
-          if (idx === phaseDragIdx) return;
-          flow.querySelectorAll('.phase-card').forEach(function(c){ c.classList.remove('drag-over'); });
-          card.classList.add('drag-over');
-        });
-
-        card.addEventListener('dragleave', function(e) {
-          if (!card.contains(e.relatedTarget)) card.classList.remove('drag-over');
-        });
-
-        card.addEventListener('drop', function(e) {
-          e.preventDefault();
-          card.classList.remove('drag-over');
-          if (phaseDragIdx === -1 || phaseDragIdx === idx) return;
-          var moved = editingPhases.splice(phaseDragIdx, 1)[0];
-          var newIdx = phaseDragIdx < idx ? idx - 1 : idx;
-          editingPhases.splice(newIdx, 0, moved);
-          phaseDragIdx = -1;
+          delete item.dataset.dragging;
+          item.style.opacity = '';
+          var items = Array.from(flow.querySelectorAll('.phase-item:not(.phase-add-item)'));
+          editingPhases = items.map(function(it){
+            return it.querySelector('.phase-name-input').value;
+          });
           renderPhaseFlow();
         });
 
-        flow.appendChild(card);
+        item.addEventListener('dragover', function(e) {
+          e.preventDefault();
+          var dragItem = flow.querySelector('.phase-item[data-dragging="1"]');
+          if (!dragItem || dragItem === item) return;
+          var rect = card.getBoundingClientRect();
+          var mid = rect.left + rect.width / 2;
+          var addItem = flow.querySelector('.phase-add-item');
+          if (e.clientX < mid) {
+            flow.insertBefore(dragItem, item);
+          } else {
+            var next = item.nextElementSibling;
+            flow.insertBefore(dragItem, (next && next !== addItem) ? next : addItem);
+          }
+        });
+
+        item.addEventListener('drop', function(e){ e.preventDefault(); });
+
+        item.appendChild(card);
+        flow.appendChild(item);
       })(i);
     }
-    var sep = document.createElement('div');
-    sep.className = 'phase-arrow-sep';
-    sep.innerHTML = '&#8594;';
-    flow.appendChild(sep);
+
+    var addItem = document.createElement('div');
+    addItem.className = 'phase-item phase-add-item';
+    var addArr = document.createElement('div');
+    addArr.className = 'phase-arrow-sep';
+    addArr.innerHTML = '&#8594;';
+    addItem.appendChild(addArr);
     var addCard = document.createElement('div');
     addCard.className = 'phase-add-card';
     addCard.innerHTML = '<span style="font-size:20px;opacity:.4">+</span>Agregar fase';
     addCard.onclick = function() { editingPhases.push('Nueva fase'); renderPhaseFlow(); };
-    flow.appendChild(addCard);
+    addItem.appendChild(addCard);
+    flow.appendChild(addItem);
   }
 
   function savePhaseModal() {
