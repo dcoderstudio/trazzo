@@ -114,6 +114,15 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 .phase-task-del-btn:hover{color:#E24B4A;}
 .phase-task-add-btn{background:none;border:none;color:rgba(255,255,255,0.2);font-size:9px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;padding:4px 0;transition:color .15s;text-align:left;}
 .phase-task-add-btn:hover{color:rgba(255,255,255,0.5);}
+.phase-days-wrap{display:flex;align-items:center;gap:3px;margin-left:auto;}
+.phase-days-inp{background:rgba(255,255,255,0.07);border:0.5px solid rgba(255,255,255,0.12);border-radius:6px;color:#fff;font-size:10px;font-family:'Inter',sans-serif;outline:none;width:38px;padding:2px 5px;text-align:center;appearance:textfield;-moz-appearance:textfield;}
+.phase-days-inp::-webkit-inner-spin-button,.phase-days-inp::-webkit-outer-spin-button{-webkit-appearance:none;}
+.phase-days-inp:focus{border-color:rgba(255,255,255,0.3);}
+.phase-days-lbl{font-size:9px;color:rgba(255,255,255,0.28);white-space:nowrap;}
+.card-time-pill{font-size:9px;font-weight:700;padding:2px 7px;border-radius:10px;display:inline-block;margin-top:4px;}
+.time-ok{background:rgba(39,174,114,0.1);color:rgba(39,174,114,0.75);}
+.time-warn{background:rgba(232,160,32,0.15);color:#E8A020;}
+.time-late{background:rgba(226,75,74,0.15);color:#E24B4A;}
 .task-panel{background:#161616;border:0.5px solid rgba(255,255,255,0.1);border-radius:20px;padding:24px;width:460px;max-width:92vw;max-height:82vh;display:flex;flex-direction:column;gap:12px;transform:translateY(8px);transition:transform .2s;overflow:hidden;}
 .overlay.open .task-panel{transform:none;}
 .tp-title{font-size:15px;font-weight:700;}
@@ -359,6 +368,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
   var editingCatColor2 = PALETTE[0];
   var phaseDragIdx = -1;
   var editingPhaseTemplates = [];
+  var editingPhaseDays = [];
   var taskPanelProjectId = null;
   var activeFilter = 'all';
   var dragId = null;
@@ -680,6 +690,26 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
       }
     }
 
+    // Time badge
+    var timeCat = null;
+    for (var ti = 0; ti < categories.length; ti++) { if (categories[ti].id === p.catId) { timeCat = categories[ti]; break; } }
+    var stageDays = timeCat && timeCat.stageDays && timeCat.stageDays[p.stage] ? timeCat.stageDays[p.stage] : null;
+    if (stageDays) {
+      var entryDate = p.stageEntryDates && p.stageEntryDates[p.stage];
+      if (entryDate) {
+        var deadlineMs = new Date(entryDate + 'T00:00:00').getTime() + stageDays * 86400000;
+        var remaining = Math.ceil((deadlineMs - Date.now()) / 86400000);
+        var timeTxt, timeCls;
+        if (remaining > 1) { timeTxt = remaining + ' días'; timeCls = 'time-ok'; }
+        else if (remaining === 1) { timeTxt = '1 día'; timeCls = 'time-warn'; }
+        else if (remaining === 0) { timeTxt = 'Vence hoy'; timeCls = 'time-warn'; }
+        else { timeTxt = Math.abs(remaining) + ' días tarde'; timeCls = 'time-late'; }
+        html += '<div style="padding-left:6px;"><span class="card-time-pill ' + timeCls + '">⏱ ' + timeTxt + '</span></div>';
+      } else {
+        html += '<div style="padding-left:6px;"><span class="card-time-pill">⏱ ' + stageDays + ' días est.</span></div>';
+      }
+    }
+
     // Task badge
     var stTasks = p.stageTasks && p.stageTasks[p.stage] ? p.stageTasks[p.stage] : [];
     var pending = stTasks.filter(function(t){ return !t.done; }).length;
@@ -709,6 +739,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     card.addEventListener('click', function(e) { if (card._dragged) return; openTaskPanel(p.id); });
     card.addEventListener('dragstart', function() {
       card._dragged = true;
+      card._originalStage = p.stage;
       card.classList.add('card-dragging');
       dragId = p.id;
       setTimeout(function() { card.style.opacity = '.25'; }, 0);
@@ -730,6 +761,15 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
           }
         });
       });
+      // Registrar fecha de entrada si cambió de fase
+      var today = new Date().toISOString().split('T')[0];
+      for (var k = 0; k < projects.length; k++) {
+        if (projects[k].id === p.id && projects[k].stage !== card._originalStage) {
+          if (!projects[k].stageEntryDates) projects[k].stageEntryDates = {};
+          projects[k].stageEntryDates[projects[k].stage] = today;
+          break;
+        }
+      }
       var visible = visibleIds.map(function(pid){ for (var k=0;k<projects.length;k++){ if(projects[k].id===pid) return projects[k]; } }).filter(Boolean);
       var hidden = projects.filter(function(proj){ return visibleIds.indexOf(proj.id) === -1; });
       projects = visible.concat(hidden);
@@ -954,7 +994,8 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     var solCat = null;
     for (var i = 0; i < categories.length; i++) { if (categories[i].id === 'cotizaciones') { solCat = categories[i]; break; } }
     if (!solCat) return;
-    projects.push({id: nextId++, name: name, client: client || '—', catId: 'cotizaciones', stage: solCat.stages[0], deadline: deadline, team: [resp], monto: monto, tipoCat: tipoCat});
+    var solEntry = {}; solEntry[solCat.stages[0]] = new Date().toISOString().split('T')[0];
+    projects.push({id: nextId++, name: name, client: client || '—', catId: 'cotizaciones', stage: solCat.stages[0], deadline: deadline, team: [resp], monto: monto, tipoCat: tipoCat, stageEntryDates: solEntry});
     saveData();
     document.getElementById('solOverlay').classList.remove('open');
     renderBoard();
@@ -1012,7 +1053,8 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     var cat = null;
     for (var i = 0; i < categories.length; i++) { if (categories[i].id === catId) { cat = categories[i]; break; } }
     var stage = (presetStage && cat.stages.indexOf(presetStage) >= 0) ? presetStage : cat.stages[0];
-    var proj = {id: nextId++, name: name, client: client || '—', catId: catId, stage: stage, deadline: deadline, team: [resp]};
+    var proj = {id: nextId++, name: name, client: client || '—', catId: catId, stage: stage, deadline: deadline, team: [resp], stageEntryDates: {}};
+    proj.stageEntryDates[stage] = new Date().toISOString().split('T')[0];
     if (catId === 'cotizaciones') { proj.monto = monto; proj.tipoCat = tipoCat; }
     projects.push(proj);
     saveData();
@@ -1095,6 +1137,9 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     editingPhaseTemplates = editingPhases.map(function(stage) {
       return cat && cat.templates && cat.templates[stage] ? cat.templates[stage].slice() : [];
     });
+    editingPhaseDays = editingPhases.map(function(stage) {
+      return cat && cat.stageDays && cat.stageDays[stage] ? cat.stageDays[stage] : null;
+    });
     document.getElementById('phaseCatName').value = cat ? cat.label : '';
     buildPhaseColorPicker();
     renderPhaseFlow();
@@ -1138,16 +1183,21 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
           + '<input class="phase-name-input" value="' + editingPhases[idx].replace(/"/g,'&quot;') + '">'
           + '<div class="phase-card-actions">'
           + '<button class="phase-btn pdel"' + (editingPhases.length <= 1 ? ' disabled' : '') + '>&#215;</button>'
+          + '<div class="phase-days-wrap"><input class="phase-days-inp" type="number" min="1" max="999" placeholder="—" value="' + (editingPhaseDays[idx] || '') + '"><span class="phase-days-lbl">días</span></div>'
           + '</div></div>';
 
         card.querySelector('.phase-name-input').oninput = (function(i){ return function(){ editingPhases[i] = this.value; }; })(idx);
         card.querySelector('.phase-name-input').addEventListener('mousedown', function(e){ e.stopPropagation(); });
+        var daysInp = card.querySelector('.phase-days-inp');
+        daysInp.oninput = (function(i){ return function(){ editingPhaseDays[i] = parseInt(this.value) || null; }; })(idx);
+        daysInp.addEventListener('mousedown', function(e){ e.stopPropagation(); });
 
         card.querySelector('.phase-btn').onclick = function(e) {
           e.stopPropagation();
           if (editingPhases.length <= 1) return;
           editingPhases.splice(idx, 1);
           editingPhaseTemplates.splice(idx, 1);
+          editingPhaseDays.splice(idx, 1);
           renderPhaseFlow();
         };
 
@@ -1211,14 +1261,16 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
           delete item.dataset.dragging;
           item.style.opacity = '';
           var items = Array.from(flow.querySelectorAll('.phase-item:not(.phase-add-item)'));
-          var newPhases = [], newTemplates = [];
+          var newPhases = [], newTemplates = [], newDays = [];
           items.forEach(function(it) {
             newPhases.push(it.querySelector('.phase-name-input').value);
             var oi = parseInt(it.dataset.idx);
             newTemplates.push(editingPhaseTemplates[oi] ? editingPhaseTemplates[oi].slice() : []);
+            newDays.push(editingPhaseDays[oi] || null);
           });
           editingPhases = newPhases;
           editingPhaseTemplates = newTemplates;
+          editingPhaseDays = newDays;
           renderPhaseFlow();
         });
 
@@ -1253,7 +1305,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     var addCard = document.createElement('div');
     addCard.className = 'phase-add-card';
     addCard.innerHTML = '<span style="font-size:20px;opacity:.4">+</span>Agregar fase';
-    addCard.onclick = function() { editingPhases.push('Nueva fase'); editingPhaseTemplates.push([]); renderPhaseFlow(); };
+    addCard.onclick = function() { editingPhases.push('Nueva fase'); editingPhaseTemplates.push([]); editingPhaseDays.push(null); renderPhaseFlow(); };
     addItem.appendChild(addCard);
     flow.appendChild(addItem);
   }
@@ -1263,17 +1315,19 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     if (!name) { document.getElementById('phaseCatName').focus(); return; }
     var phases = editingPhases.map(function(s){ return s.trim(); }).filter(Boolean);
     if (!phases.length) return;
-    var templates = {};
+    var templates = {}, stageDays = {};
     phases.forEach(function(phase, i) {
       var tpl = editingPhaseTemplates[i] ? editingPhaseTemplates[i].filter(function(t){ return t.trim(); }) : [];
       if (tpl.length) templates[phase] = tpl;
+      var d = editingPhaseDays[i];
+      if (d && d > 0) stageDays[phase] = d;
     });
     if (editingCatId) {
       for (var i = 0; i < categories.length; i++) {
-        if (categories[i].id === editingCatId) { categories[i].label = name; categories[i].color = editingCatColor2; categories[i].stages = phases; categories[i].templates = templates; break; }
+        if (categories[i].id === editingCatId) { categories[i].label = name; categories[i].color = editingCatColor2; categories[i].stages = phases; categories[i].templates = templates; categories[i].stageDays = stageDays; break; }
       }
     } else {
-      categories.push({id: 'cat_' + (++catIdCounter), label: name, color: editingCatColor2, stages: phases, templates: templates});
+      categories.push({id: 'cat_' + (++catIdCounter), label: name, color: editingCatColor2, stages: phases, templates: templates, stageDays: stageDays});
     }
     saveData();
     document.getElementById('phaseOverlay').classList.remove('open');
