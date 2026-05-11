@@ -815,14 +815,19 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
   // ── TASK PANEL ───────────────────────────────────────
   function getProjectTasks(p) {
     if (!p.stageTasks) p.stageTasks = {};
-    if (!p.stageTasks[p.stage]) {
-      var cat = null;
-      for (var i = 0; i < categories.length; i++) { if (categories[i].id === p.catId) { cat = categories[i]; break; } }
-      var tpl = cat && cat.templates && cat.templates[p.stage] ? cat.templates[p.stage] : [];
+    var stage = p.stage;
+    var existing = p.stageTasks[stage];
+    var cat = null;
+    for (var i = 0; i < categories.length; i++) { if (categories[i].id === p.catId) { cat = categories[i]; break; } }
+    var tpl = cat && cat.templates && cat.templates[stage] ? cat.templates[stage] : [];
+    // Poblar desde template si no hay tareas y el template tiene pasos
+    if ((!existing || existing.length === 0) && tpl.length > 0) {
       var base = Date.now();
-      p.stageTasks[p.stage] = tpl.map(function(text, i) { return {id: base + i, text: text, done: false, deadline: ''}; });
+      p.stageTasks[stage] = tpl.map(function(text, i) { return {id: base + i, text: text, done: false, deadline: ''}; });
+    } else if (!existing) {
+      p.stageTasks[stage] = [];
     }
-    return p.stageTasks[p.stage];
+    return p.stageTasks[stage];
   }
 
   function fmtDl(dl) {
