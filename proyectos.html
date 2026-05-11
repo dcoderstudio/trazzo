@@ -228,12 +228,12 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     <div class="tp-task-list" id="tpTaskList"></div>
     <div class="tp-summary" id="tpSummary"></div>
     <div class="tp-add-row">
-      <input class="tp-new-inp" id="tpNewInp" placeholder="Nueva tarea..." onkeydown="if(event.key==='Enter')addTaskToPanel()">
+      <input class="tp-new-inp" id="tpNewInp" placeholder="Nueva tarea...">
       <input class="tp-new-dl" id="tpNewDl" type="date">
-      <button class="btn-ok" onclick="addTaskToPanel()" style="padding:8px 14px;">+</button>
+      <button class="btn-ok" id="tpAddBtn" style="padding:8px 14px;">+</button>
     </div>
     <div class="mf">
-      <button class="btn-ok" onclick="document.getElementById('taskPanelOverlay').classList.remove('open')">Listo</button>
+      <button class="btn-ok" id="tpDoneBtn">Listo</button>
     </div>
   </div>
 </div>
@@ -1264,6 +1264,9 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
   document.getElementById('cancelEditCatBtn').onclick = function(){ document.getElementById('editCatOverlay').classList.remove('open'); };
   document.getElementById('saveEditCatBtn').onclick = saveEditCategory;
   document.getElementById('editCatOverlay').addEventListener('click', function(e){ if (e.target === document.getElementById('editCatOverlay')) document.getElementById('editCatOverlay').classList.remove('open'); });
+  document.getElementById('tpAddBtn').onclick = addTaskToPanel;
+  document.getElementById('tpDoneBtn').onclick = function(){ document.getElementById('taskPanelOverlay').classList.remove('open'); };
+  document.getElementById('tpNewInp').addEventListener('keydown', function(e){ if(e.key==='Enter') addTaskToPanel(); });
   document.getElementById('taskPanelOverlay').addEventListener('click', function(e){ if(e.target===document.getElementById('taskPanelOverlay')) document.getElementById('taskPanelOverlay').classList.remove('open'); });
   document.getElementById('cancelSolBtn').onclick = function(){ document.getElementById('solOverlay').classList.remove('open'); };
   document.getElementById('createSolBtn').onclick = createSolicitud;
