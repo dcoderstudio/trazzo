@@ -1099,6 +1099,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
         var resp = typeof item === 'object' ? (item.resp || '') : '';
         return {id: base + i, text: text, done: false, deadline: deadline, resp: resp};
       });
+      saveData(); // persist so tareas.html can see them
     } else if (!existing) {
       p.stageTasks[stage] = [];
     }
@@ -2444,7 +2445,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
       cfgs.forEach(function(cfg) {
         var fi=-1;
         for (var i=0;i<categories.length;i++) { if (categories[i].id===cfg.id) { fi=i; break; } }
-        var nu = fi<0 || categories[fi].stages.join('|')!==cfg.stages.join('|');
+        var nu = fi<0 || categories[fi].stages.join('|')!==cfg.stages.join('|') || !categories[fi].templates;
         if (nu) {
           if (fi>=0) { categories[fi].label=cfg.label; categories[fi].color=cfg.color; categories[fi].stages=cfg.stages; categories[fi].stageDays=cfg.stageDays; categories[fi].templates=cfg.templates; categories[fi].payments=cfg.payments; }
           else { categories.push(cfg); }
