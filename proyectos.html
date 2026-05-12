@@ -175,7 +175,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 .card-pay-pill.pdone:hover{background:rgba(39,174,114,0.22);}
 .phase-pay-btn{background:rgba(255,255,255,0.06);border:0.5px solid rgba(255,255,255,0.14);border-radius:50%;color:rgba(255,255,255,0.3);font-size:11px;font-weight:700;cursor:pointer;width:22px;height:22px;display:flex;align-items:center;justify-content:center;transition:all .15s;font-family:'Inter',sans-serif;opacity:0;pointer-events:none;flex-shrink:0;line-height:1;}
 .phase-arrow-sep:hover .phase-pay-btn{opacity:1;pointer-events:auto;}
-.phase-pay-btn.on{opacity:1;pointer-events:auto;background:rgba(39,174,114,0.18);border-color:rgba(39,174,114,0.45);color:#27AE72;}
+.phase-pay-btn.on{opacity:1;pointer-events:auto;background:rgba(39,174,114,0.18);border-color:rgba(39,174,114,0.45);color:#27AE72;width:auto;padding:0 9px;border-radius:20px;white-space:nowrap;}
 .phase-pay-btn.on:hover{background:rgba(39,174,114,0.32);}
 .phase-pay-btn:not(.on):hover{background:rgba(255,255,255,0.14);color:#fff;border-color:rgba(255,255,255,0.3);}
 .phase-pay-popup{position:fixed;z-index:9999;background:#161616;border:0.5px solid rgba(255,255,255,0.14);border-radius:16px;padding:16px;box-shadow:0 16px 60px rgba(0,0,0,.9);width:240px;font-family:'Inter',sans-serif;}
@@ -1419,7 +1419,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
           payBtn.type = 'button';
           payBtn.className = 'phase-pay-btn' + (hasP ? ' on' : '');
           payBtn.title = hasP ? ((pd.amount||'') + (pd.description ? ' — '+pd.description : '')) : (pIdx3===0 ? 'Cobro antes de iniciar' : 'Agregar cobro');
-          payBtn.textContent = '💲';
+          payBtn.textContent = hasP ? ('💲 ' + (pd.amount || pd.description || '')) : '💲';
           payBtn.addEventListener('mousedown', function(e){ e.stopPropagation(); });
           payBtn.onclick = function(e) { e.stopPropagation(); openPaymentEditor(payBtn, pIdx3); };
           arr.appendChild(payBtn);
