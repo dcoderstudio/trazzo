@@ -97,11 +97,13 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 .phase-modal-sub{font-size:12px;color:rgba(255,255,255,0.3);margin-top:3px;}
 .phase-cat-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
 .phase-flow-wrap{overflow-x:auto;padding:4px 2px 12px;flex-shrink:0;}
-.phase-flow-wrap::-webkit-scrollbar{height:4px;}
-.phase-flow-wrap::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:2px;}
+.phase-flow-wrap::-webkit-scrollbar{height:8px;}
+.phase-flow-wrap::-webkit-scrollbar-track{background:rgba(255,255,255,0.04);border-radius:4px;}
+.phase-flow-wrap::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.18);border-radius:4px;}
+.phase-flow-wrap::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,0.32);}
 .phase-flow{display:flex;align-items:center;gap:0;min-width:max-content;}
 .phase-item{display:flex;align-items:center;}
-.phase-item:first-child > .phase-arrow-sep{display:none;}
+.phase-item:first-child > .phase-arrow-sep > .phase-arr-txt{display:none;}
 .phase-card{background:#1e1e1e;border:0.5px solid rgba(255,255,255,0.1);border-radius:12px;width:215px;flex-shrink:0;overflow:hidden;transition:border-color .15s,opacity .15s,box-shadow .15s;cursor:grab;}
 .phase-tasks-section{border-top:0.5px solid rgba(255,255,255,0.07);padding:7px 12px 10px;}
 .phase-tasks-label{font-size:8px;font-weight:700;color:rgba(255,255,255,0.18);text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px;}
@@ -171,11 +173,11 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 .card-pay-pill.ppend:hover{background:rgba(232,160,32,0.22);}
 .card-pay-pill.pdone{background:rgba(39,174,114,0.1);color:#27AE72;border:0.5px solid rgba(39,174,114,0.25);}
 .card-pay-pill.pdone:hover{background:rgba(39,174,114,0.22);}
-.phase-pay-btn{background:rgba(255,255,255,0.04);border:0.5px solid rgba(255,255,255,0.1);border-radius:6px;color:rgba(255,255,255,0.22);font-size:10px;font-weight:700;cursor:pointer;padding:2px 6px;transition:all .15s;font-family:'Inter',sans-serif;opacity:0;pointer-events:none;white-space:nowrap;}
+.phase-pay-btn{background:rgba(255,255,255,0.06);border:0.5px solid rgba(255,255,255,0.14);border-radius:50%;color:rgba(255,255,255,0.3);font-size:11px;font-weight:700;cursor:pointer;width:22px;height:22px;display:flex;align-items:center;justify-content:center;transition:all .15s;font-family:'Inter',sans-serif;opacity:0;pointer-events:none;flex-shrink:0;line-height:1;}
 .phase-arrow-sep:hover .phase-pay-btn{opacity:1;pointer-events:auto;}
-.phase-pay-btn.on{opacity:1;pointer-events:auto;background:rgba(39,174,114,0.15);border-color:rgba(39,174,114,0.4);color:#27AE72;}
-.phase-pay-btn.on:hover{background:rgba(39,174,114,0.28);}
-.phase-pay-btn:not(.on):hover{background:rgba(255,255,255,0.1);color:#fff;border-color:rgba(255,255,255,0.25);}
+.phase-pay-btn.on{opacity:1;pointer-events:auto;background:rgba(39,174,114,0.18);border-color:rgba(39,174,114,0.45);color:#27AE72;}
+.phase-pay-btn.on:hover{background:rgba(39,174,114,0.32);}
+.phase-pay-btn:not(.on):hover{background:rgba(255,255,255,0.14);color:#fff;border-color:rgba(255,255,255,0.3);}
 .phase-pay-popup{position:fixed;z-index:9999;background:#161616;border:0.5px solid rgba(255,255,255,0.14);border-radius:16px;padding:16px;box-shadow:0 16px 60px rgba(0,0,0,.9);width:240px;font-family:'Inter',sans-serif;}
 .phase-pay-popup-lbl{font-size:9px;font-weight:700;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px;}
 .phase-pay-popup-inp{background:#1e1e1e;border:0.5px solid rgba(255,255,255,0.1);border-radius:8px;padding:8px 10px;font-size:12px;color:#fff;font-family:'Inter',sans-serif;outline:none;width:100%;margin-bottom:10px;transition:border-color .15s;}
@@ -1406,22 +1408,22 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 
         var arr = document.createElement('div');
         arr.className = 'phase-arrow-sep';
-        var arrTxt = document.createElement('span'); arrTxt.innerHTML = '&#8594;';
+        var arrTxt = document.createElement('span');
+        arrTxt.className = 'phase-arr-txt';
+        arrTxt.innerHTML = '&#8594;';
         arr.appendChild(arrTxt);
-        if (idx > 0) {
-          (function(pIdx3) {
-            var pd = editingPhasePayments[pIdx3];
-            var hasP = pd && (pd.amount || pd.description);
-            var payBtn = document.createElement('button');
-            payBtn.type = 'button';
-            payBtn.className = 'phase-pay-btn' + (hasP ? ' on' : '');
-            payBtn.title = hasP ? (pd.amount || '') + (pd.description ? ' — ' + pd.description : '') : 'Agregar cobro';
-            payBtn.innerHTML = hasP ? ('💲 ' + (pd.amount || '')) : '$';
-            payBtn.addEventListener('mousedown', function(e){ e.stopPropagation(); });
-            payBtn.onclick = function(e) { e.stopPropagation(); openPaymentEditor(payBtn, pIdx3); };
-            arr.appendChild(payBtn);
-          })(idx);
-        }
+        (function(pIdx3) {
+          var pd = editingPhasePayments[pIdx3];
+          var hasP = pd && (pd.amount || pd.description);
+          var payBtn = document.createElement('button');
+          payBtn.type = 'button';
+          payBtn.className = 'phase-pay-btn' + (hasP ? ' on' : '');
+          payBtn.title = hasP ? ((pd.amount||'') + (pd.description ? ' — '+pd.description : '')) : (pIdx3===0 ? 'Cobro antes de iniciar' : 'Agregar cobro');
+          payBtn.textContent = '💲';
+          payBtn.addEventListener('mousedown', function(e){ e.stopPropagation(); });
+          payBtn.onclick = function(e) { e.stopPropagation(); openPaymentEditor(payBtn, pIdx3); };
+          arr.appendChild(payBtn);
+        })(idx);
         item.appendChild(arr);
 
         var card = document.createElement('div');
@@ -2060,7 +2062,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     panel.className = 'phase-pay-popup';
     var title = document.createElement('div');
     title.style.cssText = 'font-size:10px;font-weight:700;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:.07em;margin-bottom:12px;';
-    title.textContent = 'Cobro al avanzar de fase';
+    title.textContent = idx === 0 ? 'Cobro antes de iniciar' : 'Cobro al avanzar de fase';
     panel.appendChild(title);
     var amtLbl = document.createElement('div'); amtLbl.className = 'phase-pay-popup-lbl'; amtLbl.textContent = 'Monto / porcentaje';
     var amtInp = document.createElement('input'); amtInp.type = 'text'; amtInp.className = 'phase-pay-popup-inp';
