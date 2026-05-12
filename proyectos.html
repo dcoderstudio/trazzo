@@ -613,7 +613,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
       }
 
       var lanesWrap = document.createElement('div');
-      lanesWrap.style.cssText = 'display:flex;gap:14px;padding:8px 28px 24px;overflow-x:auto;flex:1;';
+      lanesWrap.style.cssText = 'display:flex;gap:14px;padding:8px 28px 24px;overflow-x:auto;overflow-y:auto;flex:1;align-items:flex-start;';
       cat.stages.forEach(function(stage) {
         lanesWrap.appendChild(buildCol(cat, stage, catProjects));
       });
