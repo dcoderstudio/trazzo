@@ -220,6 +220,19 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 .pp-none{padding:8px 10px;border-radius:9px;cursor:pointer;font-size:11px;color:rgba(255,255,255,0.3);transition:background .12s;}
 .pp-none:hover,.pp-none.pp-s{background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.6);}
 .pdm-timeline-wrap{border-top:0.5px solid rgba(255,255,255,0.06);flex-shrink:0;padding:14px 18px 16px;}
+.pdm-phase-detail{margin-top:10px;background:rgba(255,255,255,0.03);border-radius:12px;padding:11px 14px;border:0.5px solid rgba(255,255,255,0.08);display:flex;flex-direction:column;gap:7px;}
+.pdm-phase-det-hdr{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.pdm-phase-det-name{font-size:12px;font-weight:700;color:#fff;}
+.pdm-phase-det-pill{font-size:9px;font-weight:700;padding:2px 9px;border-radius:20px;}
+.pdm-phase-det-meta{display:flex;gap:14px;flex-wrap:wrap;}
+.pdm-phase-det-info{font-size:10px;color:rgba(255,255,255,0.38);}
+.pdm-phase-det-tasks{display:flex;flex-direction:column;gap:3px;max-height:80px;overflow-y:auto;}
+.pdm-phase-tk{display:flex;align-items:center;gap:7px;padding:4px 6px;border-radius:7px;background:rgba(255,255,255,0.03);}
+.pdm-phase-chk{width:14px;height:14px;border-radius:50%;border:1.5px solid rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:all .15s;}
+.pdm-phase-chk.on{background:#27AE72;border-color:#27AE72;}
+.pdm-phase-txt{font-size:10px;color:rgba(255,255,255,0.65);}
+.pdm-phase-txt.done{text-decoration:line-through;color:rgba(255,255,255,0.28);}
+.pdm-phase-no-tasks{font-size:10px;color:rgba(255,255,255,0.2);}
 .pdm-timeline-scroll{overflow-x:auto;overflow-y:hidden;margin-top:8px;width:100%;padding-bottom:8px;}
 .pdm-timeline-scroll::-webkit-scrollbar{height:6px;}
 .pdm-timeline-scroll::-webkit-scrollbar-track{background:rgba(255,255,255,0.04);border-radius:4px;}
@@ -456,6 +469,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
         <div style="flex:1;height:0.5px;background:rgba(255,255,255,0.06);"></div>
       </div>
       <div class="pdm-timeline-scroll" id="pdmTimeline"></div>
+      <div id="pdmPhaseDetail"></div>
     </div>
     <div class="pdm-footer">
       <span class="pdm-footer-info" id="pdmFooterInfo"></span>
@@ -503,6 +517,8 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
   var editingPhaseDays = [];
   var taskPanelProjectId = null;
   var detailProjectId = null;
+  var selectedPhaseIdx = -1;
+  var _detailStartDates = [], _detailCat = null, _detailStages = [];
   var activeFilter = 'all';
   var dragId = null;
   var solCollapsed = false;
@@ -1532,6 +1548,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
   // ── PROJECT DETAIL PANEL ─────────────────────────────
   function openProjDetail(projectId) {
     detailProjectId = projectId;
+    selectedPhaseIdx = -1;
     renderProjDetail();
     document.getElementById('projDetailOverlay').classList.add('open');
   }
@@ -1714,14 +1731,23 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
       var tc = isCurrent ? '#fff' : isPast ? 'rgba(255,255,255,0.45)' : 'rgba(255,255,255,0.22)';
       var border = (!isCurrent && !isPast) ? '0.5px solid rgba(255,255,255,0.1)' : 'none';
       var shadow = isCurrent ? '0 0 14px ' + cat.color + '44' : 'none';
+      var isSelected = idx === selectedPhaseIdx;
       var bar = document.createElement('div');
       bar.style.cssText = 'position:absolute;left:'+x+'px;top:'+rowY+'px;width:'+w+'px;height:'+BAR_H+'px;'
         + 'background:'+bg+';border-radius:20px;'
         + (border!=='none'?'border:'+border+';':'')
         + (shadow!=='none'?'box-shadow:'+shadow+';':'')
         + 'display:flex;align-items:center;justify-content:center;overflow:hidden;padding:0 8px;'
-        + 'font-size:11px;font-weight:700;color:'+tc+';white-space:nowrap;';
+        + 'font-size:11px;font-weight:700;color:'+tc+';white-space:nowrap;cursor:pointer;'
+        + (isSelected ? 'outline:2px dashed rgba(255,255,255,0.55);outline-offset:3px;z-index:5;' : '');
       bar.textContent = stage + (cat.stageDays && cat.stageDays[stage] ? ' · ' + days + 'd' : '');
+      bar.addEventListener('mouseenter', function() { if (!isSelected) bar.style.opacity = '.75'; });
+      bar.addEventListener('mouseleave', function() { bar.style.opacity = ''; });
+      bar.onclick = (function(i) { return function(e) {
+        e.stopPropagation();
+        selectedPhaseIdx = selectedPhaseIdx === i ? -1 : i;
+        renderDetailTimeline();
+      }; })(idx);
       canvas.appendChild(bar);
     });
     // Today line
@@ -1750,6 +1776,103 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
       }
     }
     container.appendChild(canvas);
+    _detailStartDates = startDates;
+    _detailCat = cat;
+    _detailStages = stages;
+    renderPhaseInfo(p);
+  }
+
+  function renderPhaseInfo(p) {
+    var det = document.getElementById('pdmPhaseDetail');
+    if (!det) return;
+    if (selectedPhaseIdx < 0 || !_detailCat || !_detailStages.length) {
+      det.innerHTML = ''; det.className = ''; return;
+    }
+    var idx = selectedPhaseIdx;
+    var stage = _detailStages[idx];
+    var cat = _detailCat;
+    var stages = _detailStages;
+    var currentIdx = stages.indexOf(p.stage);
+    var isPast = idx < currentIdx;
+    var isCurrent = idx === currentIdx;
+    var today = new Date(); today.setHours(0,0,0,0);
+    var entryDate = p.stageEntryDates && p.stageEntryDates[stage] ? p.stageEntryDates[stage] : null;
+    var days = cat.stageDays && cat.stageDays[stage] ? cat.stageDays[stage] : null;
+    var status = isCurrent ? 'Fase actual' : isPast ? 'Completada' : 'Próxima';
+    var statusBg = isCurrent ? cat.color+'22' : isPast ? 'rgba(39,174,114,0.15)' : 'rgba(255,255,255,0.06)';
+    var statusCol = isCurrent ? cat.color : isPast ? '#27AE72' : 'rgba(255,255,255,0.35)';
+    var tasks = (p.stageTasks && p.stageTasks[stage]) ? p.stageTasks[stage] : [];
+
+    det.className = 'pdm-phase-detail';
+    det.innerHTML = '';
+
+    // Header row
+    var hdr = document.createElement('div'); hdr.className = 'pdm-phase-det-hdr';
+    var nameEl = document.createElement('span'); nameEl.className = 'pdm-phase-det-name'; nameEl.textContent = stage;
+    var pill = document.createElement('span'); pill.className = 'pdm-phase-det-pill';
+    pill.style.cssText = 'background:'+statusBg+';color:'+statusCol+';';
+    pill.textContent = status;
+    hdr.appendChild(nameEl); hdr.appendChild(pill);
+    det.appendChild(hdr);
+
+    // Meta info
+    var metaItems = [];
+    if (entryDate) {
+      var d = new Date(entryDate+'T00:00:00');
+      metaItems.push('Entró: '+d.getDate()+'/'+(d.getMonth()+1)+'/'+d.getFullYear());
+    }
+    if (days) {
+      if (entryDate && isCurrent) {
+        var rem = Math.ceil((new Date(entryDate+'T00:00:00').getTime() + days*86400000 - today.getTime()) / 86400000);
+        metaItems.push(rem > 0 ? rem+' días restantes' : rem === 0 ? 'Vence hoy' : Math.abs(rem)+' días fuera de fase');
+      } else if (entryDate && isPast) {
+        var spent = Math.round((today - new Date(entryDate+'T00:00:00')) / 86400000);
+        metaItems.push(spent+' días trabajados');
+      } else {
+        metaItems.push(days+' días estimados');
+      }
+    }
+    if (metaItems.length) {
+      var meta = document.createElement('div'); meta.className = 'pdm-phase-det-meta';
+      metaItems.forEach(function(txt) {
+        var s = document.createElement('span'); s.className = 'pdm-phase-det-info'; s.textContent = txt;
+        meta.appendChild(s);
+      });
+      det.appendChild(meta);
+    }
+
+    // Tasks
+    if (tasks.length > 0) {
+      var tasksList = document.createElement('div'); tasksList.className = 'pdm-phase-det-tasks';
+      tasks.forEach(function(task) {
+        var tr = document.createElement('div'); tr.className = 'pdm-phase-tk';
+        var chk = document.createElement('div');
+        chk.className = 'pdm-phase-chk' + (task.done ? ' on' : '');
+        if (task.done) chk.innerHTML = '<svg viewBox="0 0 12 12" width="8" height="8"><polyline points="2,6 5,9 10,3" stroke="#fff" stroke-width="2.5" fill="none" stroke-linecap="round"/></svg>';
+        chk.onclick = function() { task.done = !task.done; saveData(); renderPhaseInfo(p); updateCardBadge(detailProjectId); };
+        var txt = document.createElement('span');
+        txt.className = 'pdm-phase-txt' + (task.done ? ' done' : '');
+        txt.textContent = task.text;
+        tr.appendChild(chk); tr.appendChild(txt);
+        if (task.resp && RESP_NAMES[task.resp]) {
+          var rv = document.createElement('span');
+          rv.style.cssText = 'font-size:9px;margin-left:auto;padding:1px 6px;border-radius:5px;background:'+AV_COLORS[task.resp]+'22;color:'+AV_COLORS[task.resp]+';white-space:nowrap;flex-shrink:0;font-weight:700;';
+          rv.textContent = task.resp;
+          tr.appendChild(rv);
+        }
+        if (task.deadline) {
+          var dl = document.createElement('span');
+          dl.style.cssText = 'font-size:9px;color:rgba(255,255,255,0.25);white-space:nowrap;flex-shrink:0;';
+          dl.textContent = fmtDl(task.deadline);
+          tr.appendChild(dl);
+        }
+        tasksList.appendChild(tr);
+      });
+      det.appendChild(tasksList);
+    } else {
+      var nt = document.createElement('div'); nt.className = 'pdm-phase-no-tasks'; nt.textContent = 'Sin tareas configuradas en esta fase';
+      det.appendChild(nt);
+    }
   }
 
   function addDetailTask() {
