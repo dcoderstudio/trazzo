@@ -2157,6 +2157,104 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     projects.forEach(function(p) {
       if (p.catId === 'cotizaciones' && p.stage === 'Negociación') { p.stage = 'Enviado'; migrated = true; }
     });
+    // Agregar categoría Diseño de producto si no existe
+    var hasDP = false;
+    for (var ci = 0; ci < categories.length; ci++) { if (categories[ci].id === 'disenoproducto') { hasDP = true; break; } }
+    if (!hasDP) {
+      function _t(text) { return {text: text, deadline: '', resp: ''}; }
+      categories.push({
+        id: 'disenoproducto',
+        label: 'Diseño de producto',
+        color: '#D85A30',
+        stages: [
+          'Definición de requerimientos',
+          'Propuesta conceptual',
+          'Propuesta económica final',
+          'Visualización final del producto',
+          'Entrega de plan de trabajo',
+          'Desarrollo de archivos técnicos',
+          'Desarrollo de muestra',
+          'Producción / Fabricación',
+          'Entrega del producto',
+          'Proyecto completado'
+        ],
+        stageDays: {
+          'Definición de requerimientos': 5,
+          'Propuesta conceptual': 7,
+          'Propuesta económica final': 3,
+          'Visualización final del producto': 10,
+          'Entrega de plan de trabajo': 2,
+          'Desarrollo de archivos técnicos': 14,
+          'Desarrollo de muestra': 14,
+          'Producción / Fabricación': 30,
+          'Entrega del producto': 5,
+          'Proyecto completado': 2
+        },
+        templates: {
+          'Definición de requerimientos': [
+            _t('Reunión de levantamiento con cliente'),
+            _t('Documentar especificaciones y requerimientos técnicos'),
+            _t('Definir alcance, presupuesto y cronograma tentativo'),
+            _t('Validar y firmar brief con cliente')
+          ],
+          'Propuesta conceptual': [
+            _t('Investigación de referentes y tendencias'),
+            _t('Desarrollo de bocetos y conceptos iniciales'),
+            _t('Presentación de 2-3 propuestas al cliente'),
+            _t('Recibir retroalimentación y definir dirección')
+          ],
+          'Propuesta económica final': [
+            _t('Cotización detallada de materiales y procesos'),
+            _t('Definir costos de producción o fabricación'),
+            _t('Presentar propuesta económica al cliente'),
+            _t('Firma de contrato o aprobación formal')
+          ],
+          'Visualización final del producto': [
+            _t('Modelado 3D o renders fotorrealistas del producto'),
+            _t('Definir acabados, colores y materiales finales'),
+            _t('Revisión interna antes de presentar'),
+            _t('Aprobación de visualización por el cliente')
+          ],
+          'Entrega de plan de trabajo': [
+            _t('Definir hitos y entregables del proyecto'),
+            _t('Asignar responsables por actividad'),
+            _t('Compartir cronograma detallado con cliente'),
+            _t('Confirmar arranque formal del proyecto')
+          ],
+          'Desarrollo de archivos técnicos': [
+            _t('Planos técnicos y de detalle constructivo'),
+            _t('Especificaciones de materiales y procesos'),
+            _t('Revisión interna de archivos'),
+            _t('Envío de archivos a producción o proveedor')
+          ],
+          'Desarrollo de muestra': [
+            _t('Fabricación de prototipo o muestra física'),
+            _t('Revisión de muestra con el equipo interno'),
+            _t('Presentación y aprobación de muestra con cliente'),
+            _t('Documentar ajustes para producción final')
+          ],
+          'Producción / Fabricación': [
+            _t('Confirmar orden de producción con proveedor'),
+            _t('Seguimiento de avance de fabricación'),
+            _t('Control de calidad en proceso'),
+            _t('Aprobación final del lote de producción')
+          ],
+          'Entrega del producto': [
+            _t('Coordinación de logística y transporte'),
+            _t('Entrega física al cliente'),
+            _t('Registro fotográfico de la entrega'),
+            _t('Firma de acta de entrega y recepción')
+          ],
+          'Proyecto completado': [
+            _t('Archivar toda la documentación del proyecto'),
+            _t('Facturación y cierre administrativo'),
+            _t('Encuesta de satisfacción al cliente'),
+            _t('Agregar caso a portafolio')
+          ]
+        }
+      });
+      migrated = true;
+    }
     if (migrated) saveData();
     renderTabs();
     renderBoard();
