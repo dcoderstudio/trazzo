@@ -211,6 +211,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
             text: task.text,
             done: !!task.done,
             colStatus: task.colStatus || null,
+            sortOrder: task.sortOrder != null ? task.sortOrder : task.id,
             deadline: task.deadline || '',
             resp: task.resp || '',
             projectId: proj.id,
@@ -251,6 +252,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     var card = document.createElement('div');
     var urgent = !task.done && task.deadline && isUrgent(task.deadline);
     card.className = 'tk-card' + (urgent ? ' urgent-card' : '') + (task.done ? ' done-card' : '');
+    card.dataset.sortorder = String(task.sortOrder != null ? task.sortOrder : task.id);
     card.addEventListener('pointerdown', function(e) {
       if (e.button !== 0) return;
       startCardDrag(e, task, card);
@@ -398,10 +400,10 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
       return !!t.done;
     });
 
-    // Sort in-progress by deadline ascending
-    inProgress.sort(function(a,b){ return a.deadline < b.deadline ? -1 : 1; });
-    // Sort not-started: current stage first
-    notStarted.sort(function(a,b){ return (b.isCurrentStage?1:0) - (a.isCurrentStage?1:0); });
+    function bySortOrder(a,b){ return a.sortOrder - b.sortOrder; }
+    notStarted.sort(bySortOrder);
+    inProgress.sort(bySortOrder);
+    done.sort(bySortOrder);
 
     var board = document.getElementById('boardWrap');
     board.innerHTML = '';
@@ -504,15 +506,36 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     if (dragPlaceholder && dragPlaceholder.parentNode) {
       var colBody = dragPlaceholder.parentNode;
       var colType = colBody.dataset.coltype;
+      var newSortOrder = _calcSortOrder(colBody, dragPlaceholder);
       dragPlaceholder.parentNode.removeChild(dragPlaceholder);
       if (colType && _drag.moved) {
-        _updateTaskCol(_drag.task.projectId, _drag.task.stage, _drag.task.id, colType);
+        _commitDrop(_drag.task.projectId, _drag.task.stage, _drag.task.id, colType, newSortOrder);
         _drag = null;
         return;
       }
     }
     _drag = null;
     renderBoard();
+  }
+
+  function _calcSortOrder(colBody, placeholder) {
+    var children = Array.from(colBody.children);
+    var phIdx = children.indexOf(placeholder);
+    var before = null, after = null;
+    for (var i = phIdx - 1; i >= 0; i--) {
+      if (children[i].classList && children[i].classList.contains('tk-card') && children[i].dataset.sortorder) {
+        before = parseFloat(children[i].dataset.sortorder); break;
+      }
+    }
+    for (var i = phIdx + 1; i < children.length; i++) {
+      if (children[i].classList && children[i].classList.contains('tk-card') && children[i].dataset.sortorder) {
+        after = parseFloat(children[i].dataset.sortorder); break;
+      }
+    }
+    if (before === null && after === null) return Date.now();
+    if (before === null) return after - 100000;
+    if (after === null) return before + 100000;
+    return (before + after) / 2;
   }
 
   function _getAfterEl(container, y) {
@@ -525,7 +548,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     }, {offset: Number.NEGATIVE_INFINITY}).element;
   }
 
-  function _updateTaskCol(projectId, stage, taskId, newColType) {
+  function _commitDrop(projectId, stage, taskId, newColType, newSortOrder) {
     for (var i=0;i<projects.length;i++){
       if (projects[i].id===projectId){
         var tasks = projects[i].stageTasks && projects[i].stageTasks[stage];
@@ -534,6 +557,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
             if (tasks[j].id===taskId){
               tasks[j].colStatus = newColType;
               tasks[j].done = (newColType === 'done');
+              tasks[j].sortOrder = newSortOrder;
               saveData();
               renderBoard();
               return;
