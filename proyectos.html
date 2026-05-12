@@ -102,16 +102,23 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 .phase-flow{display:flex;align-items:center;gap:0;min-width:max-content;}
 .phase-item{display:flex;align-items:center;}
 .phase-item:first-child > .phase-arrow-sep{display:none;}
-.phase-card{background:#1e1e1e;border:0.5px solid rgba(255,255,255,0.1);border-radius:12px;width:170px;flex-shrink:0;overflow:hidden;transition:border-color .15s,opacity .15s,box-shadow .15s;cursor:grab;}
+.phase-card{background:#1e1e1e;border:0.5px solid rgba(255,255,255,0.1);border-radius:12px;width:215px;flex-shrink:0;overflow:hidden;transition:border-color .15s,opacity .15s,box-shadow .15s;cursor:grab;}
 .phase-tasks-section{border-top:0.5px solid rgba(255,255,255,0.07);padding:7px 12px 10px;}
 .phase-tasks-label{font-size:8px;font-weight:700;color:rgba(255,255,255,0.18);text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px;}
-.phase-tasks-list{display:flex;flex-direction:column;gap:3px;max-height:100px;overflow-y:auto;}
-.phase-task-row{display:flex;align-items:center;gap:4px;}
+.phase-tasks-list{display:flex;flex-direction:column;gap:5px;max-height:160px;overflow-y:auto;}
+.phase-task-row{display:flex;flex-direction:column;gap:3px;padding-bottom:5px;border-bottom:0.5px solid rgba(255,255,255,0.05);}
+.phase-task-row:last-child{border-bottom:none;padding-bottom:0;}
+.phase-task-top{display:flex;align-items:center;gap:4px;}
 .phase-task-inp{flex:1;background:none;border:none;border-bottom:0.5px solid rgba(255,255,255,0.07);color:rgba(255,255,255,0.45);font-size:10px;font-family:'Inter',sans-serif;outline:none;padding:2px 0;min-width:0;}
 .phase-task-inp:focus{color:rgba(255,255,255,0.8);border-bottom-color:rgba(255,255,255,0.22);}
 .phase-task-inp::placeholder{color:rgba(255,255,255,0.13);}
 .phase-task-del-btn{background:none;border:none;cursor:pointer;color:rgba(255,255,255,0.12);font-size:11px;padding:0 2px;line-height:1;flex-shrink:0;}
 .phase-task-del-btn:hover{color:#E24B4A;}
+.phase-task-meta{display:flex;gap:4px;}
+.phase-task-meta-inp{background:rgba(255,255,255,0.04);border:0.5px solid rgba(255,255,255,0.08);border-radius:5px;color:rgba(255,255,255,0.35);font-size:9px;font-family:'Inter',sans-serif;outline:none;padding:2px 5px;flex:1;min-width:0;appearance:none;-webkit-appearance:none;}
+.phase-task-meta-inp:focus{border-color:rgba(255,255,255,0.2);color:rgba(255,255,255,0.65);}
+.phase-task-meta-sel{background:rgba(255,255,255,0.04);border:0.5px solid rgba(255,255,255,0.08);border-radius:5px;color:rgba(255,255,255,0.35);font-size:9px;font-family:'Inter',sans-serif;outline:none;padding:2px 4px;width:64px;flex-shrink:0;appearance:none;-webkit-appearance:none;}
+.phase-task-meta-sel:focus{border-color:rgba(255,255,255,0.2);color:rgba(255,255,255,0.65);}
 .phase-task-add-btn{background:none;border:none;color:rgba(255,255,255,0.2);font-size:9px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;padding:4px 0;transition:color .15s;text-align:left;}
 .phase-task-add-btn:hover{color:rgba(255,255,255,0.5);}
 .phase-days-wrap{display:flex;align-items:center;gap:3px;margin-left:auto;}
@@ -971,7 +978,12 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     // Poblar desde template si no hay tareas y el template tiene pasos
     if ((!existing || existing.length === 0) && tpl.length > 0) {
       var base = Date.now();
-      p.stageTasks[stage] = tpl.map(function(text, i) { return {id: base + i, text: text, done: false, deadline: ''}; });
+      p.stageTasks[stage] = tpl.map(function(item, i) {
+        var text = typeof item === 'string' ? item : (item.text || '');
+        var deadline = typeof item === 'object' ? (item.deadline || '') : '';
+        var resp = typeof item === 'object' ? (item.resp || '') : '';
+        return {id: base + i, text: text, done: false, deadline: deadline, resp: resp};
+      });
     } else if (!existing) {
       p.stageTasks[stage] = [];
     }
@@ -1243,7 +1255,11 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     editingPhases = cat ? cat.stages.slice() : ['Brief', 'Desarrollo', 'Revisión', 'Entrega'];
     editingCatColor2 = cat ? cat.color : PALETTE[0];
     editingPhaseTemplates = editingPhases.map(function(stage) {
-      return cat && cat.templates && cat.templates[stage] ? cat.templates[stage].slice() : [];
+      var tpl = cat && cat.templates && cat.templates[stage] ? cat.templates[stage] : [];
+      return tpl.map(function(item) {
+        if (typeof item === 'string') return {text: item, deadline: '', resp: ''};
+        return {text: item.text || '', deadline: item.deadline || '', resp: item.resp || ''};
+      });
     });
     editingPhaseDays = editingPhases.map(function(stage) {
       return cat && cat.stageDays && cat.stageDays[stage] ? cat.stageDays[stage] : null;
@@ -1274,6 +1290,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
       (function(idx) {
         var item = document.createElement('div');
         item.className = 'phase-item';
+        item.dataset.idx = idx;
 
         var arr = document.createElement('div');
         arr.className = 'phase-arrow-sep';
@@ -1325,21 +1342,47 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
           function renderPhaseTasks() {
             tlist.innerHTML = '';
             var tpl = editingPhaseTemplates[pIdx] || [];
-            tpl.forEach(function(txt, ti) {
+            tpl.forEach(function(item, ti) {
               (function(tIdx) {
+                var obj = (typeof item === 'string') ? {text: item, deadline: '', resp: ''} : item;
                 var tr = document.createElement('div');
                 tr.className = 'phase-task-row';
+                // Row 1: text + delete
+                var topRow = document.createElement('div');
+                topRow.className = 'phase-task-top';
                 var inp = document.createElement('input');
                 inp.className = 'phase-task-inp';
                 inp.placeholder = 'Paso ' + (tIdx + 1);
-                inp.value = txt;
-                inp.oninput = function() { editingPhaseTemplates[pIdx][tIdx] = this.value; };
+                inp.value = obj.text;
+                inp.oninput = function() { editingPhaseTemplates[pIdx][tIdx].text = this.value; };
                 inp.addEventListener('mousedown', function(e) { e.stopPropagation(); });
                 var db = document.createElement('button');
                 db.className = 'phase-task-del-btn';
                 db.innerHTML = '×';
                 db.onclick = function(e) { e.stopPropagation(); editingPhaseTemplates[pIdx].splice(tIdx, 1); renderPhaseTasks(); };
-                tr.appendChild(inp); tr.appendChild(db);
+                topRow.appendChild(inp); topRow.appendChild(db);
+                tr.appendChild(topRow);
+                // Row 2: date + responsible
+                var meta = document.createElement('div');
+                meta.className = 'phase-task-meta';
+                var dlInp = document.createElement('input');
+                dlInp.type = 'date';
+                dlInp.className = 'phase-task-meta-inp';
+                dlInp.value = obj.deadline || '';
+                dlInp.oninput = function() { editingPhaseTemplates[pIdx][tIdx].deadline = this.value; };
+                dlInp.addEventListener('mousedown', function(e) { e.stopPropagation(); });
+                var respSel = document.createElement('select');
+                respSel.className = 'phase-task-meta-sel';
+                [['', 'Resp.'], ['AR', 'Ana R.'], ['LM', 'Luis M.'], ['SV', 'Sofía V.'], ['RG', 'Rodrigo G.']].forEach(function(opt) {
+                  var o = document.createElement('option');
+                  o.value = opt[0]; o.textContent = opt[1];
+                  if (opt[0] === obj.resp) o.selected = true;
+                  respSel.appendChild(o);
+                });
+                respSel.onchange = function() { editingPhaseTemplates[pIdx][tIdx].resp = this.value; };
+                respSel.addEventListener('mousedown', function(e) { e.stopPropagation(); });
+                meta.appendChild(dlInp); meta.appendChild(respSel);
+                tr.appendChild(meta);
                 tlist.appendChild(tr);
               })(ti);
             });
@@ -1351,7 +1394,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
           addBtn.onclick = function(e) {
             e.stopPropagation();
             if (!editingPhaseTemplates[pIdx]) editingPhaseTemplates[pIdx] = [];
-            editingPhaseTemplates[pIdx].push('');
+            editingPhaseTemplates[pIdx].push({text: '', deadline: '', resp: ''});
             renderPhaseTasks();
           };
           tsec.appendChild(addBtn);
@@ -1425,7 +1468,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     if (!phases.length) return;
     var templates = {}, stageDays = {};
     phases.forEach(function(phase, i) {
-      var tpl = editingPhaseTemplates[i] ? editingPhaseTemplates[i].filter(function(t){ return t.trim(); }) : [];
+      var tpl = editingPhaseTemplates[i] ? editingPhaseTemplates[i].filter(function(t){ var txt = typeof t === 'string' ? t : t.text; return txt && txt.trim(); }) : [];
       if (tpl.length) templates[phase] = tpl;
       var d = editingPhaseDays[i];
       if (d && d > 0) stageDays[phase] = d;
