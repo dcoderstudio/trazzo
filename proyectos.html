@@ -151,6 +151,10 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 .tk-dl.tku{color:#E24B4A;border-color:rgba(226,75,74,0.3);}
 .tk-dl.tks{color:#E8A020;border-color:rgba(232,160,32,0.3);}
 .tk-dl-inp{background:#1a1a1a;border:0.5px solid rgba(255,255,255,0.15);border-radius:6px;padding:2px 5px;font-size:9px;color:#fff;font-family:'Inter',sans-serif;outline:none;width:110px;}
+.tk-resp{font-size:9px;color:rgba(255,255,255,0.25);cursor:pointer;white-space:nowrap;padding:2px 7px;border-radius:6px;border:0.5px solid rgba(255,255,255,0.08);transition:all .15s;flex-shrink:0;}
+.tk-resp:hover{border-color:rgba(255,255,255,0.2);color:rgba(255,255,255,0.5);}
+.tk-resp-inp{background:#1a1a1a;border:0.5px solid rgba(255,255,255,0.15);border-radius:6px;padding:2px 5px;font-size:9px;color:#fff;font-family:'Inter',sans-serif;outline:none;width:80px;}
+.tp-new-resp{background:#1e1e1e;border:0.5px solid rgba(255,255,255,0.1);border-radius:10px;padding:8px 6px;font-size:11px;color:rgba(255,255,255,0.4);font-family:'Inter',sans-serif;outline:none;width:58px;flex-shrink:0;}
 .tk-del{background:none;border:none;cursor:pointer;color:rgba(255,255,255,0.1);font-size:14px;padding:1px 4px;transition:color .15s;opacity:0;flex-shrink:0;}
 .tk-row:hover .tk-del{opacity:1;}
 .tk-del:hover{color:#E24B4A;}
@@ -403,6 +407,13 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
         <div class="tp-add-row">
           <input class="tp-new-inp" id="pdmNewInp" placeholder="Nueva tarea...">
           <input class="tp-new-dl" id="pdmNewDl" type="date">
+          <select class="tp-new-resp" id="pdmNewResp">
+            <option value="">👤</option>
+            <option value="AR">AR</option>
+            <option value="LM">LM</option>
+            <option value="SV">SV</option>
+            <option value="RG">RG</option>
+          </select>
           <button class="btn-ok" id="pdmAddBtn" style="padding:8px 14px;">+</button>
         </div>
       </div>
@@ -1540,6 +1551,9 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     renderDetailTimeline();
   }
 
+  var RESP_NAMES = {AR:'Ana R.', LM:'Luis M.', SV:'Sofía V.', RG:'Rodrigo G.'};
+  var RESP_OPTS = [['','— Nadie'],['AR','Ana Ramírez'],['LM','Luis Mora'],['SV','Sofía Vega'],['RG','Rodrigo Gil']];
+
   function renderDetailTasks() {
     var p = null;
     for (var i = 0; i < projects.length; i++) { if (projects[i].id === detailProjectId) { p = projects[i]; break; } }
@@ -1553,16 +1567,46 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
       row.className = 'tk-row' + (task.done ? ' tk-done' : '');
       row.innerHTML = '<div class="tk-check' + (task.done ? ' on' : '') + '"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div>'
         + '<span class="tk-text">' + task.text.replace(/</g,'&lt;') + '</span>'
-        + '<span class="tk-dl' + (task.deadline ? ' '+dlClass(task.deadline) : '') + '">' + fmtDl(task.deadline) + '</span>'
         + '<button class="tk-del">×</button>';
-      row.querySelector('.tk-check').onclick = function() { task.done = !task.done; saveData(); renderDetailTasks(); updateCardBadge(detailProjectId); };
-      row.querySelector('.tk-dl').onclick = function() {
-        var sp = row.querySelector('.tk-dl');
+      // Responsible badge
+      var respBadge = document.createElement('span');
+      respBadge.className = 'tk-resp';
+      var respKey = task.resp || '';
+      respBadge.textContent = respKey ? RESP_NAMES[respKey] || respKey : '👤';
+      if (respKey && AV_COLORS[respKey]) {
+        respBadge.style.background = AV_COLORS[respKey] + '22';
+        respBadge.style.color = AV_COLORS[respKey];
+        respBadge.style.borderColor = AV_COLORS[respKey] + '44';
+      }
+      respBadge.onclick = function() {
+        var sel = document.createElement('select');
+        sel.className = 'tk-resp-inp';
+        RESP_OPTS.forEach(function(opt) {
+          var o = document.createElement('option');
+          o.value = opt[0]; o.textContent = opt[1];
+          if (opt[0] === (task.resp || '')) o.selected = true;
+          sel.appendChild(o);
+        });
+        row.replaceChild(sel, respBadge);
+        sel.focus();
+        function fin() { task.resp = sel.value; saveData(); renderDetailTasks(); }
+        sel.onchange = fin; sel.onblur = fin;
+      };
+      // Date badge
+      var dlBadge = document.createElement('span');
+      dlBadge.className = 'tk-dl' + (task.deadline ? ' ' + dlClass(task.deadline) : '');
+      dlBadge.textContent = fmtDl(task.deadline);
+      dlBadge.onclick = function() {
         var inp = document.createElement('input'); inp.type = 'date'; inp.className = 'tk-dl-inp'; inp.value = task.deadline || '';
-        row.replaceChild(inp, sp); inp.focus();
+        row.replaceChild(inp, dlBadge); inp.focus();
         function fin() { task.deadline = inp.value; saveData(); renderDetailTasks(); }
         inp.onchange = fin; inp.onblur = fin;
       };
+      // Insert before del button
+      var del = row.querySelector('.tk-del');
+      row.insertBefore(respBadge, del);
+      row.insertBefore(dlBadge, del);
+      row.querySelector('.tk-check').onclick = function() { task.done = !task.done; saveData(); renderDetailTasks(); updateCardBadge(detailProjectId); };
       row.querySelector('.tk-del').onclick = function() {
         p.stageTasks[p.stage] = p.stageTasks[p.stage].filter(function(t){ return t.id !== task.id; });
         saveData(); renderDetailTasks(); updateCardBadge(detailProjectId);
@@ -1683,14 +1727,16 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     var text = document.getElementById('pdmNewInp').value.trim();
     if (!text) return;
     var dl = document.getElementById('pdmNewDl').value;
+    var resp = document.getElementById('pdmNewResp').value;
     var p = null;
     for (var i = 0; i < projects.length; i++) { if (projects[i].id === detailProjectId) { p = projects[i]; break; } }
     if (!p) return;
     if (!p.stageTasks) p.stageTasks = {};
     if (!p.stageTasks[p.stage]) p.stageTasks[p.stage] = [];
-    p.stageTasks[p.stage].push({id: Date.now(), text: text, done: false, deadline: dl});
+    p.stageTasks[p.stage].push({id: Date.now(), text: text, done: false, deadline: dl, resp: resp});
     document.getElementById('pdmNewInp').value = '';
     document.getElementById('pdmNewDl').value = '';
+    document.getElementById('pdmNewResp').value = '';
     saveData(); renderDetailTasks(); updateCardBadge(detailProjectId);
   }
 
