@@ -66,6 +66,12 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 .tk-empty{padding:32px 12px;text-align:center;color:rgba(255,255,255,0.15);font-size:11px;border:1px dashed rgba(255,255,255,0.07);border-radius:12px;}
 .done-toggle{background:none;border:0.5px solid rgba(255,255,255,0.08);border-radius:10px;color:rgba(255,255,255,0.25);font-size:11px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;padding:8px 14px;transition:all .15s;text-align:left;width:100%;}
 .done-toggle:hover{border-color:rgba(255,255,255,0.18);color:rgba(255,255,255,0.5);}
+/* DRAG & DROP */
+.tk-card[draggable="true"]{cursor:grab;}
+.tk-card[draggable="true"]:active{cursor:grabbing;}
+.tk-card.tk-dragging{opacity:0.15!important;pointer-events:none;}
+.tk-col-body.tk-drag-active{background:rgba(255,255,255,0.035);border-radius:10px;}
+.tk-placeholder{min-height:74px;border-radius:12px;border:1.5px dashed rgba(255,255,255,0.2);background:rgba(255,255,255,0.025);flex-shrink:0;transition:min-height .1s;}
 /* NEW TASK BUTTON */
 .new-task-btn{background:#fff;color:#0c0c0c;border:none;font-size:11px;font-weight:700;padding:6px 14px;border-radius:20px;cursor:pointer;font-family:'Inter',sans-serif;display:flex;align-items:center;gap:5px;margin-left:auto;flex-shrink:0;}
 .new-task-btn:hover{background:#e0e0e0;}
@@ -179,6 +185,8 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
   var MNS = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
   var filterPerson = '';
   var showDone = false;
+  var dragTaskInfo = null;
+  var dragPlaceholder = null;
 
   function saveData() {
     DOC.set({projects:projects, categories:categories, nextId:nextId, catIdCounter:catIdCounter})
@@ -203,6 +211,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
             id: task.id,
             text: task.text,
             done: !!task.done,
+            colStatus: task.colStatus || null,
             deadline: task.deadline || '',
             resp: task.resp || '',
             projectId: proj.id,
@@ -243,6 +252,21 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     var card = document.createElement('div');
     var urgent = !task.done && task.deadline && isUrgent(task.deadline);
     card.className = 'tk-card' + (urgent ? ' urgent-card' : '') + (task.done ? ' done-card' : '');
+    card.setAttribute('draggable', 'true');
+    card.addEventListener('dragstart', function(e) {
+      dragTaskInfo = {projectId: task.projectId, stage: task.stage, taskId: task.id};
+      card.classList.add('tk-dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', String(task.id));
+      setTimeout(function(){ card.style.opacity = '0.15'; }, 0);
+    });
+    card.addEventListener('dragend', function() {
+      card.classList.remove('tk-dragging');
+      card.style.opacity = '';
+      if (dragPlaceholder && dragPlaceholder.parentNode) { dragPlaceholder.parentNode.removeChild(dragPlaceholder); }
+      document.querySelectorAll('.tk-col-body').forEach(function(b){ b.classList.remove('tk-drag-active'); });
+      dragTaskInfo = null;
+    });
 
     var bar = document.createElement('div');
     bar.className = 'tk-card-bar';
@@ -329,6 +353,31 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 
     var body = document.createElement('div');
     body.className = 'tk-col-body';
+    body.addEventListener('dragover', function(e) {
+      e.preventDefault();
+      body.classList.add('tk-drag-active');
+      if (!dragPlaceholder) {
+        dragPlaceholder = document.createElement('div');
+        dragPlaceholder.className = 'tk-placeholder';
+      }
+      var afterEl = getDragAfterEl(body, e.clientY);
+      if (!afterEl) { body.appendChild(dragPlaceholder); }
+      else { body.insertBefore(dragPlaceholder, afterEl); }
+    });
+    body.addEventListener('dragleave', function(e) {
+      if (!body.contains(e.relatedTarget)) {
+        body.classList.remove('tk-drag-active');
+        if (dragPlaceholder && dragPlaceholder.parentNode === body) { body.removeChild(dragPlaceholder); }
+      }
+    });
+    body.addEventListener('drop', function(e) {
+      e.preventDefault();
+      body.classList.remove('tk-drag-active');
+      if (dragPlaceholder && dragPlaceholder.parentNode) { dragPlaceholder.parentNode.removeChild(dragPlaceholder); }
+      if (!dragTaskInfo) return;
+      updateTaskCol(dragTaskInfo.projectId, dragTaskInfo.stage, dragTaskInfo.taskId, colType);
+      dragTaskInfo = null;
+    });
 
     if (!tasks.length) {
       var empty = document.createElement('div');
@@ -369,13 +418,21 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     var all = getAllTasks();
     var filtered = filterPerson ? all.filter(function(t){ return t.resp === filterPerson; }) : all;
 
-    // Columns:
-    // Not Started: no deadline, not done
-    // In Progress: has deadline, not done
-    // Done: done
-    var notStarted = filtered.filter(function(t){ return !t.done && !t.deadline; });
-    var inProgress = filtered.filter(function(t){ return !t.done && !!t.deadline; });
-    var done = filtered.filter(function(t){ return t.done; });
+    var notStarted = filtered.filter(function(t){
+      if (t.colStatus === 'inprogress' || t.colStatus === 'done') return false;
+      if (t.colStatus === 'notstarted') return true;
+      return !t.done && !t.deadline;
+    });
+    var inProgress = filtered.filter(function(t){
+      if (t.colStatus === 'notstarted' || t.colStatus === 'done') return false;
+      if (t.colStatus === 'inprogress') return true;
+      return !t.done && !!t.deadline;
+    });
+    var done = filtered.filter(function(t){
+      if (t.colStatus === 'notstarted' || t.colStatus === 'inprogress') return false;
+      if (t.colStatus === 'done') return true;
+      return !!t.done;
+    });
 
     // Sort in-progress by deadline ascending
     inProgress.sort(function(a,b){ return a.deadline < b.deadline ? -1 : 1; });
@@ -400,6 +457,36 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
           for (var j=0;j<tasks.length;j++){
             if (tasks[j].id===taskId){
               tasks[j].done = !tasks[j].done;
+              tasks[j].colStatus = tasks[j].done ? 'done' : (tasks[j].deadline ? 'inprogress' : 'notstarted');
+              saveData();
+              renderBoard();
+              return;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  function getDragAfterEl(container, y) {
+    var els = Array.from(container.querySelectorAll('.tk-card:not(.tk-dragging)'));
+    return els.reduce(function(closest, child) {
+      var box = child.getBoundingClientRect();
+      var offset = y - box.top - box.height / 2;
+      if (offset < 0 && offset > closest.offset) { return {offset: offset, element: child}; }
+      return closest;
+    }, {offset: Number.NEGATIVE_INFINITY}).element;
+  }
+
+  function updateTaskCol(projectId, stage, taskId, newColType) {
+    for (var i=0;i<projects.length;i++){
+      if (projects[i].id===projectId){
+        var tasks = projects[i].stageTasks && projects[i].stageTasks[stage];
+        if (tasks){
+          for (var j=0;j<tasks.length;j++){
+            if (tasks[j].id===taskId){
+              tasks[j].colStatus = newColType;
+              tasks[j].done = (newColType === 'done');
               saveData();
               renderBoard();
               return;
