@@ -2255,6 +2255,73 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
       });
       migrated = true;
     }
+    // Agregar categoría Servicios de producción e instalación si no existe
+    var hasSPI = false;
+    for (var ci2 = 0; ci2 < categories.length; ci2++) { if (categories[ci2].id === 'produccioninstalacion') { hasSPI = true; break; } }
+    if (!hasSPI) {
+      function _t2(text) { return {text: text, deadline: '', resp: ''}; }
+      categories.push({
+        id: 'produccioninstalacion',
+        label: 'Servicios de producción e instalación',
+        color: '#B8760F',
+        stages: [
+          'Definición de requerimientos',
+          'Visualización final',
+          'Proveedores y fabricación',
+          'Recolección',
+          'Armado / Ensamblado',
+          'Instalación y entrega'
+        ],
+        stageDays: {
+          'Definición de requerimientos': 3,
+          'Visualización final': 5,
+          'Proveedores y fabricación': 14,
+          'Recolección': 2,
+          'Armado / Ensamblado': 5,
+          'Instalación y entrega': 3
+        },
+        templates: {
+          'Definición de requerimientos': [
+            _t2('Reunión de levantamiento con cliente'),
+            _t2('Definir materiales, dimensiones y especificaciones'),
+            _t2('Cotización inicial y validación de presupuesto'),
+            _t2('Confirmar alcance y firmar orden de trabajo')
+          ],
+          'Visualización final': [
+            _t2('Renders, planos o referentes del resultado final'),
+            _t2('Revisión de materiales y acabados'),
+            _t2('Aprobación visual por el cliente'),
+            _t2('Generar archivo de referencia para producción')
+          ],
+          'Proveedores y fabricación': [
+            _t2('Solicitar cotizaciones a proveedores'),
+            _t2('Confirmar pedidos de materiales'),
+            _t2('Seguimiento de tiempos de fabricación'),
+            _t2('Recepción y revisión de materiales entregados')
+          ],
+          'Recolección': [
+            _t2('Coordinar logística de recolección'),
+            _t2('Verificar inventario completo de piezas y materiales'),
+            _t2('Trasladar materiales al punto de ensamblado'),
+            _t2('Confirmar checklist de materiales')
+          ],
+          'Armado / Ensamblado': [
+            _t2('Preparar área y herramientas de trabajo'),
+            _t2('Ensamblar componentes según especificaciones'),
+            _t2('Revisión de calidad del ensamblado'),
+            _t2('Empaque y preparación para traslado e instalación')
+          ],
+          'Instalación y entrega': [
+            _t2('Coordinar acceso y preparación del sitio'),
+            _t2('Instalación en sitio según planos'),
+            _t2('Revisión y ajustes finales'),
+            _t2('Registro fotográfico del trabajo terminado'),
+            _t2('Firma de acta de entrega con cliente')
+          ]
+        }
+      });
+      migrated = true;
+    }
     if (migrated) saveData();
     renderTabs();
     renderBoard();
