@@ -187,6 +187,38 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 .pdm-task-lbl{font-size:10px;font-weight:700;color:rgba(255,255,255,0.28);text-transform:uppercase;letter-spacing:.08em;flex-shrink:0;}
 .pdm-footer{padding:10px 18px;border-top:0.5px solid rgba(255,255,255,0.06);display:flex;justify-content:space-between;align-items:center;flex-shrink:0;}
 .pdm-footer-info{font-size:10px;color:rgba(255,255,255,0.2);}
+/* ── CUSTOM PICKERS ─── */
+.cdt{background:#1e1e1e;border:0.5px solid rgba(255,255,255,0.1);border-radius:10px;padding:9px 12px;font-size:12px;color:rgba(255,255,255,0.3);font-family:'Inter',sans-serif;cursor:pointer;text-align:left;width:100%;display:block;transition:border-color .15s,color .15s;}
+.cdt:hover,.cdt.has-val{color:#fff;border-color:rgba(255,255,255,0.25);}
+.cdt.compact{width:auto;min-width:100px;flex-shrink:0;}
+.cpt{background:#1e1e1e;border:0.5px solid rgba(255,255,255,0.1);border-radius:10px;padding:9px 12px;font-size:12px;color:rgba(255,255,255,0.3);font-family:'Inter',sans-serif;cursor:pointer;text-align:left;width:100%;display:flex;align-items:center;gap:6px;transition:border-color .15s,color .15s;}
+.cpt:hover,.cpt.has-val{color:#fff;border-color:rgba(255,255,255,0.25);}
+.cpt.compact{width:auto;flex-shrink:0;padding:8px 10px;min-width:48px;}
+.cpt-av{width:20px;height:20px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:7px;font-weight:700;color:#fff;flex-shrink:0;}
+.dp-panel{position:fixed;z-index:9999;background:#161616;border:0.5px solid rgba(255,255,255,0.14);border-radius:18px;padding:16px;box-shadow:0 20px 70px rgba(0,0,0,.9);width:252px;font-family:'Inter',sans-serif;}
+.dp-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.dp-month-lbl{font-size:13px;font-weight:700;color:#fff;letter-spacing:-.01em;}
+.dp-nav-btn{background:rgba(255,255,255,0.07);border:none;color:rgba(255,255,255,0.5);width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:18px;line-height:1;display:flex;align-items:center;justify-content:center;transition:all .15s;font-family:'Inter',sans-serif;}
+.dp-nav-btn:hover{background:rgba(255,255,255,0.14);color:#fff;}
+.dp-weekdays{display:grid;grid-template-columns:repeat(7,1fr);margin-bottom:4px;}
+.dp-wday{font-size:9px;font-weight:700;color:rgba(255,255,255,0.2);text-align:center;padding:3px 0;letter-spacing:.04em;}
+.dp-days{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;}
+.dp-day{font-size:11px;font-weight:500;height:32px;display:flex;align-items:center;justify-content:center;border-radius:8px;cursor:pointer;color:rgba(255,255,255,0.6);transition:all .12s;border:none;background:none;font-family:'Inter',sans-serif;width:100%;}
+.dp-day:hover{background:rgba(255,255,255,0.08);color:#fff;}
+.dp-day.om{color:rgba(255,255,255,0.15);cursor:default;}
+.dp-day.om:hover{background:none;}
+.dp-day.td{color:#fff;box-shadow:inset 0 0 0 1.5px rgba(255,255,255,0.35);}
+.dp-day.sel{background:#fff!important;color:#0c0c0c!important;font-weight:700;}
+.dp-clear{width:100%;margin-top:10px;padding:7px;background:none;border:0.5px solid rgba(255,255,255,0.08);border-radius:10px;color:rgba(255,255,255,0.3);font-size:11px;font-family:'Inter',sans-serif;cursor:pointer;transition:all .15s;}
+.dp-clear:hover{border-color:rgba(255,255,255,0.22);color:rgba(255,255,255,0.7);}
+.pp-panel{position:fixed;z-index:9999;background:#161616;border:0.5px solid rgba(255,255,255,0.14);border-radius:14px;padding:6px;box-shadow:0 12px 50px rgba(0,0,0,.9);font-family:'Inter',sans-serif;min-width:185px;}
+.pp-opt{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:9px;cursor:pointer;transition:background .12s;}
+.pp-opt:hover,.pp-opt.pp-s{background:rgba(255,255,255,0.07);}
+.pp-av{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:#fff;flex-shrink:0;}
+.pp-nm{font-size:12px;color:rgba(255,255,255,0.65);font-weight:500;}
+.pp-opt.pp-s .pp-nm{color:#fff;font-weight:700;}
+.pp-none{padding:8px 10px;border-radius:9px;cursor:pointer;font-size:11px;color:rgba(255,255,255,0.3);transition:background .12s;}
+.pp-none:hover,.pp-none.pp-s{background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.6);}
 .pdm-timeline-wrap{border-top:0.5px solid rgba(255,255,255,0.06);flex-shrink:0;padding:14px 18px 16px;}
 .pdm-timeline-scroll{overflow-x:auto;overflow-y:hidden;margin-top:8px;width:100%;padding-bottom:8px;}
 .pdm-timeline-scroll::-webkit-scrollbar{height:6px;}
@@ -457,6 +489,9 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 
   var PALETTE = ['#1A6FD4','#7B6FD0','#E8A020','#D4537E','#1D9E75','#D85A30','#B8760F','#27AE72','#C0436E','#555450'];
   var AV_COLORS = {AR:'#1A6FD4',LM:'#7B6FD0',SV:'#D4537E',RG:'#E8A020'};
+  var TEAM_MEMBERS = [{id:'AR',name:'Ana Ramírez',color:'#1A6FD4'},{id:'LM',name:'Luis Mora',color:'#7B6FD0'},{id:'SV',name:'Sofía Vega',color:'#D4537E'},{id:'RG',name:'Rodrigo Gil',color:'#E8A020'}];
+  var fieldUpdaters = {};
+  var _activePicker = null;
   var selColor = PALETTE[0];
   var selEditColor = PALETTE[0];
   var editingCatId = null;
@@ -1110,6 +1145,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     });
     ['solName','solClient','solMonto'].forEach(function(id){ document.getElementById(id).value = ''; });
     document.getElementById('solDeadline').value = '';
+    if (fieldUpdaters['solDeadline']) fieldUpdaters['solDeadline']();
     document.getElementById('solOverlay').classList.add('open');
     setTimeout(function(){ document.getElementById('solName').focus(); }, 100);
   }
@@ -1170,6 +1206,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
   function closeProjModal() {
     document.getElementById('projOverlay').classList.remove('open');
     ['mName','mClient','mDeadline','mMonto'].forEach(function(id) { document.getElementById(id).value = ''; });
+    if (fieldUpdaters['mDeadline']) fieldUpdaters['mDeadline']();
   }
 
   function createProject() {
@@ -1513,7 +1550,9 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     pill.style.color = cat ? cat.color : '#fff';
     document.getElementById('pdmClient').value = p.client || '';
     document.getElementById('pdmDeadline').value = p.deadline || '';
+    if (fieldUpdaters['pdmDeadline']) fieldUpdaters['pdmDeadline']();
     document.getElementById('pdmResp').value = p.team && p.team[0] ? p.team[0] : 'AR';
+    if (fieldUpdaters['pdmResp']) fieldUpdaters['pdmResp']();
     var montoRow = document.getElementById('pdmMontoRow');
     if (p.catId === 'cotizaciones') { montoRow.style.display = ''; document.getElementById('pdmMonto').value = p.monto || ''; }
     else { montoRow.style.display = 'none'; }
@@ -1579,28 +1618,18 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
         respBadge.style.borderColor = AV_COLORS[respKey] + '44';
       }
       respBadge.onclick = function() {
-        var sel = document.createElement('select');
-        sel.className = 'tk-resp-inp';
-        RESP_OPTS.forEach(function(opt) {
-          var o = document.createElement('option');
-          o.value = opt[0]; o.textContent = opt[1];
-          if (opt[0] === (task.resp || '')) o.selected = true;
-          sel.appendChild(o);
+        openPersonPicker(respBadge, task.resp || '', function(val) {
+          task.resp = val; saveData(); renderDetailTasks();
         });
-        row.replaceChild(sel, respBadge);
-        sel.focus();
-        function fin() { task.resp = sel.value; saveData(); renderDetailTasks(); }
-        sel.onchange = fin; sel.onblur = fin;
       };
       // Date badge
       var dlBadge = document.createElement('span');
       dlBadge.className = 'tk-dl' + (task.deadline ? ' ' + dlClass(task.deadline) : '');
       dlBadge.textContent = fmtDl(task.deadline);
       dlBadge.onclick = function() {
-        var inp = document.createElement('input'); inp.type = 'date'; inp.className = 'tk-dl-inp'; inp.value = task.deadline || '';
-        row.replaceChild(inp, dlBadge); inp.focus();
-        function fin() { task.deadline = inp.value; saveData(); renderDetailTasks(); }
-        inp.onchange = fin; inp.onblur = fin;
+        openDatePicker(dlBadge, task.deadline || '', function(val) {
+          task.deadline = val; saveData(); renderDetailTasks();
+        });
       };
       // Insert before del button
       var del = row.querySelector('.tk-del');
@@ -1737,6 +1766,8 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     document.getElementById('pdmNewInp').value = '';
     document.getElementById('pdmNewDl').value = '';
     document.getElementById('pdmNewResp').value = '';
+    if (fieldUpdaters['pdmNewDl']) fieldUpdaters['pdmNewDl']();
+    if (fieldUpdaters['pdmNewResp']) fieldUpdaters['pdmNewResp']();
     saveData(); renderDetailTasks(); updateCardBadge(detailProjectId);
   }
 
@@ -1760,6 +1791,118 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     saveData();
     renderProjDetail();
     renderBoard();
+  }
+
+  // ── CUSTOM PICKERS ───────────────────────────────────────
+  function closePickers() {
+    if (_activePicker && _activePicker.parentNode) _activePicker.parentNode.removeChild(_activePicker);
+    _activePicker = null;
+  }
+  document.addEventListener('mousedown', function(e) {
+    if (_activePicker && !_activePicker.contains(e.target)) closePickers();
+  }, true);
+
+  function _posPicker(panel, anchor) {
+    var r = anchor.getBoundingClientRect();
+    var pH = panel.offsetHeight||300, pW = panel.offsetWidth||260;
+    var top = r.bottom+5, left = r.left;
+    if (top+pH > window.innerHeight-8) top = r.top-pH-5;
+    if (left+pW > window.innerWidth-8) left = window.innerWidth-pW-8;
+    if (top<8) top=8;
+    panel.style.top=top+'px'; panel.style.left=left+'px';
+  }
+
+  function openDatePicker(anchor, curVal, cb) {
+    closePickers();
+    var MN=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+    var sv=curVal||'', vd=sv?new Date(sv+'T00:00:00'):new Date(), vy=vd.getFullYear(), vm=vd.getMonth();
+    var panel=document.createElement('div'); panel.className='dp-panel';
+    document.body.appendChild(panel); _activePicker=panel;
+    function render() {
+      panel.innerHTML='';
+      var nav=document.createElement('div'); nav.className='dp-nav';
+      var pb=document.createElement('button'); pb.type='button'; pb.className='dp-nav-btn'; pb.innerHTML='&#8249;';
+      pb.onclick=function(e){e.stopPropagation();vm--;if(vm<0){vm=11;vy--;}render();};
+      var nb=document.createElement('button'); nb.type='button'; nb.className='dp-nav-btn'; nb.innerHTML='&#8250;';
+      nb.onclick=function(e){e.stopPropagation();vm++;if(vm>11){vm=0;vy++;}render();};
+      var lbl=document.createElement('span'); lbl.className='dp-month-lbl'; lbl.textContent=MN[vm]+' '+vy;
+      nav.appendChild(pb); nav.appendChild(lbl); nav.appendChild(nb); panel.appendChild(nav);
+      var wr=document.createElement('div'); wr.className='dp-weekdays';
+      ['Lu','Ma','Mi','Ju','Vi','Sá','Do'].forEach(function(d){var c=document.createElement('div');c.className='dp-wday';c.textContent=d;wr.appendChild(c);});
+      panel.appendChild(wr);
+      var grid=document.createElement('div'); grid.className='dp-days';
+      var today=new Date(); today.setHours(0,0,0,0);
+      var fdow=new Date(vy,vm,1).getDay(), off=fdow===0?6:fdow-1;
+      var dim=new Date(vy,vm+1,0).getDate(), dipm=new Date(vy,vm,0).getDate();
+      for(var i=off-1;i>=0;i--){var b=document.createElement('button');b.type='button';b.className='dp-day om';b.textContent=dipm-i;grid.appendChild(b);}
+      for(var d=1;d<=dim;d++){
+        (function(day){
+          var b=document.createElement('button'); b.type='button'; b.className='dp-day';
+          b.textContent=day;
+          var td=new Date(vy,vm,day);
+          if(td.getTime()===today.getTime()) b.classList.add('td');
+          var val=vy+'-'+String(vm+1).padStart(2,'0')+'-'+String(day).padStart(2,'0');
+          if(sv===val) b.classList.add('sel');
+          b.onclick=function(e){e.stopPropagation();cb(val);closePickers();};
+          grid.appendChild(b);
+        })(d);
+      }
+      var tot=off+dim, rem=tot%7===0?0:7-(tot%7);
+      for(var i=1;i<=rem;i++){var b=document.createElement('button');b.type='button';b.className='dp-day om';b.textContent=i;grid.appendChild(b);}
+      panel.appendChild(grid);
+      var clr=document.createElement('button'); clr.type='button'; clr.className='dp-clear'; clr.textContent='Sin fecha';
+      clr.onclick=function(e){e.stopPropagation();cb('');closePickers();};
+      panel.appendChild(clr);
+      _posPicker(panel, anchor);
+    }
+    render();
+  }
+
+  function openPersonPicker(anchor, curVal, cb) {
+    closePickers();
+    var panel=document.createElement('div'); panel.className='pp-panel';
+    var none=document.createElement('div'); none.className='pp-none'+(!curVal?' pp-s':'');
+    none.textContent='— Sin responsable';
+    none.onclick=function(e){e.stopPropagation();cb('');closePickers();};
+    panel.appendChild(none);
+    TEAM_MEMBERS.forEach(function(m){
+      var opt=document.createElement('div'); opt.className='pp-opt'+(curVal===m.id?' pp-s':'');
+      var av=document.createElement('div'); av.className='pp-av'; av.style.background=m.color; av.textContent=m.id;
+      var nm=document.createElement('div'); nm.className='pp-nm'; nm.textContent=m.name;
+      opt.appendChild(av); opt.appendChild(nm);
+      opt.onclick=function(e){e.stopPropagation();cb(m.id);closePickers();};
+      panel.appendChild(opt);
+    });
+    document.body.appendChild(panel); _activePicker=panel;
+    _posPicker(panel, anchor);
+  }
+
+  function _fmtDateLbl(v) {
+    if(!v) return null;
+    var d=new Date(v+'T00:00:00');
+    return d.getDate()+' '+['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'][d.getMonth()]+'. '+d.getFullYear();
+  }
+
+  function makeDateTrigger(el, cls, ph) {
+    var btn=document.createElement('button'); btn.type='button'; btn.className=cls;
+    function upd(){var f=_fmtDateLbl(el.value);btn.textContent=f||ph;if(f)btn.classList.add('has-val');else btn.classList.remove('has-val');}
+    btn.onclick=function(e){e.preventDefault();e.stopPropagation();openDatePicker(btn,el.value,function(v){el.value=v;upd();});};
+    upd(); el.style.display='none'; el.parentNode.insertBefore(btn,el);
+    return upd;
+  }
+
+  function makePersonTrigger(el, cls, ph) {
+    var btn=document.createElement('button'); btn.type='button'; btn.className=cls;
+    function upd(){
+      var v=el.value; var m=null;
+      for(var i=0;i<TEAM_MEMBERS.length;i++){if(TEAM_MEMBERS[i].id===v){m=TEAM_MEMBERS[i];break;}}
+      btn.innerHTML='';
+      if(m){var av=document.createElement('span');av.className='cpt-av';av.style.background=m.color;av.style.cssText+='background:'+m.color;av.textContent=m.id;btn.appendChild(av);var nm=document.createElement('span');nm.style.marginLeft='6px';nm.textContent=m.name;btn.appendChild(nm);btn.classList.add('has-val');}
+      else{btn.textContent=ph;btn.classList.remove('has-val');}
+    }
+    btn.onclick=function(e){e.preventDefault();e.stopPropagation();openPersonPicker(btn,el.value,function(v){el.value=v;upd();});};
+    upd(); el.style.display='none'; el.parentNode.insertBefore(btn,el);
+    return upd;
   }
 
   // ── EVENTS ────────────────────────────────────────────
@@ -1794,6 +1937,22 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
   document.getElementById('pdmAddBtn').onclick = addDetailTask;
   document.getElementById('pdmNewInp').addEventListener('keydown', function(e){ if(e.key==='Enter') addDetailTask(); });
   document.getElementById('projDetailOverlay').addEventListener('click', function(e){ if(e.target===document.getElementById('projDetailOverlay')) document.getElementById('projDetailOverlay').classList.remove('open'); });
+
+  // ── PICKER INIT ───────────────────────────────────────
+  ['mDeadline','pdmDeadline','solDeadline'].forEach(function(id){
+    var el=document.getElementById(id); if(!el) return;
+    fieldUpdaters[id]=makeDateTrigger(el,'cdt mi','📅 Fecha de entrega');
+  });
+  ['pdmNewDl','tpNewDl'].forEach(function(id){
+    var el=document.getElementById(id); if(!el) return;
+    fieldUpdaters[id]=makeDateTrigger(el,'cdt compact','📅 Fecha');
+  });
+  ['mResp','pdmResp','solResp'].forEach(function(id){
+    var el=document.getElementById(id); if(!el) return;
+    fieldUpdaters[id]=makePersonTrigger(el,'cpt mi','👤 Responsable');
+  });
+  var pdmNR=document.getElementById('pdmNewResp');
+  if(pdmNR) fieldUpdaters['pdmNewResp']=makePersonTrigger(pdmNR,'cpt compact','👤');
 
   // ── INIT ─────────────────────────────────────────────
   DOC.get().then(function(snap) {
