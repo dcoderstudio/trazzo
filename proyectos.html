@@ -177,9 +177,11 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 .pdm-footer{padding:10px 18px;border-top:0.5px solid rgba(255,255,255,0.06);display:flex;justify-content:space-between;align-items:center;flex-shrink:0;}
 .pdm-footer-info{font-size:10px;color:rgba(255,255,255,0.2);}
 .pdm-timeline-wrap{border-top:0.5px solid rgba(255,255,255,0.06);flex-shrink:0;padding:14px 18px 16px;}
-.pdm-timeline-scroll{overflow-x:auto;overflow-y:hidden;margin-top:8px;}
-.pdm-timeline-scroll::-webkit-scrollbar{height:3px;}
-.pdm-timeline-scroll::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:2px;}
+.pdm-timeline-scroll{overflow-x:auto;overflow-y:hidden;margin-top:8px;width:100%;padding-bottom:8px;}
+.pdm-timeline-scroll::-webkit-scrollbar{height:6px;}
+.pdm-timeline-scroll::-webkit-scrollbar-track{background:rgba(255,255,255,0.04);border-radius:4px;}
+.pdm-timeline-scroll::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.2);border-radius:4px;}
+.pdm-timeline-scroll::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,0.38);}
 .phase-card:active{cursor:grabbing;}
 .phase-card:hover{border-color:rgba(255,255,255,0.22);}
 .phase-card.dragging{opacity:0.25;border-color:rgba(255,255,255,0.05);}
