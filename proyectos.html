@@ -119,8 +119,9 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 .phase-task-meta{display:flex;gap:4px;}
 .phase-task-meta-inp{background:rgba(255,255,255,0.04);border:0.5px solid rgba(255,255,255,0.08);border-radius:5px;color:rgba(255,255,255,0.35);font-size:9px;font-family:'Inter',sans-serif;outline:none;padding:2px 5px;flex:1;min-width:0;appearance:none;-webkit-appearance:none;}
 .phase-task-meta-inp:focus{border-color:rgba(255,255,255,0.2);color:rgba(255,255,255,0.65);}
-.phase-task-meta-sel{background:rgba(255,255,255,0.04);border:0.5px solid rgba(255,255,255,0.08);border-radius:5px;color:rgba(255,255,255,0.35);font-size:9px;font-family:'Inter',sans-serif;outline:none;padding:2px 4px;width:64px;flex-shrink:0;appearance:none;-webkit-appearance:none;}
-.phase-task-meta-sel:focus{border-color:rgba(255,255,255,0.2);color:rgba(255,255,255,0.65);}
+.phase-task-resp-btn{background:rgba(255,255,255,0.04);border:0.5px solid rgba(255,255,255,0.08);border-radius:6px;color:rgba(255,255,255,0.28);font-size:9px;font-family:'Inter',sans-serif;padding:3px 7px;cursor:pointer;text-align:left;display:flex;align-items:center;gap:5px;width:100%;transition:border-color .15s,color .15s;}
+.phase-task-resp-btn:hover{border-color:rgba(255,255,255,0.2);color:rgba(255,255,255,0.7);}
+.phase-task-resp-av{width:14px;height:14px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:6px;font-weight:700;color:#fff;flex-shrink:0;}
 .phase-task-add-btn{background:none;border:none;color:rgba(255,255,255,0.2);font-size:9px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;padding:4px 0;transition:color .15s;text-align:left;}
 .phase-task-add-btn:hover{color:rgba(255,255,255,0.5);}
 .phase-days-wrap{display:flex;align-items:center;gap:3px;margin-left:auto;}
@@ -1507,18 +1508,40 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
                 // Row 2: responsible only
                 var meta = document.createElement('div');
                 meta.className = 'phase-task-meta';
-                var respSel = document.createElement('select');
-                respSel.className = 'phase-task-meta-sel';
-                respSel.style.cssText = 'flex:1;width:100%;';
-                [['', '👤 Sin responsable'], ['AR', '👤 Ana Ramírez'], ['LM', '👤 Luis Mora'], ['SV', '👤 Sofía Vega'], ['RG', '👤 Rodrigo Gil']].forEach(function(opt) {
-                  var o = document.createElement('option');
-                  o.value = opt[0]; o.textContent = opt[1];
-                  if (opt[0] === obj.resp) o.selected = true;
-                  respSel.appendChild(o);
-                });
-                respSel.onchange = function() { editingPhaseTemplates[pIdx][tIdx].resp = this.value; };
-                respSel.addEventListener('mousedown', function(e) { e.stopPropagation(); });
-                meta.appendChild(respSel);
+                var respBtn = document.createElement('button');
+                respBtn.type = 'button';
+                respBtn.className = 'phase-task-resp-btn';
+                function updateRespBtn() {
+                  var v = editingPhaseTemplates[pIdx] && editingPhaseTemplates[pIdx][tIdx] ? editingPhaseTemplates[pIdx][tIdx].resp || '' : '';
+                  var m = null;
+                  for (var ti3=0;ti3<TEAM_MEMBERS.length;ti3++){if(TEAM_MEMBERS[ti3].id===v){m=TEAM_MEMBERS[ti3];break;}}
+                  respBtn.innerHTML = '';
+                  if (m) {
+                    var av = document.createElement('span'); av.className = 'phase-task-resp-av';
+                    av.style.background = m.color; av.textContent = m.id;
+                    respBtn.appendChild(av);
+                    var nm = document.createElement('span'); nm.textContent = m.name; nm.style.color = 'rgba(255,255,255,0.65)';
+                    respBtn.appendChild(nm);
+                  } else {
+                    var ic = document.createElement('span'); ic.style.cssText = 'width:14px;height:14px;border-radius:50%;border:1px solid rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;font-size:7px;color:rgba(255,255,255,0.3);flex-shrink:0;'; ic.textContent = '?';
+                    respBtn.appendChild(ic);
+                    var ntxt = document.createElement('span'); ntxt.textContent = 'Sin responsable';
+                    respBtn.appendChild(ntxt);
+                  }
+                }
+                updateRespBtn();
+                respBtn.addEventListener('mousedown', function(e){ e.stopPropagation(); });
+                respBtn.onclick = function(e) {
+                  e.stopPropagation();
+                  var cur = editingPhaseTemplates[pIdx] && editingPhaseTemplates[pIdx][tIdx] ? editingPhaseTemplates[pIdx][tIdx].resp||'' : '';
+                  openPersonPicker(respBtn, cur, function(val) {
+                    if (editingPhaseTemplates[pIdx] && editingPhaseTemplates[pIdx][tIdx]) {
+                      editingPhaseTemplates[pIdx][tIdx].resp = val;
+                    }
+                    updateRespBtn();
+                  });
+                };
+                meta.appendChild(respBtn);
                 tr.appendChild(meta);
                 tlist.appendChild(tr);
               })(ti);
