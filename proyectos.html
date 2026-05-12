@@ -166,6 +166,17 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 .card-task-pill{font-size:9px;font-weight:700;padding:2px 7px;border-radius:10px;background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.28);display:inline-block;margin-top:5px;cursor:pointer;}
 .card-task-pill.pnd{background:rgba(232,160,32,0.12);color:#E8A020;}
 .card-task-pill.fin{background:rgba(39,174,114,0.12);color:#27AE72;}
+.card-pay-pill{font-size:9px;font-weight:700;padding:2px 8px;border-radius:10px;display:inline-block;margin-top:4px;cursor:pointer;transition:all .15s;}
+.card-pay-pill.ppend{background:rgba(232,160,32,0.1);color:#E8A020;border:0.5px solid rgba(232,160,32,0.25);}
+.card-pay-pill.ppend:hover{background:rgba(232,160,32,0.22);}
+.card-pay-pill.pdone{background:rgba(39,174,114,0.1);color:#27AE72;border:0.5px solid rgba(39,174,114,0.25);}
+.card-pay-pill.pdone:hover{background:rgba(39,174,114,0.22);}
+.phase-payment-section{border-top:0.5px solid rgba(255,255,255,0.06);padding:7px 12px 10px;}
+.phase-pay-toggle{background:none;border:none;color:rgba(255,255,255,0.2);font-size:9px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;padding:2px 0;transition:color .15s;text-align:left;width:100%;}
+.phase-pay-toggle:hover{color:rgba(255,255,255,0.5);}
+.phase-pay-toggle.on{color:#27AE72;}
+.phase-pay-inp{background:rgba(255,255,255,0.04);border:0.5px solid rgba(255,255,255,0.08);border-radius:5px;color:rgba(255,255,255,0.6);font-size:9px;font-family:'Inter',sans-serif;outline:none;width:100%;padding:3px 7px;margin-top:5px;display:block;}
+.phase-pay-inp:focus{border-color:rgba(255,255,255,0.22);color:#fff;}
 .pdm{background:#161616;border:0.5px solid rgba(255,255,255,0.1);border-radius:20px;width:min(94vw,740px);max-height:88vh;display:flex;flex-direction:column;transform:translateY(8px);transition:transform .2s;overflow:hidden;}
 .overlay.open .pdm{transform:none;}
 .pdm-header{padding:18px 20px 14px;border-bottom:0.5px solid rgba(255,255,255,0.06);display:flex;align-items:center;gap:10px;flex-shrink:0;}
@@ -530,6 +541,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
   var phaseDragIdx = -1;
   var editingPhaseTemplates = [];
   var editingPhaseDays = [];
+  var editingPhasePayments = [];
   var taskPanelProjectId = null;
   var detailProjectId = null;
   var selectedPhaseIdx = -1;
@@ -876,6 +888,14 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
       html += '<div data-task-badge style="padding-left:6px;"><span class="card-task-pill ' + pillCls + '">' + pillTxt + '</span></div>';
     }
 
+    // Payment badge
+    var stagePayment = cat.payments && cat.payments[p.stage];
+    if (stagePayment && !isEntregado) {
+      var payDone = p.paymentsDone && p.paymentsDone[p.stage];
+      html += '<div data-pay-badge style="padding-left:6px;"><span class="card-pay-pill ' + (payDone ? 'pdone' : 'ppend') + '">'
+        + (payDone ? '✓ ' : '💰 ') + stagePayment.label + '</span></div>';
+    }
+
     card.innerHTML = html;
 
     // convert button
@@ -887,6 +907,24 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
           convertirAProyecto(parseInt(convBtn.dataset.pid));
         });
       }
+    }
+
+    // Payment badge click
+    var payBadgeDiv = card.querySelector('[data-pay-badge]');
+    if (payBadgeDiv) {
+      payBadgeDiv.querySelector('.card-pay-pill').addEventListener('click', function(e) {
+        e.stopPropagation();
+        if (!p.paymentsDone) p.paymentsDone = {};
+        p.paymentsDone[p.stage] = !p.paymentsDone[p.stage];
+        saveData();
+        var done = p.paymentsDone[p.stage];
+        var pill = payBadgeDiv.querySelector('.card-pay-pill');
+        var pay = cat.payments && cat.payments[p.stage];
+        if (pill && pay) {
+          pill.textContent = (done ? '✓ ' : '💰 ') + pay.label;
+          pill.className = 'card-pay-pill ' + (done ? 'pdone' : 'ppend');
+        }
+      });
     }
 
     card.addEventListener('mouseenter', function() { card.style.transform = 'translateY(-2px)'; card.style.boxShadow = '0 6px 20px rgba(0,0,0,.4)'; });
@@ -1329,6 +1367,9 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     editingPhaseDays = editingPhases.map(function(stage) {
       return cat && cat.stageDays && cat.stageDays[stage] ? cat.stageDays[stage] : null;
     });
+    editingPhasePayments = editingPhases.map(function(stage) {
+      return cat && cat.payments && cat.payments[stage] ? cat.payments[stage].label : '';
+    });
     document.getElementById('phaseCatName').value = cat ? cat.label : '';
     buildPhaseColorPicker();
     renderPhaseFlow();
@@ -1388,6 +1429,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
           editingPhases.splice(idx, 1);
           editingPhaseTemplates.splice(idx, 1);
           editingPhaseDays.splice(idx, 1);
+          editingPhasePayments.splice(idx, 1);
           renderPhaseFlow();
         };
 
@@ -1461,6 +1503,34 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
         })(idx);
         card.appendChild(tsec);
 
+        // Payment section
+        (function(pIdx2) {
+          var paysec = document.createElement('div');
+          paysec.className = 'phase-payment-section';
+          var payActive = !!(editingPhasePayments[pIdx2] && editingPhasePayments[pIdx2].trim());
+          var payToggle = document.createElement('button');
+          payToggle.type = 'button';
+          payToggle.className = 'phase-pay-toggle' + (payActive ? ' on' : '');
+          payToggle.textContent = payActive ? '💰 Cobro al salir de esta fase' : '+ Agregar cobro al salir';
+          payToggle.addEventListener('mousedown', function(e){ e.stopPropagation(); });
+          payToggle.onclick = function(e) {
+            e.stopPropagation();
+            editingPhasePayments[pIdx2] = editingPhasePayments[pIdx2] ? '' : 'Anticipo';
+            renderPhaseFlow();
+          };
+          paysec.appendChild(payToggle);
+          if (payActive) {
+            var payInp = document.createElement('input');
+            payInp.type = 'text'; payInp.className = 'phase-pay-inp';
+            payInp.placeholder = 'Ej: Anticipo 30%, Pago final...';
+            payInp.value = editingPhasePayments[pIdx2];
+            payInp.oninput = function() { editingPhasePayments[pIdx2] = this.value; };
+            payInp.addEventListener('mousedown', function(e){ e.stopPropagation(); });
+            paysec.appendChild(payInp);
+          }
+          card.appendChild(paysec);
+        })(idx);
+
         card.addEventListener('dragstart', function(e) {
           item.dataset.dragging = '1';
           e.dataTransfer.effectAllowed = 'move';
@@ -1472,16 +1542,18 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
           delete item.dataset.dragging;
           item.style.opacity = '';
           var items = Array.from(flow.querySelectorAll('.phase-item:not(.phase-add-item)'));
-          var newPhases = [], newTemplates = [], newDays = [];
+          var newPhases = [], newTemplates = [], newDays = [], newPayments = [];
           items.forEach(function(it) {
             newPhases.push(it.querySelector('.phase-name-input').value);
             var oi = parseInt(it.dataset.idx);
             newTemplates.push(editingPhaseTemplates[oi] ? editingPhaseTemplates[oi].slice() : []);
             newDays.push(editingPhaseDays[oi] || null);
+            newPayments.push(editingPhasePayments[oi] || '');
           });
           editingPhases = newPhases;
           editingPhaseTemplates = newTemplates;
           editingPhaseDays = newDays;
+          editingPhasePayments = newPayments;
           renderPhaseFlow();
         });
 
@@ -1516,7 +1588,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     var addCard = document.createElement('div');
     addCard.className = 'phase-add-card';
     addCard.innerHTML = '<span style="font-size:20px;opacity:.4">+</span>Agregar fase';
-    addCard.onclick = function() { editingPhases.push('Nueva fase'); editingPhaseTemplates.push([]); editingPhaseDays.push(null); renderPhaseFlow(); };
+    addCard.onclick = function() { editingPhases.push('Nueva fase'); editingPhaseTemplates.push([]); editingPhaseDays.push(null); editingPhasePayments.push(''); renderPhaseFlow(); };
     addItem.appendChild(addCard);
     flow.appendChild(addItem);
   }
@@ -1526,19 +1598,21 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     if (!name) { document.getElementById('phaseCatName').focus(); return; }
     var phases = editingPhases.map(function(s){ return s.trim(); }).filter(Boolean);
     if (!phases.length) return;
-    var templates = {}, stageDays = {};
+    var templates = {}, stageDays = {}, payments = {};
     phases.forEach(function(phase, i) {
       var tpl = editingPhaseTemplates[i] ? editingPhaseTemplates[i].filter(function(t){ var txt = typeof t === 'string' ? t : t.text; return txt && txt.trim(); }) : [];
       if (tpl.length) templates[phase] = tpl;
       var d = editingPhaseDays[i];
       if (d && d > 0) stageDays[phase] = d;
+      var pay = editingPhasePayments[i] ? editingPhasePayments[i].trim() : '';
+      if (pay) payments[phase] = {label: pay};
     });
     if (editingCatId) {
       for (var i = 0; i < categories.length; i++) {
-        if (categories[i].id === editingCatId) { categories[i].label = name; categories[i].color = editingCatColor2; categories[i].stages = phases; categories[i].templates = templates; categories[i].stageDays = stageDays; break; }
+        if (categories[i].id === editingCatId) { categories[i].label = name; categories[i].color = editingCatColor2; categories[i].stages = phases; categories[i].templates = templates; categories[i].stageDays = stageDays; categories[i].payments = payments; break; }
       }
     } else {
-      categories.push({id: 'cat_' + (++catIdCounter), label: name, color: editingCatColor2, stages: phases, templates: templates, stageDays: stageDays});
+      categories.push({id: 'cat_' + (++catIdCounter), label: name, color: editingCatColor2, stages: phases, templates: templates, stageDays: stageDays, payments: payments});
     }
     saveData();
     document.getElementById('phaseOverlay').classList.remove('open');
@@ -1620,7 +1694,25 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     if (p.stageEntryDates && p.stageEntryDates[p.stage]) {
       timeHtml += '<div class="pdm-field"><div class="pdm-lbl">Entró a esta fase</div><div style="font-size:11px;color:rgba(255,255,255,0.35);">'+p.stageEntryDates[p.stage]+'</div></div>';
     }
+    // Payment info
+    var stgPay = cat && cat.payments && cat.payments[p.stage];
+    if (stgPay) {
+      var pdmPayDone = p.paymentsDone && p.paymentsDone[p.stage];
+      timeHtml += '<div class="pdm-field"><div class="pdm-lbl">Cobro</div>'
+        + '<div id="pdmPayRow" style="cursor:pointer;">'
+        + '<span class="card-pay-pill ' + (pdmPayDone ? 'pdone' : 'ppend') + '">'
+        + (pdmPayDone ? '✓ Recibido: ' : '💰 Pendiente: ') + stgPay.label
+        + '</span></div></div>';
+    }
     document.getElementById('pdmTimeInfo').innerHTML = timeHtml;
+    var pdmPayRow = document.getElementById('pdmPayRow');
+    if (pdmPayRow) {
+      pdmPayRow.onclick = function() {
+        if (!p.paymentsDone) p.paymentsDone = {};
+        p.paymentsDone[p.stage] = !p.paymentsDone[p.stage];
+        saveData(); renderProjDetail();
+      };
+    }
     document.getElementById('pdmFooterInfo').textContent = (cat ? cat.label : '') + (p.stage ? ' · ' + p.stage : '');
 
     renderDetailTasks();
