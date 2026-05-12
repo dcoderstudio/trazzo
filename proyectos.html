@@ -508,6 +508,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     appId: "1:106264633340:web:4b2560a57e75321c709c79"
   });
   var db = firebase.firestore();
+  db.enablePersistence({ synchronizeTabs: true }).catch(function(e){ console.warn('Persistence:', e.code); });
   var DOC = db.collection('workspace').doc('proyectos');
 
   function saveData() {
@@ -551,21 +552,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     {id:'ui',           label:'UI / UX', color:'#1D9E75', stages:['Brief','Wireframes','Concepto','UI Design','Testing','Revisión','Entrega']}
   ];
 
-  var projects = [
-    {id:1,  name:'Señalética Museo Nacional',      client:'INBA',               catId:'senaletica',    stage:'Desarrollo',          deadline:'2026-05-15', team:['AR','LM']},
-    {id:2,  name:'Identidad — Estudio Forma',      client:'Estudio Forma',      catId:'branding',      stage:'Concepto',            deadline:'2026-05-20', team:['SV']},
-    {id:3,  name:'App de gestión interna',         client:'Dcoder Studio',      catId:'ui',            stage:'Wireframes',          deadline:'2026-06-01', team:['LM','RG']},
-    {id:4,  name:'Mobiliario urbano Parque Central',client:'Municipio Norte',   catId:'industrial',    stage:'Brief',               deadline:'2026-05-30', team:['AR']},
-    {id:5,  name:'Señalética hospitalaria',        client:'Hospital Ángeles',   catId:'senaletica',    stage:'Recorrido de sitio',  deadline:'2026-05-10', team:['AR','SV']},
-    {id:6,  name:'Rediseño marca — Cafetería Lúa', client:'Cafetería Lúa',     catId:'branding',      stage:'Aprobación',          deadline:'2026-05-08', team:['SV','LM']},
-    {id:7,  name:'Prototipo silla ergonómica',     client:'Muebles Nico',       catId:'industrial',    stage:'Prototipo',           deadline:'2026-06-15', team:['RG']},
-    {id:8,  name:'Campus universitario',           client:'UNAM',               catId:'proyectos',     stage:'Documentación',       deadline:'2026-07-01', team:['AR','RG','LM']},
-    {id:9,  name:'Sistema señalético exterior',    client:'Plaza Comercial',    catId:'cotizaciones',  stage:'Solicitud recibida',  deadline:'',           team:['AR'], monto:'$45,000', tipoCat:'senaletica'},
-    {id:10, name:'Identidad corporativa',          client:'Grupo Helix',        catId:'cotizaciones',  stage:'Enviado',             deadline:'2026-05-12', team:['SV'], monto:'$32,000', tipoCat:'branding'},
-    {id:11, name:'Mobiliario retail',              client:'Tienda Nómada',      catId:'cotizaciones',  stage:'Negociación',         deadline:'2026-05-18', team:['RG'], monto:'$78,000', tipoCat:'industrial'},
-    {id:12, name:'App de reservaciones',           client:'Hotel Kali',         catId:'cotizaciones',  stage:'Aceptado',            deadline:'2026-06-01', team:['LM'], monto:'$55,000', tipoCat:'ui'},
-    {id:13, name:'Señalética de emergencia',       client:'Edificio Zentrum',   catId:'cotizaciones',  stage:'Rechazado',           deadline:'',           team:['AR'], monto:'$18,000', tipoCat:'senaletica'}
-  ];
+  var projects = [];
 
   // ── HELPERS ───────────────────────────────────────────
   function deadlineCls(dl) {
