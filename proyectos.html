@@ -176,7 +176,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 .pdm-task-lbl{font-size:10px;font-weight:700;color:rgba(255,255,255,0.28);text-transform:uppercase;letter-spacing:.08em;flex-shrink:0;}
 .pdm-footer{padding:10px 18px;border-top:0.5px solid rgba(255,255,255,0.06);display:flex;justify-content:space-between;align-items:center;flex-shrink:0;}
 .pdm-footer-info{font-size:10px;color:rgba(255,255,255,0.2);}
-.pdm-timeline-wrap{border-top:0.5px solid rgba(255,255,255,0.06);flex-shrink:0;padding:10px 18px 12px;}
+.pdm-timeline-wrap{border-top:0.5px solid rgba(255,255,255,0.06);flex-shrink:0;padding:14px 18px 16px;}
 .pdm-timeline-scroll{overflow-x:auto;overflow-y:hidden;margin-top:8px;}
 .pdm-timeline-scroll::-webkit-scrollbar{height:3px;}
 .pdm-timeline-scroll::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:2px;}
@@ -1545,9 +1545,9 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     var currentIdx = stages.indexOf(p.stage);
     if (currentIdx < 0) currentIdx = 0;
     var DEFAULT_DAYS = 7;
-    var PX_PER_DAY = 22;
-    var ROW_Y = [4, 38, 72];
-    var BAR_H = 26;
+    var PX_PER_DAY = 36;
+    var ROW_Y = [6, 54, 102];
+    var BAR_H = 36;
     var today = new Date(); today.setHours(0,0,0,0);
     function getDays(s) { return (cat.stageDays && cat.stageDays[s] > 0) ? cat.stageDays[s] : DEFAULT_DAYS; }
     // Build start dates anchored on current stage
@@ -1574,17 +1574,17 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     var container = document.getElementById('pdmTimeline');
     container.innerHTML = '';
     var canvas = document.createElement('div');
-    canvas.style.cssText = 'position:relative;width:' + W + 'px;height:112px;';
+    canvas.style.cssText = 'position:relative;width:' + W + 'px;height:160px;';
     // Week dashed lines + date labels
     var ms7 = 7 * 86400000;
     var wkDate = new Date(rangeStart.getTime() + ms7);
     while (wkDate < lastEnd) {
       var wx = Math.round((wkDate - rangeStart) / 86400000 * PX_PER_DAY);
       var vl = document.createElement('div');
-      vl.style.cssText = 'position:absolute;left:'+wx+'px;top:0;height:90px;border-left:1px dashed rgba(255,255,255,0.08);';
+      vl.style.cssText = 'position:absolute;left:'+wx+'px;top:0;height:138px;border-left:1px dashed rgba(255,255,255,0.08);';
       canvas.appendChild(vl);
       var vLbl = document.createElement('div');
-      vLbl.style.cssText = 'position:absolute;left:'+(wx-14)+'px;top:94px;font-size:8px;color:rgba(255,255,255,0.2);white-space:nowrap;width:30px;text-align:center;';
+      vLbl.style.cssText = 'position:absolute;left:'+(wx-16)+'px;top:142px;font-size:9px;color:rgba(255,255,255,0.25);white-space:nowrap;width:34px;text-align:center;';
       vLbl.textContent = wkDate.getDate() + '/' + (wkDate.getMonth()+1);
       canvas.appendChild(vLbl);
       wkDate = new Date(wkDate.getTime() + ms7);
@@ -1607,7 +1607,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
         + (border!=='none'?'border:'+border+';':'')
         + (shadow!=='none'?'box-shadow:'+shadow+';':'')
         + 'display:flex;align-items:center;justify-content:center;overflow:hidden;padding:0 8px;'
-        + 'font-size:9px;font-weight:700;color:'+tc+';white-space:nowrap;';
+        + 'font-size:11px;font-weight:700;color:'+tc+';white-space:nowrap;';
       bar.textContent = stage + (cat.stageDays && cat.stageDays[stage] ? ' · ' + days + 'd' : '');
       canvas.appendChild(bar);
     });
@@ -1615,10 +1615,10 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     var todayX = Math.round((today - rangeStart) / 86400000 * PX_PER_DAY);
     if (todayX >= 0 && todayX <= W) {
       var tl = document.createElement('div');
-      tl.style.cssText = 'position:absolute;left:'+todayX+'px;top:0;height:90px;width:1.5px;background:rgba(255,255,255,0.8);z-index:4;';
+      tl.style.cssText = 'position:absolute;left:'+todayX+'px;top:0;height:138px;width:2px;background:rgba(255,255,255,0.85);z-index:4;border-radius:2px;';
       canvas.appendChild(tl);
       var tlbl = document.createElement('div');
-      tlbl.style.cssText = 'position:absolute;left:'+(todayX+3)+'px;top:1px;font-size:8px;font-weight:700;color:rgba(255,255,255,0.65);white-space:nowrap;z-index:4;';
+      tlbl.style.cssText = 'position:absolute;left:'+(todayX+4)+'px;top:2px;font-size:9px;font-weight:700;color:rgba(255,255,255,0.7);white-space:nowrap;z-index:4;';
       tlbl.textContent = 'Hoy';
       canvas.appendChild(tlbl);
     }
@@ -1628,10 +1628,10 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
       var dlX = Math.round((dlDate - rangeStart) / 86400000 * PX_PER_DAY);
       if (dlX >= 0 && dlX <= W) {
         var dll = document.createElement('div');
-        dll.style.cssText = 'position:absolute;left:'+dlX+'px;top:0;height:90px;width:1.5px;background:#E24B4A;opacity:.7;z-index:4;';
+        dll.style.cssText = 'position:absolute;left:'+dlX+'px;top:0;height:138px;width:2px;background:#E24B4A;opacity:.75;z-index:4;border-radius:2px;';
         canvas.appendChild(dll);
         var dlLbl = document.createElement('div');
-        dlLbl.style.cssText = 'position:absolute;left:'+(dlX+3)+'px;top:1px;font-size:8px;font-weight:700;color:#E24B4A;white-space:nowrap;z-index:4;';
+        dlLbl.style.cssText = 'position:absolute;left:'+(dlX+4)+'px;top:2px;font-size:9px;font-weight:700;color:#E24B4A;white-space:nowrap;z-index:4;';
         dlLbl.textContent = 'Entrega';
         canvas.appendChild(dlLbl);
       }
