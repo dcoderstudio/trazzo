@@ -1450,11 +1450,22 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
         card.querySelector('.phase-btn').onclick = function(e) {
           e.stopPropagation();
           if (editingPhases.length <= 1) return;
-          editingPhases.splice(idx, 1);
-          editingPhaseTemplates.splice(idx, 1);
-          editingPhaseDays.splice(idx, 1);
-          editingPhasePayments.splice(idx, 1);
-          renderPhaseFlow();
+          var actDiv = card.querySelector('.phase-card-actions');
+          actDiv.innerHTML = '<span style="font-size:9px;color:rgba(255,255,255,0.45);white-space:nowrap;flex:1;">¿Eliminar?</span>'
+            + '<button class="phase-btn pdel" style="width:auto;padding:0 8px;font-size:10px;" data-dc="y">Sí</button>'
+            + '<button class="phase-btn" style="width:auto;padding:0 8px;font-size:10px;" data-dc="n">No</button>';
+          actDiv.style.gap = '4px';
+          actDiv.querySelector('[data-dc="y"]').addEventListener('mousedown', function(ev){ ev.stopPropagation(); });
+          actDiv.querySelector('[data-dc="y"]').onclick = function(ev) {
+            ev.stopPropagation();
+            editingPhases.splice(idx, 1);
+            editingPhaseTemplates.splice(idx, 1);
+            editingPhaseDays.splice(idx, 1);
+            editingPhasePayments.splice(idx, 1);
+            renderPhaseFlow();
+          };
+          actDiv.querySelector('[data-dc="n"]').addEventListener('mousedown', function(ev){ ev.stopPropagation(); });
+          actDiv.querySelector('[data-dc="n"]').onclick = function(ev) { ev.stopPropagation(); renderPhaseFlow(); };
         };
 
         // Tasks template section
