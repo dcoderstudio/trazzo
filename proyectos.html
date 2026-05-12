@@ -1362,18 +1362,13 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
                 db.onclick = function(e) { e.stopPropagation(); editingPhaseTemplates[pIdx].splice(tIdx, 1); renderPhaseTasks(); };
                 topRow.appendChild(inp); topRow.appendChild(db);
                 tr.appendChild(topRow);
-                // Row 2: date + responsible
+                // Row 2: responsible only
                 var meta = document.createElement('div');
                 meta.className = 'phase-task-meta';
-                var dlInp = document.createElement('input');
-                dlInp.type = 'date';
-                dlInp.className = 'phase-task-meta-inp';
-                dlInp.value = obj.deadline || '';
-                dlInp.oninput = function() { editingPhaseTemplates[pIdx][tIdx].deadline = this.value; };
-                dlInp.addEventListener('mousedown', function(e) { e.stopPropagation(); });
                 var respSel = document.createElement('select');
                 respSel.className = 'phase-task-meta-sel';
-                [['', 'Resp.'], ['AR', 'Ana R.'], ['LM', 'Luis M.'], ['SV', 'Sofía V.'], ['RG', 'Rodrigo G.']].forEach(function(opt) {
+                respSel.style.cssText = 'flex:1;width:100%;';
+                [['', '👤 Sin responsable'], ['AR', '👤 Ana Ramírez'], ['LM', '👤 Luis Mora'], ['SV', '👤 Sofía Vega'], ['RG', '👤 Rodrigo Gil']].forEach(function(opt) {
                   var o = document.createElement('option');
                   o.value = opt[0]; o.textContent = opt[1];
                   if (opt[0] === obj.resp) o.selected = true;
@@ -1381,7 +1376,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
                 });
                 respSel.onchange = function() { editingPhaseTemplates[pIdx][tIdx].resp = this.value; };
                 respSel.addEventListener('mousedown', function(e) { e.stopPropagation(); });
-                meta.appendChild(dlInp); meta.appendChild(respSel);
+                meta.appendChild(respSel);
                 tr.appendChild(meta);
                 tlist.appendChild(tr);
               })(ti);
