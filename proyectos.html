@@ -2288,378 +2288,113 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     projects.forEach(function(p) {
       if (p.catId === 'cotizaciones' && p.stage === 'Negociación') { p.stage = 'Enviado'; migrated = true; }
     });
-    // Agregar categoría Diseño de producto si no existe
-    var hasDP = false;
-    for (var ci = 0; ci < categories.length; ci++) { if (categories[ci].id === 'disenoproducto') { hasDP = true; break; } }
-    if (!hasDP) {
-      function _t(text) { return {text: text, deadline: '', resp: ''}; }
-      categories.push({
-        id: 'disenoproducto',
-        label: 'Diseño de producto',
-        color: '#D85A30',
-        stages: [
-          'Definición de requerimientos',
-          'Propuesta conceptual',
-          'Propuesta económica final',
-          'Visualización final del producto',
-          'Entrega de plan de trabajo',
-          'Desarrollo de archivos técnicos',
-          'Desarrollo de muestra',
-          'Producción / Fabricación',
-          'Entrega del producto',
-          'Proyecto completado'
-        ],
-        stageDays: {
-          'Definición de requerimientos': 5,
-          'Propuesta conceptual': 7,
-          'Propuesta económica final': 3,
-          'Visualización final del producto': 10,
-          'Entrega de plan de trabajo': 2,
-          'Desarrollo de archivos técnicos': 14,
-          'Desarrollo de muestra': 14,
-          'Producción / Fabricación': 30,
-          'Entrega del producto': 5,
-          'Proyecto completado': 2
+    // === MIGRACIÓN DEFINITIVA DE CATEGORÍAS ===
+    (function() {
+      function mk(t) { return {text:t,deadline:'',resp:''}; }
+      function pay(a,d) { return {label:a,amount:a,description:d}; }
+      var cfgs = [
+        {
+          id:'interiorismo', label:'Interiorismo', color:'#C0436E',
+          stages:['Primer acercamiento','Levantamiento en sitio','Definición de requerimientos','Propuesta conceptual','Visualización / renders','Plan de trabajo','Archivos técnicos','Fabricación y compras','Ejecución e instalación','Entrega final'],
+          stageDays:{'Primer acercamiento':2,'Levantamiento en sitio':2,'Definición de requerimientos':3,'Propuesta conceptual':10,'Visualización / renders':14,'Plan de trabajo':3,'Archivos técnicos':14,'Fabricación y compras':21,'Ejecución e instalación':30,'Entrega final':3},
+          payments:{'Propuesta conceptual':pay('1er anticipo','Cobro de diseño'),'Plan de trabajo':pay('Liquidación diseño','Al entregar renders aprobados'),'Fabricación y compras':pay('Anticipo ejecución','Antes de fabricar'),'Entrega final':pay('Liquidación final','')},
+          templates:{
+            'Primer acercamiento':[mk('Llamada o reunión inicial con el cliente'),mk('Escuchar necesidades y visión del espacio'),mk('Presentar proceso y propuesta de valor'),mk('Confirmar interés y viabilidad del proyecto')],
+            'Levantamiento en sitio':[mk('Visita y medición del espacio a intervenir'),mk('Registro fotográfico del estado actual'),mk('Identificar condiciones estructurales e instalaciones'),mk('Generar plano base del espacio')],
+            'Definición de requerimientos':[mk('Definir programa de espacios y necesidades específicas'),mk('Establecer estilo, referencias y paleta de preferencias'),mk('Confirmar presupuesto de ejecución y alcance'),mk('Firmar brief o contrato de diseño')],
+            'Propuesta conceptual':[mk('Desarrollar concepto y narrativa del proyecto'),mk('Moodboard con referencias de estilo y materiales'),mk('Distribución y zonificación del espacio'),mk('Presentar concepto al cliente y obtener aprobación')],
+            'Visualización / renders':[mk('Renders 3D de los espacios clave'),mk('Selección definitiva de acabados y mobiliario'),mk('Revisión interna de calidad'),mk('Presentar y obtener aprobación visual del cliente')],
+            'Plan de trabajo':[mk('Definir cronograma de fabricación e instalación'),mk('Asignar contratistas y proveedores'),mk('Confirmar disponibilidad de materiales clave'),mk('Compartir cronograma con cliente')],
+            'Archivos técnicos':[mk('Planos de distribución y detalles constructivos'),mk('Planos de instalaciones eléctricas e hidráulicas'),mk('Especificaciones técnicas de materiales y acabados'),mk('Revisión y aprobación final de archivos')],
+            'Fabricación y compras':[mk('Órdenes de compra de materiales y mobiliario'),mk('Seguimiento de elementos a medida con fabricantes'),mk('Recepción y revisión de materiales'),mk('Logística y almacenamiento previo a instalación')],
+            'Ejecución e instalación':[mk('Supervisión de obra civil y acabados en sitio'),mk('Instalación de mobiliario y elementos decorativos'),mk('Coordinación de instalaciones especiales'),mk('Revisión de avances con cliente')],
+            'Entrega final':[mk('Recorrido final de inspección con cliente'),mk('Correcciones y ajustes de última hora'),mk('Registro fotográfico profesional del proyecto'),mk('Firma de acta de entrega y cierre de contrato')]
+          }
         },
-        templates: {
-          'Definición de requerimientos': [
-            _t('Reunión de levantamiento con cliente'),
-            _t('Documentar especificaciones y requerimientos técnicos'),
-            _t('Definir alcance, presupuesto y cronograma tentativo'),
-            _t('Validar y firmar brief con cliente')
-          ],
-          'Propuesta conceptual': [
-            _t('Investigación de referentes y tendencias'),
-            _t('Desarrollo de bocetos y conceptos iniciales'),
-            _t('Presentación de 2-3 propuestas al cliente'),
-            _t('Recibir retroalimentación y definir dirección')
-          ],
-          'Propuesta económica final': [
-            _t('Cotización detallada de materiales y procesos'),
-            _t('Definir costos de producción o fabricación'),
-            _t('Presentar propuesta económica al cliente'),
-            _t('Firma de contrato o aprobación formal')
-          ],
-          'Visualización final del producto': [
-            _t('Modelado 3D o renders fotorrealistas del producto'),
-            _t('Definir acabados, colores y materiales finales'),
-            _t('Revisión interna antes de presentar'),
-            _t('Aprobación de visualización por el cliente')
-          ],
-          'Entrega de plan de trabajo': [
-            _t('Definir hitos y entregables del proyecto'),
-            _t('Asignar responsables por actividad'),
-            _t('Compartir cronograma detallado con cliente'),
-            _t('Confirmar arranque formal del proyecto')
-          ],
-          'Desarrollo de archivos técnicos': [
-            _t('Planos técnicos y de detalle constructivo'),
-            _t('Especificaciones de materiales y procesos'),
-            _t('Revisión interna de archivos'),
-            _t('Envío de archivos a producción o proveedor')
-          ],
-          'Desarrollo de muestra': [
-            _t('Fabricación de prototipo o muestra física'),
-            _t('Revisión de muestra con el equipo interno'),
-            _t('Presentación y aprobación de muestra con cliente'),
-            _t('Documentar ajustes para producción final')
-          ],
-          'Producción / Fabricación': [
-            _t('Confirmar orden de producción con proveedor'),
-            _t('Seguimiento de avance de fabricación'),
-            _t('Control de calidad en proceso'),
-            _t('Aprobación final del lote de producción')
-          ],
-          'Entrega del producto': [
-            _t('Coordinación de logística y transporte'),
-            _t('Entrega física al cliente'),
-            _t('Registro fotográfico de la entrega'),
-            _t('Firma de acta de entrega y recepción')
-          ],
-          'Proyecto completado': [
-            _t('Archivar toda la documentación del proyecto'),
-            _t('Facturación y cierre administrativo'),
-            _t('Encuesta de satisfacción al cliente'),
-            _t('Agregar caso a portafolio')
-          ]
+        {
+          id:'disenoproducto', label:'Diseño de producto', color:'#D85A30',
+          stages:['Briefing y referencias','Definición de requerimientos','Conceptualización del producto','Visualización final / renders','Propuesta económica de producción','Archivos técnicos','Muestra y ajustes','Producción','Entrega del producto'],
+          stageDays:{'Briefing y referencias':3,'Definición de requerimientos':5,'Conceptualización del producto':10,'Visualización final / renders':14,'Propuesta económica de producción':5,'Archivos técnicos':14,'Muestra y ajustes':14,'Producción':30,'Entrega del producto':5},
+          payments:{'Conceptualización del producto':pay('1er anticipo','Costo fijo de diseño'),'Archivos técnicos':pay('Liquidación digitalización','Al entregar archivos técnicos'),'Producción':pay('Anticipo fabricación','Cliente decide si produce'),'Entrega del producto':pay('Liquidación final','')},
+          templates:{
+            'Briefing y referencias':[mk('Reunión inicial de briefing con el cliente'),mk('Recolectar referencias visuales y de mercado'),mk('Investigar competencia y tendencias del sector'),mk('Documentar contexto del producto y usuario objetivo')],
+            'Definición de requerimientos':[mk('Definir funcionalidad, dimensiones y materiales del producto'),mk('Establecer restricciones técnicas y de producción'),mk('Confirmar presupuesto de diseño y alcance'),mk('Firmar brief de diseño de producto')],
+            'Conceptualización del producto':[mk('Desarrollo de conceptos y bocetos preliminares'),mk('Selección de dirección conceptual con el cliente'),mk('Propuesta de materiales y procesos de fabricación'),mk('Aprobación de concepto para avanzar a visualización')],
+            'Visualización final / renders':[mk('Modelado 3D del producto con detalles de diseño'),mk('Renders fotorrealistas en diferentes ángulos'),mk('Exploración de variantes de color y acabado'),mk('Aprobación visual definitiva del cliente')],
+            'Propuesta económica de producción':[mk('Cotización detallada de materiales y procesos'),mk('Comparar cotizaciones de proveedores'),mk('Presentar propuesta económica al cliente'),mk('Confirmar si el cliente decide producir')],
+            'Archivos técnicos':[mk('Planos técnicos con cotas y tolerancias'),mk('Especificaciones de materiales y acabados'),mk('Archivos CAD para producción'),mk('Revisión y aprobación de archivos técnicos')],
+            'Muestra y ajustes':[mk('Fabricación de prototipo o muestra física'),mk('Revisión funcional y estética de la muestra'),mk('Presentación y aprobación de muestra con cliente'),mk('Documentar ajustes para producción final')],
+            'Producción':[mk('Confirmar orden de producción con proveedor'),mk('Seguimiento de avances de fabricación'),mk('Control de calidad en proceso'),mk('Aprobación del lote de producción final')],
+            'Entrega del producto':[mk('Coordinación de logística y entrega'),mk('Entrega física al cliente con documentación'),mk('Registro fotográfico del producto terminado'),mk('Firma de acta de entrega y cierre')]
+          }
+        },
+        {
+          id:'senaletica', label:'Señalética', color:'#E8A020',
+          stages:['Briefing y referencias','Levantamiento en sitio','Definición de requerimientos','Sistema de señalética','Visualización / renders en sitio','Archivos de producción','Fabricación de piezas','Instalación en sitio','Entrega final'],
+          stageDays:{'Briefing y referencias':3,'Levantamiento en sitio':3,'Definición de requerimientos':5,'Sistema de señalética':10,'Visualización / renders en sitio':10,'Archivos de producción':7,'Fabricación de piezas':21,'Instalación en sitio':5,'Entrega final':2},
+          payments:{'Definición de requerimientos':pay('1er anticipo','Costo fijo de diseño'),'Archivos de producción':pay('Liquidación diseño','Al entregar archivos aprobados'),'Fabricación de piezas':pay('Anticipo fabricación',''),'Entrega final':pay('Liquidación final','')},
+          templates:{
+            'Briefing y referencias':[mk('Reunión de briefing con el cliente'),mk('Recolectar identidad visual, logos y guía de marca'),mk('Investigar normativas y estándares aplicables'),mk('Definir objetivo y audiencia del sistema')],
+            'Levantamiento en sitio':[mk('Visita y recorrido completo del espacio'),mk('Registro fotográfico y mapeo de zonas'),mk('Identificar puntos de señalización prioritarios'),mk('Medir alturas, distancias y condiciones de instalación')],
+            'Definición de requerimientos':[mk('Clasificar tipos de señales: dirección, identificación, normativa'),mk('Definir materiales, sustratos y procesos de impresión'),mk('Confirmar vinil reflectivo o condiciones nocturnas si aplica'),mk('Firmar brief y confirmar alcance del sistema')],
+            'Sistema de señalética':[mk('Definir tipografía, iconografía y jerarquía visual'),mk('Desarrollar paleta cromática y sistema de identidad'),mk('Diseñar familias de señales por tipo y función'),mk('Presentación del sistema al cliente y aprobación')],
+            'Visualización / renders en sitio':[mk('Renders o mockups de señales en su contexto real'),mk('Mostrar escala, legibilidad y proporciones en sitio'),mk('Revisar coherencia con identidad de marca'),mk('Obtener aprobación visual definitiva del cliente')],
+            'Archivos de producción':[mk('Arte final en vectores para cada pieza del sistema'),mk('Planos de ubicación e instalación en sitio'),mk('Especificaciones técnicas por material y proceso'),mk('Entrega de archivos para producción')],
+            'Fabricación de piezas':[mk('Envío de archivos al fabricante o taller'),mk('Seguimiento del proceso de fabricación'),mk('Control de calidad de piezas producidas'),mk('Empaque e identificación para instalación')],
+            'Instalación en sitio':[mk('Coordinar acceso y condiciones del sitio'),mk('Instalar señales según planos y especificaciones'),mk('Verificar nivelación, alineación y fijación'),mk('Ajustes y correcciones finales en sitio')],
+            'Entrega final':[mk('Recorrido final de verificación con cliente'),mk('Registro fotográfico del sistema instalado'),mk('Firma de acta de entrega'),mk('Entregar dossier técnico del proyecto')]
+          }
+        },
+        {
+          id:'produccioninstalacion', label:'Servicios de producción e instalación', color:'#B8760F',
+          stages:['Primer acercamiento','Visualización','Archivos de producción','Proveedores y fabricación','Recolección y revisión de calidad','Armado y ensamblado','Instalación y entrega'],
+          stageDays:{'Primer acercamiento':2,'Visualización':5,'Archivos de producción':5,'Proveedores y fabricación':14,'Recolección y revisión de calidad':3,'Armado y ensamblado':5,'Instalación y entrega':3},
+          payments:{'Visualización':pay('Anticipo 50%','Al aprobar cotización'),'Instalación y entrega':pay('Liquidación 50%','Saldo restante al entregar')},
+          templates:{
+            'Primer acercamiento':[mk('Llamada o reunión rápida de briefing'),mk('Entender el proyecto: qué, dónde, cuándo y dimensiones'),mk('Solicitar información técnica, planos o referencias'),mk('Elaborar y presentar cotización al cliente')],
+            'Visualización':[mk('Renders o referencias del resultado esperado si aplica'),mk('Confirmar materiales, acabados y especificaciones'),mk('Validar visualización con el cliente'),mk('Confirmar arranque del proyecto')],
+            'Archivos de producción':[mk('Arte final y archivos listos para producción'),mk('Planos técnicos de fabricación o instalación'),mk('Especificaciones de materiales y procesos'),mk('Envío de archivos a proveedores o taller')],
+            'Proveedores y fabricación':[mk('Confirmar órdenes de compra con proveedores'),mk('Seguimiento de avance de producción'),mk('Control de calidad de materiales y piezas'),mk('Coordinar tiempos de entrega y logística')],
+            'Recolección y revisión de calidad':[mk('Recolectar todos los materiales y piezas'),mk('Revisar inventario completo contra checklist'),mk('Verificar calidad, colores, dimensiones y acabados'),mk('Preparar y organizar para traslado')],
+            'Armado y ensamblado':[mk('Preparar área y herramientas de trabajo'),mk('Ensamblar componentes según especificaciones'),mk('Revisión de calidad del ensamblado'),mk('Empaque y etiquetado para instalación')],
+            'Instalación y entrega':[mk('Coordinar acceso al sitio con el cliente'),mk('Instalar según planos y especificaciones'),mk('Revisión y ajustes finales en sitio'),mk('Registro fotográfico y firma de acta de entrega')]
+          }
+        },
+        {
+          id:'proyectointegro', label:'Proyecto Íntegro de Diseño', color:'#7B6FD0',
+          stages:['Clasificación del cliente','Primer acercamiento','Visita técnica','Código fuente','Presentación de ventas','Investigación conceptual','Presentación conceptual','Desarrollo de diseño','Desarrollo técnico','Presentación final','Producción y orquestación','Implementación','Entrega de entregables','Postocupación'],
+          stageDays:{'Clasificación del cliente':2,'Primer acercamiento':3,'Visita técnica':2,'Código fuente':3,'Presentación de ventas':5,'Investigación conceptual':7,'Presentación conceptual':7,'Desarrollo de diseño':14,'Desarrollo técnico':14,'Presentación final':5,'Producción y orquestación':21,'Implementación':30,'Entrega de entregables':5,'Postocupación':14},
+          payments:{'Investigación conceptual':pay('1er anticipo','Cobro de presentación conceptual'),'Desarrollo técnico':pay('2do anticipo','Al fijar dirección del proyecto'),'Postocupación':pay('Liquidación final','')},
+          templates:{
+            'Clasificación del cliente':[mk('Evaluar si el proyecto es viable para D·Coder'),mk('Analizar capacidad y potencial del cliente'),mk('Determinar tipo de proyecto y recursos requeridos'),mk('Documentar decisión interna')],
+            'Primer acercamiento':[mk('Llamada o reunión inicial con el cliente'),mk('Escuchar visión, objetivos y expectativas del proyecto'),mk('Presentar D·Coder y proceso de trabajo'),mk('Confirmar interés mutuo en avanzar')],
+            'Visita técnica':[mk('Recorrido o visita al sitio del proyecto si aplica'),mk('Registro fotográfico y medición'),mk('Identificar condicionantes técnicas relevantes'),mk('Documentar observaciones para el briefing')],
+            'Código fuente':[mk('Entrevistar al cliente con las preguntas del Código fuente'),mk('Documentar sueño del cliente, estilo e intención del proyecto'),mk('Definir audiencia, colores y a quién va dirigido'),mk('Archivar el documento interno completo')],
+            'Presentación de ventas':[mk('Preparar presentación con portafolio relevante'),mk('Explicar proceso, metodología y propuesta de valor'),mk('Presentar sin mostrar renders del proyecto actual'),mk('Confirmar alcance y propuesta económica general')],
+            'Investigación conceptual':[mk('Investigación profunda del sector y referentes'),mk('Definir palabras clave y territorio conceptual'),mk('Desarrollar brief creativo interno'),mk('Validar dirección con el equipo antes de presentar')],
+            'Presentación conceptual':[mk('Desarrollar narrativa y concepto del proyecto'),mk('Preparar moodboard y dirección visual'),mk('Presentar concepto al cliente'),mk('Obtener 1ª aprobación sobre la narrativa del proyecto')],
+            'Desarrollo de diseño':[mk('Renders y visualización completa del proyecto'),mk('Revisión ejecutiva interna de calidad'),mk('Ajustes según retroalimentación del cliente'),mk('Aprobación definitiva de la dirección de diseño')],
+            'Desarrollo técnico':[mk('Planos técnicos y archivos de especificación'),mk('Desarrollo de prototipos si aplica'),mk('Revisión técnica interna completa'),mk('Preparar todo para producción e implementación')],
+            'Presentación final':[mk('Preparar presentación final para el cliente'),mk('Presentar proyecto completo al cliente'),mk('Obtener aprobación final'),mk('Definir plan de producción e implementación')],
+            'Producción y orquestación':[mk('Gestionar proveedores, fabricantes y contratistas'),mk('Coordinar tiempos y logística de producción'),mk('Control de calidad en todos los frentes'),mk('Supervisar avances y resolver imprevistos')],
+            'Implementación':[mk('Instalar o implementar todos los elementos del proyecto'),mk('Supervisión de instalación in situ'),mk('Ajustes y correcciones en sitio'),mk('Validar que todo cumple con el diseño aprobado')],
+            'Entrega de entregables':[mk('Organizar y entregar todos los archivos y documentos'),mk('Registro fotográfico del proyecto terminado'),mk('Recorrido final de verificación con el cliente'),mk('Firma de acta de entrega y recepción')],
+            'Postocupación':[mk('Seguimiento post-entrega con el cliente'),mk('Resolver dudas o ajustes menores'),mk('Solicitar testimonial o referencia al cliente'),mk('Archivar proyecto y agregar a portafolio')]
+          }
+        }
+      ];
+      cfgs.forEach(function(cfg) {
+        var fi=-1;
+        for (var i=0;i<categories.length;i++) { if (categories[i].id===cfg.id) { fi=i; break; } }
+        var nu = fi<0 || categories[fi].stages.join('|')!==cfg.stages.join('|');
+        if (nu) {
+          if (fi>=0) { categories[fi].label=cfg.label; categories[fi].color=cfg.color; categories[fi].stages=cfg.stages; categories[fi].stageDays=cfg.stageDays; categories[fi].templates=cfg.templates; categories[fi].payments=cfg.payments; }
+          else { categories.push(cfg); }
+          migrated=true;
         }
       });
-      migrated = true;
-    }
-    // Agregar categoría Servicios de producción e instalación si no existe
-    var hasSPI = false;
-    for (var ci2 = 0; ci2 < categories.length; ci2++) { if (categories[ci2].id === 'produccioninstalacion') { hasSPI = true; break; } }
-    if (!hasSPI) {
-      function _t2(text) { return {text: text, deadline: '', resp: ''}; }
-      categories.push({
-        id: 'produccioninstalacion',
-        label: 'Servicios de producción e instalación',
-        color: '#B8760F',
-        stages: [
-          'Definición de requerimientos',
-          'Visualización final',
-          'Proveedores y fabricación',
-          'Recolección',
-          'Armado / Ensamblado',
-          'Instalación y entrega'
-        ],
-        stageDays: {
-          'Definición de requerimientos': 3,
-          'Visualización final': 5,
-          'Proveedores y fabricación': 14,
-          'Recolección': 2,
-          'Armado / Ensamblado': 5,
-          'Instalación y entrega': 3
-        },
-        templates: {
-          'Definición de requerimientos': [
-            _t2('Reunión de levantamiento con cliente'),
-            _t2('Definir materiales, dimensiones y especificaciones'),
-            _t2('Cotización inicial y validación de presupuesto'),
-            _t2('Confirmar alcance y firmar orden de trabajo')
-          ],
-          'Visualización final': [
-            _t2('Renders, planos o referentes del resultado final'),
-            _t2('Revisión de materiales y acabados'),
-            _t2('Aprobación visual por el cliente'),
-            _t2('Generar archivo de referencia para producción')
-          ],
-          'Proveedores y fabricación': [
-            _t2('Solicitar cotizaciones a proveedores'),
-            _t2('Confirmar pedidos de materiales'),
-            _t2('Seguimiento de tiempos de fabricación'),
-            _t2('Recepción y revisión de materiales entregados')
-          ],
-          'Recolección': [
-            _t2('Coordinar logística de recolección'),
-            _t2('Verificar inventario completo de piezas y materiales'),
-            _t2('Trasladar materiales al punto de ensamblado'),
-            _t2('Confirmar checklist de materiales')
-          ],
-          'Armado / Ensamblado': [
-            _t2('Preparar área y herramientas de trabajo'),
-            _t2('Ensamblar componentes según especificaciones'),
-            _t2('Revisión de calidad del ensamblado'),
-            _t2('Empaque y preparación para traslado e instalación')
-          ],
-          'Instalación y entrega': [
-            _t2('Coordinar acceso y preparación del sitio'),
-            _t2('Instalación en sitio según planos'),
-            _t2('Revisión y ajustes finales'),
-            _t2('Registro fotográfico del trabajo terminado'),
-            _t2('Firma de acta de entrega con cliente')
-          ]
-        }
-      });
-      migrated = true;
-    }
-    // Actualizar categoría Señalética con fases correctas
-    var newSenStages = [
-      'Definición de requerimientos','Propuesta conceptual y económica',
-      'Propuesta económica final','Visualización final de la señalética',
-      'Plan de trabajo','Desarrollo de archivos técnicos',
-      'Producción / Fabricación','Instalación','Entrega','Proyecto completado'
-    ];
-    var senIdx = -1;
-    for (var ci3 = 0; ci3 < categories.length; ci3++) { if (categories[ci3].id === 'senaletica') { senIdx = ci3; break; } }
-    var senNeedsUpdate = senIdx < 0 || categories[senIdx].stages.join('|') !== newSenStages.join('|');
-    if (senNeedsUpdate) {
-      function _t3(text) { return {text: text, deadline: '', resp: ''}; }
-      var senData = {
-        stages: newSenStages,
-        stageDays: {
-          'Definición de requerimientos': 5,
-          'Propuesta conceptual y económica': 7,
-          'Propuesta económica final': 3,
-          'Visualización final de la señalética': 10,
-          'Plan de trabajo': 2,
-          'Desarrollo de archivos técnicos': 14,
-          'Producción / Fabricación': 21,
-          'Instalación': 5,
-          'Entrega': 2,
-          'Proyecto completado': 2
-        },
-        templates: {
-          'Definición de requerimientos': [
-            _t3('Reunión de levantamiento con cliente'),
-            _t3('Recorrido y medición del sitio'),
-            _t3('Definir necesidades de comunicación visual'),
-            _t3('Confirmar presupuesto y alcance tentativo')
-          ],
-          'Propuesta conceptual y económica': [
-            _t3('Investigación de referentes y normativas de señalética'),
-            _t3('Desarrollo de concepto gráfico y sistema'),
-            _t3('Cotización de materiales y producción'),
-            _t3('Presentar propuesta conceptual y económica al cliente')
-          ],
-          'Propuesta económica final': [
-            _t3('Ajustar cotización según retroalimentación del cliente'),
-            _t3('Desglose final de costos y tiempos'),
-            _t3('Presentar propuesta económica definitiva'),
-            _t3('Firma de contrato o aprobación formal')
-          ],
-          'Visualización final de la señalética': [
-            _t3('Diseño gráfico de todas las piezas del sistema'),
-            _t3('Renders o mockups en sitio'),
-            _t3('Revisión interna de diseños'),
-            _t3('Aprobación visual por el cliente')
-          ],
-          'Plan de trabajo': [
-            _t3('Definir cronograma de producción e instalación'),
-            _t3('Coordinar con proveedores y fabricantes'),
-            _t3('Confirmar fechas de entrega con proveedor'),
-            _t3('Compartir plan y cronograma con cliente')
-          ],
-          'Desarrollo de archivos técnicos': [
-            _t3('Arte final de cada pieza del sistema'),
-            _t3('Planos de ubicación e instalación en sitio'),
-            _t3('Especificaciones técnicas por material y proceso'),
-            _t3('Revisión y aprobación final de archivos')
-          ],
-          'Producción / Fabricación': [
-            _t3('Envío de archivos a producción'),
-            _t3('Seguimiento con el proveedor o fabricante'),
-            _t3('Control de calidad de piezas producidas'),
-            _t3('Empaque y etiquetado para instalación')
-          ],
-          'Instalación': [
-            _t3('Coordinar acceso y preparación del sitio'),
-            _t3('Instalación de piezas según planos'),
-            _t3('Verificar nivelación, fijación y acabados'),
-            _t3('Ajustes y correcciones en sitio')
-          ],
-          'Entrega': [
-            _t3('Registro fotográfico del proyecto instalado'),
-            _t3('Recorrido final de revisión con cliente'),
-            _t3('Firma de acta de entrega'),
-            _t3('Entregar dossier técnico del proyecto')
-          ],
-          'Proyecto completado': [
-            _t3('Archivar archivos y documentación del proyecto'),
-            _t3('Facturación final y cierre administrativo'),
-            _t3('Encuesta de satisfacción al cliente'),
-            _t3('Agregar caso a portafolio')
-          ]
-        }
-      };
-      if (senIdx >= 0) {
-        categories[senIdx].stages = senData.stages;
-        categories[senIdx].stageDays = senData.stageDays;
-        categories[senIdx].templates = senData.templates;
-        categories[senIdx].label = 'Señalética';
-        categories[senIdx].color = '#E8A020';
-      } else {
-        categories.push({id:'senaletica', label:'Señalética', color:'#E8A020',
-          stages: senData.stages, stageDays: senData.stageDays, templates: senData.templates});
-      }
-      migrated = true;
-    }
-    // Agregar categoría Interiorismo si no existe
-    var hasINT = false;
-    for (var ci4 = 0; ci4 < categories.length; ci4++) { if (categories[ci4].id === 'interiorismo') { hasINT = true; break; } }
-    if (!hasINT) {
-      function _t4(text) { return {text: text, deadline: '', resp: ''}; }
-      categories.push({
-        id: 'interiorismo',
-        label: 'Interiorismo',
-        color: '#C0436E',
-        stages: [
-          'Definición de requerimientos',
-          'Levantamiento en sitio',
-          'Propuesta conceptual del espacio',
-          'Visualización final del espacio',
-          'Propuesta económica final',
-          'Plan de trabajo',
-          'Desarrollo de archivos técnicos',
-          'Fabricación y compras',
-          'Ejecución / Instalación',
-          'Entrega del proyecto',
-          'Proyecto completado'
-        ],
-        stageDays: {
-          'Definición de requerimientos': 5,
-          'Levantamiento en sitio': 3,
-          'Propuesta conceptual del espacio': 10,
-          'Visualización final del espacio': 14,
-          'Propuesta económica final': 3,
-          'Plan de trabajo': 2,
-          'Desarrollo de archivos técnicos': 14,
-          'Fabricación y compras': 21,
-          'Ejecución / Instalación': 30,
-          'Entrega del proyecto': 3,
-          'Proyecto completado': 2
-        },
-        templates: {
-          'Definición de requerimientos': [
-            _t4('Reunión inicial con cliente'),
-            _t4('Identificar necesidades, gustos y estilo'),
-            _t4('Definir presupuesto y alcance del proyecto'),
-            _t4('Confirmar programa de espacios y prioridades')
-          ],
-          'Levantamiento en sitio': [
-            _t4('Visita y medición detallada del espacio'),
-            _t4('Registro fotográfico del estado actual'),
-            _t4('Identificar condiciones estructurales e instalaciones existentes'),
-            _t4('Generar plano base del espacio')
-          ],
-          'Propuesta conceptual del espacio': [
-            _t4('Definir concepto, paleta de materiales y estilo'),
-            _t4('Moodboard y referencias visuales'),
-            _t4('Distribución y zonificación del espacio'),
-            _t4('Presentación conceptual al cliente y validación')
-          ],
-          'Visualización final del espacio': [
-            _t4('Renders 3D de los espacios intervenidos'),
-            _t4('Selección definitiva de acabados y mobiliario'),
-            _t4('Recorrido virtual o vistas clave del proyecto'),
-            _t4('Aprobación visual definitiva por el cliente')
-          ],
-          'Propuesta económica final': [
-            _t4('Cotización detallada por partidas del proyecto'),
-            _t4('Presupuesto de materiales y mano de obra'),
-            _t4('Desglose de tiempos de ejecución'),
-            _t4('Firma de contrato o aprobación formal')
-          ],
-          'Plan de trabajo': [
-            _t4('Cronograma de obra, compras y entregas'),
-            _t4('Asignación de contratistas y proveedores'),
-            _t4('Confirmar disponibilidad de materiales clave'),
-            _t4('Compartir plan y cronograma con cliente')
-          ],
-          'Desarrollo de archivos técnicos': [
-            _t4('Planos de distribución y detalles constructivos'),
-            _t4('Planos de instalaciones eléctricas e hidráulicas'),
-            _t4('Especificaciones técnicas de materiales y acabados'),
-            _t4('Revisión y aprobación de planos por cliente')
-          ],
-          'Fabricación y compras': [
-            _t4('Órdenes de compra de materiales y mobiliario'),
-            _t4('Seguimiento de elementos a medida con fabricantes'),
-            _t4('Recepción y revisión de materiales entregados'),
-            _t4('Logística y almacenamiento previo a instalación')
-          ],
-          'Ejecución / Instalación': [
-            _t4('Supervisión de obra civil y acabados'),
-            _t4('Instalación de mobiliario y elementos decorativos'),
-            _t4('Coordinación de instalaciones especiales (iluminación, etc.)'),
-            _t4('Seguimiento y revisión de avances con cliente')
-          ],
-          'Entrega del proyecto': [
-            _t4('Recorrido final de inspección con cliente'),
-            _t4('Correcciones y ajustes de última hora'),
-            _t4('Registro fotográfico profesional del proyecto terminado'),
-            _t4('Firma de acta de entrega')
-          ],
-          'Proyecto completado': [
-            _t4('Archivar documentación completa del proyecto'),
-            _t4('Facturación final y cierre administrativo'),
-            _t4('Encuesta de satisfacción al cliente'),
-            _t4('Agregar caso a portafolio')
-          ]
-        }
-      });
-      migrated = true;
-    }
+    })();
+    /* MARCADOR_FIN_CATS */
     if (migrated) saveData();
     renderTabs();
     renderBoard();
