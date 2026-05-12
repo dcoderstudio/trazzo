@@ -530,7 +530,9 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
   db.enablePersistence({ synchronizeTabs: true }).catch(function(e){ console.warn('Persistence:', e.code); });
   var DOC = db.collection('workspace').doc('proyectos');
 
+  var _ignoreSnap = false;
   function saveData() {
+    _ignoreSnap = true;
     DOC.set({projects: projects, categories: categories, nextId: nextId, catIdCounter: catIdCounter})
       .catch(function(e){ console.warn('Error al guardar:', e); });
   }
@@ -1144,7 +1146,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
         + '<span class="tk-text">' + task.text.replace(/</g,'&lt;') + '</span>'
         + '<span class="tk-dl' + (task.deadline ? ' ' + dlClass(task.deadline) : '') + '">' + fmtDl(task.deadline) + '</span>'
         + '<button class="tk-del">×</button>';
-      row.querySelector('.tk-check').onclick = function() { task.done = !task.done; saveData(); renderTaskPanel(); updateCardBadge(taskPanelProjectId); };
+      row.querySelector('.tk-check').onclick = function() { task.done = !task.done; task.colStatus = task.done ? 'done' : (task.deadline ? 'inprogress' : 'notstarted'); saveData(); renderTaskPanel(); updateCardBadge(taskPanelProjectId); };
       row.querySelector('.tk-dl').onclick = function() {
         var sp = row.querySelector('.tk-dl');
         var inp = document.createElement('input');
@@ -1812,7 +1814,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
       var del = row.querySelector('.tk-del');
       row.insertBefore(respBadge, del);
       row.insertBefore(dlBadge, del);
-      row.querySelector('.tk-check').onclick = function() { task.done = !task.done; saveData(); renderDetailTasks(); updateCardBadge(detailProjectId); };
+      row.querySelector('.tk-check').onclick = function() { task.done = !task.done; task.colStatus = task.done ? 'done' : (task.deadline ? 'inprogress' : 'notstarted'); saveData(); renderDetailTasks(); updateCardBadge(detailProjectId); };
       row.querySelector('.tk-del').onclick = function() {
         p.stageTasks[p.stage] = p.stageTasks[p.stage].filter(function(t){ return t.id !== task.id; });
         saveData(); renderDetailTasks(); updateCardBadge(detailProjectId);
@@ -2317,7 +2319,8 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
   if(pdmNR) fieldUpdaters['pdmNewResp']=makePersonTrigger(pdmNR,'cpt compact','👤');
 
   // ── INIT ─────────────────────────────────────────────
-  DOC.get().then(function(snap) {
+  DOC.onSnapshot(function(snap) {
+    if (_ignoreSnap) { _ignoreSnap = false; return; }
     if (snap.exists) {
       var d = snap.data();
       if (d.projects && d.projects.length) projects = d.projects;
@@ -2453,7 +2456,8 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     if (migrated) saveData();
     renderTabs();
     renderBoard();
-  }).catch(function(e) {
+    if (detailProjectId && !_activePicker) { renderDetailTasks(); }
+  }, function(e) {
     console.warn('Error al cargar:', e);
     renderTabs();
     renderBoard();

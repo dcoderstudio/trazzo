@@ -190,8 +190,10 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
   var filterPerson = '';
   var showDone = false;
   var dragPlaceholder = null;
+  var _ignoreSnap = false;
 
   function saveData() {
+    _ignoreSnap = true;
     DOC.set({projects:projects, categories:categories, nextId:nextId, catIdCounter:catIdCounter})
       .catch(function(e){ console.warn('Error al guardar:', e); });
   }
@@ -204,26 +206,24 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
   function getAllTasks() {
     var result = [];
     projects.forEach(function(proj) {
-      if (!proj.stageTasks) return;
+      if (!proj.stageTasks || proj.catId === 'cotizaciones') return;
       var cat = getCat(proj.catId);
-      Object.keys(proj.stageTasks).forEach(function(stage) {
-        var tasks = proj.stageTasks[stage];
-        if (!tasks || !tasks.length) return;
-        tasks.forEach(function(task) {
-          result.push({
-            id: task.id,
-            text: task.text,
-            done: !!task.done,
-            colStatus: task.colStatus || null,
-            sortOrder: task.sortOrder != null ? task.sortOrder : task.id,
-            deadline: task.deadline || '',
-            resp: task.resp || '',
-            projectId: proj.id,
-            projectName: proj.name,
-            stage: stage,
-            catColor: cat ? cat.color : 'rgba(255,255,255,0.2)',
-            isCurrentStage: proj.stage === stage
-          });
+      var stage = proj.stage;
+      var tasks = proj.stageTasks[stage];
+      if (!tasks || !tasks.length) return;
+      tasks.forEach(function(task) {
+        result.push({
+          id: task.id,
+          text: task.text,
+          done: !!task.done,
+          colStatus: task.colStatus || null,
+          sortOrder: task.sortOrder != null ? task.sortOrder : task.id,
+          deadline: task.deadline || '',
+          resp: task.resp || '',
+          projectId: proj.id,
+          projectName: proj.name,
+          stage: stage,
+          catColor: cat ? cat.color : 'rgba(255,255,255,0.2)'
         });
       });
     });
@@ -646,8 +646,9 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     renderBoard();
   };
 
-  // Init
-  DOC.get().then(function(snap){
+  // Init — onSnapshot para sincronización en tiempo real con proyectos.html
+  DOC.onSnapshot(function(snap){
+    if (_ignoreSnap) { _ignoreSnap = false; return; }
     if (snap.exists){
       var d = snap.data();
       if (d.projects && d.projects.length) projects = d.projects;
@@ -656,7 +657,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
       if (d.catIdCounter) catIdCounter = d.catIdCounter;
     }
     renderBoard();
-  }).catch(function(e){ console.warn('Error:', e); renderBoard(); });
+  }, function(e){ console.warn('Error:', e); renderBoard(); });
 
 })();
 </script>
