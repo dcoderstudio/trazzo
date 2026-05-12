@@ -171,12 +171,15 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 .card-pay-pill.ppend:hover{background:rgba(232,160,32,0.22);}
 .card-pay-pill.pdone{background:rgba(39,174,114,0.1);color:#27AE72;border:0.5px solid rgba(39,174,114,0.25);}
 .card-pay-pill.pdone:hover{background:rgba(39,174,114,0.22);}
-.phase-payment-section{border-top:0.5px solid rgba(255,255,255,0.06);padding:7px 12px 10px;}
-.phase-pay-toggle{background:none;border:none;color:rgba(255,255,255,0.2);font-size:9px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;padding:2px 0;transition:color .15s;text-align:left;width:100%;}
-.phase-pay-toggle:hover{color:rgba(255,255,255,0.5);}
-.phase-pay-toggle.on{color:#27AE72;}
-.phase-pay-inp{background:rgba(255,255,255,0.04);border:0.5px solid rgba(255,255,255,0.08);border-radius:5px;color:rgba(255,255,255,0.6);font-size:9px;font-family:'Inter',sans-serif;outline:none;width:100%;padding:3px 7px;margin-top:5px;display:block;}
-.phase-pay-inp:focus{border-color:rgba(255,255,255,0.22);color:#fff;}
+.phase-pay-btn{background:rgba(255,255,255,0.04);border:0.5px solid rgba(255,255,255,0.1);border-radius:6px;color:rgba(255,255,255,0.22);font-size:10px;font-weight:700;cursor:pointer;padding:2px 6px;transition:all .15s;font-family:'Inter',sans-serif;opacity:0;pointer-events:none;white-space:nowrap;}
+.phase-arrow-sep:hover .phase-pay-btn{opacity:1;pointer-events:auto;}
+.phase-pay-btn.on{opacity:1;pointer-events:auto;background:rgba(39,174,114,0.15);border-color:rgba(39,174,114,0.4);color:#27AE72;}
+.phase-pay-btn.on:hover{background:rgba(39,174,114,0.28);}
+.phase-pay-btn:not(.on):hover{background:rgba(255,255,255,0.1);color:#fff;border-color:rgba(255,255,255,0.25);}
+.phase-pay-popup{position:fixed;z-index:9999;background:#161616;border:0.5px solid rgba(255,255,255,0.14);border-radius:16px;padding:16px;box-shadow:0 16px 60px rgba(0,0,0,.9);width:240px;font-family:'Inter',sans-serif;}
+.phase-pay-popup-lbl{font-size:9px;font-weight:700;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px;}
+.phase-pay-popup-inp{background:#1e1e1e;border:0.5px solid rgba(255,255,255,0.1);border-radius:8px;padding:8px 10px;font-size:12px;color:#fff;font-family:'Inter',sans-serif;outline:none;width:100%;margin-bottom:10px;transition:border-color .15s;}
+.phase-pay-popup-inp:focus{border-color:rgba(255,255,255,0.3);}
 .pdm{background:#161616;border:0.5px solid rgba(255,255,255,0.1);border-radius:20px;width:min(94vw,740px);max-height:88vh;display:flex;flex-direction:column;transform:translateY(8px);transition:transform .2s;overflow:hidden;}
 .overlay.open .pdm{transform:none;}
 .pdm-header{padding:18px 20px 14px;border-bottom:0.5px solid rgba(255,255,255,0.06);display:flex;align-items:center;gap:10px;flex-shrink:0;}
@@ -266,7 +269,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 .phase-btn:not([disabled]):hover{background:rgba(255,255,255,0.12);color:#fff;}
 .phase-btn.pdel:not([disabled]):hover{background:rgba(226,75,74,0.2);color:#E24B4A;}
 .phase-btn[disabled]{opacity:.18;cursor:default;}
-.phase-arrow-sep{width:28px;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.18);font-size:15px;}
+.phase-arrow-sep{width:44px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:rgba(255,255,255,0.18);font-size:15px;position:relative;}
 .phase-add-card{border:1.5px dashed rgba(255,255,255,0.12);border-radius:12px;width:120px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;color:rgba(255,255,255,0.28);font-size:11px;font-weight:600;font-family:'Inter',sans-serif;transition:all .15s;gap:5px;min-height:88px;}
 .phase-add-card:hover{border-color:rgba(255,255,255,0.3);color:rgba(255,255,255,0.65);background:rgba(255,255,255,0.03);}
 .phase-footer{display:flex;gap:8px;justify-content:flex-end;padding-top:8px;border-top:0.5px solid rgba(255,255,255,0.06);}
@@ -892,8 +895,9 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     var stagePayment = cat.payments && cat.payments[p.stage];
     if (stagePayment && !isEntregado) {
       var payDone = p.paymentsDone && p.paymentsDone[p.stage];
+      var payLabel = (stagePayment.amount || stagePayment.label || '') + (stagePayment.description ? ' — ' + stagePayment.description : '');
       html += '<div data-pay-badge style="padding-left:6px;"><span class="card-pay-pill ' + (payDone ? 'pdone' : 'ppend') + '">'
-        + (payDone ? '✓ ' : '💰 ') + stagePayment.label + '</span></div>';
+        + (payDone ? '✓ ' : '💰 ') + payLabel + '</span></div>';
     }
 
     card.innerHTML = html;
@@ -1368,7 +1372,9 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
       return cat && cat.stageDays && cat.stageDays[stage] ? cat.stageDays[stage] : null;
     });
     editingPhasePayments = editingPhases.map(function(stage) {
-      return cat && cat.payments && cat.payments[stage] ? cat.payments[stage].label : '';
+      if (!cat || !cat.payments || !cat.payments[stage]) return null;
+      var pp = cat.payments[stage];
+      return {amount: pp.amount || pp.label || '', description: pp.description || ''};
     });
     document.getElementById('phaseCatName').value = cat ? cat.label : '';
     buildPhaseColorPicker();
@@ -1400,7 +1406,22 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 
         var arr = document.createElement('div');
         arr.className = 'phase-arrow-sep';
-        arr.innerHTML = '&#8594;';
+        var arrTxt = document.createElement('span'); arrTxt.innerHTML = '&#8594;';
+        arr.appendChild(arrTxt);
+        if (idx > 0) {
+          (function(pIdx3) {
+            var pd = editingPhasePayments[pIdx3];
+            var hasP = pd && (pd.amount || pd.description);
+            var payBtn = document.createElement('button');
+            payBtn.type = 'button';
+            payBtn.className = 'phase-pay-btn' + (hasP ? ' on' : '');
+            payBtn.title = hasP ? (pd.amount || '') + (pd.description ? ' — ' + pd.description : '') : 'Agregar cobro';
+            payBtn.innerHTML = hasP ? ('💲 ' + (pd.amount || '')) : '$';
+            payBtn.addEventListener('mousedown', function(e){ e.stopPropagation(); });
+            payBtn.onclick = function(e) { e.stopPropagation(); openPaymentEditor(payBtn, pIdx3); };
+            arr.appendChild(payBtn);
+          })(idx);
+        }
         item.appendChild(arr);
 
         var card = document.createElement('div');
@@ -1503,34 +1524,6 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
         })(idx);
         card.appendChild(tsec);
 
-        // Payment section
-        (function(pIdx2) {
-          var paysec = document.createElement('div');
-          paysec.className = 'phase-payment-section';
-          var payActive = !!(editingPhasePayments[pIdx2] && editingPhasePayments[pIdx2].trim());
-          var payToggle = document.createElement('button');
-          payToggle.type = 'button';
-          payToggle.className = 'phase-pay-toggle' + (payActive ? ' on' : '');
-          payToggle.textContent = payActive ? '💰 Cobro al salir de esta fase' : '+ Agregar cobro al salir';
-          payToggle.addEventListener('mousedown', function(e){ e.stopPropagation(); });
-          payToggle.onclick = function(e) {
-            e.stopPropagation();
-            editingPhasePayments[pIdx2] = editingPhasePayments[pIdx2] ? '' : 'Anticipo';
-            renderPhaseFlow();
-          };
-          paysec.appendChild(payToggle);
-          if (payActive) {
-            var payInp = document.createElement('input');
-            payInp.type = 'text'; payInp.className = 'phase-pay-inp';
-            payInp.placeholder = 'Ej: Anticipo 30%, Pago final...';
-            payInp.value = editingPhasePayments[pIdx2];
-            payInp.oninput = function() { editingPhasePayments[pIdx2] = this.value; };
-            payInp.addEventListener('mousedown', function(e){ e.stopPropagation(); });
-            paysec.appendChild(payInp);
-          }
-          card.appendChild(paysec);
-        })(idx);
-
         card.addEventListener('dragstart', function(e) {
           item.dataset.dragging = '1';
           e.dataTransfer.effectAllowed = 'move';
@@ -1548,7 +1541,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
             var oi = parseInt(it.dataset.idx);
             newTemplates.push(editingPhaseTemplates[oi] ? editingPhaseTemplates[oi].slice() : []);
             newDays.push(editingPhaseDays[oi] || null);
-            newPayments.push(editingPhasePayments[oi] || '');
+            newPayments.push(editingPhasePayments[oi] || null);
           });
           editingPhases = newPhases;
           editingPhaseTemplates = newTemplates;
@@ -1588,7 +1581,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     var addCard = document.createElement('div');
     addCard.className = 'phase-add-card';
     addCard.innerHTML = '<span style="font-size:20px;opacity:.4">+</span>Agregar fase';
-    addCard.onclick = function() { editingPhases.push('Nueva fase'); editingPhaseTemplates.push([]); editingPhaseDays.push(null); editingPhasePayments.push(''); renderPhaseFlow(); };
+    addCard.onclick = function() { editingPhases.push('Nueva fase'); editingPhaseTemplates.push([]); editingPhaseDays.push(null); editingPhasePayments.push(null); renderPhaseFlow(); };
     addItem.appendChild(addCard);
     flow.appendChild(addItem);
   }
@@ -1604,8 +1597,8 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
       if (tpl.length) templates[phase] = tpl;
       var d = editingPhaseDays[i];
       if (d && d > 0) stageDays[phase] = d;
-      var pay = editingPhasePayments[i] ? editingPhasePayments[i].trim() : '';
-      if (pay) payments[phase] = {label: pay};
+      var pay = editingPhasePayments[i];
+      if (pay && (pay.amount || pay.description)) { payments[phase] = {label: pay.amount || pay.description, amount: pay.amount || '', description: pay.description || ''}; }
     });
     if (editingCatId) {
       for (var i = 0; i < categories.length; i++) {
@@ -1698,10 +1691,11 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     var stgPay = cat && cat.payments && cat.payments[p.stage];
     if (stgPay) {
       var pdmPayDone = p.paymentsDone && p.paymentsDone[p.stage];
+      var stgPayLbl = (stgPay.amount || stgPay.label || '') + (stgPay.description ? ' — ' + stgPay.description : '');
       timeHtml += '<div class="pdm-field"><div class="pdm-lbl">Cobro</div>'
         + '<div id="pdmPayRow" style="cursor:pointer;">'
         + '<span class="card-pay-pill ' + (pdmPayDone ? 'pdone' : 'ppend') + '">'
-        + (pdmPayDone ? '✓ Recibido: ' : '💰 Pendiente: ') + stgPay.label
+        + (pdmPayDone ? '✓ Recibido: ' : '💰 Pendiente: ') + stgPayLbl
         + '</span></div></div>';
     }
     document.getElementById('pdmTimeInfo').innerHTML = timeHtml;
@@ -2056,6 +2050,49 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     saveData();
     renderProjDetail();
     renderBoard();
+  }
+
+  // ── PAYMENT EDITOR ───────────────────────────────────────
+  function openPaymentEditor(anchor, idx) {
+    closePickers();
+    var pd = editingPhasePayments[idx] || {amount:'', description:''};
+    var panel = document.createElement('div');
+    panel.className = 'phase-pay-popup';
+    var title = document.createElement('div');
+    title.style.cssText = 'font-size:10px;font-weight:700;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:.07em;margin-bottom:12px;';
+    title.textContent = 'Cobro al avanzar de fase';
+    panel.appendChild(title);
+    var amtLbl = document.createElement('div'); amtLbl.className = 'phase-pay-popup-lbl'; amtLbl.textContent = 'Monto / porcentaje';
+    var amtInp = document.createElement('input'); amtInp.type = 'text'; amtInp.className = 'phase-pay-popup-inp';
+    amtInp.placeholder = 'Ej: 30%, $5,000 MXN, Anticipo 50%'; amtInp.value = pd.amount || '';
+    amtInp.addEventListener('mousedown', function(e){ e.stopPropagation(); });
+    var descLbl = document.createElement('div'); descLbl.className = 'phase-pay-popup-lbl'; descLbl.textContent = 'Descripción (opcional)';
+    var descInp = document.createElement('input'); descInp.type = 'text'; descInp.className = 'phase-pay-popup-inp';
+    descInp.style.marginBottom = '12px';
+    descInp.placeholder = 'Ej: Anticipo para iniciar producción'; descInp.value = pd.description || '';
+    descInp.addEventListener('mousedown', function(e){ e.stopPropagation(); });
+    panel.appendChild(amtLbl); panel.appendChild(amtInp);
+    panel.appendChild(descLbl); panel.appendChild(descInp);
+    var btnRow = document.createElement('div'); btnRow.style.cssText = 'display:flex;gap:6px;';
+    var saveBtn = document.createElement('button'); saveBtn.type = 'button'; saveBtn.className = 'btn-ok';
+    saveBtn.style.cssText = 'flex:1;padding:7px;font-size:11px;'; saveBtn.textContent = 'Guardar';
+    saveBtn.addEventListener('mousedown', function(e){ e.stopPropagation(); });
+    saveBtn.onclick = function(e) {
+      e.stopPropagation();
+      var amt = amtInp.value.trim(), desc = descInp.value.trim();
+      editingPhasePayments[idx] = (amt || desc) ? {amount: amt, description: desc} : null;
+      closePickers(); renderPhaseFlow();
+    };
+    if (editingPhasePayments[idx]) {
+      var rmBtn = document.createElement('button'); rmBtn.type = 'button'; rmBtn.className = 'btn-c';
+      rmBtn.style.cssText = 'padding:7px 10px;font-size:11px;color:#E24B4A;'; rmBtn.textContent = 'Quitar';
+      rmBtn.addEventListener('mousedown', function(e){ e.stopPropagation(); });
+      rmBtn.onclick = function(e) { e.stopPropagation(); editingPhasePayments[idx] = null; closePickers(); renderPhaseFlow(); };
+      btnRow.appendChild(rmBtn);
+    }
+    btnRow.appendChild(saveBtn); panel.appendChild(btnRow);
+    document.body.appendChild(panel); _activePicker = panel;
+    _posPicker(panel, anchor);
   }
 
   // ── CUSTOM PICKERS ───────────────────────────────────────
