@@ -2423,6 +2423,112 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
       }
       migrated = true;
     }
+    // Agregar categoría Interiorismo si no existe
+    var hasINT = false;
+    for (var ci4 = 0; ci4 < categories.length; ci4++) { if (categories[ci4].id === 'interiorismo') { hasINT = true; break; } }
+    if (!hasINT) {
+      function _t4(text) { return {text: text, deadline: '', resp: ''}; }
+      categories.push({
+        id: 'interiorismo',
+        label: 'Interiorismo',
+        color: '#C0436E',
+        stages: [
+          'Definición de requerimientos',
+          'Levantamiento en sitio',
+          'Propuesta conceptual del espacio',
+          'Visualización final del espacio',
+          'Propuesta económica final',
+          'Plan de trabajo',
+          'Desarrollo de archivos técnicos',
+          'Fabricación y compras',
+          'Ejecución / Instalación',
+          'Entrega del proyecto',
+          'Proyecto completado'
+        ],
+        stageDays: {
+          'Definición de requerimientos': 5,
+          'Levantamiento en sitio': 3,
+          'Propuesta conceptual del espacio': 10,
+          'Visualización final del espacio': 14,
+          'Propuesta económica final': 3,
+          'Plan de trabajo': 2,
+          'Desarrollo de archivos técnicos': 14,
+          'Fabricación y compras': 21,
+          'Ejecución / Instalación': 30,
+          'Entrega del proyecto': 3,
+          'Proyecto completado': 2
+        },
+        templates: {
+          'Definición de requerimientos': [
+            _t4('Reunión inicial con cliente'),
+            _t4('Identificar necesidades, gustos y estilo'),
+            _t4('Definir presupuesto y alcance del proyecto'),
+            _t4('Confirmar programa de espacios y prioridades')
+          ],
+          'Levantamiento en sitio': [
+            _t4('Visita y medición detallada del espacio'),
+            _t4('Registro fotográfico del estado actual'),
+            _t4('Identificar condiciones estructurales e instalaciones existentes'),
+            _t4('Generar plano base del espacio')
+          ],
+          'Propuesta conceptual del espacio': [
+            _t4('Definir concepto, paleta de materiales y estilo'),
+            _t4('Moodboard y referencias visuales'),
+            _t4('Distribución y zonificación del espacio'),
+            _t4('Presentación conceptual al cliente y validación')
+          ],
+          'Visualización final del espacio': [
+            _t4('Renders 3D de los espacios intervenidos'),
+            _t4('Selección definitiva de acabados y mobiliario'),
+            _t4('Recorrido virtual o vistas clave del proyecto'),
+            _t4('Aprobación visual definitiva por el cliente')
+          ],
+          'Propuesta económica final': [
+            _t4('Cotización detallada por partidas del proyecto'),
+            _t4('Presupuesto de materiales y mano de obra'),
+            _t4('Desglose de tiempos de ejecución'),
+            _t4('Firma de contrato o aprobación formal')
+          ],
+          'Plan de trabajo': [
+            _t4('Cronograma de obra, compras y entregas'),
+            _t4('Asignación de contratistas y proveedores'),
+            _t4('Confirmar disponibilidad de materiales clave'),
+            _t4('Compartir plan y cronograma con cliente')
+          ],
+          'Desarrollo de archivos técnicos': [
+            _t4('Planos de distribución y detalles constructivos'),
+            _t4('Planos de instalaciones eléctricas e hidráulicas'),
+            _t4('Especificaciones técnicas de materiales y acabados'),
+            _t4('Revisión y aprobación de planos por cliente')
+          ],
+          'Fabricación y compras': [
+            _t4('Órdenes de compra de materiales y mobiliario'),
+            _t4('Seguimiento de elementos a medida con fabricantes'),
+            _t4('Recepción y revisión de materiales entregados'),
+            _t4('Logística y almacenamiento previo a instalación')
+          ],
+          'Ejecución / Instalación': [
+            _t4('Supervisión de obra civil y acabados'),
+            _t4('Instalación de mobiliario y elementos decorativos'),
+            _t4('Coordinación de instalaciones especiales (iluminación, etc.)'),
+            _t4('Seguimiento y revisión de avances con cliente')
+          ],
+          'Entrega del proyecto': [
+            _t4('Recorrido final de inspección con cliente'),
+            _t4('Correcciones y ajustes de última hora'),
+            _t4('Registro fotográfico profesional del proyecto terminado'),
+            _t4('Firma de acta de entrega')
+          ],
+          'Proyecto completado': [
+            _t4('Archivar documentación completa del proyecto'),
+            _t4('Facturación final y cierre administrativo'),
+            _t4('Encuesta de satisfacción al cliente'),
+            _t4('Agregar caso a portafolio')
+          ]
+        }
+      });
+      migrated = true;
+    }
     if (migrated) saveData();
     renderTabs();
     renderBoard();
