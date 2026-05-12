@@ -2322,6 +2322,107 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
       });
       migrated = true;
     }
+    // Actualizar categoría Señalética con fases correctas
+    var newSenStages = [
+      'Definición de requerimientos','Propuesta conceptual y económica',
+      'Propuesta económica final','Visualización final de la señalética',
+      'Plan de trabajo','Desarrollo de archivos técnicos',
+      'Producción / Fabricación','Instalación','Entrega','Proyecto completado'
+    ];
+    var senIdx = -1;
+    for (var ci3 = 0; ci3 < categories.length; ci3++) { if (categories[ci3].id === 'senaletica') { senIdx = ci3; break; } }
+    var senNeedsUpdate = senIdx < 0 || categories[senIdx].stages.join('|') !== newSenStages.join('|');
+    if (senNeedsUpdate) {
+      function _t3(text) { return {text: text, deadline: '', resp: ''}; }
+      var senData = {
+        stages: newSenStages,
+        stageDays: {
+          'Definición de requerimientos': 5,
+          'Propuesta conceptual y económica': 7,
+          'Propuesta económica final': 3,
+          'Visualización final de la señalética': 10,
+          'Plan de trabajo': 2,
+          'Desarrollo de archivos técnicos': 14,
+          'Producción / Fabricación': 21,
+          'Instalación': 5,
+          'Entrega': 2,
+          'Proyecto completado': 2
+        },
+        templates: {
+          'Definición de requerimientos': [
+            _t3('Reunión de levantamiento con cliente'),
+            _t3('Recorrido y medición del sitio'),
+            _t3('Definir necesidades de comunicación visual'),
+            _t3('Confirmar presupuesto y alcance tentativo')
+          ],
+          'Propuesta conceptual y económica': [
+            _t3('Investigación de referentes y normativas de señalética'),
+            _t3('Desarrollo de concepto gráfico y sistema'),
+            _t3('Cotización de materiales y producción'),
+            _t3('Presentar propuesta conceptual y económica al cliente')
+          ],
+          'Propuesta económica final': [
+            _t3('Ajustar cotización según retroalimentación del cliente'),
+            _t3('Desglose final de costos y tiempos'),
+            _t3('Presentar propuesta económica definitiva'),
+            _t3('Firma de contrato o aprobación formal')
+          ],
+          'Visualización final de la señalética': [
+            _t3('Diseño gráfico de todas las piezas del sistema'),
+            _t3('Renders o mockups en sitio'),
+            _t3('Revisión interna de diseños'),
+            _t3('Aprobación visual por el cliente')
+          ],
+          'Plan de trabajo': [
+            _t3('Definir cronograma de producción e instalación'),
+            _t3('Coordinar con proveedores y fabricantes'),
+            _t3('Confirmar fechas de entrega con proveedor'),
+            _t3('Compartir plan y cronograma con cliente')
+          ],
+          'Desarrollo de archivos técnicos': [
+            _t3('Arte final de cada pieza del sistema'),
+            _t3('Planos de ubicación e instalación en sitio'),
+            _t3('Especificaciones técnicas por material y proceso'),
+            _t3('Revisión y aprobación final de archivos')
+          ],
+          'Producción / Fabricación': [
+            _t3('Envío de archivos a producción'),
+            _t3('Seguimiento con el proveedor o fabricante'),
+            _t3('Control de calidad de piezas producidas'),
+            _t3('Empaque y etiquetado para instalación')
+          ],
+          'Instalación': [
+            _t3('Coordinar acceso y preparación del sitio'),
+            _t3('Instalación de piezas según planos'),
+            _t3('Verificar nivelación, fijación y acabados'),
+            _t3('Ajustes y correcciones en sitio')
+          ],
+          'Entrega': [
+            _t3('Registro fotográfico del proyecto instalado'),
+            _t3('Recorrido final de revisión con cliente'),
+            _t3('Firma de acta de entrega'),
+            _t3('Entregar dossier técnico del proyecto')
+          ],
+          'Proyecto completado': [
+            _t3('Archivar archivos y documentación del proyecto'),
+            _t3('Facturación final y cierre administrativo'),
+            _t3('Encuesta de satisfacción al cliente'),
+            _t3('Agregar caso a portafolio')
+          ]
+        }
+      };
+      if (senIdx >= 0) {
+        categories[senIdx].stages = senData.stages;
+        categories[senIdx].stageDays = senData.stageDays;
+        categories[senIdx].templates = senData.templates;
+        categories[senIdx].label = 'Señalética';
+        categories[senIdx].color = '#E8A020';
+      } else {
+        categories.push({id:'senaletica', label:'Señalética', color:'#E8A020',
+          stages: senData.stages, stageDays: senData.stageDays, templates: senData.templates});
+      }
+      migrated = true;
+    }
     if (migrated) saveData();
     renderTabs();
     renderBoard();
