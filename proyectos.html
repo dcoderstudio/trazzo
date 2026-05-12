@@ -1705,19 +1705,30 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     container.innerHTML = '';
     var canvas = document.createElement('div');
     canvas.style.cssText = 'position:relative;width:' + W + 'px;height:160px;';
-    // Week dashed lines + date labels
-    var ms7 = 7 * 86400000;
-    var wkDate = new Date(rangeStart.getTime() + ms7);
-    while (wkDate < lastEnd) {
-      var wx = Math.round((wkDate - rangeStart) / 86400000 * PX_PER_DAY);
-      var vl = document.createElement('div');
-      vl.style.cssText = 'position:absolute;left:'+wx+'px;top:0;height:138px;border-left:1px dashed rgba(255,255,255,0.08);';
-      canvas.appendChild(vl);
-      var vLbl = document.createElement('div');
-      vLbl.style.cssText = 'position:absolute;left:'+(wx-16)+'px;top:142px;font-size:9px;color:rgba(255,255,255,0.25);white-space:nowrap;width:34px;text-align:center;';
-      vLbl.textContent = wkDate.getDate() + '/' + (wkDate.getMonth()+1);
-      canvas.appendChild(vLbl);
-      wkDate = new Date(wkDate.getTime() + ms7);
+    // Day-by-day lines + labels
+    var MNS = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+    var dayMs = 86400000;
+    var curDay = new Date(rangeStart);
+    while (curDay <= lastEnd) {
+      var dx = Math.round((curDay - rangeStart) / dayMs * PX_PER_DAY);
+      var isToday2 = curDay.getTime() === today.getTime();
+      var isWeekend = curDay.getDay() === 0 || curDay.getDay() === 6;
+      var isMonthStart = curDay.getDate() === 1;
+      if (!isToday2) {
+        var vl = document.createElement('div');
+        var lOp = isMonthStart ? '0.2' : isWeekend ? '0.09' : '0.05';
+        vl.style.cssText = 'position:absolute;left:'+dx+'px;top:0;height:138px;border-left:1px '+(isMonthStart?'solid':'dashed')+' rgba(255,255,255,'+lOp+');pointer-events:none;';
+        canvas.appendChild(vl);
+      }
+      if (!isToday2) {
+        var vLbl = document.createElement('div');
+        var lCol = isMonthStart ? 'rgba(255,255,255,0.45)' : isWeekend ? 'rgba(255,255,255,0.28)' : 'rgba(255,255,255,0.18)';
+        var lTxt = isMonthStart ? MNS[curDay.getMonth()] : String(curDay.getDate());
+        vLbl.style.cssText = 'position:absolute;left:'+(dx-Math.floor(PX_PER_DAY/2))+'px;top:142px;font-size:8px;font-weight:'+(isMonthStart?'700':'400')+';color:'+lCol+';width:'+PX_PER_DAY+'px;text-align:center;pointer-events:none;';
+        vLbl.textContent = lTxt;
+        canvas.appendChild(vLbl);
+      }
+      curDay = new Date(curDay.getTime() + dayMs);
     }
     // Stage bars
     stages.forEach(function(stage, idx) {
