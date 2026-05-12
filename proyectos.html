@@ -776,6 +776,9 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
       for (var i = 0; i < projects.length; i++) { if (projects[i].id === dragId) { p = projects[i]; break; } }
       if (!p || p.catId !== cat.id) return;
       p.stage = stage;
+      if (!p.stageEntryDates) p.stageEntryDates = {};
+      p.stageEntryDates[stage] = new Date().toISOString().split('T')[0];
+      seedStageTasks(p, cat, stage);
       saveData();
       renderBoard();
     }
@@ -1273,6 +1276,18 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     if (fieldUpdaters['mDeadline']) fieldUpdaters['mDeadline']();
   }
 
+  function seedStageTasks(proj, cat, stage) {
+    if (!proj.stageTasks) proj.stageTasks = {};
+    if (proj.stageTasks[stage] && proj.stageTasks[stage].length > 0) return;
+    var tpl = cat && cat.templates && cat.templates[stage] ? cat.templates[stage] : [];
+    if (!tpl.length) return;
+    var base = Date.now();
+    proj.stageTasks[stage] = tpl.map(function(item, i) {
+      var text = typeof item === 'string' ? item : (item.text || '');
+      return {id: base + i, text: text, done: false, deadline: '', resp: ''};
+    });
+  }
+
   function createProject() {
     var name = document.getElementById('mName').value.trim();
     var client = document.getElementById('mClient').value.trim();
@@ -1288,6 +1303,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     var proj = {id: nextId++, name: name, client: client || '—', catId: catId, stage: stage, deadline: deadline, team: [resp], stageEntryDates: {}};
     proj.stageEntryDates[stage] = new Date().toISOString().split('T')[0];
     if (catId === 'cotizaciones') { proj.monto = monto; proj.tipoCat = tipoCat; }
+    seedStageTasks(proj, cat, stage);
     projects.push(proj);
     saveData();
     closeProjModal();
@@ -2083,6 +2099,9 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
       p.stage = newStage;
       if (!p.stageEntryDates) p.stageEntryDates = {};
       p.stageEntryDates[newStage] = new Date().toISOString().split('T')[0];
+      var pcat2 = null;
+      for (var ci2=0;ci2<categories.length;ci2++){if(categories[ci2].id===p.catId){pcat2=categories[ci2];break;}}
+      if (pcat2) seedStageTasks(p, pcat2, newStage);
     }
     if (p.catId === 'cotizaciones') p.monto = document.getElementById('pdmMonto').value;
     saveData();
