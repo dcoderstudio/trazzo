@@ -174,6 +174,10 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 .pdm-cat-pill{font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;white-space:nowrap;flex-shrink:0;}
 .pdm-close{background:rgba(255,255,255,0.07);border:none;color:rgba(255,255,255,0.5);font-size:18px;width:28px;height:28px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;}
 .pdm-close:hover{background:rgba(255,255,255,0.12);color:#fff;}
+.pdm-del-btn{background:rgba(226,75,74,0.08);border:0.5px solid rgba(226,75,74,0.2);color:#E24B4A;width:28px;height:28px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;}
+.pdm-del-btn:hover{background:rgba(226,75,74,0.22);border-color:rgba(226,75,74,0.5);}
+.pdm-del-confirm{align-items:center;gap:8px;background:rgba(226,75,74,0.07);border:0.5px solid rgba(226,75,74,0.2);border-radius:10px;padding:4px 10px;}
+.pdm-del-confirm span{font-size:11px;color:rgba(255,255,255,0.6);white-space:nowrap;}
 .pdm-body{display:flex;flex:1;overflow:hidden;min-height:0;}
 .pdm-info{width:250px;flex-shrink:0;padding:16px 18px;border-right:0.5px solid rgba(255,255,255,0.06);overflow-y:auto;display:flex;flex-direction:column;gap:12px;}
 .pdm-info::-webkit-scrollbar,.pdm-tasks-col::-webkit-scrollbar{width:3px;}
@@ -427,6 +431,16 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     <div class="pdm-header">
       <input class="pdm-title" id="pdmName" placeholder="Nombre del proyecto">
       <span class="pdm-cat-pill" id="pdmCatPill"></span>
+      <div class="pdm-del-confirm" id="pdmDelConfirm" style="display:none;">
+        <span>¿Eliminar ficha?</span>
+        <button class="btn-c" id="pdmCancelDel" style="padding:4px 10px;font-size:11px;">No</button>
+        <button class="btn-danger" id="pdmConfirmDel" style="padding:4px 10px;font-size:11px;">Eliminar</button>
+      </div>
+      <button class="pdm-del-btn" id="pdmDeleteBtn" title="Eliminar ficha">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a1 1 0 011-1h4a1 1 0 011 1v2"/>
+        </svg>
+      </button>
       <button class="pdm-close" id="pdmClose">×</button>
     </div>
     <div class="pdm-body">
@@ -1549,8 +1563,27 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
   function openProjDetail(projectId) {
     detailProjectId = projectId;
     selectedPhaseIdx = -1;
+    document.getElementById('pdmDelConfirm').style.display = 'none';
+    document.getElementById('pdmDeleteBtn').style.display = '';
     renderProjDetail();
     document.getElementById('projDetailOverlay').classList.add('open');
+  }
+
+  function startDeleteProj() {
+    document.getElementById('pdmDelConfirm').style.display = 'flex';
+    document.getElementById('pdmDeleteBtn').style.display = 'none';
+  }
+
+  function cancelDeleteProj() {
+    document.getElementById('pdmDelConfirm').style.display = 'none';
+    document.getElementById('pdmDeleteBtn').style.display = '';
+  }
+
+  function confirmDeleteProj() {
+    projects = projects.filter(function(p) { return p.id !== detailProjectId; });
+    saveData();
+    document.getElementById('projDetailOverlay').classList.remove('open');
+    renderBoard();
   }
 
   function renderProjDetail() {
@@ -2086,6 +2119,9 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
   document.getElementById('catOverlay').addEventListener('click', function(e) { if (e.target === document.getElementById('catOverlay')) closeCatModal(); });
   document.getElementById('pdmClose').onclick = function(){ document.getElementById('projDetailOverlay').classList.remove('open'); };
   document.getElementById('pdmClose2').onclick = function(){ document.getElementById('projDetailOverlay').classList.remove('open'); };
+  document.getElementById('pdmDeleteBtn').onclick = startDeleteProj;
+  document.getElementById('pdmCancelDel').onclick = cancelDeleteProj;
+  document.getElementById('pdmConfirmDel').onclick = confirmDeleteProj;
   document.getElementById('pdmSaveBtn').onclick = saveProjDetail;
   document.getElementById('pdmAddBtn').onclick = addDetailTask;
   document.getElementById('pdmNewInp').addEventListener('keydown', function(e){ if(e.key==='Enter') addDetailTask(); });
