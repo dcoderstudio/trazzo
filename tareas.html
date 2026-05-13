@@ -151,7 +151,9 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 .tk-det-notes{background:#1e1e1e;border:0.5px solid rgba(255,255,255,0.1);border-radius:10px;padding:10px 13px;font-size:12px;color:rgba(255,255,255,0.7);font-family:'Inter',sans-serif;outline:none;width:100%;resize:vertical;min-height:72px;line-height:1.5;transition:border-color .15s;}
 .tk-det-notes:focus{border-color:rgba(255,255,255,0.3);}
 .tk-det-notes::placeholder{color:rgba(255,255,255,0.18);}
-.tk-det-foot{display:flex;gap:8px;justify-content:flex-end;}
+.tk-det-foot{display:flex;gap:8px;align-items:center;}
+.tk-det-del-btn{background:none;border:0.5px solid rgba(226,75,74,0.25);color:rgba(226,75,74,0.55);font-size:11px;font-weight:600;padding:7px 13px;border-radius:10px;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s;flex-shrink:0;}
+.tk-det-del-btn:hover{background:rgba(226,75,74,0.1);border-color:rgba(226,75,74,0.5);color:#E24B4A;}
 .tk-notes-dot{width:6px;height:6px;border-radius:50%;background:rgba(232,160,32,0.6);flex-shrink:0;}
 /* NUEVA TAREA — step selector */
 .nt-type-btn{background:rgba(255,255,255,0.04);border:0.5px solid rgba(255,255,255,0.1);border-radius:14px;padding:18px 10px;cursor:pointer;font-family:'Inter',sans-serif;text-align:center;display:flex;flex-direction:column;align-items:center;gap:6px;transition:all .18s;width:100%;}
@@ -442,8 +444,11 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
           <textarea class="tk-det-notes" id="tkDetNotes" placeholder="Agrega una nota o comentario…"></textarea>
         </div>
         <div class="tk-det-foot">
-          <button class="t-btn-c" onclick="closeTaskDetail()">Cancelar</button>
-          <button class="t-btn-ok" onclick="saveTaskDetail()">Guardar</button>
+          <button class="tk-det-del-btn" onclick="deleteTaskDetail()">🗑 Eliminar</button>
+          <div style="display:flex;gap:8px;margin-left:auto;">
+            <button class="t-btn-c" onclick="closeTaskDetail()">Cancelar</button>
+            <button class="t-btn-ok" onclick="saveTaskDetail()">Guardar</button>
+          </div>
         </div>
       </div>
     </div>
@@ -1227,6 +1232,24 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
         } } }
       }
     }
+  };
+  window.deleteTaskDetail = function() {
+    if (!_detRef) return;
+    openConf('Eliminar tarea', '¿Seguro que deseas eliminar esta tarea? Esta acción no se puede deshacer.', function() {
+      if (_detRef.projectId === 'standalone') {
+        standaloneTasks = standaloneTasks.filter(function(t){ return t.id !== _detRef.taskId; });
+      } else {
+        for (var i=0;i<projects.length;i++){
+          if (projects[i].id === _detRef.projectId) {
+            var tasks = projects[i].stageTasks && projects[i].stageTasks[_detRef.stage];
+            if (tasks) {
+              projects[i].stageTasks[_detRef.stage] = tasks.filter(function(t){ return t.id !== _detRef.taskId; });
+            }
+          }
+        }
+      }
+      saveData(); closeConf(); closeTaskDetail(); renderBoard();
+    });
   };
   document.addEventListener('keydown', function(e){ if (e.key === 'Escape') closeTaskDetail(); });
 
