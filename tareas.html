@@ -48,7 +48,8 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 /* TASK CARD */
 .tk-card{background:#181818;border:0.5px solid rgba(255,255,255,0.08);border-radius:13px;padding:14px 14px 12px 18px;position:relative;overflow:hidden;transition:transform .12s,box-shadow .12s,border-color .12s;flex-shrink:0;}
 .tk-card:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(0,0,0,.45);border-color:rgba(255,255,255,0.16);}
-.tk-card.urgent-card{border-color:rgba(226,75,74,0.25);background:#1c1414;}
+.tk-card.soon-card{border-color:rgba(232,160,32,0.35);background:#1b1a11;}
+.tk-card.overdue-card{border-color:rgba(226,75,74,0.35);background:#1c1212;}
 .tk-card.done-card{opacity:.38;}
 .tk-card-bar{position:absolute;left:0;top:0;bottom:0;width:4px;border-radius:4px 0 0 4px;}
 .tk-card-proj{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;}
@@ -433,8 +434,9 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 
   function buildCard(task) {
     var card = document.createElement('div');
-    var urgent = !task.done && task.deadline && isUrgent(task.deadline);
-    card.className = 'tk-card' + (urgent ? ' urgent-card' : '') + (task.done ? ' done-card' : '') + (task.priority ? ' priority-card' : '');
+    var dlState = (!task.done && task.deadline) ? getDlClass(task.deadline) : '';
+    var dlCardClass = dlState === 'overdue' ? ' overdue-card' : (dlState === 'today' || dlState === 'soon') ? ' soon-card' : '';
+    card.className = 'tk-card' + dlCardClass + (task.done ? ' done-card' : '') + (task.priority ? ' priority-card' : '');
     card.dataset.sortorder = String(task.sortOrder != null ? task.sortOrder : task.id);
 
     // Flag button (top-right)
