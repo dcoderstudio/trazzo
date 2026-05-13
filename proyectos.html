@@ -1944,6 +1944,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     var totalDays = Math.ceil((lastEnd - rangeStart) / 86400000);
     var W = Math.max(totalDays * PX_PER_DAY, 320);
     var container = document.getElementById('pdmTimeline');
+    var _savedScroll = container.scrollLeft;
     container.innerHTML = '';
     var canvas = document.createElement('div');
     canvas.style.cssText = 'position:relative;width:' + W + 'px;height:180px;';
@@ -2048,6 +2049,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
       }
     }
     container.appendChild(canvas);
+    container.scrollLeft = _savedScroll;
     _detailStartDates = startDates;
     _detailCat = cat;
     _detailStages = stages;
