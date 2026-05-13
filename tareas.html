@@ -221,6 +221,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 .tm-del-btn{background:none;border:none;color:rgba(255,255,255,0.2);font-size:16px;cursor:pointer;padding:2px 6px;border-radius:6px;transition:all .15s;line-height:1;}
 .tm-del-btn:hover{background:rgba(226,75,74,0.1);color:#E24B4A;}
 /* CONFIRM MODAL */
+#confOverlay{z-index:1000;}
 .conf-msg{font-size:12px;color:rgba(255,255,255,0.5);line-height:1.65;}
 .btn-danger{background:#E24B4A;border:none;color:#fff;font-size:12px;font-weight:700;padding:8px 16px;border-radius:10px;cursor:pointer;font-family:'Inter',sans-serif;transition:background .15s;}
 .btn-danger:hover{background:#c73838;}
@@ -1235,16 +1236,15 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
   };
   window.deleteTaskDetail = function() {
     if (!_detRef) return;
+    var ref = {projectId: _detRef.projectId, stage: _detRef.stage, taskId: _detRef.taskId};
     openConf('Eliminar tarea', '¿Seguro que deseas eliminar esta tarea? Esta acción no se puede deshacer.', function() {
-      if (_detRef.projectId === 'standalone') {
-        standaloneTasks = standaloneTasks.filter(function(t){ return t.id !== _detRef.taskId; });
+      if (ref.projectId === 'standalone') {
+        standaloneTasks = standaloneTasks.filter(function(t){ return t.id !== ref.taskId; });
       } else {
         for (var i=0;i<projects.length;i++){
-          if (projects[i].id === _detRef.projectId) {
-            var tasks = projects[i].stageTasks && projects[i].stageTasks[_detRef.stage];
-            if (tasks) {
-              projects[i].stageTasks[_detRef.stage] = tasks.filter(function(t){ return t.id !== _detRef.taskId; });
-            }
+          if (projects[i].id === ref.projectId) {
+            var tasks = projects[i].stageTasks && projects[i].stageTasks[ref.stage];
+            if (tasks) projects[i].stageTasks[ref.stage] = tasks.filter(function(t){ return t.id !== ref.taskId; });
           }
         }
       }
