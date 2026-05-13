@@ -2296,7 +2296,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
   function makeDateTrigger(el, cls, ph) {
     var btn=document.createElement('button'); btn.type='button'; btn.className=cls;
     function upd(){var f=_fmtDateLbl(el.value);btn.textContent=f||ph;if(f)btn.classList.add('has-val');else btn.classList.remove('has-val');}
-    btn.onclick=function(e){e.preventDefault();e.stopPropagation();openDatePicker(btn,el.value,function(v){el.value=v;upd();});};
+    btn.onclick=function(e){e.preventDefault();e.stopPropagation();openDatePicker(btn,el.value,function(v){el.value=v;el.dispatchEvent(new Event('change'));upd();});};
     upd(); el.style.display='none'; el.parentNode.insertBefore(btn,el);
     return upd;
   }
@@ -2310,7 +2310,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
       if(m){var av=document.createElement('span');av.className='cpt-av';av.style.background=m.color;av.style.cssText+='background:'+m.color;av.textContent=m.id;btn.appendChild(av);var nm=document.createElement('span');nm.style.marginLeft='6px';nm.textContent=m.name;btn.appendChild(nm);btn.classList.add('has-val');}
       else{btn.textContent=ph;btn.classList.remove('has-val');}
     }
-    btn.onclick=function(e){e.preventDefault();e.stopPropagation();openPersonPicker(btn,el.value,function(v){el.value=v;upd();});};
+    btn.onclick=function(e){e.preventDefault();e.stopPropagation();openPersonPicker(btn,el.value,function(v){el.value=v;el.dispatchEvent(new Event('change'));upd();});};
     upd(); el.style.display='none'; el.parentNode.insertBefore(btn,el);
     return upd;
   }
@@ -2346,10 +2346,27 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
   document.getElementById('pdmDeleteBtn').onclick = startDeleteProj;
   document.getElementById('pdmCancelDel').onclick = cancelDeleteProj;
   document.getElementById('pdmConfirmDel').onclick = confirmDeleteProj;
-  document.getElementById('pdmSaveBtn').onclick = saveProjDetail;
+  document.getElementById('pdmSaveBtn').onclick = function(){ saveProjDetail(); document.getElementById('projDetailOverlay').classList.remove('open'); };
   document.getElementById('pdmAddBtn').onclick = addDetailTask;
   document.getElementById('pdmNewInp').addEventListener('keydown', function(e){ if(e.key==='Enter') addDetailTask(); });
   document.getElementById('projDetailOverlay').addEventListener('click', function(e){ if(e.target===document.getElementById('projDetailOverlay')) document.getElementById('projDetailOverlay').classList.remove('open'); });
+
+  // ── AUTO-SAVE en detalle de ficha ─────────────────────
+  var _pdmTimer = null;
+  function _pdmAutoSave() {
+    clearTimeout(_pdmTimer);
+    _pdmTimer = setTimeout(function(){ if(detailProjectId) saveProjDetail(); }, 700);
+  }
+  function _pdmAutoSaveNow() {
+    clearTimeout(_pdmTimer);
+    if(detailProjectId) saveProjDetail();
+  }
+  document.getElementById('pdmName').addEventListener('input', _pdmAutoSave);
+  document.getElementById('pdmClient').addEventListener('input', _pdmAutoSave);
+  document.getElementById('pdmMonto').addEventListener('input', _pdmAutoSave);
+  document.getElementById('pdmStage').addEventListener('change', _pdmAutoSaveNow);
+  document.getElementById('pdmDeadline').addEventListener('change', _pdmAutoSaveNow);
+  document.getElementById('pdmResp').addEventListener('change', _pdmAutoSaveNow);
 
   // ── PICKER INIT ───────────────────────────────────────
   ['mDeadline','pdmDeadline','solDeadline'].forEach(function(id){

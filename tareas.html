@@ -1162,14 +1162,29 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
       e.stopPropagation();
       tkOpenPersonPicker(respBtn, document.getElementById('tkDetResp').value, function(v){
         document.getElementById('tkDetResp').value=v; _updRespBtn(respBtn,v);
+        document.getElementById('tkDetResp').dispatchEvent(new Event('change'));
       });
     };
     dlBtn.onclick = function(e) {
       e.stopPropagation();
       tkOpenDatePicker(dlBtn, document.getElementById('tkDetDeadline').value, function(v){
         document.getElementById('tkDetDeadline').value=v; _updDlBtn(dlBtn,v);
+        document.getElementById('tkDetDeadline').dispatchEvent(new Event('change'));
       });
     };
+
+    // ── AUTO-SAVE en detalle de tarea ──────────────────────
+    var _tkTimer = null;
+    function _tkAutoSave() {
+      clearTimeout(_tkTimer);
+      _tkTimer = setTimeout(function(){ if(_detRef) saveTaskDetail(); }, 700);
+    }
+    function _tkAutoSaveNow() { clearTimeout(_tkTimer); if(_detRef) saveTaskDetail(); }
+    document.getElementById('tkDetText').addEventListener('input', _tkAutoSave);
+    document.getElementById('tkDetNotes').addEventListener('input', _tkAutoSave);
+    document.getElementById('tkDetStatus').addEventListener('change', _tkAutoSaveNow);
+    document.getElementById('tkDetResp').addEventListener('change', _tkAutoSaveNow);
+    document.getElementById('tkDetDeadline').addEventListener('change', _tkAutoSaveNow);
   })();
 
   // ── FLAG & DETAIL ────────────────────────────────────────
