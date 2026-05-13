@@ -2486,5 +2486,45 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 
 })();
 </script>
+
+<!-- ── MINI FOCUS TIMER ──────────────────────────────────────────────────── -->
+<script>
+(function() {
+  var SK = 'trazzo_focus_session';
+  var _el = null, _int = null;
+  function _fmt(sec) { var s=Math.max(0,sec); return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0'); }
+  function _read() { try { return JSON.parse(localStorage.getItem(SK)||'null'); } catch(e) { return null; } }
+  function _write(s) { if (!s||s.remaining<=0){localStorage.removeItem(SK);return;} localStorage.setItem(SK,JSON.stringify(s)); }
+  function _hide() { if(_int){clearInterval(_int);_int=null;} if(_el){_el.remove();_el=null;} }
+  function _startTick() {
+    if(_int) clearInterval(_int);
+    _int = setInterval(function(){
+      var s=_read(); if(!s||!s.running){clearInterval(_int);_int=null;if(_el){var pp=document.getElementById('_mfpp');if(pp)pp.textContent='▶';}return;}
+      s.remaining--; s.ts=Date.now(); _write(s);
+      var tEl=document.getElementById('_mft'); if(tEl)tEl.textContent=_fmt(s.remaining);
+      if(s.remaining<=0){clearInterval(_int);_int=null;_hide();}
+    }, 1000);
+  }
+  function _render() {
+    var sess=_read(); if(!sess||sess.remaining<=0){_hide();return;}
+    if(sess.running&&sess.ts){var el=Math.floor((Date.now()-sess.ts)/1000);if(el>0){sess.remaining=Math.max(0,sess.remaining-el);sess.ts=Date.now();_write(sess);if(sess.remaining<=0){_hide();return;}}}
+    if(!_el){
+      _el=document.createElement('div');
+      _el.style.cssText='position:fixed;top:12px;right:14px;z-index:99999;display:flex;align-items:center;gap:7px;background:#1a1a1a;border:0.5px solid rgba(232,160,32,0.4);border-radius:20px;padding:6px 8px 6px 12px;font-family:Inter,sans-serif;cursor:pointer;box-shadow:0 4px 20px rgba(0,0,0,.7);user-select:none;';
+      _el.innerHTML='<span style="font-size:12px;color:#E8A020;font-weight:700;">⚡</span><span id="_mfn" style="max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;font-weight:500;color:rgba(255,255,255,0.55);"></span><span id="_mft" style="font-size:12px;font-weight:700;color:#E8A020;font-variant-numeric:tabular-nums;min-width:40px;text-align:right;"></span><button id="_mfpp" style="background:rgba(255,255,255,0.07);border:none;color:rgba(255,255,255,0.5);font-size:12px;cursor:pointer;border-radius:10px;padding:2px 8px;font-family:Inter,sans-serif;line-height:1.7;" title="Pausa/Reanudar">⏸</button><button id="_mfst" style="background:none;border:none;color:rgba(255,255,255,0.25);font-size:16px;cursor:pointer;padding:0 4px;line-height:1;" title="Detener">×</button>';
+      document.body.appendChild(_el);
+      _el.addEventListener('click',function(e){if(e.target.tagName!=='BUTTON')location.href='focus.html';});
+      document.getElementById('_mfpp').addEventListener('click',function(e){e.stopPropagation();_toggle();});
+      document.getElementById('_mfst').addEventListener('click',function(e){e.stopPropagation();localStorage.removeItem(SK);_hide();});
+    }
+    document.getElementById('_mfn').textContent=sess.taskText||'';
+    document.getElementById('_mft').textContent=_fmt(sess.remaining);
+    document.getElementById('_mfpp').textContent=sess.running?'⏸':'▶';
+    if(sess.running&&!_int)_startTick(); else if(!sess.running&&_int){clearInterval(_int);_int=null;}
+  }
+  function _toggle() { var s=_read();if(!s)return;s.running=!s.running;s.ts=Date.now();_write(s);var pp=document.getElementById('_mfpp');if(pp)pp.textContent=s.running?'⏸':'▶';if(s.running)_startTick();else if(_int){clearInterval(_int);_int=null;} }
+  _render();
+})();
+</script>
 </body>
 </html>

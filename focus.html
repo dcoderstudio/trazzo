@@ -9,70 +9,49 @@
 *{box-sizing:border-box;margin:0;padding:0;}
 html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-serif;overflow:hidden;}
 
-.topbar{display:flex;align-items:center;justify-content:space-between;padding:0 32px;height:52px;border-bottom:0.5px solid rgba(255,255,255,0.06);}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:0 28px;height:52px;border-bottom:0.5px solid rgba(255,255,255,0.06);}
 .logo{display:flex;align-items:center;gap:10px;}
 .logo-pill{background:#fff;color:#0c0c0c;font-size:11px;font-weight:800;padding:5px 10px;border-radius:8px;}
 .logo-name{font-size:14px;font-weight:700;letter-spacing:.04em;}
-.back-btn{background:rgba(255,255,255,0.07);border:none;color:rgba(255,255,255,0.6);font-size:12px;font-weight:500;padding:6px 14px;border-radius:20px;cursor:pointer;font-family:'Inter',sans-serif;transition:background .15s;}
-.back-btn:hover{background:rgba(255,255,255,0.12);}
-.mode-pill{font-size:11px;font-weight:700;padding:5px 12px;border-radius:20px;background:rgba(232,160,32,0.15);color:#E8A020;border:0.5px solid rgba(232,160,32,0.3);}
+.nav-btn{background:none;border:none;color:rgba(255,255,255,0.28);font-size:12px;font-weight:500;padding:6px 16px;border-radius:20px;cursor:pointer;font-family:'Inter',sans-serif;transition:background .15s,color .15s;}
+.nav-btn:hover{background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.7);}
+.mode-pill{font-size:11px;font-weight:700;padding:5px 12px;border-radius:20px;background:rgba(232,160,32,0.15);color:#E8A020;border:0.5px solid rgba(232,160,32,0.3);white-space:nowrap;}
 
 .layout{display:flex;height:calc(100vh - 52px);}
 
 /* LEFT PANEL */
-.task-panel{width:340px;flex-shrink:0;border-right:0.5px solid rgba(255,255,255,0.06);display:flex;flex-direction:column;padding:28px 24px;gap:18px;overflow-y:auto;}
-.panel-title{font-size:13px;font-weight:700;color:rgba(255,255,255,0.5);letter-spacing:.06em;text-transform:uppercase;}
-.add-task-wrap{display:flex;flex-direction:column;gap:8px;}
-.add-task-row{display:flex;gap:8px;}
-.task-input{flex:1;background:#1a1a1a;border:0.5px solid rgba(255,255,255,0.1);border-radius:10px;padding:10px 14px;font-size:13px;color:#fff;font-family:'Inter',sans-serif;outline:none;transition:border-color .15s;}
-.task-input:focus{border-color:rgba(255,255,255,0.3);}
-.task-input::placeholder{color:rgba(255,255,255,0.2);}
-.time-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap;}
-.time-label{font-size:11px;color:rgba(255,255,255,0.3);font-weight:500;white-space:nowrap;}
-.time-chip{padding:5px 12px;border-radius:20px;border:0.5px solid rgba(255,255,255,0.1);background:transparent;color:rgba(255,255,255,0.4);font-size:11px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:background .15s,color .15s,border-color .15s;}
-.time-chip:hover,.time-chip.active{background:rgba(255,255,255,0.1);color:#fff;border-color:rgba(255,255,255,0.3);}
-.time-custom{width:52px;background:#1a1a1a;border:0.5px solid rgba(255,255,255,0.1);border-radius:8px;padding:5px 8px;font-size:11px;color:#fff;font-family:'Inter',sans-serif;outline:none;text-align:center;}
-.add-btn{background:#E8A020;color:#0c0c0c;border:none;border-radius:10px;padding:10px 16px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;white-space:nowrap;transition:background .15s;}
-.add-btn:hover{background:#d4911c;}
+.task-panel{width:340px;flex-shrink:0;border-right:0.5px solid rgba(255,255,255,0.06);display:flex;flex-direction:column;padding:24px 20px 16px;gap:14px;overflow:hidden;}
+.panel-title{font-size:13px;font-weight:700;color:rgba(255,255,255,0.5);letter-spacing:.06em;text-transform:uppercase;flex-shrink:0;}
 
-.tasks-list{display:flex;flex-direction:column;gap:0;flex:1;}
-.tasks-empty{font-size:13px;color:rgba(255,255,255,0.2);text-align:center;padding:24px 0;font-style:italic;}
+/* Person filter */
+.focus-person-row{display:flex;gap:5px;flex-wrap:wrap;flex-shrink:0;}
+.focus-person-pill{display:flex;align-items:center;gap:5px;padding:4px 10px 4px 6px;border-radius:20px;border:0.5px solid rgba(255,255,255,0.08);background:transparent;color:rgba(255,255,255,0.38);font-size:11px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s;}
+.focus-person-pill:hover{background:rgba(255,255,255,0.06);color:#fff;border-color:rgba(255,255,255,0.18);}
+.focus-person-pill.active{background:rgba(255,255,255,0.1);border-color:rgba(255,255,255,0.28);color:#fff;}
+.focus-av{width:18px;height:18px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:7px;font-weight:700;color:#fff;flex-shrink:0;}
 
-.task-item{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;background:#161616;border:0.5px solid rgba(255,255,255,0.06);cursor:pointer;transition:background .15s,border-color .15s;position:relative;margin-bottom:6px;}
+.tasks-list{display:flex;flex-direction:column;gap:0;flex:1;overflow-y:auto;padding-right:2px;}
+.tasks-list::-webkit-scrollbar{width:3px;}
+.tasks-list::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:2px;}
+.tasks-empty{font-size:13px;color:rgba(255,255,255,0.2);text-align:center;padding:28px 0;font-style:italic;}
+
+.task-item{display:flex;align-items:center;gap:9px;padding:11px 12px 11px 14px;border-radius:12px;background:#161616;border:0.5px solid rgba(255,255,255,0.06);cursor:pointer;transition:background .15s,border-color .15s;position:relative;margin-bottom:6px;flex-shrink:0;overflow:hidden;}
 .task-item:hover{background:#1c1c1c;border-color:rgba(255,255,255,0.12);}
 .task-item.active-task{border-color:#E8A020;background:rgba(232,160,32,0.08);}
-.task-item.done{opacity:.4;}
-.task-item.expanded{border-radius:12px 12px 0 0;margin-bottom:0;}
-.task-check{width:18px;height:18px;border-radius:50%;border:1.5px solid rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .15s,border-color .15s;}
-.task-item.done .task-check{background:#27AE72;border-color:#27AE72;}
-.task-check svg{width:10px;height:10px;stroke:#fff;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;opacity:0;}
-.task-item.done .task-check svg{opacity:1;}
-.task-name{flex:1;font-size:13px;font-weight:500;color:rgba(255,255,255,0.8);}
-.task-item.done .task-name{text-decoration:line-through;color:rgba(255,255,255,0.3);}
-.task-badge{font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.4);white-space:nowrap;}
-.task-badge.worked{background:rgba(232,160,32,0.15);color:#E8A020;}
-.task-del{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:rgba(255,255,255,0.15);cursor:pointer;font-size:16px;padding:4px;opacity:0;transition:opacity .15s;line-height:1;}
-.task-item:hover .task-del{opacity:1;}
-.task-del:hover{color:#E24B4A;}
+.task-bar{width:3px;height:100%;position:absolute;left:0;top:0;bottom:0;border-radius:4px 0 0 4px;}
+.task-name{flex:1;font-size:13px;font-weight:500;color:rgba(255,255,255,0.82);line-height:1.35;padding-left:4px;}
+.task-badge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.38);white-space:nowrap;flex-shrink:0;}
+.task-badge.prio{background:rgba(232,160,32,0.15);color:#E8A020;}
+.task-av{width:18px;height:18px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:7px;font-weight:700;color:#fff;flex-shrink:0;}
 
-.task-detail{background:#111;border-radius:0 0 12px 12px;border:0.5px solid rgba(255,255,255,0.06);border-top:none;padding:12px 14px 14px 44px;margin-bottom:6px;display:flex;flex-direction:column;gap:8px;}
-.detail-title{font-size:10px;font-weight:700;color:rgba(255,255,255,0.25);text-transform:uppercase;letter-spacing:.08em;}
-.blocks-row{display:flex;gap:5px;flex-wrap:wrap;}
-.block-chip{width:32px;height:32px;border-radius:9px;background:#E8A020;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#0c0c0c;cursor:default;position:relative;}
-.block-chip:hover::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 4px);left:50%;transform:translateX(-50%);background:#2a2a2a;color:#fff;font-size:10px;padding:3px 8px;border-radius:6px;white-space:nowrap;pointer-events:none;}
-.blocks-summary{font-size:11px;color:rgba(255,255,255,0.3);}
-.no-blocks{font-size:11px;color:rgba(255,255,255,0.2);font-style:italic;}
-
-.tasks-footer{border-top:0.5px solid rgba(255,255,255,0.06);padding-top:12px;display:flex;justify-content:space-between;align-items:center;}
+.tasks-footer{border-top:0.5px solid rgba(255,255,255,0.06);padding-top:10px;flex-shrink:0;}
 .task-counter{font-size:11px;color:rgba(255,255,255,0.25);}
-.clear-btn{background:none;border:none;color:rgba(255,255,255,0.2);font-size:11px;cursor:pointer;font-family:'Inter',sans-serif;transition:color .15s;}
-.clear-btn:hover{color:rgba(255,255,255,0.5);}
 
 /* RIGHT PANEL */
 .focus-panel{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px;gap:28px;position:relative;}
 .focus-label{font-size:11px;font-weight:700;color:rgba(255,255,255,0.25);letter-spacing:.1em;text-transform:uppercase;text-align:center;}
-.focus-task-name{font-size:22px;font-weight:700;color:#fff;text-align:center;max-width:380px;line-height:1.3;margin-top:6px;font-style:italic;}
-.focus-task-name.placeholder{color:rgba(255,255,255,0.2);font-weight:400;font-size:15px;}
+.focus-task-name{font-size:22px;font-weight:700;color:#fff;text-align:center;max-width:400px;line-height:1.3;margin-top:6px;font-style:italic;}
+.focus-task-name.placeholder{color:rgba(255,255,255,0.2);font-weight:400;font-size:15px;font-style:normal;}
 
 .timer-wrap{position:relative;width:260px;height:260px;}
 .timer-svg{width:260px;height:260px;transform:rotate(-90deg);}
@@ -115,43 +94,36 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 
 <div class="topbar">
   <div class="logo"><div class="logo-pill">D/</div><span class="logo-name">Dcoder Studio</span></div>
+  <div style="display:flex;gap:2px;">
+    <button class="nav-btn" onclick="location.href='index.html'">Inicio</button>
+    <button class="nav-btn" onclick="location.href='proyectos.html'">Proyectos</button>
+    <button class="nav-btn" onclick="location.href='tareas.html'">Tareas</button>
+    <button class="nav-btn" onclick="location.href='calendario.html'">Calendario</button>
+    <button class="nav-btn">Equipo</button>
+    <button class="nav-btn">Finanzas</button>
+    <button class="nav-btn">Clientes</button>
+    <button class="nav-btn" onclick="location.href='cotizacion.html'">Cotizaciones</button>
+  </div>
   <span class="mode-pill">⚡ Hora de trabajar</span>
-  <div>  <button class="back-btn" onclick="location.href='index.html'">← Inicio</button></div>
 </div>
 
 <div class="layout">
 
-  <!-- LEFT -->
+  <!-- LEFT PANEL -->
   <div class="task-panel">
     <div class="panel-title">Mis tareas</div>
-
-    <div class="add-task-wrap">
-      <div class="add-task-row">
-        <input class="task-input" id="taskInput" placeholder="Nueva tarea..." onkeydown="if(event.key==='Enter')addTask()">
-        <button class="add-btn" onclick="addTask()">+ Agregar</button>
-      </div>
-      <div class="time-row">
-        <span class="time-label">Tiempo:</span>
-        <button class="time-chip" onclick="selectTime(15,this)">15m</button>
-        <button class="time-chip active" onclick="selectTime(25,this)">25m</button>
-        <button class="time-chip" onclick="selectTime(45,this)">45m</button>
-        <button class="time-chip" onclick="selectTime(60,this)">1h</button>
-        <input class="time-custom" id="customTime" type="number" min="1" max="240" placeholder="—" oninput="selectTime(+this.value,null)">
-        <span class="time-label">min</span>
-      </div>
+    <div class="focus-person-row" id="focusPersonRow">
+      <button class="focus-person-pill active">Todos</button>
     </div>
-
     <div class="tasks-list" id="tasksList">
-      <div class="tasks-empty" id="emptyMsg">Agrega tu primera tarea ↑</div>
+      <div class="tasks-empty" id="emptyMsg">Cargando tareas…</div>
     </div>
-
     <div class="tasks-footer">
-      <span class="task-counter" id="taskCounter">0 tareas</span>
-      <button class="clear-btn" onclick="clearDone()">Limpiar completadas</button>
+      <span class="task-counter" id="taskCounter">0 pendientes</span>
     </div>
   </div>
 
-  <!-- RIGHT -->
+  <!-- RIGHT PANEL -->
   <div class="focus-panel" id="focusPanel">
     <div style="text-align:center">
       <div class="focus-label">Trabajando en</div>
@@ -201,170 +173,290 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
   </div>
 </div>
 
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 <script>
-// ── STATE ─────────────────────────────────────────────
-let tasks = [];
-let taskIdCounter = 0;
-let selectedTime = 25;
-let activeTaskId = null;
-let expandedTaskId = null;
+(function() {
 
-// ── TIME CHIP ─────────────────────────────────────────
-function selectTime(min, btn){
-  if(!min || min < 1) return;
-  selectedTime = min;
-  document.querySelectorAll('.time-chip').forEach(b => b.classList.remove('active'));
-  if(btn) btn.classList.add('active');
+// ── FIREBASE ──────────────────────────────────────────────────────────────────
+firebase.initializeApp({
+  apiKey: "AIzaSyC3LG6e_7YAbYQhdPe6IC_Mq3SFop0XPsk",
+  authDomain: "trazzo-c9eaf.firebaseapp.com",
+  projectId: "trazzo-c9eaf",
+  storageBucket: "trazzo-c9eaf.firebasestorage.app",
+  messagingSenderId: "106264633340",
+  appId: "1:106264633340:web:4b2560a57e75321c709c79"
+});
+var db = firebase.firestore();
+db.enablePersistence({synchronizeTabs:true}).catch(function(){});
+var DOC = db.collection('workspace').doc('proyectos');
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+var projects = [], categories = [], standaloneTasks = [], teamMembers = [], taskGroups = [];
+var filterPerson = '';
+var allFbTasks = [];
+var activeTask = null;
+var sessionLog = [];
+var SESS_KEY = 'trazzo_focus_session';
+var _firstLoad = true;
+
+// ── TIMER STATE ───────────────────────────────────────────────────────────────
+var CIRC = 2 * Math.PI * 118;
+var duration = 25 * 60;
+var remaining = duration;
+var running = false;
+var interval = null;
+
+// ── HELPERS ───────────────────────────────────────────────────────────────────
+function getCat(catId) {
+  for (var i=0;i<categories.length;i++){if(categories[i].id===catId)return categories[i];}
+  return null;
 }
 
-// ── ADD TASK ──────────────────────────────────────────
-function addTask(){
-  const inp = document.getElementById('taskInput');
-  const name = inp.value.trim();
-  if(!name) return;
-  const t = {id: ++taskIdCounter, name, minutes: selectedTime, done: false, blocks: []};
-  tasks.push(t);
-  inp.value = '';
-  if(!activeTaskId) selectTask(t.id);
-  else renderTasks();
-}
-
-// ── RENDER TASKS ──────────────────────────────────────
-function renderTasks(){
-  const list = document.getElementById('tasksList');
-  const empty = document.getElementById('emptyMsg');
-  // clear dynamic rows
-  list.querySelectorAll('.task-item, .task-detail').forEach(e => e.remove());
-
-  if(tasks.length === 0){
-    empty.style.display = 'block';
-  } else {
-    empty.style.display = 'none';
-    tasks.forEach(t => {
-      const isExpanded = expandedTaskId === t.id;
-      const workedMins = t.blocks.reduce((s,b) => s + b.mins, 0);
-
-      // row
-      const row = document.createElement('div');
-      row.className = 'task-item' +
-        (t.done ? ' done' : '') +
-        (t.id === activeTaskId ? ' active-task' : '') +
-        (isExpanded ? ' expanded' : '');
-
-      const badgeHTML = workedMins > 0
-        ? `<span class="task-badge worked">${workedMins}m trabajados</span>`
-        : `<span class="task-badge">${t.minutes}m</span>`;
-
-      row.innerHTML = `
-        <div class="task-check">
-          <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
-        </div>
-        <span class="task-name">${t.name}</span>
-        ${badgeHTML}
-        <button class="task-del" title="Eliminar">×</button>`;
-
-      row.querySelector('.task-check').addEventListener('click', e => {
-        e.stopPropagation();
-        toggleDone(t.id);
+function getAllTasks() {
+  var result = [];
+  projects.forEach(function(proj) {
+    if (proj.catId === 'cotizaciones') return;
+    if (!proj.stageTasks) return;
+    var stage = proj.stage;
+    var tasks = proj.stageTasks[stage];
+    if (!tasks || !tasks.length) return;
+    var cat = getCat(proj.catId);
+    tasks.forEach(function(task) {
+      if (task.done) return;
+      result.push({
+        id: task.id, text: task.text,
+        deadline: task.deadline || '', resp: task.resp || '',
+        priority: !!task.priority,
+        projectId: proj.id, projectName: proj.name, stage: stage,
+        catColor: cat ? cat.color : 'rgba(255,255,255,0.2)'
       });
-      row.querySelector('.task-del').addEventListener('click', e => {
-        e.stopPropagation();
-        deleteTask(t.id);
-      });
-      row.addEventListener('click', () => {
-        if(expandedTaskId === t.id){
-          expandedTaskId = null;
-        } else {
-          expandedTaskId = t.id;
-          if(!t.done) selectTask(t.id);
-        }
-        renderTasks();
-      });
-      list.appendChild(row);
-
-      // detail panel
-      if(isExpanded){
-        const det = document.createElement('div');
-        det.className = 'task-detail';
-        if(t.blocks.length === 0){
-          det.innerHTML = `<div class="detail-title">Bloques de concentración</div>
-            <div class="no-blocks">Ningún bloque completado aún</div>`;
-        } else {
-          const dotsHTML = t.blocks.map((b,i) =>
-            `<div class="block-chip" data-tip="${b.mins}m · ${b.time}">${b.mins}m</div>`
-          ).join('');
-          const total = t.blocks.reduce((s,b) => s + b.mins, 0);
-          det.innerHTML = `
-            <div class="detail-title">Bloques de concentración</div>
-            <div class="blocks-row">${dotsHTML}</div>
-            <div class="blocks-summary">${t.blocks.length} bloque${t.blocks.length !== 1 ? 's' : ''} · ${total} min en total</div>`;
-        }
-        list.appendChild(det);
-      }
     });
-  }
+  });
+  standaloneTasks.forEach(function(task) {
+    if (task.done) return;
+    var grp = null;
+    if (task.groupId) {
+      for (var gi=0;gi<taskGroups.length;gi++){if(taskGroups[gi].id===task.groupId){grp=taskGroups[gi];break;}}
+    }
+    result.push({
+      id: task.id, text: task.text,
+      deadline: task.deadline || '', resp: task.resp || '',
+      priority: !!task.priority,
+      projectId: 'standalone', projectName: grp ? grp.name : '', stage: '',
+      catColor: grp ? grp.color : 'rgba(255,255,255,0.18)'
+    });
+  });
+  return result;
+}
 
-  const pending = tasks.filter(t => !t.done).length;
+// ── PERSON FILTER ─────────────────────────────────────────────────────────────
+function renderPersonFilter() {
+  var row = document.getElementById('focusPersonRow');
+  if (!row) return;
+  row.innerHTML = '';
+  var all = document.createElement('button');
+  all.className = 'focus-person-pill' + (filterPerson === '' ? ' active' : '');
+  all.textContent = 'Todos';
+  all.onclick = function() { filterPerson = ''; renderPersonFilter(); renderTaskList(); };
+  row.appendChild(all);
+  teamMembers.forEach(function(m) {
+    var np = m.name.trim().split(/\s+/);
+    var abbr = np[0][0].toUpperCase() + (np.length > 1 ? np[1][0].toUpperCase() : '');
+    var btn = document.createElement('button');
+    btn.className = 'focus-person-pill' + (filterPerson === m.id ? ' active' : '');
+    btn.innerHTML = '<span class="focus-av" style="background:' + m.color + '">' + abbr + '</span> ' + np[0];
+    btn.onclick = (function(mid){ return function() { filterPerson = mid; renderPersonFilter(); renderTaskList(); }; })(m.id);
+    row.appendChild(btn);
+  });
+}
+
+// ── TASK LIST ─────────────────────────────────────────────────────────────────
+function renderTaskList() {
+  var list = document.getElementById('tasksList');
+  var empty = document.getElementById('emptyMsg');
+  list.querySelectorAll('.task-item').forEach(function(e){ e.remove(); });
+
+  var visible = allFbTasks.filter(function(t) {
+    return !filterPerson || t.resp === filterPerson;
+  });
+
+  if (visible.length === 0) {
+    empty.style.display = 'block';
+    empty.textContent = allFbTasks.length === 0 ? 'Sin tareas pendientes' : 'Ninguna tarea para este filtro';
+    document.getElementById('taskCounter').textContent = '0 pendientes';
+    return;
+  }
+  empty.style.display = 'none';
+
+  visible.forEach(function(t) {
+    var isActive = activeTask && String(activeTask.id) === String(t.id);
+    var row = document.createElement('div');
+    row.className = 'task-item' + (isActive ? ' active-task' : '');
+
+    // Color bar
+    var bar = document.createElement('div');
+    bar.className = 'task-bar';
+    bar.style.background = t.catColor;
+    row.appendChild(bar);
+
+    // Task name
+    var nameEl = document.createElement('span');
+    nameEl.className = 'task-name';
+    nameEl.textContent = t.text;
+    row.appendChild(nameEl);
+
+    // Priority or project badge
+    if (t.priority) {
+      var pb = document.createElement('span');
+      pb.className = 'task-badge prio';
+      pb.textContent = '⚑';
+      row.appendChild(pb);
+    } else if (t.projectName) {
+      var nb = document.createElement('span');
+      nb.className = 'task-badge';
+      nb.textContent = t.projectName;
+      row.appendChild(nb);
+    }
+
+    // Responsible avatar
+    if (t.resp) {
+      var respM = null;
+      for (var i=0;i<teamMembers.length;i++){if(teamMembers[i].id===t.resp){respM=teamMembers[i];break;}}
+      if (respM) {
+        var np2 = respM.name.trim().split(/\s+/);
+        var abbr2 = np2[0][0].toUpperCase() + (np2.length > 1 ? np2[1][0].toUpperCase() : '');
+        var av = document.createElement('span');
+        av.className = 'task-av';
+        av.style.background = respM.color;
+        av.textContent = abbr2;
+        row.appendChild(av);
+      }
+    }
+
+    row.addEventListener('click', (function(task){ return function(){ selectTask(task); }; })(t));
+    list.appendChild(row);
+  });
+
   document.getElementById('taskCounter').textContent =
-    `${pending} pendiente${pending !== 1 ? 's' : ''}`;
+    visible.length + ' pendiente' + (visible.length !== 1 ? 's' : '');
 }
 
-// ── TASK ACTIONS ──────────────────────────────────────
-function selectTask(id){
-  const t = tasks.find(x => x.id === id);
-  if(!t || t.done) return;
-  activeTaskId = id;
-  resetTimer(t.minutes);
-  updateFocusLabel();
-  renderTasks();
-}
-
-function toggleDone(id){
-  const t = tasks.find(x => x.id === id);
-  if(!t) return;
-  t.done = !t.done;
-  if(t.done && id === activeTaskId){
-    activeTaskId = null;
-    updateFocusLabel();
-    resetTimer();
+// ── TASK SELECTION ────────────────────────────────────────────────────────────
+function selectTask(task) {
+  activeTask = task;
+  if (!running) {
+    remaining = duration;
+    updateDisplay();
   }
-  renderTasks();
+  updateFocusLabel();
+  renderTaskList();
+  saveSess();
 }
 
-function deleteTask(id){
-  tasks = tasks.filter(t => t.id !== id);
-  if(activeTaskId === id){ activeTaskId = null; resetTimer(); updateFocusLabel(); }
-  if(expandedTaskId === id) expandedTaskId = null;
-  renderTasks();
+function skipTask() {
+  var visible = allFbTasks.filter(function(t){ return !filterPerson || t.resp === filterPerson; });
+  if (visible.length === 0) { activeTask = null; updateFocusLabel(); return; }
+  var idx = -1;
+  if (activeTask) {
+    for (var i=0;i<visible.length;i++){if(String(visible[i].id)===String(activeTask.id)){idx=i;break;}}
+  }
+  selectTask(visible[(idx + 1) % visible.length]);
 }
 
-function clearDone(){
-  tasks = tasks.filter(t => !t.done);
-  renderTasks();
-}
-
-function skipTask(){
-  const pending = tasks.filter(t => !t.done);
-  if(pending.length === 0){ activeTaskId = null; updateFocusLabel(); return; }
-  const idx = pending.findIndex(t => t.id === activeTaskId);
-  const next = pending[(idx + 1) % pending.length];
-  selectTask(next.id);
-}
-
-function updateFocusLabel(){
-  const el = document.getElementById('focusTaskName');
-  const t = tasks.find(x => x.id === activeTaskId);
-  if(t){ el.textContent = t.name; el.classList.remove('placeholder'); }
+function updateFocusLabel() {
+  var el = document.getElementById('focusTaskName');
+  if (activeTask) { el.textContent = activeTask.text; el.classList.remove('placeholder'); }
   else { el.textContent = 'Selecciona una tarea para empezar'; el.classList.add('placeholder'); }
 }
 
-// ── ALARM ─────────────────────────────────────────────
-function playAlarm(){
-  try{
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    [0, 0.35, 0.7].forEach(offset => {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
+// ── SESSION PERSISTENCE ───────────────────────────────────────────────────────
+function saveSess() {
+  if (!activeTask && !running) { localStorage.removeItem(SESS_KEY); return; }
+  localStorage.setItem(SESS_KEY, JSON.stringify({
+    taskText: activeTask ? activeTask.text : '',
+    taskId:   activeTask ? activeTask.id   : null,
+    projectId: activeTask ? activeTask.projectId : null,
+    remaining: remaining,
+    duration:  duration,
+    running:   running,
+    ts:        Date.now()
+  }));
+}
+
+function restoreSess() {
+  var raw = localStorage.getItem(SESS_KEY);
+  if (!raw) return;
+  var sess; try { sess = JSON.parse(raw); } catch(e) { return; }
+  if (!sess || sess.remaining <= 0) return;
+
+  // Try to match task from Firebase data
+  var matchTask = null;
+  if (sess.taskId != null) {
+    for (var i=0;i<allFbTasks.length;i++){
+      if (String(allFbTasks[i].id) === String(sess.taskId)){ matchTask = allFbTasks[i]; break; }
+    }
+  }
+  // Fallback: create stub so timer can still show
+  if (!matchTask && sess.taskText) {
+    matchTask = {
+      id: sess.taskId, text: sess.taskText,
+      projectId: sess.projectId || 'standalone',
+      projectName: '', catColor: 'rgba(255,255,255,0.2)',
+      resp: '', priority: false, deadline: ''
+    };
+  }
+
+  duration  = sess.duration || 25 * 60;
+  var elapsed = sess.ts ? Math.floor((Date.now() - sess.ts) / 1000) : 0;
+  remaining = Math.max(0, sess.remaining - (sess.running ? elapsed : 0));
+
+  activeTask = matchTask;
+  updateFocusLabel();
+  updateDisplay();
+  renderTaskList();
+
+  if (sess.running && remaining > 0) {
+    running = true;
+    interval = setInterval(tick, 1000);
+    document.getElementById('focusPanel').classList.add('running');
+    document.getElementById('timerStatus').textContent = 'concentración';
+    setPlayIcon(true);
+    saveSess();
+  }
+}
+
+window.addEventListener('beforeunload', function() { saveSess(); });
+
+// ── FIREBASE LOAD ─────────────────────────────────────────────────────────────
+DOC.onSnapshot(function(snap) {
+  var d = snap.data();
+  if (!d) {
+    document.getElementById('emptyMsg').textContent = 'No hay datos disponibles';
+    return;
+  }
+  projects      = d.projects      || [];
+  categories    = d.categories    || [];
+  standaloneTasks = d.standaloneTasks || [];
+  teamMembers   = d.teamMembers   || [];
+  taskGroups    = d.taskGroups    || [];
+  allFbTasks    = getAllTasks();
+  renderPersonFilter();
+  if (_firstLoad) {
+    _firstLoad = false;
+    restoreSess();
+  } else {
+    renderTaskList();
+  }
+});
+
+// ── ALARM ─────────────────────────────────────────────────────────────────────
+function playAlarm() {
+  try {
+    var ctx = new (window.AudioContext || window.webkitAudioContext)();
+    [0, 0.35, 0.7].forEach(function(offset) {
+      var osc = ctx.createOscillator();
+      var gain = ctx.createGain();
       osc.connect(gain); gain.connect(ctx.destination);
       osc.type = 'sine';
       osc.frequency.setValueAtTime(880, ctx.currentTime + offset);
@@ -374,44 +466,38 @@ function playAlarm(){
       osc.start(ctx.currentTime + offset);
       osc.stop(ctx.currentTime + offset + 0.3);
     });
-  } catch(e){ console.warn('Audio:', e); }
+  } catch(e) {}
 }
 
-// ── TIMER ─────────────────────────────────────────────
-const CIRC = 2 * Math.PI * 118; // 741.4
-let duration = 25 * 60;
-let remaining = duration;
-let running = false;
-let interval = null;
-let sessionLog = [];
-
-function setDuration(min, btn){
-  if(!min || min < 1) return;
+// ── TIMER ─────────────────────────────────────────────────────────────────────
+function setDuration(min, btn) {
+  if (!min || min < 1) return;
   duration = min * 60;
-  if(!running){ remaining = duration; updateDisplay(); }
-  document.querySelectorAll('.dur-chip').forEach(b => b.classList.remove('active'));
-  if(btn) btn.classList.add('active');
+  if (!running) { remaining = duration; updateDisplay(); }
+  document.querySelectorAll('.dur-chip').forEach(function(b){ b.classList.remove('active'); });
+  if (btn) btn.classList.add('active');
 }
 
-function resetTimer(min){
+function resetTimer(min) {
   clearInterval(interval); running = false;
-  if(min) duration = min * 60;
+  if (min) duration = min * 60;
   remaining = duration;
   updateDisplay();
   setPlayIcon(false);
   document.getElementById('focusPanel').classList.remove('running');
   document.getElementById('timerStatus').textContent = 'listo';
   document.getElementById('ringProgress').style.stroke = '#E8A020';
+  saveSess();
 }
 
-function toggleTimer(){
-  if(!activeTaskId){
-    const pending = tasks.find(t => !t.done);
-    if(pending) selectTask(pending.id);
-    else { document.getElementById('taskInput').focus(); return; }
+function toggleTimer() {
+  if (!activeTask) {
+    var visible = allFbTasks.filter(function(t){ return !filterPerson || t.resp === filterPerson; });
+    if (visible.length) selectTask(visible[0]);
+    else return;
   }
   running = !running;
-  if(running){
+  if (running) {
     interval = setInterval(tick, 1000);
     document.getElementById('focusPanel').classList.add('running');
     document.getElementById('timerStatus').textContent = 'concentración';
@@ -421,64 +507,66 @@ function toggleTimer(){
     document.getElementById('timerStatus').textContent = 'pausa';
   }
   setPlayIcon(running);
+  saveSess();
 }
 
-function tick(){
+function tick() {
   remaining--;
   updateDisplay();
-  if(remaining <= 0){
+  saveSess();
+  if (remaining <= 0) {
     clearInterval(interval); running = false;
     setPlayIcon(false);
     document.getElementById('focusPanel').classList.remove('running');
     document.getElementById('timerStatus').textContent = '¡completado!';
     document.getElementById('ringProgress').style.stroke = '#27AE72';
     playAlarm();
-    // log block on task
-    const t = tasks.find(x => x.id === activeTaskId);
-    if(t){
-      const mins = Math.round(duration / 60);
-      const time = new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'});
-      t.blocks.push({mins, time});
-      sessionLog.push({taskName: t.name, mins, time});
-      renderTasks();
+    if (activeTask) {
+      var mins = Math.round(duration / 60);
+      var time = new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'});
+      sessionLog.push({taskId: activeTask.id, taskName: activeTask.text, mins: mins, time: time});
       renderSessionLog();
     }
-    setTimeout(() => {
+    saveSess();
+    setTimeout(function() {
       document.getElementById('ringProgress').style.stroke = '#E8A020';
       skipTask();
     }, 2500);
   }
 }
 
-function updateDisplay(){
-  const m = Math.floor(remaining / 60);
-  const s = remaining % 60;
+function updateDisplay() {
+  var m = Math.floor(remaining / 60);
+  var s = remaining % 60;
   document.getElementById('timerDisplay').textContent =
-    `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
-  const pct = 1 - (remaining / duration);
+    String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+  var pct = duration > 0 ? (1 - remaining / duration) : 0;
   document.getElementById('ringProgress').style.strokeDashoffset = CIRC * (1 - pct);
 }
 
-function setPlayIcon(isRunning){
+function setPlayIcon(isRunning) {
   document.getElementById('playIcon').innerHTML = isRunning
-    ? `<rect x="6" y="4" width="4" height="16" fill="#0c0c0c" stroke="none"/><rect x="14" y="4" width="4" height="16" fill="#0c0c0c" stroke="none"/>`
-    : `<polygon points="5 3 19 12 5 21 5 3" fill="#0c0c0c" stroke="none"/>`;
+    ? '<rect x="6" y="4" width="4" height="16" fill="#0c0c0c" stroke="none"/><rect x="14" y="4" width="4" height="16" fill="#0c0c0c" stroke="none"/>'
+    : '<polygon points="5 3 19 12 5 21 5 3" fill="#0c0c0c" stroke="none"/>';
 }
 
-function renderSessionLog(){
-  const wrap = document.getElementById('sessionLog');
-  const items = document.getElementById('logItems');
-  const total = document.getElementById('totalFocus');
-  if(sessionLog.length === 0){ wrap.style.display = 'none'; return; }
+function renderSessionLog() {
+  var wrap = document.getElementById('sessionLog');
+  var items = document.getElementById('logItems');
+  var total = document.getElementById('totalFocus');
+  if (sessionLog.length === 0) { wrap.style.display = 'none'; return; }
   wrap.style.display = 'flex';
-  items.innerHTML = sessionLog.slice(-4).map(l =>
-    `<div class="log-item"><div class="log-dot"></div>${l.taskName} · ${l.mins}m <span style="color:rgba(255,255,255,0.2);margin-left:4px">${l.time}</span></div>`
-  ).join('');
-  const tot = sessionLog.reduce((s,l) => s + l.mins, 0);
-  total.textContent = `Total: ${tot >= 60 ? `${Math.floor(tot/60)}h ${tot%60}m` : tot + 'm'} enfocado`;
+  items.innerHTML = sessionLog.slice(-4).map(function(l) {
+    return '<div class="log-item"><div class="log-dot"></div>' + l.taskName +
+           ' · ' + l.mins + 'm <span style="color:rgba(255,255,255,0.2);margin-left:4px">' + l.time + '</span></div>';
+  }).join('');
+  var tot = sessionLog.reduce(function(s,l){ return s + l.mins; }, 0);
+  total.textContent = 'Total: ' + (tot >= 60 ? Math.floor(tot/60)+'h '+tot%60+'m' : tot+'m') + ' enfocado';
 }
 
 updateDisplay();
+
+})();
 </script>
 </body>
 </html>
