@@ -1282,7 +1282,10 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
   function seedStageTasks(proj, cat, stage) {
     if (!proj.stageTasks) proj.stageTasks = {};
     if (proj.stageTasks[stage] && proj.stageTasks[stage].length > 0) return;
-    var tpl = cat && cat.templates && cat.templates[stage] ? cat.templates[stage] : [];
+    // Re-fetch cat from categories in case the passed cat is stale
+    var freshCat = null;
+    for (var ci=0; ci<categories.length; ci++) { if (categories[ci].id === (cat ? cat.id : proj.catId)) { freshCat = categories[ci]; break; } }
+    var tpl = freshCat && freshCat.templates && freshCat.templates[stage] ? freshCat.templates[stage] : [];
     if (!tpl.length) return;
     var base = Date.now();
     proj.stageTasks[stage] = tpl.map(function(item, i) {
@@ -2445,7 +2448,8 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
       cfgs.forEach(function(cfg) {
         var fi=-1;
         for (var i=0;i<categories.length;i++) { if (categories[i].id===cfg.id) { fi=i; break; } }
-        var nu = fi<0 || categories[fi].stages.join('|')!==cfg.stages.join('|') || !categories[fi].templates;
+        var hasTpl = categories[fi].templates && Object.keys(categories[fi].templates).length > 0;
+        var nu = fi<0 || categories[fi].stages.join('|')!==cfg.stages.join('|') || !hasTpl;
         if (nu) {
           if (fi>=0) { categories[fi].label=cfg.label; categories[fi].color=cfg.color; categories[fi].stages=cfg.stages; categories[fi].stageDays=cfg.stageDays; categories[fi].templates=cfg.templates; categories[fi].payments=cfg.payments; }
           else { categories.push(cfg); }
