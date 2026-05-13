@@ -93,6 +93,36 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 .t-foot{display:flex;gap:8px;justify-content:flex-end;margin-top:4px;}
 .t-btn-c{background:rgba(255,255,255,0.07);border:none;color:rgba(255,255,255,0.45);font-size:12px;font-weight:600;padding:8px 16px;border-radius:10px;cursor:pointer;font-family:'Inter',sans-serif;}
 .t-btn-ok{background:#fff;border:none;color:#0c0c0c;font-size:12px;font-weight:700;padding:8px 16px;border-radius:10px;cursor:pointer;font-family:'Inter',sans-serif;}
+/* PRIORITY FLAG */
+.tk-flag-btn{position:absolute;top:9px;right:10px;background:none;border:none;cursor:pointer;font-size:13px;padding:2px;line-height:1;opacity:0;transition:opacity .15s;z-index:2;}
+.tk-card:hover .tk-flag-btn{opacity:0.45;}
+.tk-flag-btn.on{opacity:1!important;filter:saturate(1.5);}
+.tk-card.priority-card{border-color:rgba(232,160,32,0.35)!important;background:#1b1a14;}
+.tk-card.priority-card .tk-card-text{color:#fff;}
+/* TASK DETAIL MODAL */
+.tk-det-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(10px);z-index:700;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s;}
+.tk-det-overlay.open{opacity:1;pointer-events:all;}
+.tk-det-modal{background:#161616;border:0.5px solid rgba(255,255,255,0.1);border-radius:22px;width:460px;max-width:94vw;max-height:90vh;overflow-y:auto;display:flex;flex-direction:column;transform:translateY(10px);transition:transform .2s;}
+.tk-det-overlay.open .tk-det-modal{transform:none;}
+.tk-det-head{display:flex;align-items:center;gap:10px;padding:18px 20px 14px;border-bottom:0.5px solid rgba(255,255,255,0.07);}
+.tk-det-bar{width:4px;height:38px;border-radius:3px;flex-shrink:0;}
+.tk-det-meta{flex:1;min-width:0;}
+.tk-det-projname{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px;}
+.tk-det-stagename{font-size:11px;color:rgba(255,255,255,0.3);}
+.tk-det-close{background:none;border:none;color:rgba(255,255,255,0.28);font-size:20px;cursor:pointer;padding:0 4px;line-height:1;flex-shrink:0;}
+.tk-det-close:hover{color:#fff;}
+.tk-det-body{display:flex;flex-direction:column;gap:14px;padding:18px 20px 22px;}
+.tk-det-textarea{background:#1e1e1e;border:0.5px solid rgba(255,255,255,0.1);border-radius:10px;padding:11px 13px;font-size:14px;font-weight:600;color:#fff;font-family:'Inter',sans-serif;outline:none;width:100%;resize:none;min-height:68px;line-height:1.45;transition:border-color .15s;}
+.tk-det-textarea:focus{border-color:rgba(255,255,255,0.3);}
+.tk-det-lbl{font-size:10px;font-weight:700;color:rgba(255,255,255,0.3);letter-spacing:.07em;text-transform:uppercase;margin-bottom:5px;}
+.tk-det-inp{background:#1e1e1e;border:0.5px solid rgba(255,255,255,0.1);border-radius:10px;padding:9px 12px;font-size:12px;color:#fff;font-family:'Inter',sans-serif;outline:none;width:100%;transition:border-color .15s;}
+.tk-det-inp:focus{border-color:rgba(255,255,255,0.3);}
+.tk-det-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+.tk-det-notes{background:#1e1e1e;border:0.5px solid rgba(255,255,255,0.1);border-radius:10px;padding:10px 13px;font-size:12px;color:rgba(255,255,255,0.7);font-family:'Inter',sans-serif;outline:none;width:100%;resize:vertical;min-height:72px;line-height:1.5;transition:border-color .15s;}
+.tk-det-notes:focus{border-color:rgba(255,255,255,0.3);}
+.tk-det-notes::placeholder{color:rgba(255,255,255,0.18);}
+.tk-det-foot{display:flex;gap:8px;justify-content:flex-end;}
+.tk-notes-dot{width:6px;height:6px;border-radius:50%;background:rgba(232,160,32,0.6);flex-shrink:0;}
 </style>
 </head>
 <body>
@@ -157,6 +187,58 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
       <div class="t-foot">
         <button class="t-btn-c" onclick="closeNewTaskModal()">Cancelar</button>
         <button class="t-btn-ok" onclick="saveNewTask()">Agregar tarea</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Task detail modal -->
+  <div class="tk-det-overlay" id="tkDetOverlay" onclick="if(event.target===this)closeTaskDetail()">
+    <div class="tk-det-modal">
+      <div class="tk-det-head">
+        <div class="tk-det-bar" id="tkDetBar"></div>
+        <div class="tk-det-meta">
+          <div class="tk-det-projname" id="tkDetProj"></div>
+          <div class="tk-det-stagename" id="tkDetStage"></div>
+        </div>
+        <button class="tk-det-close" onclick="closeTaskDetail()">×</button>
+      </div>
+      <div class="tk-det-body">
+        <div>
+          <div class="tk-det-lbl">Tarea</div>
+          <textarea class="tk-det-textarea" id="tkDetText" rows="2"></textarea>
+        </div>
+        <div class="tk-det-grid">
+          <div>
+            <div class="tk-det-lbl">Responsable</div>
+            <select class="tk-det-inp" id="tkDetResp">
+              <option value="">Sin asignar</option>
+              <option value="AR">Ana Ramírez</option>
+              <option value="LM">Luis Mora</option>
+              <option value="SV">Sofía Vega</option>
+              <option value="RG">Rodrigo Gil</option>
+            </select>
+          </div>
+          <div>
+            <div class="tk-det-lbl">Fecha límite</div>
+            <input type="date" class="tk-det-inp" id="tkDetDeadline">
+          </div>
+          <div>
+            <div class="tk-det-lbl">Estado</div>
+            <select class="tk-det-inp" id="tkDetStatus">
+              <option value="notstarted">Sin iniciar</option>
+              <option value="inprogress">En proceso</option>
+              <option value="done">Terminada</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <div class="tk-det-lbl">Observaciones</div>
+          <textarea class="tk-det-notes" id="tkDetNotes" placeholder="Agrega una nota o comentario…"></textarea>
+        </div>
+        <div class="tk-det-foot">
+          <button class="t-btn-c" onclick="closeTaskDetail()">Cancelar</button>
+          <button class="t-btn-ok" onclick="saveTaskDetail()">Guardar</button>
+        </div>
       </div>
     </div>
   </div>
@@ -232,6 +314,8 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
           sortOrder: task.sortOrder != null ? task.sortOrder : task.id,
           deadline: task.deadline || '',
           resp: task.resp || '',
+          priority: !!task.priority,
+          notes: task.notes || '',
           projectId: proj.id,
           projectName: proj.name,
           stage: stage,
@@ -267,11 +351,25 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
   function buildCard(task) {
     var card = document.createElement('div');
     var urgent = !task.done && task.deadline && isUrgent(task.deadline);
-    card.className = 'tk-card' + (urgent ? ' urgent-card' : '') + (task.done ? ' done-card' : '');
+    card.className = 'tk-card' + (urgent ? ' urgent-card' : '') + (task.done ? ' done-card' : '') + (task.priority ? ' priority-card' : '');
     card.dataset.sortorder = String(task.sortOrder != null ? task.sortOrder : task.id);
+
+    // Flag button (top-right)
+    var flagBtn = document.createElement('button');
+    flagBtn.className = 'tk-flag-btn' + (task.priority ? ' on' : '');
+    flagBtn.textContent = '🚩';
+    flagBtn.title = task.priority ? 'Quitar prioridad' : 'Marcar prioritaria';
+    flagBtn.onclick = (function(pid,st,tid){ return function(e){ e.stopPropagation(); toggleFlag(pid,st,tid); }; })(task.projectId, task.stage, task.id);
+    card.appendChild(flagBtn);
+
     card.addEventListener('pointerdown', function(e) {
       if (e.button !== 0) return;
       startCardDrag(e, task, card);
+    });
+    card.addEventListener('click', function(e) {
+      if (e.target.closest('.tk-flag-btn') || e.target.closest('.tk-check-sm')) return;
+      if (card.classList.contains('tk-dragging')) return;
+      openTaskDetail(task);
     });
 
     var bar = document.createElement('div');
@@ -290,10 +388,10 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     txt.textContent = task.text;
     card.appendChild(txt);
 
-    var stage = document.createElement('div');
-    stage.className = 'tk-card-stage';
-    stage.textContent = task.stage;
-    card.appendChild(stage);
+    var stageEl = document.createElement('div');
+    stageEl.className = 'tk-card-stage';
+    stageEl.textContent = task.stage;
+    card.appendChild(stageEl);
 
     var footer = document.createElement('div');
     footer.className = 'tk-card-footer';
@@ -316,15 +414,22 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
       av.textContent = task.resp;
       leftFt.appendChild(av);
     }
+    if (task.notes) {
+      var nd = document.createElement('div');
+      nd.className = 'tk-notes-dot';
+      nd.title = 'Tiene observaciones';
+      leftFt.appendChild(nd);
+    }
     footer.appendChild(leftFt);
 
-    if (task.deadline) {
-      var dlCls = getDlClass(task.deadline);
-      var dl = document.createElement('span');
-      dl.className = 'tk-card-dl ' + dlCls;
-      dl.textContent = fmtDate(task.deadline);
-      footer.appendChild(dl);
-    }
+    // Deadline — siempre visible (sin fecha muestra guión)
+    var dlCls = task.deadline ? getDlClass(task.deadline) : '';
+    var dl = document.createElement('span');
+    dl.className = 'tk-card-dl' + (dlCls ? ' ' + dlCls : '');
+    dl.style.cssText = !task.deadline ? 'color:rgba(255,255,255,0.15);font-size:10px;' : '';
+    dl.textContent = task.deadline ? fmtDate(task.deadline) : '—';
+    footer.appendChild(dl);
+
     card.appendChild(footer);
     return card;
   }
@@ -416,7 +521,11 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
       return !!t.done;
     });
 
-    function bySortOrder(a,b){ return a.sortOrder - b.sortOrder; }
+    function bySortOrder(a,b){
+      if (a.priority && !b.priority) return -1;
+      if (!a.priority && b.priority) return 1;
+      return a.sortOrder - b.sortOrder;
+    }
     notStarted.sort(bySortOrder);
     inProgress.sort(bySortOrder);
     done.sort(bySortOrder);
@@ -452,6 +561,57 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
       }
     }
   }
+
+  // ── FLAG & DETAIL ────────────────────────────────────────
+  function toggleFlag(projectId, stage, taskId) {
+    for (var i=0;i<projects.length;i++){
+      if (projects[i].id===projectId){
+        var tasks = projects[i].stageTasks && projects[i].stageTasks[stage];
+        if (tasks){ for (var j=0;j<tasks.length;j++){ if (tasks[j].id===taskId){ tasks[j].priority=!tasks[j].priority; saveData(); renderBoard(); return; } } }
+      }
+    }
+  }
+
+  var _detRef = null;
+  window.openTaskDetail = function(task) {
+    _detRef = {projectId: task.projectId, stage: task.stage, taskId: task.id};
+    document.getElementById('tkDetBar').style.background = task.catColor;
+    document.getElementById('tkDetProj').style.color = task.catColor;
+    document.getElementById('tkDetProj').textContent = task.projectName;
+    document.getElementById('tkDetStage').textContent = task.stage;
+    document.getElementById('tkDetText').value = task.text;
+    document.getElementById('tkDetResp').value = task.resp || '';
+    document.getElementById('tkDetDeadline').value = task.deadline || '';
+    var st = task.colStatus || (task.done ? 'done' : (task.deadline ? 'inprogress' : 'notstarted'));
+    document.getElementById('tkDetStatus').value = st;
+    document.getElementById('tkDetNotes').value = task.notes || '';
+    document.getElementById('tkDetOverlay').classList.add('open');
+    setTimeout(function(){ document.getElementById('tkDetText').focus(); document.getElementById('tkDetText').select(); }, 120);
+  };
+  window.closeTaskDetail = function() {
+    document.getElementById('tkDetOverlay').classList.remove('open');
+    _detRef = null;
+  };
+  window.saveTaskDetail = function() {
+    if (!_detRef) return;
+    for (var i=0;i<projects.length;i++){
+      if (projects[i].id===_detRef.projectId){
+        var tasks = projects[i].stageTasks && projects[i].stageTasks[_detRef.stage];
+        if (tasks){ for (var j=0;j<tasks.length;j++){ if (tasks[j].id===_detRef.taskId){
+          var newText = document.getElementById('tkDetText').value.trim();
+          if (newText) tasks[j].text = newText;
+          tasks[j].resp = document.getElementById('tkDetResp').value;
+          tasks[j].deadline = document.getElementById('tkDetDeadline').value;
+          var newSt = document.getElementById('tkDetStatus').value;
+          tasks[j].colStatus = newSt;
+          tasks[j].done = (newSt === 'done');
+          tasks[j].notes = document.getElementById('tkDetNotes').value.trim();
+          saveData(); closeTaskDetail(); renderBoard(); return;
+        } } }
+      }
+    }
+  };
+  document.addEventListener('keydown', function(e){ if (e.key === 'Escape') closeTaskDetail(); });
 
   // ── POINTER DRAG ─────────────────────────────────────────
   var _drag = null;
