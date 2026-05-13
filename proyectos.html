@@ -319,6 +319,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     </div>
     <div><div class="ml">Responsable</div>
       <select class="mi" id="mResp">
+        <option value="">— Sin responsable</option>
         <option value="AR">Ana Ramírez</option>
         <option value="LM">Luis Mora</option>
         <option value="SV">Sofía Vega</option>
@@ -367,6 +368,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     <div><div class="ml">Tipo de proyecto</div><select class="mi" id="solTipo"></select></div>
     <div><div class="ml">Responsable</div>
       <select class="mi" id="solResp">
+        <option value="">— Sin responsable</option>
         <option value="AR">Ana Ramírez</option>
         <option value="LM">Luis Mora</option>
         <option value="SV">Sofía Vega</option>
@@ -470,6 +472,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
         <div class="pdm-field"><div class="pdm-lbl">Fecha de entrega</div><input class="pdm-inp" type="date" id="pdmDeadline"></div>
         <div class="pdm-field"><div class="pdm-lbl">Responsable</div>
           <select class="pdm-inp" id="pdmResp">
+            <option value="">— Sin responsable</option>
             <option value="AR">Ana Ramírez</option>
             <option value="LM">Luis Mora</option>
             <option value="SV">Sofía Vega</option>
@@ -580,7 +583,9 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
         opt.textContent = isCompact ? m.id : m.name;
         sel.appendChild(opt);
       });
-      if (cur) sel.value = cur;
+      sel.value = cur || '';
+      // Refresh the custom trigger button if it exists
+      if (fieldUpdaters && fieldUpdaters[selId]) fieldUpdaters[selId]();
     });
   }
   var fieldUpdaters = {};
