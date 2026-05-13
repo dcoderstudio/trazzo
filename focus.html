@@ -46,6 +46,11 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 
 .tasks-footer{border-top:0.5px solid rgba(255,255,255,0.06);padding-top:10px;flex-shrink:0;}
 .task-counter{font-size:11px;color:rgba(255,255,255,0.25);}
+/* DRAG */
+.task-item{cursor:grab;}
+.task-item.fdragging{opacity:0.1!important;cursor:grabbing;}
+.focus-ghost{position:fixed;pointer-events:none;z-index:9000;border-radius:12px;box-shadow:0 20px 50px rgba(0,0,0,.8);transform:rotate(1.2deg) scale(1.03);opacity:0.93;background:#1e1e1e;border:0.5px solid rgba(255,255,255,0.15);}
+.focus-placeholder{min-height:52px;border-radius:12px;border:1.5px dashed rgba(255,255,255,0.25);background:rgba(255,255,255,0.02);flex-shrink:0;margin-bottom:6px;}
 
 /* RIGHT PANEL */
 .focus-panel{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px;gap:28px;position:relative;}
@@ -195,6 +200,7 @@ var DOC = db.collection('workspace').doc('proyectos');
 var projects = [], categories = [], standaloneTasks = [], teamMembers = [], taskGroups = [];
 var filterPerson = '';
 var allFbTasks = [];
+var displayTasks = []; // ordered view (drag reorders this)
 var activeTask = null;
 var sessionLog = [];
 var SESS_KEY = 'trazzo_focus_session';
@@ -206,6 +212,9 @@ var duration = 25 * 60;
 var remaining = duration;
 var running = false;
 var interval = null;
+
+// ── DRAG STATE ────────────────────────────────────────────────────────────────
+var _fdrag = null;
 
 // ── HELPERS ───────────────────────────────────────────────────────────────────
 function getCat(catId) {
@@ -250,6 +259,25 @@ function getAllTasks() {
   return result;
 }
 
+function rebuildDisplayTasks() {
+  var filtered = allFbTasks.filter(function(t) {
+    return !filterPerson || t.resp === filterPerson;
+  });
+  // Preserve manual order if we already have one
+  if (displayTasks.length > 0) {
+    var orderMap = {};
+    displayTasks.forEach(function(t, i){ orderMap[String(t.id)] = i; });
+    filtered.sort(function(a, b) {
+      var ai = orderMap[String(a.id)];
+      var bi = orderMap[String(b.id)];
+      if (ai === undefined) return 1;
+      if (bi === undefined) return -1;
+      return ai - bi;
+    });
+  }
+  displayTasks = filtered;
+}
+
 // ── PERSON FILTER ─────────────────────────────────────────────────────────────
 function renderPersonFilter() {
   var row = document.getElementById('focusPersonRow');
@@ -258,7 +286,7 @@ function renderPersonFilter() {
   var all = document.createElement('button');
   all.className = 'focus-person-pill' + (filterPerson === '' ? ' active' : '');
   all.textContent = 'Todos';
-  all.onclick = function() { filterPerson = ''; renderPersonFilter(); renderTaskList(); };
+  all.onclick = function() { filterPerson = ''; displayTasks = []; rebuildDisplayTasks(); renderPersonFilter(); renderTaskList(); };
   row.appendChild(all);
   teamMembers.forEach(function(m) {
     var np = m.name.trim().split(/\s+/);
@@ -266,22 +294,65 @@ function renderPersonFilter() {
     var btn = document.createElement('button');
     btn.className = 'focus-person-pill' + (filterPerson === m.id ? ' active' : '');
     btn.innerHTML = '<span class="focus-av" style="background:' + m.color + '">' + abbr + '</span> ' + np[0];
-    btn.onclick = (function(mid){ return function() { filterPerson = mid; renderPersonFilter(); renderTaskList(); }; })(m.id);
+    btn.onclick = (function(mid){ return function() { filterPerson = mid; displayTasks = []; rebuildDisplayTasks(); renderPersonFilter(); renderTaskList(); }; })(m.id);
     row.appendChild(btn);
   });
 }
 
 // ── TASK LIST ─────────────────────────────────────────────────────────────────
+function buildTaskRow(t) {
+  var isActive = activeTask && String(activeTask.id) === String(t.id);
+  var row = document.createElement('div');
+  row.className = 'task-item' + (isActive ? ' active-task' : '');
+  row.dataset.taskid = String(t.id);
+
+  var bar = document.createElement('div');
+  bar.className = 'task-bar';
+  bar.style.background = t.catColor;
+  row.appendChild(bar);
+
+  var nameEl = document.createElement('span');
+  nameEl.className = 'task-name';
+  nameEl.textContent = t.text;
+  row.appendChild(nameEl);
+
+  if (t.priority) {
+    var pb = document.createElement('span');
+    pb.className = 'task-badge prio';
+    pb.textContent = '⚑';
+    row.appendChild(pb);
+  } else if (t.projectName) {
+    var nb = document.createElement('span');
+    nb.className = 'task-badge';
+    nb.textContent = t.projectName;
+    row.appendChild(nb);
+  }
+
+  if (t.resp) {
+    var respM = null;
+    for (var i=0;i<teamMembers.length;i++){if(teamMembers[i].id===t.resp){respM=teamMembers[i];break;}}
+    if (respM) {
+      var np2 = respM.name.trim().split(/\s+/);
+      var abbr2 = np2[0][0].toUpperCase() + (np2.length > 1 ? np2[1][0].toUpperCase() : '');
+      var av = document.createElement('span');
+      av.className = 'task-av';
+      av.style.background = respM.color;
+      av.textContent = abbr2;
+      row.appendChild(av);
+    }
+  }
+
+  row.addEventListener('pointerdown', (function(task){ return function(e){ startFocusDrag(e, task); }; })(t));
+  row.addEventListener('click', (function(task){ return function(){ if(_fdrag && _fdrag.started) return; selectTask(task); }; })(t));
+  return row;
+}
+
 function renderTaskList() {
   var list = document.getElementById('tasksList');
   var empty = document.getElementById('emptyMsg');
-  list.querySelectorAll('.task-item').forEach(function(e){ e.remove(); });
+  list.querySelectorAll('.task-item, .focus-placeholder').forEach(function(e){ e.remove(); });
 
-  var visible = allFbTasks.filter(function(t) {
-    return !filterPerson || t.resp === filterPerson;
-  });
-
-  if (visible.length === 0) {
+  if (displayTasks.length === 0) {
     empty.style.display = 'block';
     empty.textContent = allFbTasks.length === 0 ? 'Sin tareas pendientes' : 'Ninguna tarea para este filtro';
     document.getElementById('taskCounter').textContent = '0 pendientes';
@@ -289,79 +360,139 @@ function renderTaskList() {
   }
   empty.style.display = 'none';
 
-  visible.forEach(function(t) {
-    var isActive = activeTask && String(activeTask.id) === String(t.id);
-    var row = document.createElement('div');
-    row.className = 'task-item' + (isActive ? ' active-task' : '');
-
-    // Color bar
-    var bar = document.createElement('div');
-    bar.className = 'task-bar';
-    bar.style.background = t.catColor;
-    row.appendChild(bar);
-
-    // Task name
-    var nameEl = document.createElement('span');
-    nameEl.className = 'task-name';
-    nameEl.textContent = t.text;
-    row.appendChild(nameEl);
-
-    // Priority or project badge
-    if (t.priority) {
-      var pb = document.createElement('span');
-      pb.className = 'task-badge prio';
-      pb.textContent = '⚑';
-      row.appendChild(pb);
-    } else if (t.projectName) {
-      var nb = document.createElement('span');
-      nb.className = 'task-badge';
-      nb.textContent = t.projectName;
-      row.appendChild(nb);
-    }
-
-    // Responsible avatar
-    if (t.resp) {
-      var respM = null;
-      for (var i=0;i<teamMembers.length;i++){if(teamMembers[i].id===t.resp){respM=teamMembers[i];break;}}
-      if (respM) {
-        var np2 = respM.name.trim().split(/\s+/);
-        var abbr2 = np2[0][0].toUpperCase() + (np2.length > 1 ? np2[1][0].toUpperCase() : '');
-        var av = document.createElement('span');
-        av.className = 'task-av';
-        av.style.background = respM.color;
-        av.textContent = abbr2;
-        row.appendChild(av);
-      }
-    }
-
-    row.addEventListener('click', (function(task){ return function(){ selectTask(task); }; })(t));
-    list.appendChild(row);
+  displayTasks.forEach(function(t) {
+    list.appendChild(buildTaskRow(t));
   });
 
   document.getElementById('taskCounter').textContent =
-    visible.length + ' pendiente' + (visible.length !== 1 ? 's' : '');
+    displayTasks.length + ' pendiente' + (displayTasks.length !== 1 ? 's' : '');
+}
+
+// ── DRAG & DROP ───────────────────────────────────────────────────────────────
+function startFocusDrag(e, task) {
+  if (e.button && e.button !== 0) return;
+  _fdrag = { task: task, startX: e.clientX, startY: e.clientY, started: false, ghost: null, placeholder: null };
+  document.addEventListener('pointermove', _onFDragMove);
+  document.addEventListener('pointerup',   _onFDragEnd);
+  document.body.style.userSelect = 'none';
+}
+
+function _onFDragMove(e) {
+  if (!_fdrag) return;
+  var dx = e.clientX - _fdrag.startX, dy = e.clientY - _fdrag.startY;
+
+  if (!_fdrag.started) {
+    if (Math.abs(dx) < 6 && Math.abs(dy) < 6) return;
+    _fdrag.started = true;
+
+    // Create ghost clone
+    var srcEl = document.querySelector('.task-item[data-taskid="' + String(_fdrag.task.id) + '"]');
+    if (srcEl) {
+      var rect = srcEl.getBoundingClientRect();
+      var ghost = srcEl.cloneNode(true);
+      ghost.className = 'focus-ghost';
+      ghost.style.width  = rect.width  + 'px';
+      ghost.style.height = rect.height + 'px';
+      ghost.style.left   = rect.left   + 'px';
+      ghost.style.top    = rect.top    + 'px';
+      document.body.appendChild(ghost);
+      _fdrag.ghost = ghost;
+      _fdrag.offsetX = e.clientX - rect.left;
+      _fdrag.offsetY = e.clientY - rect.top;
+      srcEl.classList.add('fdragging');
+    }
+
+    // Create placeholder
+    var ph = document.createElement('div');
+    ph.className = 'focus-placeholder';
+    _fdrag.placeholder = ph;
+  }
+
+  // Move ghost
+  if (_fdrag.ghost) {
+    _fdrag.ghost.style.left = (e.clientX - _fdrag.offsetX) + 'px';
+    _fdrag.ghost.style.top  = (e.clientY - _fdrag.offsetY) + 'px';
+  }
+
+  // Find insertion point
+  var list = document.getElementById('tasksList');
+  var items = list.querySelectorAll('.task-item:not(.fdragging)');
+  var insertBefore = null;
+  items.forEach(function(item) {
+    var r = item.getBoundingClientRect();
+    if (e.clientY < r.top + r.height / 2) {
+      if (!insertBefore) insertBefore = item;
+    }
+  });
+
+  if (insertBefore) {
+    list.insertBefore(_fdrag.placeholder, insertBefore);
+  } else {
+    list.appendChild(_fdrag.placeholder);
+  }
+}
+
+function _onFDragEnd(e) {
+  document.removeEventListener('pointermove', _onFDragMove);
+  document.removeEventListener('pointerup',   _onFDragEnd);
+  document.body.style.userSelect = '';
+
+  if (!_fdrag) return;
+  var drag = _fdrag; _fdrag = null;
+
+  if (!drag.started) return;
+
+  // Remove ghost and placeholder, restore opacity
+  if (drag.ghost) drag.ghost.remove();
+  var srcEl = document.querySelector('.task-item[data-taskid="' + String(drag.task.id) + '"]');
+  if (srcEl) srcEl.classList.remove('fdragging');
+
+  // Compute new index from placeholder position
+  if (drag.placeholder && drag.placeholder.parentNode) {
+    var list = document.getElementById('tasksList');
+    var children = Array.from(list.children);
+    var phIdx = children.indexOf(drag.placeholder);
+    drag.placeholder.remove();
+
+    // Count real task items before placeholder (excluding dragged)
+    var newIdx = 0;
+    for (var i = 0; i < phIdx; i++) {
+      if (children[i].classList && children[i].classList.contains('task-item') && children[i].dataset.taskid !== String(drag.task.id)) {
+        newIdx++;
+      }
+    }
+
+    // Reorder displayTasks
+    var oldIdx = -1;
+    for (var j=0;j<displayTasks.length;j++){ if(String(displayTasks[j].id)===String(drag.task.id)){oldIdx=j;break;} }
+    if (oldIdx !== -1) {
+      displayTasks.splice(oldIdx, 1);
+      var insertAt = Math.min(newIdx, displayTasks.length);
+      displayTasks.splice(insertAt, 0, drag.task);
+    }
+  } else if (drag.placeholder) {
+    drag.placeholder.remove();
+  }
+
+  renderTaskList();
 }
 
 // ── TASK SELECTION ────────────────────────────────────────────────────────────
 function selectTask(task) {
   activeTask = task;
-  if (!running) {
-    remaining = duration;
-    updateDisplay();
-  }
+  if (!running) { remaining = duration; updateDisplay(); }
   updateFocusLabel();
   renderTaskList();
   saveSess();
 }
 
 function skipTask() {
-  var visible = allFbTasks.filter(function(t){ return !filterPerson || t.resp === filterPerson; });
-  if (visible.length === 0) { activeTask = null; updateFocusLabel(); return; }
+  if (displayTasks.length === 0) { activeTask = null; updateFocusLabel(); return; }
   var idx = -1;
   if (activeTask) {
-    for (var i=0;i<visible.length;i++){if(String(visible[i].id)===String(activeTask.id)){idx=i;break;}}
+    for (var i=0;i<displayTasks.length;i++){if(String(displayTasks[i].id)===String(activeTask.id)){idx=i;break;}}
   }
-  selectTask(visible[(idx + 1) % visible.length]);
+  selectTask(displayTasks[(idx + 1) % displayTasks.length]);
 }
 
 function updateFocusLabel() {
@@ -374,13 +505,10 @@ function updateFocusLabel() {
 function saveSess() {
   if (!activeTask && !running) { localStorage.removeItem(SESS_KEY); return; }
   localStorage.setItem(SESS_KEY, JSON.stringify({
-    taskText: activeTask ? activeTask.text : '',
-    taskId:   activeTask ? activeTask.id   : null,
+    taskText:  activeTask ? activeTask.text      : '',
+    taskId:    activeTask ? activeTask.id        : null,
     projectId: activeTask ? activeTask.projectId : null,
-    remaining: remaining,
-    duration:  duration,
-    running:   running,
-    ts:        Date.now()
+    remaining: remaining, duration: duration, running: running, ts: Date.now()
   }));
 }
 
@@ -390,21 +518,15 @@ function restoreSess() {
   var sess; try { sess = JSON.parse(raw); } catch(e) { return; }
   if (!sess || sess.remaining <= 0) return;
 
-  // Try to match task from Firebase data
   var matchTask = null;
   if (sess.taskId != null) {
     for (var i=0;i<allFbTasks.length;i++){
       if (String(allFbTasks[i].id) === String(sess.taskId)){ matchTask = allFbTasks[i]; break; }
     }
   }
-  // Fallback: create stub so timer can still show
   if (!matchTask && sess.taskText) {
-    matchTask = {
-      id: sess.taskId, text: sess.taskText,
-      projectId: sess.projectId || 'standalone',
-      projectName: '', catColor: 'rgba(255,255,255,0.2)',
-      resp: '', priority: false, deadline: ''
-    };
+    matchTask = { id: sess.taskId, text: sess.taskText, projectId: sess.projectId || 'standalone',
+                  projectName: '', catColor: 'rgba(255,255,255,0.2)', resp: '', priority: false, deadline: '' };
   }
 
   duration  = sess.duration || 25 * 60;
@@ -431,23 +553,17 @@ window.addEventListener('beforeunload', function() { saveSess(); });
 // ── FIREBASE LOAD ─────────────────────────────────────────────────────────────
 DOC.onSnapshot(function(snap) {
   var d = snap.data();
-  if (!d) {
-    document.getElementById('emptyMsg').textContent = 'No hay datos disponibles';
-    return;
-  }
-  projects      = d.projects      || [];
-  categories    = d.categories    || [];
+  if (!d) { document.getElementById('emptyMsg').textContent = 'No hay datos disponibles'; return; }
+  projects        = d.projects        || [];
+  categories      = d.categories      || [];
   standaloneTasks = d.standaloneTasks || [];
-  teamMembers   = d.teamMembers   || [];
-  taskGroups    = d.taskGroups    || [];
-  allFbTasks    = getAllTasks();
+  teamMembers     = d.teamMembers     || [];
+  taskGroups      = d.taskGroups      || [];
+  allFbTasks      = getAllTasks();
+  rebuildDisplayTasks();
   renderPersonFilter();
-  if (_firstLoad) {
-    _firstLoad = false;
-    restoreSess();
-  } else {
-    renderTaskList();
-  }
+  if (_firstLoad) { _firstLoad = false; restoreSess(); }
+  else { renderTaskList(); }
 });
 
 // ── ALARM ─────────────────────────────────────────────────────────────────────
@@ -455,8 +571,7 @@ function playAlarm() {
   try {
     var ctx = new (window.AudioContext || window.webkitAudioContext)();
     [0, 0.35, 0.7].forEach(function(offset) {
-      var osc = ctx.createOscillator();
-      var gain = ctx.createGain();
+      var osc = ctx.createOscillator(), gain = ctx.createGain();
       osc.connect(gain); gain.connect(ctx.destination);
       osc.type = 'sine';
       osc.frequency.setValueAtTime(880, ctx.currentTime + offset);
@@ -492,8 +607,7 @@ function resetTimer(min) {
 
 function toggleTimer() {
   if (!activeTask) {
-    var visible = allFbTasks.filter(function(t){ return !filterPerson || t.resp === filterPerson; });
-    if (visible.length) selectTask(visible[0]);
+    if (displayTasks.length) selectTask(displayTasks[0]);
     else return;
   }
   running = !running;
@@ -528,18 +642,13 @@ function tick() {
       renderSessionLog();
     }
     saveSess();
-    setTimeout(function() {
-      document.getElementById('ringProgress').style.stroke = '#E8A020';
-      skipTask();
-    }, 2500);
+    setTimeout(function() { document.getElementById('ringProgress').style.stroke = '#E8A020'; skipTask(); }, 2500);
   }
 }
 
 function updateDisplay() {
-  var m = Math.floor(remaining / 60);
-  var s = remaining % 60;
-  document.getElementById('timerDisplay').textContent =
-    String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+  var m = Math.floor(remaining / 60), s = remaining % 60;
+  document.getElementById('timerDisplay').textContent = String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
   var pct = duration > 0 ? (1 - remaining / duration) : 0;
   document.getElementById('ringProgress').style.strokeDashoffset = CIRC * (1 - pct);
 }
@@ -563,6 +672,12 @@ function renderSessionLog() {
   var tot = sessionLog.reduce(function(s,l){ return s + l.mins; }, 0);
   total.textContent = 'Total: ' + (tot >= 60 ? Math.floor(tot/60)+'h '+tot%60+'m' : tot+'m') + ' enfocado';
 }
+
+// ── EXPOSE TO HTML ONCLICKS ───────────────────────────────────────────────────
+window.toggleTimer  = toggleTimer;
+window.resetTimer   = resetTimer;
+window.skipTask     = skipTask;
+window.setDuration  = setDuration;
 
 updateDisplay();
 
