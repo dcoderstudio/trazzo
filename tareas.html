@@ -364,11 +364,12 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 
     card.addEventListener('pointerdown', function(e) {
       if (e.button !== 0) return;
+      if (e.target.closest('.tk-flag-btn') || e.target.closest('.tk-check-sm')) return;
       startCardDrag(e, task, card);
     });
     card.addEventListener('click', function(e) {
       if (e.target.closest('.tk-flag-btn') || e.target.closest('.tk-check-sm')) return;
-      if (card.classList.contains('tk-dragging')) return;
+      if (_drag && _drag.started) return; // fue arrastre real
       openTaskDetail(task);
     });
 
@@ -613,62 +614,69 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
   };
   document.addEventListener('keydown', function(e){ if (e.key === 'Escape') closeTaskDetail(); });
 
-  // ── POINTER DRAG ─────────────────────────────────────────
+  // ── POINTER DRAG (threshold 6px para no bloquear clicks) ──
   var _drag = null;
+  var DRAG_THRESHOLD = 6;
 
   function startCardDrag(e, task, card) {
-    e.preventDefault();
-    var rect = card.getBoundingClientRect();
-    var ghost = card.cloneNode(true);
-    ghost.className = ghost.className.replace('tk-dragging','') + ' tk-ghost';
-    ghost.style.width = rect.width + 'px';
-    ghost.style.left = rect.left + 'px';
-    ghost.style.top  = rect.top  + 'px';
-    document.body.appendChild(ghost);
-    card.classList.add('tk-dragging');
-
-    if (!dragPlaceholder) {
-      dragPlaceholder = document.createElement('div');
-      dragPlaceholder.className = 'tk-placeholder';
-    }
-
-    _drag = {task: task, card: card, ghost: ghost,
-             ox: e.clientX - rect.left, oy: e.clientY - rect.top,
-             lastCol: null, moved: false};
-
-    card.setPointerCapture && card.releasePointerCapture(e.pointerId);
-    document.addEventListener('pointermove', _onDragMove, {passive:false});
+    if (e.button !== 0) return;
+    // NO preventDefault aquí — permite que los clicks funcionen normalmente
+    _drag = {
+      task: task, card: card, ghost: null,
+      startX: e.clientX, startY: e.clientY,
+      ox: 0, oy: 0, lastCol: null,
+      started: false, moved: false
+    };
+    document.addEventListener('pointermove', _onDragMove, {passive: false});
     document.addEventListener('pointerup',   _onDragEnd);
     document.addEventListener('pointercancel', _onDragEnd);
   }
 
   function _onDragMove(e) {
     if (!_drag) return;
+    var dx = e.clientX - _drag.startX;
+    var dy = e.clientY - _drag.startY;
+
+    if (!_drag.started) {
+      if (Math.abs(dx) < DRAG_THRESHOLD && Math.abs(dy) < DRAG_THRESHOLD) return;
+      // Umbral superado — iniciar arrastre visual
+      e.preventDefault();
+      _drag.started = true;
+      var rect = _drag.card.getBoundingClientRect();
+      var ghost = _drag.card.cloneNode(true);
+      ghost.className = ghost.className.replace('tk-dragging','') + ' tk-ghost';
+      ghost.style.width = rect.width + 'px';
+      ghost.style.left  = rect.left  + 'px';
+      ghost.style.top   = rect.top   + 'px';
+      document.body.appendChild(ghost);
+      _drag.card.classList.add('tk-dragging');
+      _drag.ghost = ghost;
+      _drag.ox = e.clientX - rect.left;
+      _drag.oy = e.clientY - rect.top;
+      if (!dragPlaceholder) {
+        dragPlaceholder = document.createElement('div');
+        dragPlaceholder.className = 'tk-placeholder';
+      }
+    }
+
     e.preventDefault();
     _drag.moved = true;
-    var gx = e.clientX - _drag.ox;
-    var gy = e.clientY - _drag.oy;
-    _drag.ghost.style.left = gx + 'px';
-    _drag.ghost.style.top  = gy + 'px';
+    _drag.ghost.style.left = (e.clientX - _drag.ox) + 'px';
+    _drag.ghost.style.top  = (e.clientY - _drag.oy) + 'px';
 
-    // Find column body under cursor (ghost has pointer-events:none)
     var el = document.elementFromPoint(e.clientX, e.clientY);
     var colBody = el ? el.closest('[data-coltype]') : null;
-
     if (!colBody) {
       if (dragPlaceholder.parentNode) dragPlaceholder.parentNode.removeChild(dragPlaceholder);
       if (_drag.lastCol) { _drag.lastCol.classList.remove('tk-drag-active'); _drag.lastCol = null; }
       return;
     }
-    if (_drag.lastCol && _drag.lastCol !== colBody) {
-      _drag.lastCol.classList.remove('tk-drag-active');
-    }
+    if (_drag.lastCol && _drag.lastCol !== colBody) _drag.lastCol.classList.remove('tk-drag-active');
     colBody.classList.add('tk-drag-active');
     _drag.lastCol = colBody;
-
     var afterEl = _getAfterEl(colBody, e.clientY);
-    if (!afterEl) { colBody.appendChild(dragPlaceholder); }
-    else { colBody.insertBefore(dragPlaceholder, afterEl); }
+    if (!afterEl) colBody.appendChild(dragPlaceholder);
+    else colBody.insertBefore(dragPlaceholder, afterEl);
   }
 
   function _onDragEnd(e) {
@@ -677,9 +685,10 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     document.removeEventListener('pointerup',   _onDragEnd);
     document.removeEventListener('pointercancel', _onDragEnd);
 
-    if (_drag.ghost.parentNode) _drag.ghost.parentNode.removeChild(_drag.ghost);
-    _drag.card.classList.remove('tk-dragging');
+    if (!_drag.started) { _drag = null; return; } // fue un click, no arrastre
 
+    if (_drag.ghost && _drag.ghost.parentNode) _drag.ghost.parentNode.removeChild(_drag.ghost);
+    _drag.card.classList.remove('tk-dragging');
     document.querySelectorAll('.tk-col-body').forEach(function(b){ b.classList.remove('tk-drag-active'); });
 
     if (dragPlaceholder && dragPlaceholder.parentNode) {
