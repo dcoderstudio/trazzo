@@ -123,6 +123,34 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 .tk-det-notes::placeholder{color:rgba(255,255,255,0.18);}
 .tk-det-foot{display:flex;gap:8px;justify-content:flex-end;}
 .tk-notes-dot{width:6px;height:6px;border-radius:50%;background:rgba(232,160,32,0.6);flex-shrink:0;}
+/* TRIGGER BUTTONS para pickers en el modal */
+.tk-det-trigger{background:#1e1e1e;border:0.5px solid rgba(255,255,255,0.1);border-radius:10px;padding:9px 12px;font-size:12px;color:rgba(255,255,255,0.35);font-family:'Inter',sans-serif;cursor:pointer;width:100%;text-align:left;transition:border-color .15s,color .15s;display:flex;align-items:center;gap:7px;}
+.tk-det-trigger:hover{border-color:rgba(255,255,255,0.28);color:rgba(255,255,255,0.8);}
+.tk-det-trigger.has-val{color:#fff;}
+.tk-tav{width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:#fff;flex-shrink:0;}
+/* PERSON PICKER */
+.tkpp-panel{position:fixed;z-index:9999;background:#161616;border:0.5px solid rgba(255,255,255,0.14);border-radius:14px;padding:6px;box-shadow:0 12px 50px rgba(0,0,0,.92);font-family:'Inter',sans-serif;min-width:190px;}
+.tkpp-opt{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:9px;cursor:pointer;transition:background .12s;font-size:13px;color:rgba(255,255,255,0.75);}
+.tkpp-opt:hover,.tkpp-opt.sel{background:rgba(255,255,255,0.07);color:#fff;}
+.tkpp-av{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:#fff;flex-shrink:0;}
+.tkpp-none{padding:8px 10px;border-radius:9px;cursor:pointer;font-size:12px;color:rgba(255,255,255,0.35);transition:background .12s;}
+.tkpp-none:hover,.tkpp-none.sel{background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.7);}
+/* DATE PICKER */
+.tkdp-panel{position:fixed;z-index:9999;background:#161616;border:0.5px solid rgba(255,255,255,0.14);border-radius:18px;padding:16px;box-shadow:0 20px 70px rgba(0,0,0,.92);width:252px;font-family:'Inter',sans-serif;}
+.tkdp-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.tkdp-lbl{font-size:13px;font-weight:700;color:#fff;}
+.tkdp-nbtn{background:rgba(255,255,255,0.07);border:none;color:rgba(255,255,255,0.5);width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:18px;line-height:1;display:flex;align-items:center;justify-content:center;transition:all .15s;font-family:'Inter',sans-serif;}
+.tkdp-nbtn:hover{background:rgba(255,255,255,0.14);color:#fff;}
+.tkdp-wdays{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:4px;}
+.tkdp-wday{text-align:center;font-size:9px;font-weight:700;color:rgba(255,255,255,0.25);padding:3px 0;text-transform:uppercase;}
+.tkdp-days{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;}
+.tkdp-day{background:none;border:none;color:rgba(255,255,255,0.7);font-size:12px;font-family:'Inter',sans-serif;padding:6px 2px;border-radius:7px;cursor:pointer;text-align:center;transition:background .1s;}
+.tkdp-day:hover{background:rgba(255,255,255,0.1);color:#fff;}
+.tkdp-day.om{color:rgba(255,255,255,0.15);cursor:default;}
+.tkdp-day.td{color:#E8A020;font-weight:700;}
+.tkdp-day.sel{background:#fff!important;color:#0c0c0c!important;font-weight:700;}
+.tkdp-clear{width:100%;margin-top:10px;padding:7px;background:none;border:0.5px solid rgba(255,255,255,0.08);border-radius:10px;color:rgba(255,255,255,0.3);font-size:11px;font-family:'Inter',sans-serif;cursor:pointer;transition:all .15s;}
+.tkdp-clear:hover{border-color:rgba(255,255,255,0.22);color:rgba(255,255,255,0.7);}
 </style>
 </head>
 <body>
@@ -210,17 +238,13 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
         <div class="tk-det-grid">
           <div>
             <div class="tk-det-lbl">Responsable</div>
-            <select class="tk-det-inp" id="tkDetResp">
-              <option value="">Sin asignar</option>
-              <option value="AR">Ana Ramírez</option>
-              <option value="LM">Luis Mora</option>
-              <option value="SV">Sofía Vega</option>
-              <option value="RG">Rodrigo Gil</option>
-            </select>
+            <input type="hidden" id="tkDetResp">
+            <button type="button" class="tk-det-trigger" id="tkDetRespBtn">👤 Sin asignar</button>
           </div>
           <div>
             <div class="tk-det-lbl">Fecha límite</div>
-            <input type="date" class="tk-det-inp" id="tkDetDeadline">
+            <input type="hidden" id="tkDetDeadline">
+            <button type="button" class="tk-det-trigger" id="tkDetDlBtn">📅 Sin fecha</button>
           </div>
           <div>
             <div class="tk-det-lbl">Estado</div>
@@ -563,6 +587,134 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     }
   }
 
+  // ── CUSTOM PICKERS ───────────────────────────────────────
+  var TEAM_MEMBERS = [
+    {id:'AR',name:'Ana Ramírez',color:'#1A6FD4'},
+    {id:'LM',name:'Luis Mora',color:'#7B6FD0'},
+    {id:'SV',name:'Sofía Vega',color:'#D4537E'},
+    {id:'RG',name:'Rodrigo Gil',color:'#E8A020'}
+  ];
+  var _tkPicker = null;
+  function _tkClosePicker() {
+    if (_tkPicker && _tkPicker.parentNode) _tkPicker.parentNode.removeChild(_tkPicker);
+    _tkPicker = null;
+  }
+  function _tkPos(panel, anchor) {
+    var r = anchor.getBoundingClientRect();
+    var pH = panel.offsetHeight||260, pW = panel.offsetWidth||200;
+    var top = r.bottom+5, left = r.left;
+    if (top+pH > window.innerHeight-8) top = r.top-pH-5;
+    if (left+pW > window.innerWidth-8) left = window.innerWidth-pW-8;
+    if (top<8) top=8;
+    panel.style.top=top+'px'; panel.style.left=left+'px';
+  }
+  document.addEventListener('mousedown', function(e){
+    if (_tkPicker && !_tkPicker.contains(e.target)) _tkClosePicker();
+  }, true);
+
+  function tkOpenPersonPicker(anchor, curVal, cb) {
+    _tkClosePicker();
+    var panel = document.createElement('div'); panel.className='tkpp-panel';
+    var none = document.createElement('div'); none.className='tkpp-none'+(curVal===''?' sel':'');
+    none.textContent='— Sin responsable';
+    none.onclick=function(e){e.stopPropagation();cb('');_tkClosePicker();};
+    panel.appendChild(none);
+    TEAM_MEMBERS.forEach(function(m){
+      var opt=document.createElement('div'); opt.className='tkpp-opt'+(curVal===m.id?' sel':'');
+      var av=document.createElement('div'); av.className='tkpp-av'; av.style.background=m.color; av.textContent=m.id;
+      var nm=document.createElement('span'); nm.textContent=m.name;
+      opt.appendChild(av); opt.appendChild(nm);
+      opt.onclick=function(e){e.stopPropagation();cb(m.id);_tkClosePicker();};
+      panel.appendChild(opt);
+    });
+    document.body.appendChild(panel); _tkPicker=panel;
+    _tkPos(panel, anchor);
+  }
+
+  function tkOpenDatePicker(anchor, curVal, cb) {
+    _tkClosePicker();
+    var MN=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+    var sv=curVal||'', vd=sv?new Date(sv+'T00:00:00'):new Date(), vy=vd.getFullYear(), vm=vd.getMonth();
+    var panel=document.createElement('div'); panel.className='tkdp-panel';
+    document.body.appendChild(panel); _tkPicker=panel;
+    function render(){
+      panel.innerHTML='';
+      var nav=document.createElement('div'); nav.className='tkdp-nav';
+      var pb=document.createElement('button'); pb.type='button'; pb.className='tkdp-nbtn'; pb.innerHTML='&#8249;';
+      pb.onclick=function(e){e.stopPropagation();vm--;if(vm<0){vm=11;vy--;}render();};
+      var nb=document.createElement('button'); nb.type='button'; nb.className='tkdp-nbtn'; nb.innerHTML='&#8250;';
+      nb.onclick=function(e){e.stopPropagation();vm++;if(vm>11){vm=0;vy++;}render();};
+      var lbl=document.createElement('span'); lbl.className='tkdp-lbl'; lbl.textContent=MN[vm]+' '+vy;
+      nav.appendChild(pb); nav.appendChild(lbl); nav.appendChild(nb); panel.appendChild(nav);
+      var wr=document.createElement('div'); wr.className='tkdp-wdays';
+      ['Lu','Ma','Mi','Ju','Vi','Sá','Do'].forEach(function(d){var c=document.createElement('div');c.className='tkdp-wday';c.textContent=d;wr.appendChild(c);});
+      panel.appendChild(wr);
+      var grid=document.createElement('div'); grid.className='tkdp-days';
+      var today=new Date(); today.setHours(0,0,0,0);
+      var fdow=new Date(vy,vm,1).getDay(), off=fdow===0?6:fdow-1;
+      var dim=new Date(vy,vm+1,0).getDate(), dipm=new Date(vy,vm,0).getDate();
+      for(var i=off-1;i>=0;i--){var b=document.createElement('button');b.type='button';b.className='tkdp-day om';b.textContent=dipm-i;grid.appendChild(b);}
+      for(var d=1;d<=dim;d++){(function(day){
+        var b=document.createElement('button'); b.type='button'; b.className='tkdp-day';
+        b.textContent=day;
+        if(new Date(vy,vm,day).getTime()===today.getTime()) b.classList.add('td');
+        var val=vy+'-'+String(vm+1).padStart(2,'0')+'-'+String(day).padStart(2,'0');
+        if(sv===val) b.classList.add('sel');
+        b.onclick=function(e){e.stopPropagation();cb(val);_tkClosePicker();};
+        grid.appendChild(b);
+      })(d);}
+      var tot=off+dim, rem=tot%7===0?0:7-(tot%7);
+      for(var i=1;i<=rem;i++){var b=document.createElement('button');b.type='button';b.className='tkdp-day om';b.textContent=i;grid.appendChild(b);}
+      panel.appendChild(grid);
+      var clr=document.createElement('button'); clr.type='button'; clr.className='tkdp-clear'; clr.textContent='Sin fecha';
+      clr.onclick=function(e){e.stopPropagation();cb('');_tkClosePicker();};
+      panel.appendChild(clr);
+      _tkPos(panel, anchor);
+    }
+    render();
+  }
+
+  function _updRespBtn(btn, val) {
+    btn.innerHTML='';
+    var m=null; for(var i=0;i<TEAM_MEMBERS.length;i++){if(TEAM_MEMBERS[i].id===val){m=TEAM_MEMBERS[i];break;}}
+    if (m) {
+      var av=document.createElement('span'); av.className='tk-tav'; av.style.background=m.color; av.textContent=m.id;
+      btn.appendChild(av); btn.appendChild(document.createTextNode(m.name));
+      btn.classList.add('has-val');
+    } else {
+      btn.textContent='👤 Sin asignar'; btn.classList.remove('has-val');
+    }
+  }
+  function _fmtDlLbl(v) {
+    if(!v) return null;
+    var d=new Date(v+'T00:00:00');
+    var MNS=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+    return d.getDate()+' '+MNS[d.getMonth()]+'. '+d.getFullYear();
+  }
+  function _updDlBtn(btn, val) {
+    var lbl=_fmtDlLbl(val);
+    btn.textContent = lbl ? '📅 '+lbl : '📅 Sin fecha';
+    if(lbl) btn.classList.add('has-val'); else btn.classList.remove('has-val');
+  }
+
+  // Wiring de botones del modal (una sola vez)
+  (function() {
+    var respBtn = document.getElementById('tkDetRespBtn');
+    var dlBtn   = document.getElementById('tkDetDlBtn');
+    respBtn.onclick = function(e) {
+      e.stopPropagation();
+      tkOpenPersonPicker(respBtn, document.getElementById('tkDetResp').value, function(v){
+        document.getElementById('tkDetResp').value=v; _updRespBtn(respBtn,v);
+      });
+    };
+    dlBtn.onclick = function(e) {
+      e.stopPropagation();
+      tkOpenDatePicker(dlBtn, document.getElementById('tkDetDeadline').value, function(v){
+        document.getElementById('tkDetDeadline').value=v; _updDlBtn(dlBtn,v);
+      });
+    };
+  })();
+
   // ── FLAG & DETAIL ────────────────────────────────────────
   function toggleFlag(projectId, stage, taskId) {
     for (var i=0;i<projects.length;i++){
@@ -575,14 +727,19 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 
   var _detRef = null;
   window.openTaskDetail = function(task) {
+    _tkClosePicker();
     _detRef = {projectId: task.projectId, stage: task.stage, taskId: task.id};
     document.getElementById('tkDetBar').style.background = task.catColor;
     document.getElementById('tkDetProj').style.color = task.catColor;
     document.getElementById('tkDetProj').textContent = task.projectName;
     document.getElementById('tkDetStage').textContent = task.stage;
     document.getElementById('tkDetText').value = task.text;
-    document.getElementById('tkDetResp').value = task.resp || '';
-    document.getElementById('tkDetDeadline').value = task.deadline || '';
+    var respVal = task.resp || '';
+    document.getElementById('tkDetResp').value = respVal;
+    _updRespBtn(document.getElementById('tkDetRespBtn'), respVal);
+    var dlVal = task.deadline || '';
+    document.getElementById('tkDetDeadline').value = dlVal;
+    _updDlBtn(document.getElementById('tkDetDlBtn'), dlVal);
     var st = task.colStatus || (task.done ? 'done' : (task.deadline ? 'inprogress' : 'notstarted'));
     document.getElementById('tkDetStatus').value = st;
     document.getElementById('tkDetNotes').value = task.notes || '';
@@ -590,6 +747,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     setTimeout(function(){ document.getElementById('tkDetText').focus(); document.getElementById('tkDetText').select(); }, 120);
   };
   window.closeTaskDetail = function() {
+    _tkClosePicker();
     document.getElementById('tkDetOverlay').classList.remove('open');
     _detRef = null;
   };
