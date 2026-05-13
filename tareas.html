@@ -191,6 +191,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
   var showDone = false;
   var dragPlaceholder = null;
   var _ignoreSnap = false;
+  var _pendingSave = false;
 
   function saveData() {
     _ignoreSnap = true;
@@ -206,10 +207,21 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
   function getAllTasks() {
     var result = [];
     projects.forEach(function(proj) {
-      if (!proj.stageTasks || proj.catId === 'cotizaciones') return;
+      if (proj.catId === 'cotizaciones') return;
+      if (!proj.stageTasks) proj.stageTasks = {};
       var cat = getCat(proj.catId);
       var stage = proj.stage;
       var tasks = proj.stageTasks[stage];
+      // Auto-siembra: si no hay tareas para esta fase pero hay templates, crearlas aquí
+      if ((!tasks || !tasks.length) && cat && cat.templates && cat.templates[stage] && cat.templates[stage].length) {
+        var base = Date.now();
+        proj.stageTasks[stage] = cat.templates[stage].map(function(item, i) {
+          var text = typeof item === 'string' ? item : (item.text || '');
+          return {id: base + i, text: text, done: false, deadline: '', resp: ''};
+        });
+        tasks = proj.stageTasks[stage];
+        _pendingSave = true;
+      }
       if (!tasks || !tasks.length) return;
       tasks.forEach(function(task) {
         result.push({
@@ -417,6 +429,9 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 
     var pending = notStarted.length + inProgress.length;
     document.getElementById('countPill').textContent = pending + ' pendiente' + (pending !== 1 ? 's' : '') + ' · ' + done.length + ' listas';
+
+    // Si se sembraron tareas nuevas, persiste sin causar bucle
+    if (_pendingSave) { _pendingSave = false; saveData(); }
   }
 
   function toggleTask(projectId, stage, taskId) {
