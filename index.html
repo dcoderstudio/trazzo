@@ -521,7 +521,43 @@ tick();setInterval(tick,1000);
 .hi-conf-msg{font-size:12px;color:rgba(255,255,255,0.5);line-height:1.65;}
 .hi-btn-danger{background:#E24B4A;border:none;color:#fff;font-size:12px;font-weight:700;padding:8px 16px;border-radius:10px;cursor:pointer;font-family:'Inter',sans-serif;}
 #hiConfOverlay{z-index:900;}
+/* MEMBER PROFILE PANEL */
+.mp-panel{position:fixed;top:52px;right:0;width:0;height:calc(100vh - 52px);background:#111;border-left:0.5px solid rgba(255,255,255,0.08);z-index:600;overflow:hidden;transition:width .3s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;font-family:'Inter',sans-serif;}
+.mp-panel.open{width:340px;}
+.mp-inner{width:340px;height:100%;display:flex;flex-direction:column;overflow-y:auto;}
+.mp-inner::-webkit-scrollbar{width:3px;}
+.mp-inner::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);}
+.mp-head{display:flex;align-items:center;justify-content:space-between;padding:18px 20px 0;}
+.mp-close{background:none;border:none;color:rgba(255,255,255,0.3);font-size:20px;cursor:pointer;line-height:1;padding:2px 4px;border-radius:6px;transition:color .15s;}
+.mp-close:hover{color:#fff;}
+.mp-profile{display:flex;flex-direction:column;align-items:center;padding:20px 20px 16px;gap:10px;}
+.mp-avatar{width:72px;height:72px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:#fff;flex-shrink:0;}
+.mp-name{font-size:18px;font-weight:700;color:#fff;text-align:center;}
+.mp-initials-badge{font-size:11px;font-weight:600;color:rgba(255,255,255,0.35);background:rgba(255,255,255,0.07);padding:3px 10px;border-radius:20px;}
+.mp-stats{display:flex;gap:0;width:100%;border-top:0.5px solid rgba(255,255,255,0.07);border-bottom:0.5px solid rgba(255,255,255,0.07);}
+.mp-stat{flex:1;display:flex;flex-direction:column;align-items:center;padding:14px 8px;gap:2px;border-right:0.5px solid rgba(255,255,255,0.06);}
+.mp-stat:last-child{border-right:none;}
+.mp-stat-n{font-size:22px;font-weight:800;letter-spacing:-0.02em;line-height:1;}
+.mp-stat-l{font-size:9px;font-weight:700;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:.07em;text-align:center;}
+.mp-section{padding:16px 20px 0;}
+.mp-sec-title{font-size:10px;font-weight:700;color:rgba(255,255,255,0.3);letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px;}
+.mp-task-item{display:flex;align-items:flex-start;gap:9px;padding:10px 12px;border-radius:11px;background:#181818;border:0.5px solid rgba(255,255,255,0.06);margin-bottom:6px;position:relative;overflow:hidden;}
+.mp-task-bar{width:3px;position:absolute;left:0;top:0;bottom:0;border-radius:4px 0 0 4px;}
+.mp-task-name{font-size:12px;font-weight:500;color:rgba(255,255,255,0.82);line-height:1.4;flex:1;padding-left:4px;}
+.mp-task-proj{font-size:10px;color:rgba(255,255,255,0.35);margin-top:2px;padding-left:4px;}
+.mp-task-dl{font-size:10px;font-weight:700;padding:2px 7px;border-radius:7px;white-space:nowrap;flex-shrink:0;margin-top:1px;}
+.mp-task-dl.overdue{background:rgba(226,75,74,0.18);color:#E24B4A;}
+.mp-task-dl.today{background:rgba(232,160,32,0.18);color:#E8A020;}
+.mp-task-dl.ok{background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.38);}
+.mp-empty{font-size:12px;color:rgba(255,255,255,0.2);text-align:center;padding:20px 0;font-style:italic;}
+.mp-goto{display:block;width:calc(100% - 40px);margin:14px 20px;background:rgba(255,255,255,0.06);border:0.5px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.5);font-size:11px;font-weight:600;padding:9px;border-radius:11px;cursor:pointer;font-family:'Inter',sans-serif;text-align:center;transition:all .15s;}
+.mp-goto:hover{background:rgba(255,255,255,0.1);color:#fff;border-color:rgba(255,255,255,0.28);}
 </style>
+
+<!-- Member profile panel -->
+<div class="mp-panel" id="mpPanel">
+  <div class="mp-inner" id="mpInner"></div>
+</div>
 
 <!-- Team modal -->
 <div class="hi-overlay" id="hiTeamOverlay" onclick="if(event.target===this)hiCloseTeam()">
@@ -605,7 +641,9 @@ tick();setInterval(tick,1000);
       var abbr = np[0][0].toUpperCase() + (np.length > 1 ? np[1][0].toUpperCase() : '');
       var row = document.createElement('div');
       row.className = 'mem-row';
-      row.style.cssText = 'display:flex;align-items:center;gap:8px;padding:5px 0;cursor:default;';
+      row.style.cssText = 'display:flex;align-items:center;gap:8px;padding:6px 8px;cursor:pointer;border-radius:10px;transition:background .15s;margin:0 -8px;';
+      row.onmouseover = function(){ row.style.background='rgba(255,255,255,0.05)'; };
+      row.onmouseout  = function(){ row.style.background='transparent'; };
       var av = document.createElement('div');
       av.className = 'mem-av';
       av.style.background = m.color;
@@ -613,11 +651,194 @@ tick();setInterval(tick,1000);
       var info = document.createElement('div');
       info.style.cssText = 'flex:1;min-width:0;';
       info.innerHTML = '<div style="font-size:11px;font-weight:600;color:rgba(255,255,255,0.7);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + m.name + '</div>';
-      row.appendChild(av);
-      row.appendChild(info);
+      var arrow = document.createElement('span');
+      arrow.style.cssText = 'font-size:11px;color:rgba(255,255,255,0.18);flex-shrink:0;';
+      arrow.textContent = '›';
+      row.appendChild(av); row.appendChild(info); row.appendChild(arrow);
+      row.addEventListener('click', (function(member){ return function(){ openMemberProfile(member); }; })(m));
       list.appendChild(row);
     });
   }
+
+  // ── Member profile panel ─────────────────────────────────
+  var _mpOpen = null;
+
+  function getMemberTasks(mid) {
+    var result = [];
+    var d = _pass;
+    var projects = d.projects || [];
+    var cats = d.categories || [];
+    var standalone = d.standaloneTasks || [];
+    var groups = d.taskGroups || [];
+
+    function getCat(cid){ for(var i=0;i<cats.length;i++){if(cats[i].id===cid)return cats[i];} return null; }
+
+    projects.forEach(function(proj) {
+      if (!proj.stageTasks) return;
+      var stage = proj.stage;
+      var tasks = proj.stageTasks[stage] || [];
+      var cat = getCat(proj.catId);
+      tasks.forEach(function(t) {
+        if (t.resp === mid) {
+          result.push({ text: t.text, done: !!t.done, deadline: t.deadline||'', priority: !!t.priority,
+            projectName: proj.name, catColor: cat ? cat.color : 'rgba(255,255,255,0.2)' });
+        }
+      });
+    });
+    standalone.forEach(function(t) {
+      if (t.resp === mid) {
+        var grp = null;
+        for(var gi=0;gi<groups.length;gi++){if(groups[gi].id===t.groupId){grp=groups[gi];break;}}
+        result.push({ text: t.text, done: !!t.done, deadline: t.deadline||'', priority: !!t.priority,
+          projectName: grp ? grp.name : '', catColor: grp ? grp.color : 'rgba(255,255,255,0.18)' });
+      }
+    });
+    return result;
+  }
+
+  function _dlClass(dl) {
+    if (!dl) return '';
+    var today = new Date(); today.setHours(0,0,0,0);
+    var d = new Date(dl + 'T00:00:00');
+    var diff = Math.round((d - today) / 86400000);
+    if (diff < 0)  return 'overdue';
+    if (diff === 0) return 'today';
+    return 'ok';
+  }
+  function _dlLabel(dl) {
+    if (!dl) return '';
+    var today = new Date(); today.setHours(0,0,0,0);
+    var d = new Date(dl + 'T00:00:00');
+    var diff = Math.round((d - today) / 86400000);
+    if (diff < 0)  return 'Vencida';
+    if (diff === 0) return 'Hoy';
+    if (diff === 1) return 'Mañana';
+    var parts = dl.split('-');
+    return parts[2]+'/'+parts[1];
+  }
+
+  function openMemberProfile(m) {
+    _mpOpen = m.id;
+    var panel = document.getElementById('mpPanel');
+    var inner = document.getElementById('mpInner');
+    var np = m.name.trim().split(/\s+/);
+    var abbr = np[0][0].toUpperCase() + (np.length > 1 ? np[1][0].toUpperCase() : '');
+
+    var tasks = getMemberTasks(m.id);
+    var pending   = tasks.filter(function(t){ return !t.done; });
+    var completed = tasks.filter(function(t){ return t.done; });
+    var projects  = {};
+    tasks.forEach(function(t){ if(t.projectName) projects[t.projectName]=1; });
+    var projCount = Object.keys(projects).length;
+
+    inner.innerHTML = '';
+
+    // Close button row
+    var head = document.createElement('div'); head.className='mp-head';
+    var spacer = document.createElement('div');
+    var closeBtn = document.createElement('button'); closeBtn.className='mp-close'; closeBtn.textContent='×';
+    closeBtn.onclick = closeMemberProfile;
+    head.appendChild(spacer); head.appendChild(closeBtn);
+    inner.appendChild(head);
+
+    // Avatar + name
+    var prof = document.createElement('div'); prof.className='mp-profile';
+    var avEl = document.createElement('div'); avEl.className='mp-avatar'; avEl.style.background=m.color; avEl.textContent=abbr;
+    var nameEl = document.createElement('div'); nameEl.className='mp-name'; nameEl.textContent=m.name;
+    var badge = document.createElement('div'); badge.className='mp-initials-badge'; badge.textContent=m.id;
+    prof.appendChild(avEl); prof.appendChild(nameEl); prof.appendChild(badge);
+    inner.appendChild(prof);
+
+    // Stats
+    var stats = document.createElement('div'); stats.className='mp-stats';
+    [
+      {n: pending.length,   l: 'Pendientes',  c: pending.length > 0 ? '#E8A020' : null},
+      {n: completed.length, l: 'Completadas', c: completed.length > 0 ? '#27AE72' : null},
+      {n: projCount,        l: 'Proyectos',   c: null}
+    ].forEach(function(s) {
+      var st = document.createElement('div'); st.className='mp-stat';
+      var sn = document.createElement('div'); sn.className='mp-stat-n';
+      sn.textContent = s.n;
+      if (s.c) sn.style.color = s.c;
+      var sl = document.createElement('div'); sl.className='mp-stat-l'; sl.textContent=s.l;
+      st.appendChild(sn); st.appendChild(sl); stats.appendChild(st);
+    });
+    inner.appendChild(stats);
+
+    // Pending tasks
+    var sec = document.createElement('div'); sec.className='mp-section';
+    var secTitle = document.createElement('div'); secTitle.className='mp-sec-title';
+    secTitle.textContent = 'Tareas pendientes';
+    sec.appendChild(secTitle);
+    if (pending.length === 0) {
+      var emp = document.createElement('div'); emp.className='mp-empty'; emp.textContent='Sin tareas pendientes';
+      sec.appendChild(emp);
+    } else {
+      pending.forEach(function(t) {
+        var item = document.createElement('div'); item.className='mp-task-item';
+        var bar = document.createElement('div'); bar.className='mp-task-bar'; bar.style.background=t.catColor;
+        var body = document.createElement('div'); body.style.cssText='flex:1;min-width:0;';
+        var tname = document.createElement('div'); tname.className='mp-task-name'; tname.textContent=t.text;
+        body.appendChild(tname);
+        if (t.projectName) {
+          var proj = document.createElement('div'); proj.className='mp-task-proj'; proj.textContent=t.projectName;
+          body.appendChild(proj);
+        }
+        item.appendChild(bar); item.appendChild(body);
+        if (t.deadline) {
+          var dlEl = document.createElement('div');
+          dlEl.className='mp-task-dl '+_dlClass(t.deadline);
+          dlEl.textContent=_dlLabel(t.deadline);
+          item.appendChild(dlEl);
+        }
+        sec.appendChild(item);
+      });
+    }
+    inner.appendChild(sec);
+
+    // Completed tasks (collapsed summary)
+    if (completed.length > 0) {
+      var sec2 = document.createElement('div'); sec2.className='mp-section'; sec2.style.marginTop='10px';
+      var sec2Title = document.createElement('div'); sec2Title.className='mp-sec-title';
+      sec2Title.textContent = 'Completadas ('+completed.length+')';
+      sec2.appendChild(sec2Title);
+      completed.slice(0,4).forEach(function(t) {
+        var item = document.createElement('div'); item.className='mp-task-item'; item.style.opacity='0.45';
+        var bar = document.createElement('div'); bar.className='mp-task-bar'; bar.style.background=t.catColor;
+        var tname = document.createElement('div');
+        tname.className='mp-task-name'; tname.style.textDecoration='line-through'; tname.textContent=t.text;
+        item.appendChild(bar); item.appendChild(tname);
+        sec2.appendChild(item);
+      });
+      inner.appendChild(sec2);
+    }
+
+    // Go to Tareas button
+    var gotoBtn = document.createElement('button'); gotoBtn.className='mp-goto';
+    gotoBtn.textContent='Ver todas las tareas en Tareas →';
+    gotoBtn.onclick = function(){ location.href='tareas.html'; };
+    inner.appendChild(gotoBtn);
+
+    // Spacer at bottom
+    var bot = document.createElement('div'); bot.style.height='24px';
+    inner.appendChild(bot);
+
+    panel.classList.add('open');
+  }
+
+  function closeMemberProfile() {
+    _mpOpen = null;
+    document.getElementById('mpPanel').classList.remove('open');
+  }
+
+  // Close panel when clicking outside
+  document.addEventListener('click', function(e) {
+    if (!_mpOpen) return;
+    var panel = document.getElementById('mpPanel');
+    if (!panel.contains(e.target) && !document.getElementById('homeTeamList').contains(e.target)) {
+      closeMemberProfile();
+    }
+  });
 
   // ── Team modal ───────────────────────────────────────────
   window.hiCloseTeam = function() {
@@ -730,6 +951,12 @@ tick();setInterval(tick,1000);
     _pass = d;
     teamMembers = d.teamMembers || [];
     renderHomeTeam();
+    // Refresh profile panel if open
+    if (_mpOpen) {
+      var m = null;
+      for(var i=0;i<teamMembers.length;i++){if(teamMembers[i].id===_mpOpen){m=teamMembers[i];break;}}
+      if (m) openMemberProfile(m); else closeMemberProfile();
+    }
   });
 
   document.getElementById('homeManageTeamBtn').addEventListener('click', hiOpenTeam);
