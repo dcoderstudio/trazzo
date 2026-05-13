@@ -141,13 +141,27 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 .tk-det-foot{display:flex;gap:8px;justify-content:flex-end;}
 .tk-notes-dot{width:6px;height:6px;border-radius:50%;background:rgba(232,160,32,0.6);flex-shrink:0;}
 /* NUEVA TAREA — step selector */
-.nt-type-btn{background:rgba(255,255,255,0.04);border:0.5px solid rgba(255,255,255,0.1);border-radius:14px;padding:22px 14px;cursor:pointer;font-family:'Inter',sans-serif;text-align:center;display:flex;flex-direction:column;align-items:center;gap:7px;transition:all .18s;width:100%;}
+.nt-type-btn{background:rgba(255,255,255,0.04);border:0.5px solid rgba(255,255,255,0.1);border-radius:14px;padding:18px 10px;cursor:pointer;font-family:'Inter',sans-serif;text-align:center;display:flex;flex-direction:column;align-items:center;gap:6px;transition:all .18s;width:100%;}
 .nt-type-btn:hover{background:rgba(255,255,255,0.09);border-color:rgba(255,255,255,0.28);}
-.nt-type-icon{font-size:22px;line-height:1;}
-.nt-type-title{font-size:13px;font-weight:700;color:#fff;}
-.nt-type-sub{font-size:10px;color:rgba(255,255,255,0.35);line-height:1.3;}
+.nt-type-icon{font-size:20px;line-height:1;}
+.nt-type-title{font-size:12px;font-weight:700;color:#fff;}
+.nt-type-sub{font-size:9px;color:rgba(255,255,255,0.35);line-height:1.3;}
 .nt-back-btn{background:none;border:none;color:rgba(255,255,255,0.32);font-size:11px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;padding:0 0 4px;display:flex;align-items:center;gap:4px;transition:color .15s;}
 .nt-back-btn:hover{color:rgba(255,255,255,0.7);}
+/* GROUP SELECTOR */
+.grp-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:10px;border:0.5px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.03);cursor:pointer;transition:all .15s;margin-bottom:5px;}
+.grp-item:hover{background:rgba(255,255,255,0.07);border-color:rgba(255,255,255,0.2);}
+.grp-item.sel{border-color:rgba(255,255,255,0.42);background:rgba(255,255,255,0.09);}
+.grp-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.grp-iname{font-size:13px;font-weight:600;color:rgba(255,255,255,0.8);flex:1;}
+.grp-check{font-size:11px;color:rgba(255,255,255,0.55);opacity:0;flex-shrink:0;}
+.grp-item.sel .grp-check{opacity:1;}
+.grp-new-btn{width:100%;background:none;border:1px dashed rgba(255,255,255,0.14);border-radius:10px;color:rgba(255,255,255,0.32);font-size:12px;font-weight:600;padding:9px;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s;margin-top:2px;}
+.grp-new-btn:hover{border-color:rgba(255,255,255,0.3);color:rgba(255,255,255,0.65);}
+.grp-new-form{background:rgba(255,255,255,0.03);border:0.5px solid rgba(255,255,255,0.1);border-radius:12px;padding:12px;margin-top:6px;display:flex;flex-direction:column;gap:8px;}
+.grp-color-row{display:flex;gap:5px;flex-wrap:wrap;}
+.grp-color-sw{width:22px;height:22px;border-radius:6px;border:2.5px solid transparent;cursor:pointer;transition:border .12s;flex-shrink:0;}
+.grp-color-sw.sel{border-color:#fff!important;}
 /* TRIGGER BUTTONS para pickers en el modal */
 .tk-det-trigger{background:#1e1e1e;border:0.5px solid rgba(255,255,255,0.1);border-radius:10px;padding:9px 12px;font-size:12px;color:rgba(255,255,255,0.35);font-family:'Inter',sans-serif;cursor:pointer;width:100%;text-align:left;transition:border-color .15s,color .15s;display:flex;align-items:center;gap:7px;}
 .tk-det-trigger:hover{border-color:rgba(255,255,255,0.28);color:rgba(255,255,255,0.8);}
@@ -260,16 +274,21 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 
       <!-- Paso 1: elegir tipo -->
       <div id="ntStep1">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
           <button class="nt-type-btn" onclick="ntShowStep('standalone')">
             <span class="nt-type-icon">✏️</span>
             <span class="nt-type-title">Tarea libre</span>
-            <span class="nt-type-sub">Sin proyecto asociado</span>
+            <span class="nt-type-sub">Sin clasificar</span>
+          </button>
+          <button class="nt-type-btn" onclick="ntShowStep('group')">
+            <span class="nt-type-icon">🗂</span>
+            <span class="nt-type-title">Por grupo</span>
+            <span class="nt-type-sub">Categoría propia</span>
           </button>
           <button class="nt-type-btn" onclick="ntShowStep('project')">
             <span class="nt-type-icon">📁</span>
-            <span class="nt-type-title">De un proyecto</span>
-            <span class="nt-type-sub">Asociada a una ficha</span>
+            <span class="nt-type-title">De proyecto</span>
+            <span class="nt-type-sub">Ficha existente</span>
           </button>
         </div>
         <div class="t-foot" style="margin-top:8px;">
@@ -302,7 +321,36 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
         </div>
       </div>
 
-      <!-- Paso 2b: tarea de proyecto -->
+      <!-- Paso 2b: tarea de grupo -->
+      <div id="ntStepGroup" style="display:none;">
+        <button class="nt-back-btn" onclick="ntShowStep('choose')">← Regresar</button>
+        <div style="margin-bottom:14px;">
+          <div class="t-lbl">Grupo</div>
+          <div id="ntGroupList"></div>
+        </div>
+        <div style="margin-bottom:14px;">
+          <div class="t-lbl">¿Cuál es la tarea?</div>
+          <input class="t-inp" id="ntGText" type="text" placeholder="Descripción de la tarea…" onkeydown="if(event.key==='Enter')saveNewTask()">
+        </div>
+        <div class="t-grid2">
+          <div>
+            <div class="t-lbl">Responsable</div>
+            <input type="hidden" id="ntGResp">
+            <button type="button" class="tk-det-trigger" id="ntGRespBtn">👤 Sin asignar</button>
+          </div>
+          <div>
+            <div class="t-lbl">Fecha límite</div>
+            <input type="hidden" id="ntGDeadline">
+            <button type="button" class="tk-det-trigger" id="ntGDlBtn">📅 Sin fecha</button>
+          </div>
+        </div>
+        <div class="t-foot">
+          <button class="t-btn-c" onclick="closeNewTaskModal()">Cancelar</button>
+          <button class="t-btn-ok" onclick="saveNewTask()">Agregar</button>
+        </div>
+      </div>
+
+      <!-- Paso 2c: tarea de proyecto -->
       <div id="ntStepProject" style="display:none;">
         <button class="nt-back-btn" onclick="ntShowStep('choose')">← Regresar</button>
         <div style="margin-bottom:14px;">
@@ -410,8 +458,11 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
   var nextId = 14, catIdCounter = 20;
   var DEFAULT_TEAM = [{id:'AR',name:'Ana Ramírez',color:'#1A6FD4'},{id:'LM',name:'Luis Mora',color:'#7B6FD0'},{id:'SV',name:'Sofía Vega',color:'#D4537E'},{id:'RG',name:'Rodrigo Gil',color:'#E8A020'}];
   var teamMembers = DEFAULT_TEAM.slice();
+  var taskGroups = [];
   var TEAM_COLORS_PALETTE = ['#1A6FD4','#7B6FD0','#D4537E','#E8A020','#27AE72','#D85A30','#C0436E','#B8760F','#555450','#1D9E75'];
   var _tmSelColor = TEAM_COLORS_PALETTE[0];
+  var _selectedGroupId = null;
+  var _ntNewGroupColor = TEAM_COLORS_PALETTE[0];
   var COL_PALETTES = [
     {bg:'rgba(71,130,255,0.09)',br:'rgba(71,130,255,0.2)',tc:'#7ab3ff',dc:'#4782ff'},
     {bg:'rgba(232,160,32,0.09)',br:'rgba(232,160,32,0.22)',tc:'#f0c050',dc:'#E8A020'},
@@ -439,7 +490,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 
   function saveData() {
     _ignoreSnap = true;
-    DOC.set({projects:projects, categories:categories, nextId:nextId, catIdCounter:catIdCounter, standaloneTasks:standaloneTasks, taskColumns:taskColumns, teamMembers:teamMembers})
+    DOC.set({projects:projects, categories:categories, nextId:nextId, catIdCounter:catIdCounter, standaloneTasks:standaloneTasks, taskColumns:taskColumns, teamMembers:teamMembers, taskGroups:taskGroups})
       .catch(function(e){ console.warn('Error al guardar:', e); });
   }
 
@@ -479,16 +530,20 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
         });
       });
     });
-    // Tareas sin proyecto
+    // Tareas sin proyecto / de grupo
     standaloneTasks.forEach(function(task) {
+      var grp = null;
+      if (task.groupId) { for (var gi=0;gi<taskGroups.length;gi++){if(taskGroups[gi].id===task.groupId){grp=taskGroups[gi];break;}} }
       result.push({
         id: task.id, text: task.text, done: !!task.done,
         colStatus: task.colStatus || null,
         sortOrder: task.sortOrder != null ? task.sortOrder : task.id,
         deadline: task.deadline || '', resp: task.resp || '',
         priority: !!task.priority, notes: task.notes || '',
-        projectId: 'standalone', projectName: '— Sin proyecto', stage: '',
-        catColor: 'rgba(255,255,255,0.2)'
+        projectId: 'standalone',
+        projectName: grp ? grp.name : '',
+        stage: '',
+        catColor: grp ? grp.color : 'rgba(255,255,255,0.18)'
       });
     });
     return result;
@@ -547,7 +602,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     bar.style.background = task.catColor;
     card.appendChild(bar);
 
-    if (task.projectId !== 'standalone') {
+    if (task.projectName) {
       var proj = document.createElement('div');
       proj.className = 'tk-card-proj';
       proj.style.color = task.catColor;
@@ -1347,16 +1402,65 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
   // ── NEW TASK MODAL ──────────────────────────────────────
   var _ntMode = 'choose'; // 'choose' | 'standalone' | 'project'
 
+  function _renderGroupList() {
+    var container = document.getElementById('ntGroupList'); container.innerHTML='';
+    taskGroups.forEach(function(grp) {
+      var item=document.createElement('div'); item.className='grp-item'+(_selectedGroupId===grp.id?' sel':'');
+      item.innerHTML='<div class="grp-dot" style="background:'+grp.color+'"></div><span class="grp-iname">'+grp.name.replace(/</g,'&lt;')+'</span><span class="grp-check">✓</span>';
+      item.onclick=(function(gid){return function(){_selectedGroupId=gid;_renderGroupList();};})(grp.id);
+      container.appendChild(item);
+    });
+    var newBtn=document.createElement('button'); newBtn.type='button'; newBtn.className='grp-new-btn'; newBtn.textContent='+ Nuevo grupo';
+    newBtn.onclick=function(){newBtn.style.display='none';_showNewGroupForm(container);};
+    container.appendChild(newBtn);
+    if (!taskGroups.length){newBtn.style.display='none';_showNewGroupForm(container);}
+  }
+  function _showNewGroupForm(container) {
+    var form=document.createElement('div'); form.className='grp-new-form';
+    var nameInp=document.createElement('input'); nameInp.className='t-inp'; nameInp.placeholder='Nombre del grupo (ej. Marketing, Admin…)'; nameInp.style.fontSize='13px';
+    form.appendChild(nameInp);
+    var colorRow=document.createElement('div'); colorRow.className='grp-color-row';
+    TEAM_COLORS_PALETTE.forEach(function(c){
+      var sw=document.createElement('button'); sw.type='button';
+      sw.className='grp-color-sw'+(c===_ntNewGroupColor?' sel':''); sw.style.background=c;
+      sw.onclick=function(e){e.preventDefault();_ntNewGroupColor=c;colorRow.querySelectorAll('.grp-color-sw').forEach(function(x){x.classList.remove('sel');});sw.classList.add('sel');};
+      colorRow.appendChild(sw);
+    });
+    form.appendChild(colorRow);
+    var row=document.createElement('div'); row.style.cssText='display:flex;gap:8px;align-items:center;';
+    var createBtn=document.createElement('button'); createBtn.type='button'; createBtn.className='t-btn-ok'; createBtn.style.cssText='padding:7px 14px;font-size:11px;flex-shrink:0;';
+    createBtn.textContent='Crear grupo';
+    createBtn.onclick=function(){
+      var name=nameInp.value.trim(); if(!name){nameInp.focus();return;}
+      var newGrp={id:'grp_'+Date.now(),name:name,color:_ntNewGroupColor};
+      taskGroups.push(newGrp); _selectedGroupId=newGrp.id;
+      saveData(); _renderGroupList();
+    };
+    nameInp.onkeydown=function(e){if(e.key==='Enter'){e.preventDefault();createBtn.click();}};
+    row.appendChild(nameInp); row.appendChild(createBtn); form.appendChild(row);
+    container.appendChild(form);
+    setTimeout(function(){nameInp.focus();},50);
+  }
+
   window.ntShowStep = function(step) {
     _ntMode = step === 'choose' ? 'choose' : step;
     document.getElementById('ntStep1').style.display         = (step === 'choose') ? '' : 'none';
     document.getElementById('ntStepStandalone').style.display= (step === 'standalone') ? '' : 'none';
+    document.getElementById('ntStepGroup').style.display     = (step === 'group') ? '' : 'none';
     document.getElementById('ntStepProject').style.display   = (step === 'project') ? '' : 'none';
     if (step === 'standalone') {
       document.getElementById('ntSText').value = '';
       document.getElementById('ntSResp').value = ''; _updRespBtn(document.getElementById('ntSRespBtn'), '');
       document.getElementById('ntSDeadline').value = ''; _updDlBtn(document.getElementById('ntSDlBtn'), '');
       setTimeout(function(){ document.getElementById('ntSText').focus(); }, 80);
+    }
+    if (step === 'group') {
+      _selectedGroupId = taskGroups.length ? taskGroups[0].id : null;
+      _renderGroupList();
+      document.getElementById('ntGText').value = '';
+      document.getElementById('ntGResp').value = ''; _updRespBtn(document.getElementById('ntGRespBtn'), '');
+      document.getElementById('ntGDeadline').value = ''; _updDlBtn(document.getElementById('ntGDlBtn'), '');
+      setTimeout(function(){ document.getElementById('ntGText').focus(); }, 80);
     }
     if (step === 'project') {
       var sel = document.getElementById('ntProject');
@@ -1398,7 +1502,19 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
   };
 
   window.saveNewTask = function() {
-    if (_ntMode === 'standalone') {
+    if (_ntMode === 'group') {
+      var text=document.getElementById('ntGText').value.trim();
+      if (!text){document.getElementById('ntGText').focus();return;}
+      if (!_selectedGroupId&&taskGroups.length){_selectedGroupId=taskGroups[0].id;}
+      standaloneTasks.push({
+        id:Date.now(), text:text, done:false,
+        deadline:document.getElementById('ntGDeadline').value,
+        resp:document.getElementById('ntGResp').value,
+        groupId:_selectedGroupId||null,
+        colStatus:null, sortOrder:null, priority:false, notes:''
+      });
+      saveData(); closeNewTaskModal(); renderBoard();
+    } else if (_ntMode === 'standalone') {
       var text = document.getElementById('ntSText').value.trim();
       if (!text) { document.getElementById('ntSText').focus(); return; }
       standaloneTasks.push({
@@ -1435,6 +1551,9 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     // project
     document.getElementById('ntRespBtn').onclick=function(e){e.stopPropagation();tkOpenPersonPicker(this,document.getElementById('ntResp').value,function(v){document.getElementById('ntResp').value=v;_updRespBtn(document.getElementById('ntRespBtn'),v);});};
     document.getElementById('ntDlBtn').onclick=function(e){e.stopPropagation();tkOpenDatePicker(this,document.getElementById('ntDeadline').value,function(v){document.getElementById('ntDeadline').value=v;_updDlBtn(document.getElementById('ntDlBtn'),v);});};
+    // group
+    document.getElementById('ntGRespBtn').onclick=function(e){e.stopPropagation();tkOpenPersonPicker(this,document.getElementById('ntGResp').value,function(v){document.getElementById('ntGResp').value=v;_updRespBtn(document.getElementById('ntGRespBtn'),v);});};
+    document.getElementById('ntGDlBtn').onclick=function(e){e.stopPropagation();tkOpenDatePicker(this,document.getElementById('ntGDeadline').value,function(v){document.getElementById('ntGDeadline').value=v;_updDlBtn(document.getElementById('ntGDlBtn'),v);});};
   })();
 
   // Init — onSnapshot para sincronización en tiempo real con proyectos.html
@@ -1449,6 +1568,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
       if (d.standaloneTasks) standaloneTasks = d.standaloneTasks;
       if (d.taskColumns && d.taskColumns.length) taskColumns = d.taskColumns;
       if (d.teamMembers && d.teamMembers.length) teamMembers = d.teamMembers;
+      if (d.taskGroups) taskGroups = d.taskGroups;
     }
     if (!taskColumns) taskColumns = JSON.parse(JSON.stringify(DEFAULT_TASK_COLS));
     // Sync AV_COLORS/AV_NAMES from teamMembers

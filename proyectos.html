@@ -531,12 +531,13 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
   var DOC = db.collection('workspace').doc('proyectos');
 
   var _ignoreSnap = false;
-  var standaloneTasks = [], taskColumns = null, _wsTeamMembers = null;
+  var standaloneTasks = [], taskColumns = null, _wsTeamMembers = null, _wsTaskGroups = null;
   function saveData() {
     _ignoreSnap = true;
     var payload = {projects:projects, categories:categories, nextId:nextId, catIdCounter:catIdCounter, standaloneTasks:standaloneTasks};
     if (taskColumns) payload.taskColumns = taskColumns;
     if (_wsTeamMembers) payload.teamMembers = _wsTeamMembers;
+    if (_wsTaskGroups) payload.taskGroups = _wsTaskGroups;
     DOC.set(payload)
       .catch(function(e){ console.warn('Error al guardar:', e); });
   }
@@ -2338,6 +2339,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
       if (d.standaloneTasks) standaloneTasks = d.standaloneTasks;
       if (d.taskColumns) taskColumns = d.taskColumns;
       if (d.teamMembers) { _wsTeamMembers = d.teamMembers; }
+      if (d.taskGroups) { _wsTaskGroups = d.taskGroups; }
     }
     // Migración: quitar Negociación y asegurar Entregado al final
     var migrated = false;
