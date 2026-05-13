@@ -461,11 +461,13 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     bar.style.background = task.catColor;
     card.appendChild(bar);
 
-    var proj = document.createElement('div');
-    proj.className = 'tk-card-proj';
-    proj.style.color = task.catColor;
-    proj.textContent = task.projectName;
-    card.appendChild(proj);
+    if (task.projectId !== 'standalone') {
+      var proj = document.createElement('div');
+      proj.className = 'tk-card-proj';
+      proj.style.color = task.catColor;
+      proj.textContent = task.projectName;
+      card.appendChild(proj);
+    }
 
     var txt = document.createElement('div');
     txt.className = 'tk-card-text';
