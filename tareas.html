@@ -108,7 +108,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 .col-ed-panel{position:fixed;z-index:9999;background:#161616;border:0.5px solid rgba(255,255,255,0.14);border-radius:18px;padding:16px;box-shadow:0 20px 70px rgba(0,0,0,.92);width:230px;font-family:'Inter',sans-serif;display:flex;flex-direction:column;gap:12px;}
 .col-ed-inp{background:#1e1e1e;border:0.5px solid rgba(255,255,255,0.12);border-radius:10px;padding:9px 12px;font-size:13px;font-weight:600;color:#fff;font-family:'Inter',sans-serif;outline:none;width:100%;transition:border-color .15s;}
 .col-ed-inp:focus{border-color:rgba(255,255,255,0.32);}
-.col-ed-swatches{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;}
+.col-ed-swatches{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;}
 .col-ed-sw{width:100%;aspect-ratio:1;border-radius:9px;border:2px solid transparent;cursor:pointer;transition:all .15s;}
 .col-ed-sw:hover{transform:scale(1.08);}
 .col-ed-sw.sel{border-color:#fff!important;box-shadow:0 0 0 1px rgba(255,255,255,0.4);}
@@ -459,18 +459,50 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
   var DEFAULT_TEAM = [{id:'AR',name:'Ana Ramírez',color:'#1A6FD4'},{id:'LM',name:'Luis Mora',color:'#7B6FD0'},{id:'SV',name:'Sofía Vega',color:'#D4537E'},{id:'RG',name:'Rodrigo Gil',color:'#E8A020'}];
   var teamMembers = DEFAULT_TEAM.slice();
   var taskGroups = [];
-  var TEAM_COLORS_PALETTE = ['#1A6FD4','#7B6FD0','#D4537E','#E8A020','#27AE72','#D85A30','#C0436E','#B8760F','#555450','#1D9E75'];
+  var TEAM_COLORS_PALETTE = [
+    // Blues / Cyans
+    '#1A6FD4','#1D50B0','#5AB4E8','#2CC5D2','#00BFA5',
+    // Greens
+    '#27AE72','#49BA78','#A5D63A','#5DB832',
+    // Reds / Oranges / Yellows
+    '#FF4642','#E24B4A','#FF8134','#F5A623','#FFC700',
+    // Purples / Pinks / Rose
+    '#8B5CF6','#7B3FF0','#5B5FD0','#D4537E','#C0436E','#A32434',
+    // Neutrals
+    '#6B7280','#374151','#B8760F','#8B6914'
+  ];
   var _tmSelColor = TEAM_COLORS_PALETTE[0];
   var _selectedGroupId = null;
   var _ntNewGroupColor = TEAM_COLORS_PALETTE[0];
   var COL_PALETTES = [
+    // Row 1 — Blues
     {bg:'rgba(71,130,255,0.09)',br:'rgba(71,130,255,0.2)',tc:'#7ab3ff',dc:'#4782ff'},
-    {bg:'rgba(232,160,32,0.09)',br:'rgba(232,160,32,0.22)',tc:'#f0c050',dc:'#E8A020'},
+    {bg:'rgba(90,180,232,0.09)',br:'rgba(90,180,232,0.2)',tc:'#7ac8f0',dc:'#5AB4E8'},
+    {bg:'rgba(29,80,176,0.09)',br:'rgba(29,80,176,0.2)',tc:'#5588e0',dc:'#1D50B0'},
+    {bg:'rgba(44,197,210,0.09)',br:'rgba(44,197,210,0.2)',tc:'#40dde8',dc:'#2CC5D2'},
+    {bg:'rgba(0,191,165,0.09)',br:'rgba(0,191,165,0.2)',tc:'#00d8be',dc:'#00BFA5'},
+    // Row 2 — Greens
     {bg:'rgba(39,174,114,0.09)',br:'rgba(39,174,114,0.22)',tc:'#3dcf8a',dc:'#27AE72'},
+    {bg:'rgba(73,186,120,0.09)',br:'rgba(73,186,120,0.2)',tc:'#5dcc8a',dc:'#49BA78'},
+    {bg:'rgba(165,214,58,0.09)',br:'rgba(165,214,58,0.2)',tc:'#c8e84a',dc:'#A5D63A'},
+    {bg:'rgba(93,184,50,0.09)',br:'rgba(93,184,50,0.2)',tc:'#88d850',dc:'#5DB832'},
+    // Row 3 — Reds / Oranges / Yellows
+    {bg:'rgba(255,70,66,0.09)',br:'rgba(255,70,66,0.22)',tc:'#f07272',dc:'#FF4642'},
     {bg:'rgba(226,75,74,0.09)',br:'rgba(226,75,74,0.22)',tc:'#f07070',dc:'#E24B4A'},
+    {bg:'rgba(255,129,52,0.09)',br:'rgba(255,129,52,0.22)',tc:'#f09868',dc:'#FF8134'},
+    {bg:'rgba(245,166,35,0.09)',br:'rgba(245,166,35,0.22)',tc:'#f0c050',dc:'#F5A623'},
+    {bg:'rgba(232,160,32,0.09)',br:'rgba(232,160,32,0.22)',tc:'#f0c850',dc:'#E8A020'},
+    {bg:'rgba(255,199,0,0.09)',br:'rgba(255,199,0,0.22)',tc:'#f5d84a',dc:'#FFC700'},
+    // Row 4 — Purples / Pinks / Rose
     {bg:'rgba(139,92,246,0.09)',br:'rgba(139,92,246,0.22)',tc:'#b09af7',dc:'#8b5cf6'},
+    {bg:'rgba(123,63,240,0.09)',br:'rgba(123,63,240,0.22)',tc:'#a070f8',dc:'#7B3FF0'},
     {bg:'rgba(212,83,126,0.09)',br:'rgba(212,83,126,0.22)',tc:'#f075a0',dc:'#D4537E'},
+    {bg:'rgba(192,67,110,0.09)',br:'rgba(192,67,110,0.22)',tc:'#e06888',dc:'#C0436E'},
+    {bg:'rgba(163,36,52,0.09)',br:'rgba(163,36,52,0.22)',tc:'#d45060',dc:'#A32434'},
+    // Row 5 — Neutrals / Earthy
     {bg:'rgba(216,90,48,0.09)',br:'rgba(216,90,48,0.22)',tc:'#f09060',dc:'#D85A30'},
+    {bg:'rgba(184,118,15,0.09)',br:'rgba(184,118,15,0.22)',tc:'#d0a040',dc:'#B8760F'},
+    {bg:'rgba(107,114,128,0.09)',br:'rgba(107,114,128,0.2)',tc:'#9ca3af',dc:'#6B7280'},
     {bg:'rgba(255,255,255,0.04)',br:'rgba(255,255,255,0.1)',tc:'rgba(255,255,255,0.55)',dc:'rgba(255,255,255,0.3)'}
   ];
   var DEFAULT_TASK_COLS = [
