@@ -22,7 +22,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 .person-pill-av{width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:700;color:#fff;flex-shrink:0;}
 .count-pill{font-size:11px;color:rgba(255,255,255,0.22);background:rgba(255,255,255,0.05);padding:4px 10px;border-radius:20px;white-space:nowrap;margin-left:auto;flex-shrink:0;}
 /* KANBAN */
-.board-wrap{display:flex;gap:14px;padding:20px 28px 24px;height:calc(100vh - 52px - 48px);overflow-x:auto;}
+.board-wrap{display:flex;gap:14px;padding:20px 28px 24px;height:calc(100vh - 52px - 48px);overflow-x:auto;user-select:none;-webkit-user-select:none;}
 .board-wrap::-webkit-scrollbar{height:4px;}
 .board-wrap::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:2px;}
 .tk-col{flex:1;min-width:300px;max-width:420px;display:flex;flex-direction:column;gap:0;border-radius:18px;padding:14px 12px 12px;}
@@ -875,6 +875,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 
   function startColDrag(e, colId, colEl) {
     if (e.button!==0) return;
+    document.body.style.userSelect = 'none';
     _colDrag = {colId:colId, colEl:colEl, startX:e.clientX, startY:e.clientY, started:false, ghost:null, ox:0, oy:0, insertIdx:-1};
     document.addEventListener('pointermove', _onColDragMove, {passive:false});
     document.addEventListener('pointerup', _onColDragEnd);
@@ -927,6 +928,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     document.removeEventListener('pointermove',_onColDragMove);
     document.removeEventListener('pointerup',_onColDragEnd);
     document.removeEventListener('pointercancel',_onColDragEnd);
+    document.body.style.userSelect = '';
     if (!_colDrag.started) { _colDrag=null; return; }
     if (_colDrag.ghost&&_colDrag.ghost.parentNode) _colDrag.ghost.parentNode.removeChild(_colDrag.ghost);
     if (_colInsertLine&&_colInsertLine.parentNode) _colInsertLine.parentNode.removeChild(_colInsertLine);
@@ -1194,6 +1196,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
   function startCardDrag(e, task, card) {
     if (e.button !== 0) return;
     // NO preventDefault aquí — permite que los clicks funcionen normalmente
+    document.body.style.userSelect = 'none';
     _drag = {
       task: task, card: card, ghost: null,
       startX: e.clientX, startY: e.clientY,
@@ -1258,6 +1261,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     document.removeEventListener('pointerup',   _onDragEnd);
     document.removeEventListener('pointercancel', _onDragEnd);
 
+    document.body.style.userSelect = '';
     if (!_drag.started) { _drag = null; return; } // fue un click, no arrastre
 
     if (_drag.ghost && _drag.ghost.parentNode) _drag.ghost.parentNode.removeChild(_drag.ghost);
