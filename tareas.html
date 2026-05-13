@@ -176,6 +176,25 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 .tkdp-day.sel{background:#fff!important;color:#0c0c0c!important;font-weight:700;}
 .tkdp-clear{width:100%;margin-top:10px;padding:7px;background:none;border:0.5px solid rgba(255,255,255,0.08);border-radius:10px;color:rgba(255,255,255,0.3);font-size:11px;font-family:'Inter',sans-serif;cursor:pointer;transition:all .15s;}
 .tkdp-clear:hover{border-color:rgba(255,255,255,0.22);color:rgba(255,255,255,0.7);}
+/* COLUMN HEADER ACTION BUTTONS */
+.col-hdr-add{background:none;border:0.5px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.35);font-size:14px;font-weight:300;width:22px;height:22px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;transition:all .15s;flex-shrink:0;margin-left:4px;font-family:'Inter',sans-serif;}
+.col-hdr-add:hover{background:rgba(255,255,255,0.1);border-color:rgba(255,255,255,0.35);color:#fff;}
+.col-hdr-clear{background:none;border:0.5px solid rgba(226,75,74,0.2);color:rgba(226,75,74,0.45);font-size:10px;font-weight:600;padding:2px 8px;border-radius:8px;cursor:pointer;transition:all .15s;flex-shrink:0;margin-left:4px;font-family:'Inter',sans-serif;white-space:nowrap;}
+.col-hdr-clear:hover{background:rgba(226,75,74,0.1);border-color:rgba(226,75,74,0.45);color:#E24B4A;}
+/* MANAGE TEAM BUTTON */
+.manage-team-btn{background:none;border:0.5px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.3);font-size:11px;font-weight:600;padding:4px 9px;border-radius:20px;cursor:pointer;font-family:'Inter',sans-serif;white-space:nowrap;transition:all .15s;display:flex;align-items:center;gap:5px;}
+.manage-team-btn:hover{border-color:rgba(255,255,255,0.28);color:rgba(255,255,255,0.7);}
+/* TEAM MODAL MEMBER ROW */
+.tm-member-row{display:flex;align-items:center;gap:10px;padding:8px 2px;border-bottom:0.5px solid rgba(255,255,255,0.06);}
+.tm-member-row:last-child{border-bottom:none;}
+.tm-av{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff;flex-shrink:0;}
+.tm-name{flex:1;font-size:12px;font-weight:500;color:rgba(255,255,255,0.8);}
+.tm-del-btn{background:none;border:none;color:rgba(255,255,255,0.2);font-size:16px;cursor:pointer;padding:2px 6px;border-radius:6px;transition:all .15s;line-height:1;}
+.tm-del-btn:hover{background:rgba(226,75,74,0.1);color:#E24B4A;}
+/* CONFIRM MODAL */
+.conf-msg{font-size:12px;color:rgba(255,255,255,0.5);line-height:1.65;}
+.btn-danger{background:#E24B4A;border:none;color:#fff;font-size:12px;font-weight:700;padding:8px 16px;border-radius:10px;cursor:pointer;font-family:'Inter',sans-serif;transition:background .15s;}
+.btn-danger:hover{background:#c73838;}
 </style>
 </head>
 <body>
@@ -196,13 +215,42 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 
 <div style="display:flex;flex-direction:column;height:calc(100vh - 52px);">
   <div class="subbar">
-    <button class="person-pill active" id="ppAll"><span style="font-size:11px;width:18px;height:18px;display:flex;align-items:center;justify-content:center;">👥</span>Todos</button>
-    <button class="person-pill" id="ppAR"><span class="person-pill-av" style="background:#1A6FD4;">AR</span>Ana R.</button>
-    <button class="person-pill" id="ppLM"><span class="person-pill-av" style="background:#7B6FD0;">LM</span>Luis M.</button>
-    <button class="person-pill" id="ppSV"><span class="person-pill-av" style="background:#D4537E;">SV</span>Sofía V.</button>
-    <button class="person-pill" id="ppRG"><span class="person-pill-av" style="background:#E8A020;">RG</span>Rodrigo G.</button>
-    <span class="count-pill" id="countPill">— tareas</span>
+    <div id="personPillsWrap" style="display:flex;align-items:center;gap:6px;flex:1;overflow:hidden;min-width:0;"></div>
+    <span class="count-pill" id="countPill" style="flex-shrink:0;">— tareas</span>
     <button class="new-task-btn" onclick="openNewTaskModal()">+ Nueva tarea</button>
+  </div>
+
+  <!-- Team management modal -->
+  <div class="t-overlay" id="teamOverlay" onclick="if(event.target===this)closeTeamModal()">
+    <div class="t-modal">
+      <div class="t-modal-title">Gestionar equipo</div>
+      <div id="tmMemberList"></div>
+      <div style="margin-top:16px;padding-top:14px;border-top:0.5px solid rgba(255,255,255,0.07);">
+        <div class="t-lbl">Agregar persona</div>
+        <div style="display:grid;grid-template-columns:80px 1fr;gap:8px;margin-bottom:10px;">
+          <input class="t-inp" id="tmInitials" placeholder="AB" maxlength="2" style="text-transform:uppercase;font-weight:700;text-align:center;">
+          <input class="t-inp" id="tmName" placeholder="Nombre completo">
+        </div>
+        <div class="t-lbl" style="margin-bottom:6px;">Color</div>
+        <div id="tmColorRow" style="display:flex;gap:6px;flex-wrap:wrap;"></div>
+      </div>
+      <div class="t-foot">
+        <button class="t-btn-c" onclick="closeTeamModal()">Cerrar</button>
+        <button class="t-btn-ok" onclick="addTeamMember()">Agregar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Confirm modal -->
+  <div class="t-overlay" id="confOverlay" onclick="if(event.target===this)closeConf()">
+    <div class="t-modal" style="max-width:380px;">
+      <div class="t-modal-title" id="confTitle"></div>
+      <div class="conf-msg" id="confMsg"></div>
+      <div class="t-foot">
+        <button class="t-btn-c" onclick="closeConf()">Cancelar</button>
+        <button class="btn-danger" id="confOkBtn">Confirmar</button>
+      </div>
+    </div>
   </div>
 
   <!-- New task modal -->
@@ -360,6 +408,10 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 
   var projects = [], categories = [], standaloneTasks = [];
   var nextId = 14, catIdCounter = 20;
+  var DEFAULT_TEAM = [{id:'AR',name:'Ana Ramírez',color:'#1A6FD4'},{id:'LM',name:'Luis Mora',color:'#7B6FD0'},{id:'SV',name:'Sofía Vega',color:'#D4537E'},{id:'RG',name:'Rodrigo Gil',color:'#E8A020'}];
+  var teamMembers = DEFAULT_TEAM.slice();
+  var TEAM_COLORS_PALETTE = ['#1A6FD4','#7B6FD0','#D4537E','#E8A020','#27AE72','#D85A30','#C0436E','#B8760F','#555450','#1D9E75'];
+  var _tmSelColor = TEAM_COLORS_PALETTE[0];
   var COL_PALETTES = [
     {bg:'rgba(71,130,255,0.09)',br:'rgba(71,130,255,0.2)',tc:'#7ab3ff',dc:'#4782ff'},
     {bg:'rgba(232,160,32,0.09)',br:'rgba(232,160,32,0.22)',tc:'#f0c050',dc:'#E8A020'},
@@ -387,7 +439,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 
   function saveData() {
     _ignoreSnap = true;
-    DOC.set({projects:projects, categories:categories, nextId:nextId, catIdCounter:catIdCounter, standaloneTasks:standaloneTasks, taskColumns:taskColumns})
+    DOC.set({projects:projects, categories:categories, nextId:nextId, catIdCounter:catIdCounter, standaloneTasks:standaloneTasks, taskColumns:taskColumns, teamMembers:teamMembers})
       .catch(function(e){ console.warn('Error al guardar:', e); });
   }
 
@@ -573,6 +625,25 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     var editBtn = document.createElement('button'); editBtn.className='col-edit-btn'; editBtn.textContent='⋯'; editBtn.title='Editar columna';
     editBtn.onclick=(function(cid,btn){ return function(e){ e.stopPropagation(); openColEditor(cid,btn); }; })(col.id, editBtn);
     hdr.appendChild(dot); hdr.appendChild(ttl); hdr.appendChild(cnt); hdr.appendChild(editBtn);
+    if (!col.isDone) {
+      var addHdrBtn = document.createElement('button'); addHdrBtn.className='col-hdr-add'; addHdrBtn.textContent='+'; addHdrBtn.title='Nueva tarea';
+      addHdrBtn.onclick=function(e){ e.stopPropagation(); openNewTaskModal(); };
+      hdr.appendChild(addHdrBtn);
+    } else {
+      var clearBtn = document.createElement('button'); clearBtn.className='col-hdr-clear'; clearBtn.textContent='Vaciar';
+      clearBtn.onclick=(function(cid){ return function(e){ e.stopPropagation();
+        var doneCol=getColById(cid);
+        var count=0;
+        projects.forEach(function(p){ if(p.stageTasks) Object.keys(p.stageTasks).forEach(function(s){ if(p.stageTasks[s]) count+=p.stageTasks[s].filter(function(t){return t.done||(t.colStatus===cid);}).length; }); });
+        count+=standaloneTasks.filter(function(t){return t.done||(t.colStatus===cid);}).length;
+        openConf('Vaciar '+'"'+(doneCol?doneCol.label:'terminadas')+'"','Se eliminarán '+count+' tarea'+(count!==1?'s':'')+' completadas de forma permanente.',function(){
+          projects.forEach(function(p){ if(p.stageTasks) Object.keys(p.stageTasks).forEach(function(s){ if(p.stageTasks[s]) p.stageTasks[s]=p.stageTasks[s].filter(function(t){return !(t.done||(t.colStatus===cid));}); }); });
+          standaloneTasks=standaloneTasks.filter(function(t){return !(t.done||(t.colStatus===cid));});
+          saveData(); closeConf(); renderBoard();
+        });
+      };})(col.id);
+      hdr.appendChild(clearBtn);
+    }
     hdr.addEventListener('pointerdown', function(e){
       if (e.button!==0) return;
       if (e.target.closest('.col-edit-btn')) return;
@@ -1186,16 +1257,97 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     }
   }
 
-  // Person filter
-  var personBtns = {'':document.getElementById('ppAll'),'AR':document.getElementById('ppAR'),'LM':document.getElementById('ppLM'),'SV':document.getElementById('ppSV'),'RG':document.getElementById('ppRG')};
-  Object.keys(personBtns).forEach(function(id){
-    personBtns[id].onclick = function(){
-      filterPerson = id;
-      Object.keys(personBtns).forEach(function(k){ personBtns[k].classList.remove('active'); });
-      personBtns[id].classList.add('active');
-      renderBoard();
-    };
-  });
+  // ── PERSON FILTER PILLS (dinámicas) ─────────────────────
+  function renderPersonPills() {
+    var wrap = document.getElementById('personPillsWrap');
+    wrap.innerHTML = '';
+    // Todos
+    var allBtn = document.createElement('button');
+    allBtn.className = 'person-pill' + (filterPerson==='' ? ' active' : '');
+    allBtn.innerHTML = '<span style="font-size:11px;width:18px;height:18px;display:flex;align-items:center;justify-content:center;">👥</span>Todos';
+    allBtn.onclick = function(){ filterPerson=''; renderPersonPills(); renderBoard(); };
+    wrap.appendChild(allBtn);
+    // Per member
+    teamMembers.forEach(function(m) {
+      var btn = document.createElement('button');
+      btn.className = 'person-pill' + (filterPerson===m.id ? ' active' : '');
+      var av = document.createElement('span'); av.className='person-pill-av'; av.style.background=m.color; av.textContent=m.id;
+      var nm = document.createTextNode(m.name.split(' ')[0]+' '+m.name.split(' ')[1][0]+'.');
+      btn.appendChild(av); btn.appendChild(nm);
+      btn.onclick=(function(mid){ return function(){ filterPerson=mid; renderPersonPills(); renderBoard(); }; })(m.id);
+      wrap.appendChild(btn);
+    });
+    // Manage button
+    var mgBtn = document.createElement('button');
+    mgBtn.className = 'manage-team-btn';
+    mgBtn.innerHTML = '⊕ Equipo';
+    mgBtn.onclick = openTeamModal;
+    wrap.appendChild(mgBtn);
+  }
+
+  // ── TEAM MANAGEMENT ──────────────────────────────────────
+  function openTeamModal() {
+    _buildTmColorRow();
+    _renderTmList();
+    document.getElementById('tmInitials').value = '';
+    document.getElementById('tmName').value = '';
+    document.getElementById('teamOverlay').classList.add('open');
+    setTimeout(function(){ document.getElementById('tmInitials').focus(); }, 100);
+  }
+  window.closeTeamModal = function(){ document.getElementById('teamOverlay').classList.remove('open'); };
+
+  function _buildTmColorRow() {
+    var row = document.getElementById('tmColorRow'); row.innerHTML = '';
+    TEAM_COLORS_PALETTE.forEach(function(c) {
+      var sw = document.createElement('button');
+      sw.style.cssText = 'width:24px;height:24px;border-radius:6px;background:'+c+';border:2px solid '+(c===_tmSelColor?'#fff':'transparent')+';cursor:pointer;transition:border .12s;';
+      sw.onclick=function(e){ e.preventDefault(); _tmSelColor=c; _buildTmColorRow(); };
+      row.appendChild(sw);
+    });
+  }
+  function _renderTmList() {
+    var list = document.getElementById('tmMemberList'); list.innerHTML = '';
+    teamMembers.forEach(function(m) {
+      var row = document.createElement('div'); row.className='tm-member-row';
+      var av = document.createElement('div'); av.className='tm-av'; av.style.background=m.color; av.textContent=m.id;
+      var nm = document.createElement('div'); nm.className='tm-name'; nm.textContent=m.name;
+      var del = document.createElement('button'); del.className='tm-del-btn'; del.textContent='×'; del.title='Eliminar';
+      del.onclick=(function(mid,mname){return function(){
+        openConf('Eliminar a '+mname,'Al eliminarlo se quitará como responsable de todas sus tareas asignadas.',function(){
+          // Remove from tasks
+          projects.forEach(function(p){ if(p.stageTasks) Object.keys(p.stageTasks).forEach(function(s){ (p.stageTasks[s]||[]).forEach(function(t){ if(t.resp===mid) t.resp=''; }); }); });
+          standaloneTasks.forEach(function(t){ if(t.resp===mid) t.resp=''; });
+          teamMembers=teamMembers.filter(function(m){ return m.id!==mid; });
+          delete AV_COLORS[mid]; delete AV_NAMES[mid];
+          if (filterPerson===mid) filterPerson='';
+          saveData(); closeConf(); closeTeamModal(); renderPersonPills(); renderBoard();
+        });
+      };})(m.id, m.name);
+      row.appendChild(av); row.appendChild(nm); row.appendChild(del);
+      list.appendChild(row);
+    });
+  }
+  window.addTeamMember = function() {
+    var initials = document.getElementById('tmInitials').value.trim().toUpperCase().slice(0,2);
+    var name = document.getElementById('tmName').value.trim();
+    if (!initials || !name) return;
+    if (teamMembers.some(function(m){ return m.id===initials; })) { document.getElementById('tmInitials').focus(); return; }
+    teamMembers.push({id:initials, name:name, color:_tmSelColor});
+    AV_COLORS[initials]=_tmSelColor; AV_NAMES[initials]=name;
+    saveData(); _renderTmList(); renderPersonPills();
+    document.getElementById('tmInitials').value=''; document.getElementById('tmName').value='';
+  };
+
+  // ── CONFIRM HELPER ───────────────────────────────────────
+  var _confFn = null;
+  function openConf(title, msg, fn) {
+    _confFn = fn;
+    document.getElementById('confTitle').textContent = title;
+    document.getElementById('confMsg').textContent = msg;
+    document.getElementById('confOkBtn').onclick = function(){ if(_confFn) _confFn(); };
+    document.getElementById('confOverlay').classList.add('open');
+  }
+  window.closeConf = function(){ document.getElementById('confOverlay').classList.remove('open'); _confFn=null; };
 
   // ── NEW TASK MODAL ──────────────────────────────────────
   var _ntMode = 'choose'; // 'choose' | 'standalone' | 'project'
@@ -1301,8 +1453,12 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
       if (d.catIdCounter) catIdCounter = d.catIdCounter;
       if (d.standaloneTasks) standaloneTasks = d.standaloneTasks;
       if (d.taskColumns && d.taskColumns.length) taskColumns = d.taskColumns;
+      if (d.teamMembers && d.teamMembers.length) teamMembers = d.teamMembers;
     }
     if (!taskColumns) taskColumns = JSON.parse(JSON.stringify(DEFAULT_TASK_COLS));
+    // Sync AV_COLORS/AV_NAMES from teamMembers
+    teamMembers.forEach(function(m){ AV_COLORS[m.id]=m.color; AV_NAMES[m.id]=m.name; });
+    renderPersonPills();
     renderBoard();
   }, function(e){ console.warn('Error:', e); renderBoard(); });
 
