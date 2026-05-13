@@ -199,11 +199,11 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
         </div>
       </div>
       <div>
-        <div class="rp-label">Equipo</div>
-        <div class="mem-row"><div class="mem-av" style="background:#1A6FD4">AR</div><div><div style="font-size:11px;font-weight:600;color:rgba(255,255,255,0.7)">Ana Ramírez</div><div style="font-size:10px;color:rgba(255,255,255,0.25)">Dir. creativa</div></div></div>
-        <div class="mem-row"><div class="mem-av" style="background:#7B6FD0">LM</div><div><div style="font-size:11px;font-weight:600;color:rgba(255,255,255,0.7)">Luis Mora</div><div style="font-size:10px;color:rgba(255,255,255,0.25)">UI Designer</div></div></div>
-        <div class="mem-row"><div class="mem-av" style="background:#D4537E">SV</div><div><div style="font-size:11px;font-weight:600;color:rgba(255,255,255,0.7)">Sofía Vega</div><div style="font-size:10px;color:rgba(255,255,255,0.25)">Motion</div></div></div>
-        <div class="mem-row"><div class="mem-av" style="background:#E8A020">RG</div><div><div style="font-size:11px;font-weight:600;color:rgba(255,255,255,0.7)">Rodrigo Gil</div><div style="font-size:10px;color:rgba(255,255,255,0.25)">Strategy</div></div></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+          <div class="rp-label" style="margin-bottom:0;">Equipo</div>
+          <button id="homeManageTeamBtn" style="background:none;border:0.5px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.35);font-size:10px;font-weight:600;padding:3px 9px;border-radius:20px;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s;" onmouseover="this.style.color='rgba(255,255,255,0.7)'" onmouseout="this.style.color='rgba(255,255,255,0.35)'">+ Gestionar</button>
+        </div>
+        <div id="homeTeamList"></div>
       </div>
       <div>
         <div class="rp-label">Métricas</div>
@@ -490,6 +490,250 @@ function tick(){
   de.textContent=`${days[n.getDay()]}, ${n.getDate()} de ${months[n.getMonth()]}`;
 }
 tick();setInterval(tick,1000);
+</script>
+
+<!-- ── TEAM MANAGEMENT (index) ─────────────────────────────────────────────── -->
+<!-- Modal styles -->
+<style>
+.hi-overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);backdrop-filter:blur(8px);z-index:800;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s;}
+.hi-overlay.open{opacity:1;pointer-events:all;}
+.hi-modal{background:#161616;border:0.5px solid rgba(255,255,255,0.1);border-radius:20px;padding:26px;width:420px;max-width:92vw;display:flex;flex-direction:column;gap:14px;transform:translateY(8px);transition:transform .2s;font-family:'Inter',sans-serif;}
+.hi-overlay.open .hi-modal{transform:none;}
+.hi-modal-title{font-size:15px;font-weight:700;color:#fff;}
+.hi-lbl{font-size:10px;font-weight:700;color:rgba(255,255,255,0.3);letter-spacing:.07em;text-transform:uppercase;margin-bottom:5px;}
+.hi-inp{background:#1e1e1e;border:0.5px solid rgba(255,255,255,0.1);border-radius:10px;padding:9px 13px;font-size:13px;color:#fff;font-family:'Inter',sans-serif;outline:none;width:100%;transition:border-color .15s;}
+.hi-inp:focus{border-color:rgba(255,255,255,0.3);}
+.hi-foot{display:flex;gap:8px;justify-content:flex-end;margin-top:4px;}
+.hi-btn-c{background:rgba(255,255,255,0.07);border:none;color:rgba(255,255,255,0.45);font-size:12px;font-weight:600;padding:8px 16px;border-radius:10px;cursor:pointer;font-family:'Inter',sans-serif;}
+.hi-btn-ok{background:#fff;border:none;color:#0c0c0c;font-size:12px;font-weight:700;padding:8px 16px;border-radius:10px;cursor:pointer;font-family:'Inter',sans-serif;}
+.hi-member-row{display:flex;align-items:center;gap:10px;padding:8px 2px;border-bottom:0.5px solid rgba(255,255,255,0.06);}
+.hi-member-row:last-child{border-bottom:none;}
+.hi-av{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff;flex-shrink:0;}
+.hi-mname{flex:1;font-size:12px;font-weight:500;color:rgba(255,255,255,0.8);}
+.hi-edit-btn{background:none;border:none;color:rgba(255,255,255,0.2);font-size:13px;cursor:pointer;padding:2px 6px;border-radius:6px;transition:all .15s;line-height:1;}
+.hi-edit-btn:hover{background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.7);}
+.hi-del-btn{background:none;border:none;color:rgba(255,255,255,0.2);font-size:16px;cursor:pointer;padding:2px 6px;border-radius:6px;transition:all .15s;line-height:1;}
+.hi-del-btn:hover{background:rgba(226,75,74,0.1);color:#E24B4A;}
+.hi-edit-row{flex-direction:column;align-items:stretch;gap:8px;padding:10px 2px;}
+.hi-edit-colors{display:flex;gap:5px;flex-wrap:wrap;}
+.hi-edit-sw{width:20px;height:20px;border-radius:5px;border:2px solid transparent;cursor:pointer;transition:border .12s;flex-shrink:0;}
+.hi-edit-sw.sel{border-color:#fff!important;}
+.hi-conf-msg{font-size:12px;color:rgba(255,255,255,0.5);line-height:1.65;}
+.hi-btn-danger{background:#E24B4A;border:none;color:#fff;font-size:12px;font-weight:700;padding:8px 16px;border-radius:10px;cursor:pointer;font-family:'Inter',sans-serif;}
+#hiConfOverlay{z-index:900;}
+</style>
+
+<!-- Team modal -->
+<div class="hi-overlay" id="hiTeamOverlay" onclick="if(event.target===this)hiCloseTeam()">
+  <div class="hi-modal">
+    <div class="hi-modal-title">Gestionar equipo</div>
+    <div id="hiMemberList"></div>
+    <div style="margin-top:12px;padding-top:14px;border-top:0.5px solid rgba(255,255,255,0.07);">
+      <div class="hi-lbl">Agregar persona</div>
+      <div style="display:grid;grid-template-columns:80px 1fr;gap:8px;margin-bottom:10px;">
+        <input class="hi-inp" id="hiInitials" placeholder="AB" maxlength="2" style="text-transform:uppercase;font-weight:700;text-align:center;">
+        <input class="hi-inp" id="hiNameInp" placeholder="Nombre completo">
+      </div>
+      <div class="hi-lbl" style="margin-bottom:6px;">Color</div>
+      <div id="hiColorRow" style="display:flex;gap:6px;flex-wrap:wrap;"></div>
+    </div>
+    <div class="hi-foot">
+      <button class="hi-btn-c" onclick="hiCloseTeam()">Cerrar</button>
+      <button class="hi-btn-ok" onclick="hiAddMember()">Agregar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm modal -->
+<div class="hi-overlay" id="hiConfOverlay" onclick="if(event.target===this)hiCloseConf()">
+  <div class="hi-modal" style="max-width:360px;">
+    <div class="hi-modal-title" id="hiConfTitle"></div>
+    <div class="hi-conf-msg" id="hiConfMsg"></div>
+    <div class="hi-foot">
+      <button class="hi-btn-c" onclick="hiCloseConf()">Cancelar</button>
+      <button class="hi-btn-danger" id="hiConfOkBtn">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script>
+(function() {
+  var _app;
+  try { _app = firebase.app(); } catch(e) {
+    _app = firebase.initializeApp({
+      apiKey:"AIzaSyC3LG6e_7YAbYQhdPe6IC_Mq3SFop0XPsk",
+      authDomain:"trazzo-c9eaf.firebaseapp.com",
+      projectId:"trazzo-c9eaf",
+      storageBucket:"trazzo-c9eaf.firebasestorage.app",
+      messagingSenderId:"106264633340",
+      appId:"1:106264633340:web:4b2560a57e75321c709c79"
+    });
+  }
+  var db = firebase.firestore();
+  db.enablePersistence({synchronizeTabs:true}).catch(function(){});
+  var DOC = db.collection('workspace').doc('proyectos');
+
+  var teamMembers = [];
+  var _pass = {};
+  var _editingId = null;
+  var _editColor = null;
+  var _selColor = '#1A6FD4';
+  var _confFn = null;
+
+  var COLORS = [
+    '#1A6FD4','#1D50B0','#5AB4E8','#2CC5D2','#00BFA5',
+    '#27AE72','#49BA78','#A5D63A','#5DB832',
+    '#FF4642','#E24B4A','#FF8134','#F5A623','#FFC700',
+    '#8B5CF6','#7B3FF0','#5B5FD0','#D4537E','#C0436E','#A32434',
+    '#6B7280','#374151','#B8760F','#8B6914'
+  ];
+
+  function saveTeam() {
+    var payload = Object.assign({}, _pass, {teamMembers: teamMembers});
+    DOC.set(payload).catch(function(e){ console.warn(e); });
+  }
+
+  // ── Render team in sidebar ───────────────────────────────
+  function renderHomeTeam() {
+    var list = document.getElementById('homeTeamList');
+    if (!list) return;
+    list.innerHTML = '';
+    teamMembers.forEach(function(m) {
+      var np = m.name.trim().split(/\s+/);
+      var abbr = np[0][0].toUpperCase() + (np.length > 1 ? np[1][0].toUpperCase() : '');
+      var row = document.createElement('div');
+      row.className = 'mem-row';
+      row.style.cssText = 'display:flex;align-items:center;gap:8px;padding:5px 0;cursor:default;';
+      var av = document.createElement('div');
+      av.className = 'mem-av';
+      av.style.background = m.color;
+      av.textContent = abbr;
+      var info = document.createElement('div');
+      info.style.cssText = 'flex:1;min-width:0;';
+      info.innerHTML = '<div style="font-size:11px;font-weight:600;color:rgba(255,255,255,0.7);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + m.name + '</div>';
+      row.appendChild(av);
+      row.appendChild(info);
+      list.appendChild(row);
+    });
+  }
+
+  // ── Team modal ───────────────────────────────────────────
+  window.hiCloseTeam = function() {
+    _editingId = null; _editColor = null;
+    document.getElementById('hiTeamOverlay').classList.remove('open');
+  };
+
+  function hiOpenTeam() {
+    _editingId = null; _editColor = null;
+    _buildColorRow();
+    hiRenderList();
+    document.getElementById('hiInitials').value = '';
+    document.getElementById('hiNameInp').value = '';
+    document.getElementById('hiTeamOverlay').classList.add('open');
+    setTimeout(function(){ document.getElementById('hiInitials').focus(); }, 100);
+  }
+
+  function _buildColorRow() {
+    var row = document.getElementById('hiColorRow'); row.innerHTML = '';
+    COLORS.forEach(function(c) {
+      var sw = document.createElement('button');
+      sw.style.cssText = 'width:22px;height:22px;border-radius:6px;background:'+c+';border:2px solid '+(c===_selColor?'#fff':'transparent')+';cursor:pointer;flex-shrink:0;';
+      sw.onclick = function(e){ e.preventDefault(); _selColor=c; _buildColorRow(); };
+      row.appendChild(sw);
+    });
+  }
+
+  function hiRenderList() {
+    var list = document.getElementById('hiMemberList'); list.innerHTML = '';
+    teamMembers.forEach(function(m) {
+      if (_editingId === m.id) {
+        var erow = document.createElement('div');
+        erow.className = 'hi-member-row hi-edit-row';
+        var top = document.createElement('div');
+        top.style.cssText = 'display:flex;align-items:center;gap:10px;';
+        var eav = document.createElement('div'); eav.className='hi-av'; eav.style.background=_editColor||m.color; eav.textContent=m.id;
+        var einp = document.createElement('input'); einp.className='hi-inp'; einp.id='hiEditName'; einp.value=m.name; einp.style.fontSize='12px';
+        einp.onkeydown = function(e){ if(e.key==='Enter') hiSaveEdit(m.id); if(e.key==='Escape'){_editingId=null;_editColor=null;hiRenderList();} };
+        top.appendChild(eav); top.appendChild(einp); erow.appendChild(top);
+
+        var cw = document.createElement('div'); cw.className='hi-edit-colors';
+        COLORS.forEach(function(c) {
+          var sw = document.createElement('button'); sw.className='hi-edit-sw'+(c===(_editColor||m.color)?' sel':''); sw.style.background=c;
+          sw.onclick = (function(col){ return function(e){ e.preventDefault(); _editColor=col; eav.style.background=col; cw.querySelectorAll('.hi-edit-sw').forEach(function(s){s.classList.remove('sel');}); sw.classList.add('sel'); }; })(c);
+          cw.appendChild(sw);
+        });
+        erow.appendChild(cw);
+
+        var acts = document.createElement('div'); acts.style.cssText='display:flex;gap:6px;justify-content:flex-end;';
+        var cn = document.createElement('button'); cn.className='hi-btn-c'; cn.textContent='Cancelar'; cn.style.fontSize='11px';
+        cn.onclick = function(){ _editingId=null; _editColor=null; hiRenderList(); };
+        var sv = document.createElement('button'); sv.className='hi-btn-ok'; sv.textContent='Guardar'; sv.style.fontSize='11px';
+        sv.onclick = (function(mid){ return function(){ hiSaveEdit(mid); }; })(m.id);
+        acts.appendChild(cn); acts.appendChild(sv); erow.appendChild(acts);
+        list.appendChild(erow);
+        setTimeout(function(){ var i=document.getElementById('hiEditName'); if(i){i.focus();i.select();} }, 60);
+      } else {
+        var row = document.createElement('div'); row.className='hi-member-row';
+        var av = document.createElement('div'); av.className='hi-av'; av.style.background=m.color; av.textContent=m.id;
+        var nm = document.createElement('div'); nm.className='hi-mname'; nm.textContent=m.name;
+        var eb = document.createElement('button'); eb.className='hi-edit-btn'; eb.textContent='✏'; eb.title='Editar';
+        eb.onclick = (function(mid,mc){ return function(){ _editingId=mid; _editColor=mc; hiRenderList(); }; })(m.id, m.color);
+        var db2 = document.createElement('button'); db2.className='hi-del-btn'; db2.textContent='×'; db2.title='Eliminar';
+        db2.onclick = (function(mid,mname){ return function(){
+          hiConf('Eliminar a '+mname,'Al eliminarlo se quitará como responsable de todas sus tareas asignadas.',function(){
+            teamMembers = teamMembers.filter(function(x){ return x.id!==mid; });
+            saveTeam(); hiCloseConf(); hiRenderList(); renderHomeTeam();
+          });
+        };})(m.id, m.name);
+        row.appendChild(av); row.appendChild(nm); row.appendChild(eb); row.appendChild(db2);
+        list.appendChild(row);
+      }
+    });
+  }
+
+  function hiSaveEdit(mid) {
+    var inp = document.getElementById('hiEditName');
+    var newName = inp ? inp.value.trim() : '';
+    if (!newName) return;
+    for (var i=0;i<teamMembers.length;i++){
+      if (teamMembers[i].id===mid){ teamMembers[i].name=newName; teamMembers[i].color=_editColor||teamMembers[i].color; break; }
+    }
+    _editingId=null; _editColor=null;
+    saveTeam(); hiRenderList(); renderHomeTeam();
+  }
+
+  window.hiAddMember = function() {
+    var initials = document.getElementById('hiInitials').value.trim().toUpperCase().slice(0,2);
+    var name = document.getElementById('hiNameInp').value.trim();
+    if (!initials || !name) return;
+    if (teamMembers.some(function(m){ return m.id===initials; })) { document.getElementById('hiInitials').focus(); return; }
+    teamMembers.push({id:initials, name:name, color:_selColor});
+    saveTeam(); hiRenderList(); renderHomeTeam();
+    document.getElementById('hiInitials').value=''; document.getElementById('hiNameInp').value='';
+  };
+
+  // ── Confirm helper ───────────────────────────────────────
+  function hiConf(title, msg, fn) {
+    _confFn = fn;
+    document.getElementById('hiConfTitle').textContent = title;
+    document.getElementById('hiConfMsg').textContent = msg;
+    document.getElementById('hiConfOkBtn').onclick = function(){ if(_confFn) _confFn(); };
+    document.getElementById('hiConfOverlay').classList.add('open');
+  }
+  window.hiCloseConf = function(){ document.getElementById('hiConfOverlay').classList.remove('open'); _confFn=null; };
+
+  // ── Firebase ─────────────────────────────────────────────
+  DOC.onSnapshot(function(snap) {
+    var d = snap.data() || {};
+    _pass = d;
+    teamMembers = d.teamMembers || [];
+    renderHomeTeam();
+  });
+
+  document.getElementById('homeManageTeamBtn').addEventListener('click', hiOpenTeam);
+})();
 </script>
 
 <!-- ── MINI FOCUS TIMER ──────────────────────────────────────────────────── -->
