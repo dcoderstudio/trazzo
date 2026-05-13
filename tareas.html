@@ -97,9 +97,25 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 /* PRIORITY FLAG */
 .tk-flag-btn{position:absolute;top:9px;right:10px;background:none;border:none;cursor:pointer;font-size:13px;padding:2px;line-height:1;opacity:0;transition:opacity .15s;z-index:2;}
 .tk-card:hover .tk-flag-btn{opacity:0.45;}
-.tk-flag-btn.on{opacity:1!important;filter:saturate(1.5);}
-.tk-card.priority-card{border-color:rgba(232,160,32,0.35)!important;background:#1b1a14;}
-.tk-card.priority-card .tk-card-text{color:#fff;}
+.tk-flag-btn.on{opacity:1!important;}
+.tk-card.priority-card{border-color:rgba(255,255,255,0.42)!important;background:#1e1e22;box-shadow:0 0 0 0.5px rgba(255,255,255,0.07);}
+/* COLUMN EDIT */
+.col-edit-btn{background:none;border:none;color:rgba(255,255,255,0.18);font-size:16px;cursor:pointer;padding:0 3px;line-height:1;margin-left:auto;transition:color .15s;flex-shrink:0;font-family:'Inter',sans-serif;}
+.col-edit-btn:hover{color:rgba(255,255,255,0.6);}
+.tk-add-col-btn{flex-shrink:0;width:54px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;border-radius:18px;border:1.5px dashed rgba(255,255,255,0.1);background:transparent;cursor:pointer;transition:all .18s;color:rgba(255,255,255,0.2);font-family:'Inter',sans-serif;font-size:11px;font-weight:600;padding:0;}
+.tk-add-col-btn:hover{border-color:rgba(255,255,255,0.28);color:rgba(255,255,255,0.5);background:rgba(255,255,255,0.03);}
+.tk-add-col-btn span{font-size:22px;font-weight:300;line-height:1;}
+.col-ed-panel{position:fixed;z-index:9999;background:#161616;border:0.5px solid rgba(255,255,255,0.14);border-radius:18px;padding:16px;box-shadow:0 20px 70px rgba(0,0,0,.92);width:230px;font-family:'Inter',sans-serif;display:flex;flex-direction:column;gap:12px;}
+.col-ed-inp{background:#1e1e1e;border:0.5px solid rgba(255,255,255,0.12);border-radius:10px;padding:9px 12px;font-size:13px;font-weight:600;color:#fff;font-family:'Inter',sans-serif;outline:none;width:100%;transition:border-color .15s;}
+.col-ed-inp:focus{border-color:rgba(255,255,255,0.32);}
+.col-ed-swatches{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;}
+.col-ed-sw{width:100%;aspect-ratio:1;border-radius:9px;border:2px solid transparent;cursor:pointer;transition:all .15s;}
+.col-ed-sw:hover{transform:scale(1.08);}
+.col-ed-sw.sel{border-color:#fff!important;box-shadow:0 0 0 1px rgba(255,255,255,0.4);}
+.col-ed-foot{display:flex;gap:7px;align-items:center;}
+.col-ed-save{flex:1;background:#fff;border:none;color:#0c0c0c;font-size:12px;font-weight:700;padding:8px;border-radius:10px;cursor:pointer;font-family:'Inter',sans-serif;}
+.col-ed-del{background:rgba(226,75,74,0.1);border:0.5px solid rgba(226,75,74,0.25);color:#E24B4A;font-size:11px;font-weight:600;padding:8px 12px;border-radius:10px;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s;}
+.col-ed-del:hover{background:rgba(226,75,74,0.2);}
 /* TASK DETAIL MODAL */
 .tk-det-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(10px);z-index:700;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s;}
 .tk-det-overlay.open{opacity:1;pointer-events:all;}
@@ -344,6 +360,22 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 
   var projects = [], categories = [], standaloneTasks = [];
   var nextId = 14, catIdCounter = 20;
+  var COL_PALETTES = [
+    {bg:'rgba(71,130,255,0.09)',br:'rgba(71,130,255,0.2)',tc:'#7ab3ff',dc:'#4782ff'},
+    {bg:'rgba(232,160,32,0.09)',br:'rgba(232,160,32,0.22)',tc:'#f0c050',dc:'#E8A020'},
+    {bg:'rgba(39,174,114,0.09)',br:'rgba(39,174,114,0.22)',tc:'#3dcf8a',dc:'#27AE72'},
+    {bg:'rgba(226,75,74,0.09)',br:'rgba(226,75,74,0.22)',tc:'#f07070',dc:'#E24B4A'},
+    {bg:'rgba(139,92,246,0.09)',br:'rgba(139,92,246,0.22)',tc:'#b09af7',dc:'#8b5cf6'},
+    {bg:'rgba(212,83,126,0.09)',br:'rgba(212,83,126,0.22)',tc:'#f075a0',dc:'#D4537E'},
+    {bg:'rgba(216,90,48,0.09)',br:'rgba(216,90,48,0.22)',tc:'#f09060',dc:'#D85A30'},
+    {bg:'rgba(255,255,255,0.04)',br:'rgba(255,255,255,0.1)',tc:'rgba(255,255,255,0.55)',dc:'rgba(255,255,255,0.3)'}
+  ];
+  var DEFAULT_TASK_COLS = [
+    {id:'notstarted',label:'Sin iniciar',bg:COL_PALETTES[0].bg,border:COL_PALETTES[0].br,titleColor:COL_PALETTES[0].tc,dotColor:COL_PALETTES[0].dc,isDone:false},
+    {id:'inprogress',label:'En proceso',bg:COL_PALETTES[1].bg,border:COL_PALETTES[1].br,titleColor:COL_PALETTES[1].tc,dotColor:COL_PALETTES[1].dc,isDone:false},
+    {id:'done',label:'Terminadas',bg:COL_PALETTES[2].bg,border:COL_PALETTES[2].br,titleColor:COL_PALETTES[2].tc,dotColor:COL_PALETTES[2].dc,isDone:true}
+  ];
+  var taskColumns = null;
   var AV_COLORS = {AR:'#1A6FD4',LM:'#7B6FD0',SV:'#D4537E',RG:'#E8A020'};
   var AV_NAMES  = {AR:'Ana Ramírez',LM:'Luis Mora',SV:'Sofía Vega',RG:'Rodrigo Gil'};
   var MNS = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
@@ -355,7 +387,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 
   function saveData() {
     _ignoreSnap = true;
-    DOC.set({projects:projects, categories:categories, nextId:nextId, catIdCounter:catIdCounter, standaloneTasks:standaloneTasks})
+    DOC.set({projects:projects, categories:categories, nextId:nextId, catIdCounter:catIdCounter, standaloneTasks:standaloneTasks, taskColumns:taskColumns})
       .catch(function(e){ console.warn('Error al guardar:', e); });
   }
 
@@ -522,120 +554,167 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     return card;
   }
 
-  function mkSubHdr(type, label) {
-    var h = document.createElement('div');
-    h.className = 'tk-sub-hdr ' + type;
-    if (type === 'urgent') {
-      var dot = document.createElement('div'); dot.className = 'tk-sub-dot';
-      var lbl = document.createElement('span'); lbl.className = 'tk-sub-lbl'; lbl.textContent = label;
-      var line = document.createElement('div'); line.className = 'tk-sub-line';
-      h.appendChild(dot); h.appendChild(lbl); h.appendChild(line);
-    } else {
-      var lbl2 = document.createElement('span'); lbl2.className = 'tk-sub-lbl'; lbl2.textContent = label;
-      var line2 = document.createElement('div'); line2.className = 'tk-sub-line';
-      h.appendChild(lbl2); h.appendChild(line2);
-    }
-    return h;
+  function getColById(id) {
+    for (var i=0;i<taskColumns.length;i++) if (taskColumns[i].id===id) return taskColumns[i];
+    return null;
   }
 
-  function buildCol(title, dotColor, titleColor, tasks, colType) {
-    var col = document.createElement('div');
-    col.className = 'tk-col tk-col-' + colType;
+  function buildCol(col, tasks) {
+    var colEl = document.createElement('div');
+    colEl.className = 'tk-col';
+    colEl.style.cssText = 'background:'+col.bg+';border:0.5px solid '+(col.border||col.bg)+';border-radius:18px;padding:14px 12px 12px;';
 
-    var hdr = document.createElement('div');
-    hdr.className = 'tk-col-hdr';
-    var dot = document.createElement('div'); dot.className = 'tk-col-dot'; dot.style.background = dotColor;
-    var ttl = document.createElement('span'); ttl.className = 'tk-col-title'; ttl.style.color = titleColor; ttl.textContent = title;
-    var cnt = document.createElement('span'); cnt.className = 'tk-col-count'; cnt.textContent = tasks.length;
-    hdr.appendChild(dot); hdr.appendChild(ttl); hdr.appendChild(cnt);
-    col.appendChild(hdr);
+    var hdr = document.createElement('div'); hdr.className = 'tk-col-hdr';
+    var dot = document.createElement('div'); dot.className='tk-col-dot'; dot.style.background=col.dotColor;
+    var ttl = document.createElement('span'); ttl.className='tk-col-title'; ttl.style.color=col.titleColor; ttl.textContent=col.label;
+    var cnt = document.createElement('span'); cnt.className='tk-col-count'; cnt.textContent=tasks.length;
+    var editBtn = document.createElement('button'); editBtn.className='col-edit-btn'; editBtn.textContent='⋯'; editBtn.title='Editar columna';
+    editBtn.onclick=(function(cid,btn){ return function(e){ e.stopPropagation(); openColEditor(cid,btn); }; })(col.id, editBtn);
+    hdr.appendChild(dot); hdr.appendChild(ttl); hdr.appendChild(cnt); hdr.appendChild(editBtn);
+    colEl.appendChild(hdr);
 
-    var body = document.createElement('div');
-    body.className = 'tk-col-body';
-    body.dataset.coltype = colType;
-
+    var body = document.createElement('div'); body.className='tk-col-body'; body.dataset.coltype=col.id;
     if (!tasks.length) {
-      var empty = document.createElement('div');
-      empty.className = 'tk-empty';
-      empty.textContent = colType === 'done' ? 'Sin tareas completadas' : 'Sin tareas aquí';
-      body.appendChild(empty);
-    } else if (colType === 'inprogress') {
-      // Split into urgent + normal
-      var urgent = tasks.filter(function(t){ return isUrgent(t.deadline); });
-      var normal  = tasks.filter(function(t){ return !isUrgent(t.deadline); });
-      if (urgent.length) {
-        body.appendChild(mkSubHdr('urgent', '⚡ Urgentes'));
-        urgent.forEach(function(t){ body.appendChild(buildCard(t)); });
-      }
-      if (normal.length) {
-        if (urgent.length) body.appendChild(mkSubHdr('normal', 'En proceso'));
-        normal.forEach(function(t){ body.appendChild(buildCard(t)); });
-      }
-    } else if (colType === 'done') {
-      var visible = showDone ? tasks : tasks.slice(0, 5);
-      visible.forEach(function(t){ body.appendChild(buildCard(t)); });
+      var empty = document.createElement('div'); empty.className='tk-empty'; empty.textContent='Sin tareas aquí'; body.appendChild(empty);
+    } else if (col.isDone) {
+      var vis = showDone ? tasks : tasks.slice(0,5);
+      vis.forEach(function(t){ body.appendChild(buildCard(t)); });
       if (!showDone && tasks.length > 5) {
-        var btn = document.createElement('button');
-        btn.className = 'done-toggle';
-        btn.textContent = '▼ Ver ' + (tasks.length - 5) + ' más';
-        btn.onclick = function() { showDone = true; renderBoard(); };
-        body.appendChild(btn);
+        var btn = document.createElement('button'); btn.className='done-toggle'; btn.textContent='▼ Ver '+(tasks.length-5)+' más';
+        btn.onclick=function(){ showDone=true; renderBoard(); }; body.appendChild(btn);
       }
     } else {
       tasks.forEach(function(t){ body.appendChild(buildCard(t)); });
     }
-
-    col.appendChild(body);
-    return col;
+    colEl.appendChild(body);
+    return colEl;
   }
 
   function renderBoard() {
+    if (!taskColumns) taskColumns = JSON.parse(JSON.stringify(DEFAULT_TASK_COLS));
     var all = getAllTasks();
-    var filtered = filterPerson ? all.filter(function(t){ return t.resp === filterPerson; }) : all;
+    var filtered = filterPerson ? all.filter(function(t){ return t.resp===filterPerson; }) : all;
 
-    var notStarted = filtered.filter(function(t){
-      if (t.colStatus === 'inprogress' || t.colStatus === 'done') return false;
-      if (t.colStatus === 'notstarted') return true;
-      return !t.done && !t.deadline;
-    });
-    var inProgress = filtered.filter(function(t){
-      if (t.colStatus === 'notstarted' || t.colStatus === 'done') return false;
-      if (t.colStatus === 'inprogress') return true;
-      return !t.done && !!t.deadline;
-    });
-    var done = filtered.filter(function(t){
-      if (t.colStatus === 'notstarted' || t.colStatus === 'inprogress') return false;
-      if (t.colStatus === 'done') return true;
-      return !!t.done;
+    // Distribute tasks into columns
+    var colMap = {};
+    taskColumns.forEach(function(c){ colMap[c.id]=[]; });
+    var knownIds = taskColumns.map(function(c){ return c.id; });
+    // Legacy fallback columns for tasks without explicit colStatus
+    var nonDoneCols = taskColumns.filter(function(c){ return !c.isDone; });
+    var doneCols = taskColumns.filter(function(c){ return c.isDone; });
+    var fallbackTodo = nonDoneCols.length ? nonDoneCols[0].id : 'notstarted';
+    var fallbackDoing = nonDoneCols.length > 1 ? nonDoneCols[1].id : fallbackTodo;
+    var fallbackDone = doneCols.length ? doneCols[0].id : 'done';
+
+    filtered.forEach(function(t){
+      var cid = t.colStatus;
+      if (cid && colMap[cid] !== undefined) { colMap[cid].push(t); return; }
+      // Legacy / no colStatus
+      if (t.done) { if (colMap[fallbackDone]) colMap[fallbackDone].push(t); }
+      else if (t.deadline) { if (colMap[fallbackDoing]) colMap[fallbackDoing].push(t); }
+      else { if (colMap[fallbackTodo]) colMap[fallbackTodo].push(t); }
     });
 
     function bySortOrder(a,b){
-      if (a.priority && !b.priority) return -1;
-      if (!a.priority && b.priority) return 1;
-      return a.sortOrder - b.sortOrder;
+      if (a.priority&&!b.priority) return -1;
+      if (!a.priority&&b.priority) return 1;
+      return a.sortOrder-b.sortOrder;
     }
-    notStarted.sort(bySortOrder);
-    inProgress.sort(bySortOrder);
-    done.sort(bySortOrder);
+    taskColumns.forEach(function(c){ colMap[c.id].sort(bySortOrder); });
 
     var board = document.getElementById('boardWrap');
     board.innerHTML = '';
-    board.appendChild(buildCol('Sin iniciar', 'rgba(255,255,255,0.3)', 'rgba(255,255,255,0.55)', notStarted, 'notstarted'));
-    board.appendChild(buildCol('En proceso', '#1A6FD4', '#5B9FFF', inProgress, 'inprogress'));
-    board.appendChild(buildCol('Terminadas', '#27AE72', '#27AE72', done, 'done'));
+    var pending=0, doneCount=0;
+    taskColumns.forEach(function(col){
+      board.appendChild(buildCol(col, colMap[col.id]));
+      if (col.isDone) doneCount+=colMap[col.id].length; else pending+=colMap[col.id].length;
+    });
 
-    var pending = notStarted.length + inProgress.length;
-    document.getElementById('countPill').textContent = pending + ' pendiente' + (pending !== 1 ? 's' : '') + ' · ' + done.length + ' listas';
+    // Add column button
+    var addBtn = document.createElement('div');
+    addBtn.className = 'tk-add-col-btn';
+    addBtn.innerHTML = '<span>+</span>Columna';
+    addBtn.onclick = addTaskColumn;
+    board.appendChild(addBtn);
 
-    // Si se sembraron tareas nuevas, persiste sin causar bucle
-    if (_pendingSave) { _pendingSave = false; saveData(); }
+    document.getElementById('countPill').textContent = pending+' pendiente'+(pending!==1?'s':'')+' · '+doneCount+' listas';
+    if (_pendingSave) { _pendingSave=false; saveData(); }
+  }
+
+  // ── COLUMN EDITOR ────────────────────────────────────────
+  function openColEditor(colId, anchor) {
+    _tkClosePicker();
+    var col=null, colIdx=-1;
+    for (var i=0;i<taskColumns.length;i++){if(taskColumns[i].id===colId){col=taskColumns[i];colIdx=i;break;}}
+    if (!col) return;
+
+    var panel = document.createElement('div'); panel.className='col-ed-panel';
+    var inp = document.createElement('input'); inp.className='col-ed-inp'; inp.value=col.label; inp.placeholder='Nombre de la columna';
+    panel.appendChild(inp);
+
+    var swRow = document.createElement('div'); swRow.className='col-ed-swatches';
+    var selPalette = -1;
+    COL_PALETTES.forEach(function(p,idx){
+      var sw = document.createElement('button'); sw.className='col-ed-sw';
+      sw.style.background=p.bg; sw.style.borderColor=p.br;
+      if (col.bg===p.bg) { sw.classList.add('sel'); selPalette=idx; }
+      sw.onclick=function(e){
+        e.stopPropagation(); selPalette=idx;
+        swRow.querySelectorAll('.col-ed-sw').forEach(function(x){x.classList.remove('sel');});
+        sw.classList.add('sel');
+      };
+      swRow.appendChild(sw);
+    });
+    panel.appendChild(swRow);
+
+    var foot = document.createElement('div'); foot.className='col-ed-foot';
+    var canDel = !col.isDone && taskColumns.length > 1;
+    if (canDel) {
+      var del = document.createElement('button'); del.className='col-ed-del'; del.textContent='Eliminar';
+      del.onclick=function(e){
+        e.stopPropagation();
+        // move tasks to first non-deleted column
+        var fallback = taskColumns.filter(function(c){ return c.id!==colId&&!c.isDone; });
+        var fb = fallback.length ? fallback[0].id : (taskColumns.filter(function(c){return c.id!==colId;})[0]||{id:'notstarted'}).id;
+        [projects.forEach(function(p){ if (p.stageTasks) Object.keys(p.stageTasks).forEach(function(s){ (p.stageTasks[s]||[]).forEach(function(t){ if(t.colStatus===colId) t.colStatus=fb; }); }); })];
+        standaloneTasks.forEach(function(t){ if(t.colStatus===colId) t.colStatus=fb; });
+        taskColumns.splice(colIdx,1);
+        saveData(); _tkClosePicker(); renderBoard();
+      };
+      foot.appendChild(del);
+    }
+    var save = document.createElement('button'); save.className='col-ed-save'; save.textContent='Guardar';
+    save.onclick=function(e){
+      e.stopPropagation();
+      col.label=inp.value.trim()||col.label;
+      if (selPalette>=0) { var p=COL_PALETTES[selPalette]; col.bg=p.bg; col.border=p.br; col.titleColor=p.tc; col.dotColor=p.dc; }
+      saveData(); _tkClosePicker(); renderBoard();
+    };
+    foot.appendChild(save); panel.appendChild(foot);
+    document.body.appendChild(panel); _tkPicker=panel;
+    _tkPos(panel, anchor);
+  }
+
+  function addTaskColumn() {
+    taskColumns.push({
+      id:'col_'+Date.now(), label:'Nueva columna',
+      bg:COL_PALETTES[7].bg, border:COL_PALETTES[7].br,
+      titleColor:COL_PALETTES[7].tc, dotColor:COL_PALETTES[7].dc,
+      isDone:false
+    });
+    saveData(); renderBoard();
   }
 
   function _toggleInArray(arr, taskId) {
     for (var j=0;j<arr.length;j++){
       if (arr[j].id===taskId){
         arr[j].done=!arr[j].done;
-        arr[j].colStatus=arr[j].done?'done':(arr[j].deadline?'inprogress':'notstarted');
+        if (arr[j].done) {
+          var dc=taskColumns.filter(function(c){return c.isDone;}); arr[j].colStatus=dc.length?dc[0].id:'done';
+        } else {
+          var nd=taskColumns.filter(function(c){return !c.isDone;});
+          arr[j].colStatus=arr[j].deadline?(nd.length>1?nd[1].id:nd[0]?nd[0].id:'inprogress'):(nd[0]?nd[0].id:'notstarted');
+        }
         saveData(); renderBoard(); return true;
       }
     }
@@ -809,8 +888,12 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     var dlVal = task.deadline || '';
     document.getElementById('tkDetDeadline').value = dlVal;
     _updDlBtn(document.getElementById('tkDetDlBtn'), dlVal);
-    var st = task.colStatus || (task.done ? 'done' : (task.deadline ? 'inprogress' : 'notstarted'));
-    document.getElementById('tkDetStatus').value = st;
+    var stSel = document.getElementById('tkDetStatus');
+    stSel.innerHTML = '';
+    taskColumns.forEach(function(c){ var o=document.createElement('option'); o.value=c.id; o.textContent=c.label; stSel.appendChild(o); });
+    var nd=taskColumns.filter(function(c){return !c.isDone;}), dc=taskColumns.filter(function(c){return c.isDone;});
+    var st = task.colStatus || (task.done?(dc[0]?dc[0].id:'done'):(task.deadline?(nd[1]?nd[1].id:'inprogress'):(nd[0]?nd[0].id:'notstarted')));
+    stSel.value = st;
     document.getElementById('tkDetNotes').value = task.notes || '';
     document.getElementById('tkDetOverlay').classList.add('open');
     setTimeout(function(){ document.getElementById('tkDetText').focus(); document.getElementById('tkDetText').select(); }, 120);
@@ -974,7 +1057,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     if (projectId==='standalone') {
       for (var si=0;si<standaloneTasks.length;si++){
         if (standaloneTasks[si].id===taskId){
-          standaloneTasks[si].colStatus=newColType; standaloneTasks[si].done=(newColType==='done'); standaloneTasks[si].sortOrder=newSortOrder;
+          standaloneTasks[si].colStatus=newColType; var _sc=getColById(newColType); standaloneTasks[si].done=_sc?!!_sc.isDone:(newColType==='done'); standaloneTasks[si].sortOrder=newSortOrder;
           saveData(); renderBoard(); return;
         }
       }
@@ -987,7 +1070,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
           for (var j=0;j<tasks.length;j++){
             if (tasks[j].id===taskId){
               tasks[j].colStatus = newColType;
-              tasks[j].done = (newColType === 'done');
+              var _tc=getColById(newColType); tasks[j].done=_tc?!!_tc.isDone:(newColType==='done');
               tasks[j].sortOrder = newSortOrder;
               saveData();
               renderBoard();
@@ -1113,7 +1196,9 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
       if (d.nextId) nextId = d.nextId;
       if (d.catIdCounter) catIdCounter = d.catIdCounter;
       if (d.standaloneTasks) standaloneTasks = d.standaloneTasks;
+      if (d.taskColumns && d.taskColumns.length) taskColumns = d.taskColumns;
     }
+    if (!taskColumns) taskColumns = JSON.parse(JSON.stringify(DEFAULT_TASK_COLS));
     renderBoard();
   }, function(e){ console.warn('Error:', e); renderBoard(); });
 
