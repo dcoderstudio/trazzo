@@ -123,6 +123,14 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 .tk-det-notes::placeholder{color:rgba(255,255,255,0.18);}
 .tk-det-foot{display:flex;gap:8px;justify-content:flex-end;}
 .tk-notes-dot{width:6px;height:6px;border-radius:50%;background:rgba(232,160,32,0.6);flex-shrink:0;}
+/* NUEVA TAREA — step selector */
+.nt-type-btn{background:rgba(255,255,255,0.04);border:0.5px solid rgba(255,255,255,0.1);border-radius:14px;padding:22px 14px;cursor:pointer;font-family:'Inter',sans-serif;text-align:center;display:flex;flex-direction:column;align-items:center;gap:7px;transition:all .18s;width:100%;}
+.nt-type-btn:hover{background:rgba(255,255,255,0.09);border-color:rgba(255,255,255,0.28);}
+.nt-type-icon{font-size:22px;line-height:1;}
+.nt-type-title{font-size:13px;font-weight:700;color:#fff;}
+.nt-type-sub{font-size:10px;color:rgba(255,255,255,0.35);line-height:1.3;}
+.nt-back-btn{background:none;border:none;color:rgba(255,255,255,0.32);font-size:11px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;padding:0 0 4px;display:flex;align-items:center;gap:4px;transition:color .15s;}
+.nt-back-btn:hover{color:rgba(255,255,255,0.7);}
 /* TRIGGER BUTTONS para pickers en el modal */
 .tk-det-trigger{background:#1e1e1e;border:0.5px solid rgba(255,255,255,0.1);border-radius:10px;padding:9px 12px;font-size:12px;color:rgba(255,255,255,0.35);font-family:'Inter',sans-serif;cursor:pointer;width:100%;text-align:left;transition:border-color .15s,color .15s;display:flex;align-items:center;gap:7px;}
 .tk-det-trigger:hover{border-color:rgba(255,255,255,0.28);color:rgba(255,255,255,0.8);}
@@ -184,37 +192,82 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
   <div class="t-overlay" id="newTaskOverlay" onclick="if(event.target===this)closeNewTaskModal()">
     <div class="t-modal">
       <div class="t-modal-title">Nueva tarea</div>
-      <div>
-        <div class="t-lbl">Proyecto</div>
-        <select class="t-inp" id="ntProject" onchange="ntUpdateStages()"></select>
-      </div>
-      <div>
-        <div class="t-lbl">Fase</div>
-        <select class="t-inp" id="ntStage"></select>
-      </div>
-      <div>
-        <div class="t-lbl">Tarea</div>
-        <input class="t-inp" id="ntText" type="text" placeholder="Descripción de la tarea…">
-      </div>
-      <div class="t-grid2">
-        <div>
-          <div class="t-lbl">Responsable</div>
-          <select class="t-inp" id="ntResp">
-            <option value="">Sin asignar</option>
-            <option value="AR">Ana Ramírez</option>
-            <option value="LM">Luis Mora</option>
-            <option value="SV">Sofía Vega</option>
-            <option value="RG">Rodrigo Gil</option>
-          </select>
+
+      <!-- Paso 1: elegir tipo -->
+      <div id="ntStep1">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <button class="nt-type-btn" onclick="ntShowStep('standalone')">
+            <span class="nt-type-icon">✏️</span>
+            <span class="nt-type-title">Tarea libre</span>
+            <span class="nt-type-sub">Sin proyecto asociado</span>
+          </button>
+          <button class="nt-type-btn" onclick="ntShowStep('project')">
+            <span class="nt-type-icon">📁</span>
+            <span class="nt-type-title">De un proyecto</span>
+            <span class="nt-type-sub">Asociada a una ficha</span>
+          </button>
         </div>
-        <div>
-          <div class="t-lbl">Fecha límite</div>
-          <input class="t-inp" id="ntDeadline" type="date">
+        <div class="t-foot" style="margin-top:8px;">
+          <button class="t-btn-c" onclick="closeNewTaskModal()">Cancelar</button>
         </div>
       </div>
-      <div class="t-foot">
-        <button class="t-btn-c" onclick="closeNewTaskModal()">Cancelar</button>
-        <button class="t-btn-ok" onclick="saveNewTask()">Agregar tarea</button>
+
+      <!-- Paso 2a: tarea libre -->
+      <div id="ntStepStandalone" style="display:none;display:none;">
+        <button class="nt-back-btn" onclick="ntShowStep('choose')">← Regresar</button>
+        <div style="margin-bottom:14px;">
+          <div class="t-lbl">¿Cuál es la tarea?</div>
+          <input class="t-inp" id="ntSText" type="text" placeholder="Descripción de la tarea…" onkeydown="if(event.key==='Enter')saveNewTask()">
+        </div>
+        <div class="t-grid2">
+          <div>
+            <div class="t-lbl">Responsable</div>
+            <input type="hidden" id="ntSResp">
+            <button type="button" class="tk-det-trigger" id="ntSRespBtn">👤 Sin asignar</button>
+          </div>
+          <div>
+            <div class="t-lbl">Fecha límite</div>
+            <input type="hidden" id="ntSDeadline">
+            <button type="button" class="tk-det-trigger" id="ntSDlBtn">📅 Sin fecha</button>
+          </div>
+        </div>
+        <div class="t-foot">
+          <button class="t-btn-c" onclick="closeNewTaskModal()">Cancelar</button>
+          <button class="t-btn-ok" onclick="saveNewTask()">Agregar</button>
+        </div>
+      </div>
+
+      <!-- Paso 2b: tarea de proyecto -->
+      <div id="ntStepProject" style="display:none;">
+        <button class="nt-back-btn" onclick="ntShowStep('choose')">← Regresar</button>
+        <div style="margin-bottom:14px;">
+          <div class="t-lbl">Proyecto</div>
+          <select class="t-inp" id="ntProject" onchange="ntUpdateStages()"></select>
+        </div>
+        <div style="margin-bottom:14px;">
+          <div class="t-lbl">Fase</div>
+          <select class="t-inp" id="ntStage"></select>
+        </div>
+        <div style="margin-bottom:14px;">
+          <div class="t-lbl">¿Cuál es la tarea?</div>
+          <input class="t-inp" id="ntText" type="text" placeholder="Descripción de la tarea…" onkeydown="if(event.key==='Enter')saveNewTask()">
+        </div>
+        <div class="t-grid2">
+          <div>
+            <div class="t-lbl">Responsable</div>
+            <input type="hidden" id="ntResp">
+            <button type="button" class="tk-det-trigger" id="ntRespBtn">👤 Sin asignar</button>
+          </div>
+          <div>
+            <div class="t-lbl">Fecha límite</div>
+            <input type="hidden" id="ntDeadline">
+            <button type="button" class="tk-det-trigger" id="ntDlBtn">📅 Sin fecha</button>
+          </div>
+        </div>
+        <div class="t-foot">
+          <button class="t-btn-c" onclick="closeNewTaskModal()">Cancelar</button>
+          <button class="t-btn-ok" onclick="saveNewTask()">Agregar</button>
+        </div>
       </div>
     </div>
   </div>
@@ -288,7 +341,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
   db.enablePersistence({synchronizeTabs:true}).catch(function(){});
   var DOC = db.collection('workspace').doc('proyectos');
 
-  var projects = [], categories = [];
+  var projects = [], categories = [], standaloneTasks = [];
   var nextId = 14, catIdCounter = 20;
   var AV_COLORS = {AR:'#1A6FD4',LM:'#7B6FD0',SV:'#D4537E',RG:'#E8A020'};
   var AV_NAMES  = {AR:'Ana Ramírez',LM:'Luis Mora',SV:'Sofía Vega',RG:'Rodrigo Gil'};
@@ -301,7 +354,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 
   function saveData() {
     _ignoreSnap = true;
-    DOC.set({projects:projects, categories:categories, nextId:nextId, catIdCounter:catIdCounter})
+    DOC.set({projects:projects, categories:categories, nextId:nextId, catIdCounter:catIdCounter, standaloneTasks:standaloneTasks})
       .catch(function(e){ console.warn('Error al guardar:', e); });
   }
 
@@ -331,20 +384,26 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
       if (!tasks || !tasks.length) return;
       tasks.forEach(function(task) {
         result.push({
-          id: task.id,
-          text: task.text,
-          done: !!task.done,
+          id: task.id, text: task.text, done: !!task.done,
           colStatus: task.colStatus || null,
           sortOrder: task.sortOrder != null ? task.sortOrder : task.id,
-          deadline: task.deadline || '',
-          resp: task.resp || '',
-          priority: !!task.priority,
-          notes: task.notes || '',
-          projectId: proj.id,
-          projectName: proj.name,
-          stage: stage,
+          deadline: task.deadline || '', resp: task.resp || '',
+          priority: !!task.priority, notes: task.notes || '',
+          projectId: proj.id, projectName: proj.name, stage: stage,
           catColor: cat ? cat.color : 'rgba(255,255,255,0.2)'
         });
+      });
+    });
+    // Tareas sin proyecto
+    standaloneTasks.forEach(function(task) {
+      result.push({
+        id: task.id, text: task.text, done: !!task.done,
+        colStatus: task.colStatus || null,
+        sortOrder: task.sortOrder != null ? task.sortOrder : task.id,
+        deadline: task.deadline || '', resp: task.resp || '',
+        priority: !!task.priority, notes: task.notes || '',
+        projectId: 'standalone', projectName: '— Sin proyecto', stage: '',
+        catColor: 'rgba(255,255,255,0.2)'
       });
     });
     return result;
@@ -568,21 +627,22 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     if (_pendingSave) { _pendingSave = false; saveData(); }
   }
 
+  function _toggleInArray(arr, taskId) {
+    for (var j=0;j<arr.length;j++){
+      if (arr[j].id===taskId){
+        arr[j].done=!arr[j].done;
+        arr[j].colStatus=arr[j].done?'done':(arr[j].deadline?'inprogress':'notstarted');
+        saveData(); renderBoard(); return true;
+      }
+    }
+    return false;
+  }
   function toggleTask(projectId, stage, taskId) {
+    if (projectId==='standalone') { _toggleInArray(standaloneTasks, taskId); return; }
     for (var i=0;i<projects.length;i++){
       if (projects[i].id===projectId){
         var tasks = projects[i].stageTasks && projects[i].stageTasks[stage];
-        if (tasks){
-          for (var j=0;j<tasks.length;j++){
-            if (tasks[j].id===taskId){
-              tasks[j].done = !tasks[j].done;
-              tasks[j].colStatus = tasks[j].done ? 'done' : (tasks[j].deadline ? 'inprogress' : 'notstarted');
-              saveData();
-              renderBoard();
-              return;
-            }
-          }
-        }
+        if (tasks && _toggleInArray(tasks, taskId)) return;
       }
     }
   }
@@ -716,11 +776,16 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
   })();
 
   // ── FLAG & DETAIL ────────────────────────────────────────
+  function _flagInArray(arr, taskId) {
+    for (var j=0;j<arr.length;j++){ if (arr[j].id===taskId){ arr[j].priority=!arr[j].priority; saveData(); renderBoard(); return true; } }
+    return false;
+  }
   function toggleFlag(projectId, stage, taskId) {
+    if (projectId==='standalone') { _flagInArray(standaloneTasks, taskId); return; }
     for (var i=0;i<projects.length;i++){
       if (projects[i].id===projectId){
         var tasks = projects[i].stageTasks && projects[i].stageTasks[stage];
-        if (tasks){ for (var j=0;j<tasks.length;j++){ if (tasks[j].id===taskId){ tasks[j].priority=!tasks[j].priority; saveData(); renderBoard(); return; } } }
+        if (tasks && _flagInArray(tasks, taskId)) return;
       }
     }
   }
@@ -751,21 +816,28 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     document.getElementById('tkDetOverlay').classList.remove('open');
     _detRef = null;
   };
+  function _applyDetailEdit(task) {
+    var newText = document.getElementById('tkDetText').value.trim();
+    if (newText) task.text = newText;
+    task.resp = document.getElementById('tkDetResp').value;
+    task.deadline = document.getElementById('tkDetDeadline').value;
+    var newSt = document.getElementById('tkDetStatus').value;
+    task.colStatus = newSt; task.done = (newSt==='done');
+    task.notes = document.getElementById('tkDetNotes').value.trim();
+  }
   window.saveTaskDetail = function() {
     if (!_detRef) return;
+    if (_detRef.projectId==='standalone') {
+      for (var j=0;j<standaloneTasks.length;j++){
+        if (standaloneTasks[j].id===_detRef.taskId){ _applyDetailEdit(standaloneTasks[j]); saveData(); closeTaskDetail(); renderBoard(); return; }
+      }
+      return;
+    }
     for (var i=0;i<projects.length;i++){
       if (projects[i].id===_detRef.projectId){
         var tasks = projects[i].stageTasks && projects[i].stageTasks[_detRef.stage];
         if (tasks){ for (var j=0;j<tasks.length;j++){ if (tasks[j].id===_detRef.taskId){
-          var newText = document.getElementById('tkDetText').value.trim();
-          if (newText) tasks[j].text = newText;
-          tasks[j].resp = document.getElementById('tkDetResp').value;
-          tasks[j].deadline = document.getElementById('tkDetDeadline').value;
-          var newSt = document.getElementById('tkDetStatus').value;
-          tasks[j].colStatus = newSt;
-          tasks[j].done = (newSt === 'done');
-          tasks[j].notes = document.getElementById('tkDetNotes').value.trim();
-          saveData(); closeTaskDetail(); renderBoard(); return;
+          _applyDetailEdit(tasks[j]); saveData(); closeTaskDetail(); renderBoard(); return;
         } } }
       }
     }
@@ -895,6 +967,15 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
   }
 
   function _commitDrop(projectId, stage, taskId, newColType, newSortOrder) {
+    if (projectId==='standalone') {
+      for (var si=0;si<standaloneTasks.length;si++){
+        if (standaloneTasks[si].id===taskId){
+          standaloneTasks[si].colStatus=newColType; standaloneTasks[si].done=(newColType==='done'); standaloneTasks[si].sortOrder=newSortOrder;
+          saveData(); renderBoard(); return;
+        }
+      }
+      return;
+    }
     for (var i=0;i<projects.length;i++){
       if (projects[i].id===projectId){
         var tasks = projects[i].stageTasks && projects[i].stageTasks[stage];
@@ -926,30 +1007,40 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
   });
 
   // ── NEW TASK MODAL ──────────────────────────────────────
-  window.openNewTaskModal = function() {
-    var sel = document.getElementById('ntProject');
-    sel.innerHTML = '';
-    var nonCot = projects.filter(function(p){ return p.catId !== 'cotizaciones'; });
-    if (!nonCot.length) {
-      var opt = document.createElement('option');
-      opt.value = ''; opt.textContent = 'Sin proyectos disponibles';
-      sel.appendChild(opt);
-    } else {
-      nonCot.forEach(function(p) {
-        var opt = document.createElement('option');
-        opt.value = p.id; opt.textContent = p.name;
-        sel.appendChild(opt);
-      });
+  var _ntMode = 'choose'; // 'choose' | 'standalone' | 'project'
+
+  window.ntShowStep = function(step) {
+    _ntMode = step === 'choose' ? 'choose' : step;
+    document.getElementById('ntStep1').style.display         = (step === 'choose') ? '' : 'none';
+    document.getElementById('ntStepStandalone').style.display= (step === 'standalone') ? '' : 'none';
+    document.getElementById('ntStepProject').style.display   = (step === 'project') ? '' : 'none';
+    if (step === 'standalone') {
+      document.getElementById('ntSText').value = '';
+      document.getElementById('ntSResp').value = ''; _updRespBtn(document.getElementById('ntSRespBtn'), '');
+      document.getElementById('ntSDeadline').value = ''; _updDlBtn(document.getElementById('ntSDlBtn'), '');
+      setTimeout(function(){ document.getElementById('ntSText').focus(); }, 80);
     }
-    ntUpdateStages();
-    document.getElementById('ntText').value = '';
-    document.getElementById('ntResp').value = '';
-    document.getElementById('ntDeadline').value = '';
+    if (step === 'project') {
+      var sel = document.getElementById('ntProject');
+      sel.innerHTML = '';
+      var nonCot = projects.filter(function(p){ return p.catId !== 'cotizaciones'; });
+      if (!nonCot.length) { var o=document.createElement('option'); o.value=''; o.textContent='Sin proyectos'; sel.appendChild(o); }
+      else { nonCot.forEach(function(p){ var o=document.createElement('option'); o.value=p.id; o.textContent=p.name; sel.appendChild(o); }); }
+      ntUpdateStages();
+      document.getElementById('ntText').value = '';
+      document.getElementById('ntResp').value = ''; _updRespBtn(document.getElementById('ntRespBtn'), '');
+      document.getElementById('ntDeadline').value = ''; _updDlBtn(document.getElementById('ntDlBtn'), '');
+      setTimeout(function(){ document.getElementById('ntText').focus(); }, 80);
+    }
+  };
+
+  window.openNewTaskModal = function() {
+    ntShowStep('choose');
     document.getElementById('newTaskOverlay').classList.add('open');
-    setTimeout(function(){ document.getElementById('ntText').focus(); }, 120);
   };
 
   window.closeNewTaskModal = function() {
+    _tkClosePicker();
     document.getElementById('newTaskOverlay').classList.remove('open');
   };
 
@@ -957,36 +1048,56 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     var pid = parseInt(document.getElementById('ntProject').value, 10);
     var proj = null;
     for (var i=0;i<projects.length;i++){if(projects[i].id===pid){proj=projects[i];break;}}
-    var stageSel = document.getElementById('ntStage');
-    stageSel.innerHTML = '';
+    var stageSel = document.getElementById('ntStage'); stageSel.innerHTML = '';
     if (!proj) return;
     var cat = getCat(proj.catId);
     var stages = cat ? cat.stages : [proj.stage];
-    stages.forEach(function(s) {
-      var opt = document.createElement('option');
-      opt.value = s; opt.textContent = s;
-      if (s === proj.stage) opt.selected = true;
-      stageSel.appendChild(opt);
+    stages.forEach(function(s){
+      var o=document.createElement('option'); o.value=s; o.textContent=s;
+      if (s===proj.stage) o.selected=true;
+      stageSel.appendChild(o);
     });
   };
 
   window.saveNewTask = function() {
-    var text = document.getElementById('ntText').value.trim();
-    if (!text) { document.getElementById('ntText').focus(); return; }
-    var pid = parseInt(document.getElementById('ntProject').value, 10);
-    var stage = document.getElementById('ntStage').value;
-    var resp = document.getElementById('ntResp').value;
-    var dl = document.getElementById('ntDeadline').value;
-    var proj = null;
-    for (var i=0;i<projects.length;i++){if(projects[i].id===pid){proj=projects[i];break;}}
-    if (!proj) return;
-    if (!proj.stageTasks) proj.stageTasks = {};
-    if (!proj.stageTasks[stage]) proj.stageTasks[stage] = [];
-    proj.stageTasks[stage].push({id: Date.now(), text: text, done: false, deadline: dl, resp: resp});
-    saveData();
-    closeNewTaskModal();
-    renderBoard();
+    if (_ntMode === 'standalone') {
+      var text = document.getElementById('ntSText').value.trim();
+      if (!text) { document.getElementById('ntSText').focus(); return; }
+      standaloneTasks.push({
+        id: Date.now(), text: text, done: false,
+        deadline: document.getElementById('ntSDeadline').value,
+        resp: document.getElementById('ntSResp').value,
+        colStatus: null, sortOrder: null, priority: false, notes: ''
+      });
+      saveData(); closeNewTaskModal(); renderBoard();
+    } else if (_ntMode === 'project') {
+      var text = document.getElementById('ntText').value.trim();
+      if (!text) { document.getElementById('ntText').focus(); return; }
+      var pid = parseInt(document.getElementById('ntProject').value, 10);
+      var stage = document.getElementById('ntStage').value;
+      var proj = null;
+      for (var i=0;i<projects.length;i++){if(projects[i].id===pid){proj=projects[i];break;}}
+      if (!proj) return;
+      if (!proj.stageTasks) proj.stageTasks = {};
+      if (!proj.stageTasks[stage]) proj.stageTasks[stage] = [];
+      proj.stageTasks[stage].push({
+        id: Date.now(), text: text, done: false,
+        deadline: document.getElementById('ntDeadline').value,
+        resp: document.getElementById('ntResp').value
+      });
+      saveData(); closeNewTaskModal(); renderBoard();
+    }
   };
+
+  // Wiring pickers del modal nueva tarea (una sola vez)
+  (function(){
+    // standalone
+    document.getElementById('ntSRespBtn').onclick=function(e){e.stopPropagation();tkOpenPersonPicker(this,document.getElementById('ntSResp').value,function(v){document.getElementById('ntSResp').value=v;_updRespBtn(document.getElementById('ntSRespBtn'),v);});};
+    document.getElementById('ntSDlBtn').onclick=function(e){e.stopPropagation();tkOpenDatePicker(this,document.getElementById('ntSDeadline').value,function(v){document.getElementById('ntSDeadline').value=v;_updDlBtn(document.getElementById('ntSDlBtn'),v);});};
+    // project
+    document.getElementById('ntRespBtn').onclick=function(e){e.stopPropagation();tkOpenPersonPicker(this,document.getElementById('ntResp').value,function(v){document.getElementById('ntResp').value=v;_updRespBtn(document.getElementById('ntRespBtn'),v);});};
+    document.getElementById('ntDlBtn').onclick=function(e){e.stopPropagation();tkOpenDatePicker(this,document.getElementById('ntDeadline').value,function(v){document.getElementById('ntDeadline').value=v;_updDlBtn(document.getElementById('ntDlBtn'),v);});};
+  })();
 
   // Init — onSnapshot para sincronización en tiempo real con proyectos.html
   DOC.onSnapshot(function(snap){
@@ -997,6 +1108,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
       if (d.categories && d.categories.length) categories = d.categories;
       if (d.nextId) nextId = d.nextId;
       if (d.catIdCounter) catIdCounter = d.catIdCounter;
+      if (d.standaloneTasks) standaloneTasks = d.standaloneTasks;
     }
     renderBoard();
   }, function(e){ console.warn('Error:', e); renderBoard(); });
