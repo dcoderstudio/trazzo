@@ -552,6 +552,37 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
   ];
   var AV_COLORS = {AR:'#1A6FD4',LM:'#7B6FD0',SV:'#D4537E',RG:'#E8A020'};
   var TEAM_MEMBERS = [{id:'AR',name:'Ana Ramírez',color:'#1A6FD4'},{id:'LM',name:'Luis Mora',color:'#7B6FD0'},{id:'SV',name:'Sofía Vega',color:'#D4537E'},{id:'RG',name:'Rodrigo Gil',color:'#E8A020'}];
+
+  function _syncTeamData(members) {
+    if (!members || !members.length) return;
+    TEAM_MEMBERS = members;
+    AV_COLORS = {};
+    members.forEach(function(m){ AV_COLORS[m.id] = m.color; });
+    // Update RESP_NAMES / RESP_OPTS (may be defined later, so set them here too)
+    var rn = {}, ro = [['','— Nadie']];
+    members.forEach(function(m){
+      var np = m.name.trim().split(/\s+/);
+      rn[m.id] = np[0] + (np.length > 1 ? ' ' + np[np.length-1][0]+'.' : '');
+      ro.push([m.id, m.name]);
+    });
+    RESP_NAMES = rn; RESP_OPTS = ro;
+    // Repopulate all <select> elements
+    ['mResp','solResp','pdmResp','pdmNewResp'].forEach(function(selId) {
+      var sel = document.getElementById(selId);
+      if (!sel) return;
+      var cur = sel.value;
+      sel.innerHTML = '';
+      var isCompact = selId === 'pdmNewResp';
+      var opt0 = document.createElement('option'); opt0.value = ''; opt0.textContent = isCompact ? '👤' : '— Sin responsable';
+      sel.appendChild(opt0);
+      members.forEach(function(m) {
+        var opt = document.createElement('option'); opt.value = m.id;
+        opt.textContent = isCompact ? m.id : m.name;
+        sel.appendChild(opt);
+      });
+      if (cur) sel.value = cur;
+    });
+  }
   var fieldUpdaters = {};
   var _activePicker = null;
   var selColor = PALETTE[0];
@@ -1787,6 +1818,8 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 
   var RESP_NAMES = {AR:'Ana R.', LM:'Luis M.', SV:'Sofía V.', RG:'Rodrigo G.'};
   var RESP_OPTS = [['','— Nadie'],['AR','Ana Ramírez'],['LM','Luis Mora'],['SV','Sofía Vega'],['RG','Rodrigo Gil']];
+  // Sync with live data if already loaded
+  if (_wsTeamMembers && _wsTeamMembers.length) _syncTeamData(_wsTeamMembers);
 
   function renderDetailTasks() {
     var p = null;
@@ -2345,7 +2378,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
       if (d.catIdCounter) catIdCounter = d.catIdCounter;
       if (d.standaloneTasks) standaloneTasks = d.standaloneTasks;
       if (d.taskColumns) taskColumns = d.taskColumns;
-      if (d.teamMembers) { _wsTeamMembers = d.teamMembers; }
+      if (d.teamMembers) { _wsTeamMembers = d.teamMembers; _syncTeamData(d.teamMembers); }
       if (d.taskGroups) { _wsTaskGroups = d.taskGroups; }
     }
     // Migración: quitar Negociación y asegurar Entregado al final
