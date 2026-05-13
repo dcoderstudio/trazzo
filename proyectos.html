@@ -1758,7 +1758,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     document.getElementById('pdmClient').value = p.client || '';
     document.getElementById('pdmDeadline').value = p.deadline || '';
     if (fieldUpdaters['pdmDeadline']) fieldUpdaters['pdmDeadline']();
-    document.getElementById('pdmResp').value = p.team && p.team[0] ? p.team[0] : 'AR';
+    document.getElementById('pdmResp').value = p.team && p.team[0] ? p.team[0] : '';
     if (fieldUpdaters['pdmResp']) fieldUpdaters['pdmResp']();
     var montoRow = document.getElementById('pdmMontoRow');
     if (p.catId === 'cotizaciones') { montoRow.style.display = ''; document.getElementById('pdmMonto').value = p.monto || ''; }
