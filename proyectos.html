@@ -459,22 +459,10 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
   <div class="modal">
     <div class="modal-title" id="projModalTitle">Nuevo proyecto</div>
     <div><div class="ml">Nombre</div><input class="mi" id="mName" placeholder="Nombre del proyecto"></div>
-    <div><div class="ml">Cliente</div><input class="mi" id="mClient" placeholder="Nombre del cliente"></div>
-    <div class="grid2">
-      <div><div class="ml">Categoría</div><select class="mi" id="mType"></select></div>
-      <div><div class="ml">Deadline</div><input class="mi" id="mDeadline" type="date"></div>
-    </div>
-    <div><div class="ml">Responsable</div>
-      <select class="mi" id="mResp">
-        <option value="">— Sin responsable</option>
-        <option value="AR">Ana Ramírez</option>
-        <option value="LM">Luis Mora</option>
-        <option value="SV">Sofía Vega</option>
-        <option value="RG">Rodrigo Gil</option>
-      </select>
-    </div>
-    <div id="montoRow"><div class="ml">Monto estimado</div><input class="mi" id="mMonto" placeholder="$0.00"></div>
-    <div id="tipoRow"><div class="ml">Tipo de proyecto (al aceptar)</div><select class="mi" id="mTipo"></select></div>
+    <div><div class="ml">Categoría</div><select class="mi" id="mType"></select></div>
+    <div id="mDynFields"></div>
+    <div id="montoRow" style="display:none;"><div class="ml">Monto estimado</div><input class="mi" id="mMonto" placeholder="$0.00"></div>
+    <div id="tipoRow" style="display:none;"><div class="ml">Tipo de proyecto (al aceptar)</div><select class="mi" id="mTipo"></select></div>
     <div class="mf" style="flex-direction:column;gap:8px;">
       <button style="background:none;border:0.5px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.35);font-size:11px;font-weight:600;padding:7px;border-radius:10px;cursor:pointer;font-family:'Inter',sans-serif;width:100%;transition:all .15s;" onclick="openCfEditor()" onmouseover="this.style.color='rgba(255,255,255,0.7)'" onmouseout="this.style.color='rgba(255,255,255,0.35)'">⚙ Personalizar campos</button>
       <div style="display:flex;gap:8px;width:100%;">
@@ -1796,6 +1784,44 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
   }
 
   // ── PROJECT MODAL ─────────────────────────────────────
+  function renderModalFields() {
+    var wrap = document.getElementById('mDynFields'); if (!wrap) return;
+    wrap.innerHTML = '';
+    getProjectFields().forEach(function(field) {
+      if (!field.visible || field.type === 'stage') return;
+      var row = document.createElement('div');
+      var lbl = document.createElement('div'); lbl.className = 'ml'; lbl.textContent = field.label;
+      row.appendChild(lbl);
+      if (field.type === 'text') {
+        var inp = document.createElement('input'); inp.className = 'mi';
+        inp.id = field.id === 'std_cliente' ? 'mClient' : 'mf_' + field.id;
+        inp.placeholder = field.label;
+        row.appendChild(inp);
+      } else if (field.type === 'date') {
+        var di = document.createElement('input'); di.className = 'mi'; di.type = 'date';
+        di.id = field.id === 'std_deadline' ? 'mDeadline' : 'mf_' + field.id;
+        row.appendChild(di);
+        fieldUpdaters[di.id] = makeDateTrigger(di, 'cdt mi', '📅 ' + field.label);
+      } else if (field.type === 'person') {
+        var psel = document.createElement('select'); psel.className = 'mi';
+        psel.id = field.id === 'std_resp' ? 'mResp' : 'mf_' + field.id;
+        var pnone = document.createElement('option'); pnone.value = ''; pnone.textContent = '— Sin ' + field.label.toLowerCase();
+        psel.appendChild(pnone);
+        TEAM_MEMBERS.forEach(function(m){ var o=document.createElement('option');o.value=m.id;o.textContent=m.name;psel.appendChild(o); });
+        row.appendChild(psel);
+        fieldUpdaters[psel.id] = makePersonTrigger(psel, 'cpt mi', '👤 ' + field.label);
+      } else if (field.type === 'select' && field.options) {
+        var vsel = document.createElement('select'); vsel.className = 'mi';
+        vsel.id = 'mf_' + field.id;
+        var vnone = document.createElement('option'); vnone.value = ''; vnone.textContent = '— Sin seleccionar';
+        vsel.appendChild(vnone);
+        field.options.forEach(function(opt){ var o=document.createElement('option');o.value=opt.id;o.textContent=opt.label;vsel.appendChild(o); });
+        row.appendChild(vsel);
+      }
+      wrap.appendChild(row);
+    });
+  }
+
   function openProjModal(catId, stage) {
     presetCat = catId || null;
     presetStage = stage || null;
@@ -1826,14 +1852,17 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
         tipoSel.appendChild(opt);
       }
     });
+    renderModalFields();
     document.getElementById('projOverlay').classList.add('open');
     setTimeout(function() { document.getElementById('mName').focus(); }, 100);
   }
 
   function closeProjModal() {
     document.getElementById('projOverlay').classList.remove('open');
-    ['mName','mClient','mDeadline','mMonto'].forEach(function(id) { document.getElementById(id).value = ''; });
-    if (fieldUpdaters['mDeadline']) fieldUpdaters['mDeadline']();
+    var mn = document.getElementById('mName'); if (mn) mn.value = '';
+    var mm = document.getElementById('mMonto'); if (mm) mm.value = '';
+    var dyn = document.getElementById('mDynFields');
+    if (dyn) dyn.querySelectorAll('input,select').forEach(function(el){ el.value = ''; });
   }
 
   function seedStageTasks(proj, cat, stage) {
@@ -1853,11 +1882,11 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 
   function createProject() {
     var name = document.getElementById('mName').value.trim();
-    var client = document.getElementById('mClient').value.trim();
     var catId = document.getElementById('mType').value;
-    var deadline = document.getElementById('mDeadline').value;
-    var resp = document.getElementById('mResp').value;
-    var monto = document.getElementById('mMonto').value;
+    var _mc = document.getElementById('mClient'); var client = _mc ? _mc.value.trim() : '';
+    var _md = document.getElementById('mDeadline'); var deadline = _md ? _md.value : '';
+    var _mr = document.getElementById('mResp'); var resp = _mr ? _mr.value : '';
+    var monto = document.getElementById('mMonto') ? document.getElementById('mMonto').value : '';
     var tipoCat = document.getElementById('mTipo').value;
     if (!name) return;
     var cat = null;
@@ -1866,6 +1895,13 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     var proj = {id: nextId++, name: name, client: client || '—', catId: catId, stage: stage, deadline: deadline, team: [resp], stageEntryDates: {}};
     proj.stageEntryDates[stage] = new Date().toISOString().split('T')[0];
     if (catId === 'cotizaciones') { proj.monto = monto; proj.tipoCat = tipoCat; }
+    // Save custom field values from dynamic fields
+    getProjectFields().forEach(function(field) {
+      if (field.isStd || field.type === 'stage') return;
+      var el = document.getElementById('mf_' + field.id); if (!el || !el.value) return;
+      if (!proj.customFieldValues) proj.customFieldValues = {};
+      proj.customFieldValues[field.id] = el.value;
+    });
     seedStageTasks(proj, cat, stage);
     projects.push(proj);
     saveData();
@@ -2393,7 +2429,10 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
   }
 
   window.openCfEditor = function() { renderCfEdList(); document.getElementById('cfEdOverlay').classList.add('open'); };
-  window.closeCfEditor = function() { document.getElementById('cfEdOverlay').classList.remove('open'); };
+  window.closeCfEditor = function() {
+    document.getElementById('cfEdOverlay').classList.remove('open');
+    if (document.getElementById('projOverlay').classList.contains('open')) renderModalFields();
+  };
 
   function _cfRefreshPdm() {
     if (!detailProjectId) return;
