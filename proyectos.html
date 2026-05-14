@@ -1334,8 +1334,8 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
       row.appendChild(nm);row.appendChild(lnk);row.appendChild(del); return row;
     } else {
       var wrap2=document.createElement('div');
-      var finp=document.createElement('input'); finp.type='file'; finp.accept='.pdf,.PDF,application/pdf'; finp.style.display='none';
-      var btn=document.createElement('button'); btn.className='pdm-upload-btn'; btn.innerHTML='<span>📎</span> Subir PDF';
+      var finp=document.createElement('input'); finp.type='file'; finp.accept='.pdf,.PDF,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png,.webp,.txt,.csv,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,image/*'; finp.style.display='none';
+      var btn=document.createElement('button'); btn.className='pdm-upload-btn'; btn.innerHTML='<span>📎</span> Subir archivo';
       var prog=document.createElement('div'); prog.className='pdm-upload-prog';
       btn.onclick=function(){finp.click();};
       finp.addEventListener('change',function(){
