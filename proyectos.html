@@ -353,45 +353,54 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 .cf-ed-overlay.open .cf-ed-modal{transform:none;}
 .cf-ed-modal::-webkit-scrollbar{width:3px;}
 .cf-ed-modal::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.12);border-radius:2px;}
-.cf-ed-field-item{background:#1e1e1e;border:0.5px solid rgba(255,255,255,0.08);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:10px;}
+.cf-ed-field-item{background:#1a1a1a;border:0.5px solid rgba(255,255,255,0.06);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:10px;}
 .cf-ed-field-hdr{display:flex;align-items:center;gap:8px;}
-.cf-ed-field-inp{background:#111;border:0.5px solid rgba(255,255,255,0.1);border-radius:8px;padding:8px 11px;font-size:13px;font-weight:600;color:#fff;font-family:'Inter',sans-serif;outline:none;flex:1;transition:border-color .15s;}
-.cf-ed-field-inp:focus{border-color:rgba(255,255,255,0.3);}
-.cf-ed-opts{display:flex;flex-direction:column;gap:6px;}
-.cf-ed-opt-row{display:flex;align-items:center;gap:7px;}
-.cf-ed-opt-inp{background:#111;border:0.5px solid rgba(255,255,255,0.1);border-radius:8px;padding:6px 10px;font-size:12px;color:#fff;font-family:'Inter',sans-serif;outline:none;flex:1;transition:border-color .15s;}
-.cf-ed-opt-inp:focus{border-color:rgba(255,255,255,0.3);}
-.cf-ed-opt-del{background:none;border:none;color:rgba(255,255,255,0.2);font-size:16px;cursor:pointer;padding:1px 5px;line-height:1;transition:color .15s;}
+.cf-ed-field-inp{background:transparent;border:none;border-bottom:0.5px solid rgba(255,255,255,0.08);border-radius:0;padding:3px 0 4px;font-size:12px;font-weight:600;color:rgba(255,255,255,0.88);font-family:'Inter',sans-serif;outline:none;flex:1;transition:border-color .15s;}
+.cf-ed-field-inp:focus{border-bottom-color:rgba(255,255,255,0.32);}
+.cf-ed-field-inp::placeholder{color:rgba(255,255,255,0.2);}
+.cf-ed-opts{display:flex;flex-direction:column;gap:5px;}
+.cf-ed-opt-row{display:flex;align-items:center;gap:7px;padding:4px 6px;background:rgba(255,255,255,0.02);border-radius:8px;}
+.cf-ed-opt-inp{background:transparent;border:none;border-bottom:0.5px solid rgba(255,255,255,0.07);padding:2px 0 3px;font-size:11px;color:rgba(255,255,255,0.75);font-family:'Inter',sans-serif;outline:none;flex:1;transition:border-color .15s;}
+.cf-ed-opt-inp:focus{border-bottom-color:rgba(255,255,255,0.3);}
+.cf-ed-opt-del{background:none;border:none;color:rgba(255,255,255,0.15);font-size:15px;cursor:pointer;padding:1px 4px;line-height:1;transition:color .15s;}
 .cf-ed-opt-del:hover{color:#E24B4A;}
-.cf-del-field-btn{background:none;border:none;color:rgba(255,255,255,0.2);font-size:18px;cursor:pointer;padding:2px 5px;line-height:1;flex-shrink:0;transition:color .15s;}
+.cf-del-field-btn{background:none;border:none;color:rgba(255,255,255,0.15);font-size:16px;cursor:pointer;padding:2px 4px;line-height:1;flex-shrink:0;transition:color .15s;}
 .cf-del-field-btn:hover{color:#E24B4A;}
-.cf-add-opt-btn{background:none;border:1px dashed rgba(255,255,255,0.12);border-radius:8px;color:rgba(255,255,255,0.3);font-size:11px;font-weight:600;padding:6px;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s;text-align:center;width:100%;}
-.cf-add-opt-btn:hover{border-color:rgba(255,255,255,0.28);color:rgba(255,255,255,0.65);}
-.cf-add-field-btn{width:100%;background:rgba(255,255,255,0.03);border:1px dashed rgba(255,255,255,0.14);border-radius:12px;color:rgba(255,255,255,0.35);font-size:12px;font-weight:600;padding:11px;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s;}
-.cf-add-field-btn:hover{border-color:rgba(255,255,255,0.3);color:rgba(255,255,255,0.65);background:rgba(255,255,255,0.06);}
-.cf-color-inp{width:22px;height:22px;border-radius:50%;cursor:pointer;border:2.5px solid rgba(255,255,255,0.2);padding:0;flex-shrink:0;background:none;-webkit-appearance:none;appearance:none;overflow:hidden;}
+.cf-add-opt-btn{background:rgba(255,255,255,0.025);border:0.5px dashed rgba(255,255,255,0.1);border-radius:8px;color:rgba(255,255,255,0.28);font-size:10px;font-weight:600;padding:5px;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s;text-align:center;width:100%;letter-spacing:.02em;}
+.cf-add-opt-btn:hover{border-color:rgba(255,255,255,0.22);color:rgba(255,255,255,0.6);}
+.cf-add-field-btn{display:none;}
+.cf-color-inp{width:20px;height:20px;border-radius:50%;cursor:pointer;border:2px solid rgba(255,255,255,0.18);padding:0;flex-shrink:0;background:none;-webkit-appearance:none;appearance:none;overflow:hidden;}
 .cf-color-inp::-webkit-color-swatch-wrapper{padding:0;border-radius:50%;}
 .cf-color-inp::-webkit-color-swatch{border:none;border-radius:50%;}
 .cf-color-inp::-moz-color-swatch{border:none;border-radius:50%;}
-.cf-color-inp:hover{border-color:rgba(255,255,255,0.5);}
+.cf-color-inp:hover{border-color:rgba(255,255,255,0.45);}
 .cf-std-grid{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;}
 .cf-std-toggle{padding:5px 12px;border-radius:20px;border:0.5px solid rgba(255,255,255,0.12);background:transparent;color:rgba(255,255,255,0.35);font-size:11px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s;display:flex;align-items:center;gap:5px;}
 .cf-std-toggle:hover{border-color:rgba(255,255,255,0.28);color:rgba(255,255,255,0.7);}
 .cf-std-toggle.on{background:rgba(255,255,255,0.1);border-color:rgba(255,255,255,0.3);color:#fff;}
-.cf-ed-sep{font-size:9px;font-weight:700;color:rgba(255,255,255,0.25);text-transform:uppercase;letter-spacing:.08em;padding-bottom:4px;border-bottom:0.5px solid rgba(255,255,255,0.06);}
-.cf-drag-handle{color:rgba(255,255,255,0.18);font-size:14px;cursor:grab;padding:2px 4px;flex-shrink:0;line-height:1;user-select:none;}
-.cf-drag-handle:hover{color:rgba(255,255,255,0.5);}
-.cf-type-badge{font-size:9px;font-weight:700;padding:2px 7px;border-radius:20px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.35);white-space:nowrap;flex-shrink:0;}
-.cf-field-row-ed{display:flex;align-items:center;gap:7px;padding:6px 8px;background:#1e1e1e;border:0.5px solid rgba(255,255,255,0.07);border-radius:10px;transition:background .12s;}
-.cf-field-row-ed.cf-drag-over{background:rgba(255,255,255,0.08);border-color:rgba(255,255,255,0.25);}
-.cf-vis-btn{background:none;border:none;font-size:14px;cursor:pointer;padding:2px 4px;opacity:.5;transition:opacity .15s;flex-shrink:0;line-height:1;}
-.cf-vis-btn:hover{opacity:1;}
-.cf-vis-btn.hidden{opacity:.2;}
-.cf-ed-type-sel{background:#111;border:0.5px solid rgba(255,255,255,0.1);border-radius:7px;padding:3px 7px;font-size:10px;font-weight:600;color:rgba(255,255,255,0.5);font-family:'Inter',sans-serif;outline:none;cursor:pointer;flex-shrink:0;}
-.cf-ed-type-sel:focus{border-color:rgba(255,255,255,0.3);}
-.cf-add-type-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;}
-.cf-add-type-btn{background:rgba(255,255,255,0.04);border:0.5px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.5);font-size:11px;font-weight:600;padding:6px 12px;border-radius:20px;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s;}
-.cf-add-type-btn:hover{background:rgba(255,255,255,0.1);border-color:rgba(255,255,255,0.3);color:#fff;}
+.cf-ed-sep{font-size:9px;font-weight:700;color:rgba(255,255,255,0.2);text-transform:uppercase;letter-spacing:.08em;padding-bottom:4px;border-bottom:0.5px solid rgba(255,255,255,0.05);}
+.cf-drag-handle{color:rgba(255,255,255,0.13);font-size:13px;cursor:grab;padding:2px 3px;flex-shrink:0;line-height:1;user-select:none;transition:color .12s;}
+.cf-drag-handle:hover{color:rgba(255,255,255,0.4);}
+.cf-field-row-ed{display:flex;align-items:center;gap:8px;padding:9px 11px;background:rgba(255,255,255,0.025);border:0.5px solid rgba(255,255,255,0.05);border-radius:12px;transition:all .15s;margin-bottom:3px;}
+.cf-field-row-ed:hover{background:rgba(255,255,255,0.045);border-color:rgba(255,255,255,0.09);}
+.cf-field-row-ed.cf-drag-over{background:rgba(255,255,255,0.07);border-color:rgba(255,255,255,0.2);transform:scale(1.01);}
+.cf-vis-btn{background:none;border:none;font-size:13px;cursor:pointer;padding:2px;opacity:.35;transition:opacity .15s;flex-shrink:0;line-height:1;}
+.cf-vis-btn:hover{opacity:.9;}
+.cf-vis-btn.hidden{opacity:.16;}
+.cf-type-pill{border-radius:20px;padding:3px 10px;font-size:10px;font-weight:700;white-space:nowrap;flex-shrink:0;font-family:'Inter',sans-serif;transition:all .15s;line-height:1.5;letter-spacing:.01em;border:none;}
+.cf-type-pill[data-t=text]  {background:rgba(90,180,232,.12);color:#5AB4E8;border:.5px solid rgba(90,180,232,.22);cursor:pointer;}
+.cf-type-pill[data-t=date]  {background:rgba(39,174,114,.12);color:#27AE72;border:.5px solid rgba(39,174,114,.22);cursor:pointer;}
+.cf-type-pill[data-t=person]{background:rgba(139,92,246,.12);color:#8B5CF6;border:.5px solid rgba(139,92,246,.22);cursor:pointer;}
+.cf-type-pill[data-t=select]{background:rgba(245,166,35,.12);color:#F5A623;border:.5px solid rgba(245,166,35,.22);cursor:pointer;}
+.cf-type-pill[data-t=stage] {background:rgba(192,67,110,.1);color:#C0436E;border:.5px solid rgba(192,67,110,.2);cursor:default;}
+.cf-type-pill[data-t]:not([data-t=stage]):hover{filter:brightness(1.18);transform:scale(1.03);}
+.cf-add-type-row{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px;}
+.cf-add-type-btn{border-radius:20px;padding:6px 14px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s;letter-spacing:.01em;}
+.cf-add-type-btn[data-t=text]  {background:rgba(90,180,232,.07);color:rgba(90,180,232,.75);border:.5px solid rgba(90,180,232,.18);}
+.cf-add-type-btn[data-t=date]  {background:rgba(39,174,114,.07);color:rgba(39,174,114,.75);border:.5px solid rgba(39,174,114,.18);}
+.cf-add-type-btn[data-t=person]{background:rgba(139,92,246,.07);color:rgba(139,92,246,.75);border:.5px solid rgba(139,92,246,.18);}
+.cf-add-type-btn[data-t=select]{background:rgba(245,166,35,.07);color:rgba(245,166,35,.75);border:.5px solid rgba(245,166,35,.18);}
+.cf-add-type-btn:hover{filter:brightness(1.3);transform:translateY(-1px);}
 </style>
 </head>
 <body>
@@ -428,10 +437,12 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 <div class="cf-ed-overlay" id="cfEdOverlay" onclick="if(event.target===this)closeCfEditor()">
   <div class="cf-ed-modal">
     <div style="display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
-      <div style="font-size:15px;font-weight:700;color:#fff;">Campos personalizados</div>
-      <button style="background:none;border:none;color:rgba(255,255,255,0.3);font-size:20px;cursor:pointer;line-height:1;" onclick="closeCfEditor()">×</button>
+      <div>
+        <div style="font-size:15px;font-weight:700;color:#fff;letter-spacing:-.01em;">⚙ Personalizar campos</div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.28);margin-top:3px;">Arrastra para reordenar · Clic en el tipo para cambiarlo</div>
+      </div>
+      <button style="background:rgba(255,255,255,0.04);border:0.5px solid rgba(255,255,255,0.08);color:rgba(255,255,255,0.4);font-size:15px;cursor:pointer;line-height:1;width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;transition:all .15s;" onmouseover="this.style.background='rgba(255,255,255,0.08)';this.style.color='rgba(255,255,255,.8)'" onmouseout="this.style.background='rgba(255,255,255,0.04)';this.style.color='rgba(255,255,255,.4)'" onclick="closeCfEditor()">×</button>
     </div>
-    <div style="font-size:11px;color:rgba(255,255,255,0.28);margin-top:-8px;">Agrega campos con opciones seleccionables que aparecen en cada ficha de proyecto.</div>
     <div id="cfEdList"></div>
     <button class="cf-add-field-btn" onclick="cfAddField()">+ Agregar campo</button>
   </div>
@@ -743,6 +754,8 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
   var _cfDrag = null;
 
   var TYPE_LABELS = {text:'Texto', date:'Fecha', person:'Persona', stage:'Fase', select:'Selección'};
+  var TYPE_ICONS  = {text:'📝', date:'📅', person:'👤', stage:'⚡', select:'🔘'};
+  var TYPE_CYCLE  = ['text','date','person','select'];
 
   var DEFAULT_PROJECT_FIELDS = [
     {id:'std_cliente',  label:'Cliente',          type:'text',   isStd:true, visible:true},
@@ -2407,15 +2420,19 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
         var pf=getProjectFields(); for(var i=0;i<pf.length;i++){if(pf[i].id===fid){pf[i].label=inp.value;break;}} projectFields=pf; saveData(); _cfRefreshPdm();
       }; })(field.id);
       row.appendChild(inp);
-      // Type selector
-      var tsel = document.createElement('select'); tsel.className = 'cf-ed-type-sel';
-      var allowedTypes = field.type === 'stage' ? ['stage'] : ['text','date','person','select'];
-      allowedTypes.forEach(function(t){ var o=document.createElement('option');o.value=t;o.textContent=TYPE_LABELS[t];tsel.appendChild(o); });
-      tsel.value = field.type;
-      tsel.onchange = (function(fid){ return function() {
-        var pf=getProjectFields(); for(var i=0;i<pf.length;i++){if(pf[i].id===fid){pf[i].type=tsel.value;if(tsel.value==='select'&&!pf[i].options)pf[i].options=[];break;}} projectFields=pf; saveData(); renderCfEdList(); _cfRefreshPdm();
-      }; })(field.id);
-      row.appendChild(tsel);
+      // Type pill (cycles on click)
+      var tpil = document.createElement('button'); tpil.className = 'cf-type-pill'; tpil.dataset.t = field.type;
+      tpil.title = field.type === 'stage' ? 'Tipo: Fase (fijo)' : 'Clic para cambiar tipo';
+      tpil.textContent = TYPE_ICONS[field.type] + ' ' + TYPE_LABELS[field.type];
+      if (field.type !== 'stage') {
+        tpil.onclick = (function(fid, btn){ return function(e) { e.stopPropagation();
+          var pf=getProjectFields(); for(var i=0;i<pf.length;i++){if(pf[i].id===fid){
+            var ci=TYPE_CYCLE.indexOf(pf[i].type); var nt=TYPE_CYCLE[(ci+1)%TYPE_CYCLE.length];
+            pf[i].type=nt; if(nt==='select'&&!pf[i].options)pf[i].options=[]; break;
+          }} projectFields=pf; saveData(); renderCfEdList(); _cfRefreshPdm();
+        };})(field.id, tpil);
+      }
+      row.appendChild(tpil);
       // Visibility
       var vis = document.createElement('button'); vis.className = 'cf-vis-btn' + (field.visible ? '' : ' hidden');
       vis.textContent = field.visible ? '👁' : '🚫'; vis.title = field.visible ? 'Ocultar' : 'Mostrar';
@@ -2459,7 +2476,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     var addLbl=document.createElement('div');addLbl.style.cssText='font-size:10px;font-weight:700;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;';addLbl.textContent='Agregar campo';
     var tr=document.createElement('div');tr.className='cf-add-type-row';
     [{t:'text',l:'📝 Texto'},{t:'date',l:'📅 Fecha'},{t:'person',l:'👤 Persona'},{t:'select',l:'🔘 Selección'}].forEach(function(opt){
-      var btn=document.createElement('button');btn.className='cf-add-type-btn';btn.textContent=opt.l;
+      var btn=document.createElement('button');btn.className='cf-add-type-btn';btn.dataset.t=opt.t;btn.textContent=opt.l;
       btn.onclick=(function(tp){return function(){
         var nid='cf_'+Date.now();var nf={id:nid,label:'Nuevo campo',type:tp,isStd:false,visible:true};
         if(tp==='select')nf.options=[{id:'opt_'+Date.now(),label:'Opción 1',color:'#1A6FD4'}];
