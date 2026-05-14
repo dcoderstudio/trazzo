@@ -379,6 +379,19 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 .cf-std-toggle:hover{border-color:rgba(255,255,255,0.28);color:rgba(255,255,255,0.7);}
 .cf-std-toggle.on{background:rgba(255,255,255,0.1);border-color:rgba(255,255,255,0.3);color:#fff;}
 .cf-ed-sep{font-size:9px;font-weight:700;color:rgba(255,255,255,0.25);text-transform:uppercase;letter-spacing:.08em;padding-bottom:4px;border-bottom:0.5px solid rgba(255,255,255,0.06);}
+.cf-drag-handle{color:rgba(255,255,255,0.18);font-size:14px;cursor:grab;padding:2px 4px;flex-shrink:0;line-height:1;user-select:none;}
+.cf-drag-handle:hover{color:rgba(255,255,255,0.5);}
+.cf-type-badge{font-size:9px;font-weight:700;padding:2px 7px;border-radius:20px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.35);white-space:nowrap;flex-shrink:0;}
+.cf-field-row-ed{display:flex;align-items:center;gap:7px;padding:6px 8px;background:#1e1e1e;border:0.5px solid rgba(255,255,255,0.07);border-radius:10px;transition:background .12s;}
+.cf-field-row-ed.cf-drag-over{background:rgba(255,255,255,0.08);border-color:rgba(255,255,255,0.25);}
+.cf-vis-btn{background:none;border:none;font-size:14px;cursor:pointer;padding:2px 4px;opacity:.5;transition:opacity .15s;flex-shrink:0;line-height:1;}
+.cf-vis-btn:hover{opacity:1;}
+.cf-vis-btn.hidden{opacity:.2;}
+.cf-ed-type-sel{background:#111;border:0.5px solid rgba(255,255,255,0.1);border-radius:7px;padding:3px 7px;font-size:10px;font-weight:600;color:rgba(255,255,255,0.5);font-family:'Inter',sans-serif;outline:none;cursor:pointer;flex-shrink:0;}
+.cf-ed-type-sel:focus{border-color:rgba(255,255,255,0.3);}
+.cf-add-type-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;}
+.cf-add-type-btn{background:rgba(255,255,255,0.04);border:0.5px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.5);font-size:11px;font-weight:600;padding:6px 12px;border-radius:20px;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s;}
+.cf-add-type-btn:hover{background:rgba(255,255,255,0.1);border-color:rgba(255,255,255,0.3);color:#fff;}
 </style>
 </head>
 <body>
@@ -587,21 +600,9 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     </div>
     <div class="pdm-body">
       <div class="pdm-info">
-        <div class="pdm-field" id="pdmClientRow"><div class="pdm-lbl">Cliente</div><input class="pdm-inp" id="pdmClient" placeholder="Nombre del cliente"></div>
-        <div class="pdm-field" id="pdmFaseRow"><div class="pdm-lbl">Fase actual</div><select class="pdm-inp" id="pdmStage"></select></div>
-        <div class="pdm-field" id="pdmDeadlineRow"><div class="pdm-lbl">Fecha de entrega</div><input class="pdm-inp" type="date" id="pdmDeadline"></div>
-        <div class="pdm-field" id="pdmRespRow"><div class="pdm-lbl">Responsable</div>
-          <select class="pdm-inp" id="pdmResp">
-            <option value="">— Sin responsable</option>
-            <option value="AR">Ana Ramírez</option>
-            <option value="LM">Luis Mora</option>
-            <option value="SV">Sofía Vega</option>
-            <option value="RG">Rodrigo Gil</option>
-          </select>
-        </div>
+        <div id="pdmDynFields"></div>
         <div id="pdmMontoRow" class="pdm-field" style="display:none;"><div class="pdm-lbl">Monto estimado</div><input class="pdm-inp" id="pdmMonto" placeholder="$0.00"></div>
         <div id="pdmTimeInfo"></div>
-        <div class="cf-section" id="pdmCustomFields"></div>
         <button class="cf-manage-btn" onclick="openCfEditor()">⚙ Personalizar campos</button>
       </div>
       <div class="pdm-tasks-col">
@@ -667,8 +668,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     if (_wsTeamMembers) payload.teamMembers = _wsTeamMembers;
     if (_wsTaskGroups) payload.taskGroups = _wsTaskGroups;
     payload.statusColumns = getStatusCols();
-    payload.customFields = customFields;
-    payload.hiddenStdFields = hiddenStdFields;
+    payload.projectFields = getProjectFields();
     DOC.set(payload)
       .catch(function(e){ console.warn('Error al guardar:', e); });
   }
@@ -738,22 +738,35 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
   var _statusView = false;
   var _sDragId = null;
   var statusColumns = null;
-  var customFields = [];
-  var hiddenStdFields = [];
+  var projectFields = null;
   var _cfPicker = null;
+  var _cfDrag = null;
 
-  var STD_FIELDS = [
-    {id:'cliente',  label:'Cliente',          rowId:'pdmClientRow'},
-    {id:'fase',     label:'Fase actual',       rowId:'pdmFaseRow'},
-    {id:'deadline', label:'Fecha de entrega',  rowId:'pdmDeadlineRow'},
-    {id:'resp',     label:'Responsable',       rowId:'pdmRespRow'}
+  var TYPE_LABELS = {text:'Texto', date:'Fecha', person:'Persona', stage:'Fase', select:'Selección'};
+
+  var DEFAULT_PROJECT_FIELDS = [
+    {id:'std_cliente',  label:'Cliente',          type:'text',   isStd:true, visible:true},
+    {id:'std_fase',     label:'Fase actual',       type:'stage',  isStd:true, visible:true},
+    {id:'std_deadline', label:'Fecha de entrega',  type:'date',   isStd:true, visible:true},
+    {id:'std_resp',     label:'Responsable',       type:'person', isStd:true, visible:true}
   ];
 
-  function _applyStdVisibility() {
-    STD_FIELDS.forEach(function(f) {
-      var el = document.getElementById(f.rowId);
-      if (el) el.style.display = hiddenStdFields.indexOf(f.id) >= 0 ? 'none' : '';
-    });
+  function getProjectFields() {
+    return (projectFields && projectFields.length) ? projectFields : DEFAULT_PROJECT_FIELDS.map(function(f){return Object.assign({},f);});
+  }
+
+  // Map std field id to DOM input id
+  var _STD_DOM = {std_cliente:'pdmClient', std_fase:'pdmStage', std_deadline:'pdmDeadline', std_resp:'pdmResp'};
+
+  // Compatibility helpers so old code still works
+  var customFields = []; // kept for backward compat reading in openCfPicker
+  function _syncCustomFieldsCompat() {
+    customFields = getProjectFields().filter(function(f){ return !f.isStd && f.type === 'select'; });
+  }
+  function _getCfOpt(field, optId) {
+    if (!field.options) return null;
+    for (var i=0;i<field.options.length;i++){if(field.options[i].id===optId)return field.options[i];}
+    return null;
   }
   var _scEdPanel = null, _scEdColor = null, _scEdColId = null;
   var storage = null;
@@ -2243,18 +2256,12 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     pill.textContent = cat ? cat.label : '';
     pill.style.background = cat ? cat.color + '22' : 'rgba(255,255,255,0.1)';
     pill.style.color = cat ? cat.color : '#fff';
-    document.getElementById('pdmClient').value = p.client || '';
-    document.getElementById('pdmDeadline').value = p.deadline || '';
-    if (fieldUpdaters['pdmDeadline']) fieldUpdaters['pdmDeadline']();
-    document.getElementById('pdmResp').value = p.team && p.team[0] ? p.team[0] : '';
-    if (fieldUpdaters['pdmResp']) fieldUpdaters['pdmResp']();
     var montoRow = document.getElementById('pdmMontoRow');
     if (p.catId === 'cotizaciones') { montoRow.style.display = ''; document.getElementById('pdmMonto').value = p.monto || ''; }
     else { montoRow.style.display = 'none'; }
 
-    var stageSel = document.getElementById('pdmStage');
-    stageSel.innerHTML = '';
-    if (cat) { cat.stages.forEach(function(st) { var o = document.createElement('option'); o.value = st; o.textContent = st; if (st === p.stage) o.selected = true; stageSel.appendChild(o); }); }
+    // Render configurable fields
+    renderPdmFields(p, cat);
 
     var timeHtml = '';
     var sd = cat && cat.stageDays && cat.stageDays[p.stage] ? cat.stageDays[p.stage] : null;
@@ -2300,11 +2307,9 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     }
     document.getElementById('pdmFooterInfo').textContent = (cat ? cat.label : '') + (p.stage ? ' · ' + p.stage : '');
 
-    _applyStdVisibility();
     renderDetailTasks();
     renderDetailTimeline();
     renderPdmDocs(p);
-    renderPdmCustomFields(p);
   }
 
   // ── CUSTOM FIELDS ─────────────────────────────────────
@@ -2383,93 +2388,119 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
   }
 
   function renderCfEdList() {
-    var list = document.getElementById('cfEdList'); list.innerHTML = '';
+    var list = document.getElementById('cfEdList'); if (!list) return;
+    list.innerHTML = '';
+    var fields = getProjectFields();
 
-    // ── Campos estándar (mostrar / ocultar) ──────────────
-    var stdSec = document.createElement('div');
-    var stdSep = document.createElement('div'); stdSep.className='cf-ed-sep'; stdSep.textContent='Campos estándar — mostrar u ocultar';
-    stdSec.appendChild(stdSep);
-    var stdGrid = document.createElement('div'); stdGrid.className='cf-std-grid';
-    STD_FIELDS.forEach(function(f) {
-      var isOn = hiddenStdFields.indexOf(f.id) === -1;
-      var btn = document.createElement('button');
-      btn.className = 'cf-std-toggle' + (isOn ? ' on' : '');
-      btn.innerHTML = (isOn ? '✓ ' : '') + f.label;
-      btn.onclick = (function(fid, b) { return function() {
-        var idx = hiddenStdFields.indexOf(fid);
-        if (idx >= 0) hiddenStdFields.splice(idx, 1);
-        else hiddenStdFields.push(fid);
-        saveData(); _applyStdVisibility(); renderCfEdList();
-      }; })(f.id, btn);
-      stdGrid.appendChild(btn);
-    });
-    stdSec.appendChild(stdGrid);
-    list.appendChild(stdSec);
-
-    // ── Campos personalizados ─────────────────────────────
-    if (customFields.length) {
-      var custSep = document.createElement('div'); custSep.className='cf-ed-sep'; custSep.style.marginTop='8px'; custSep.textContent='Campos personalizados';
-      list.appendChild(custSep);
-    }
-
-    customFields.forEach(function(field) {
-      var item = document.createElement('div'); item.className = 'cf-ed-field-item';
-      var hdr = document.createElement('div'); hdr.className = 'cf-ed-field-hdr';
-      var inp = document.createElement('input'); inp.className = 'cf-ed-field-inp';
+    fields.forEach(function(field, fi) {
+      var row = document.createElement('div'); row.className = 'cf-field-row-ed'; row.dataset.idx = fi;
+      // Drag handle
+      var dh = document.createElement('span'); dh.className = 'cf-drag-handle'; dh.textContent = '⠿';
+      dh.addEventListener('pointerdown', (function(i){ return function(e){ _startCfDrag(e, i, row); }; })(fi));
+      row.appendChild(dh);
+      // Label
+      var inp = document.createElement('input'); inp.className = 'cf-ed-field-inp'; inp.style.flex='1';
       inp.value = field.label; inp.placeholder = 'Nombre del campo';
       inp.oninput = (function(fid){ return function() {
-        for(var i=0;i<customFields.length;i++){if(customFields[i].id===fid){customFields[i].label=inp.value;break;}}
-        saveData(); _cfRefreshPdm();
+        var pf=getProjectFields(); for(var i=0;i<pf.length;i++){if(pf[i].id===fid){pf[i].label=inp.value;break;}} projectFields=pf; saveData(); _cfRefreshPdm();
       }; })(field.id);
-      var delF = document.createElement('button'); delF.className = 'cf-del-field-btn'; delF.textContent = '×'; delF.title = 'Eliminar campo';
-      delF.onclick = (function(fid){ return function() {
-        customFields = customFields.filter(function(f){return f.id!==fid;});
+      row.appendChild(inp);
+      // Type selector
+      var tsel = document.createElement('select'); tsel.className = 'cf-ed-type-sel';
+      var allowedTypes = field.type === 'stage' ? ['stage'] : ['text','date','person','select'];
+      allowedTypes.forEach(function(t){ var o=document.createElement('option');o.value=t;o.textContent=TYPE_LABELS[t];tsel.appendChild(o); });
+      tsel.value = field.type;
+      tsel.onchange = (function(fid){ return function() {
+        var pf=getProjectFields(); for(var i=0;i<pf.length;i++){if(pf[i].id===fid){pf[i].type=tsel.value;if(tsel.value==='select'&&!pf[i].options)pf[i].options=[];break;}} projectFields=pf; saveData(); renderCfEdList(); _cfRefreshPdm();
+      }; })(field.id);
+      row.appendChild(tsel);
+      // Visibility
+      var vis = document.createElement('button'); vis.className = 'cf-vis-btn' + (field.visible ? '' : ' hidden');
+      vis.textContent = field.visible ? '👁' : '🚫'; vis.title = field.visible ? 'Ocultar' : 'Mostrar';
+      vis.onclick = (function(fid){ return function() {
+        var pf=getProjectFields(); for(var i=0;i<pf.length;i++){if(pf[i].id===fid){pf[i].visible=!pf[i].visible;break;}} projectFields=pf; saveData(); renderCfEdList(); _cfRefreshPdm();
+      }; })(field.id);
+      row.appendChild(vis);
+      // Delete
+      var del2 = document.createElement('button'); del2.className = 'cf-del-field-btn'; del2.textContent = '×'; del2.title = 'Eliminar';
+      del2.onclick = (function(fid){ return function() {
+        var pf=getProjectFields().filter(function(f){return f.id!==fid;});
+        if (!pf.length) return;
         projects.forEach(function(p){if(p.customFieldValues)delete p.customFieldValues[fid];});
-        saveData(); renderCfEdList(); _cfRefreshPdm();
+        projectFields=pf; _syncCustomFieldsCompat(); saveData(); renderCfEdList(); _cfRefreshPdm();
       }; })(field.id);
-      hdr.appendChild(inp); hdr.appendChild(delF); item.appendChild(hdr);
+      row.appendChild(del2);
+      list.appendChild(row);
 
-      var optLbl = document.createElement('div');
-      optLbl.style.cssText = 'font-size:9px;font-weight:700;color:rgba(255,255,255,0.25);text-transform:uppercase;letter-spacing:.06em;';
-      optLbl.textContent = 'Opciones';
-      item.appendChild(optLbl);
-
-      var optsList = document.createElement('div'); optsList.className = 'cf-ed-opts';
-      field.options.forEach(function(opt) {
-        var r = document.createElement('div'); r.className = 'cf-ed-opt-row';
-        var colorPick = document.createElement('input'); colorPick.type='color'; colorPick.value=opt.color;
-        colorPick.className = 'cf-color-inp';
-        colorPick.oninput = (function(fid,oid){ return function() {
-          for(var i=0;i<customFields.length;i++){if(customFields[i].id===fid){for(var j=0;j<customFields[i].options.length;j++){if(customFields[i].options[j].id===oid){customFields[i].options[j].color=colorPick.value;break;}}break;}} saveData();
-        }; })(field.id, opt.id);
-        var oi = document.createElement('input'); oi.className = 'cf-ed-opt-inp'; oi.value = opt.label; oi.placeholder = 'Nombre de opción';
-        oi.oninput = (function(fid,oid){ return function() {
-          for(var i=0;i<customFields.length;i++){if(customFields[i].id===fid){for(var j=0;j<customFields[i].options.length;j++){if(customFields[i].options[j].id===oid){customFields[i].options[j].label=oi.value;break;}}break;}} saveData(); _cfRefreshPdm();
-        }; })(field.id, opt.id);
-        var delO = document.createElement('button'); delO.className = 'cf-ed-opt-del'; delO.textContent = '×';
-        delO.onclick = (function(fid,oid){ return function() {
-          for(var i=0;i<customFields.length;i++){if(customFields[i].id===fid){customFields[i].options=customFields[i].options.filter(function(o){return o.id!==oid;});break;}}
-          projects.forEach(function(p){if(p.customFieldValues&&p.customFieldValues[fid]===oid)delete p.customFieldValues[fid];});
-          saveData(); renderCfEdList(); _cfRefreshPdm();
-        }; })(field.id, opt.id);
-        r.appendChild(colorPick); r.appendChild(oi); r.appendChild(delO); optsList.appendChild(r);
-      });
-      var addOpt = document.createElement('button'); addOpt.className = 'cf-add-opt-btn'; addOpt.textContent = '+ Agregar opción';
-      addOpt.onclick = (function(fid){ return function() {
-        var nid = 'opt_'+Date.now();
-        for(var i=0;i<customFields.length;i++){if(customFields[i].id===fid){customFields[i].options.push({id:nid,label:'Nueva opción',color:'#6B7280'});break;}}
-        saveData(); renderCfEdList();
-      }; })(field.id);
-      optsList.appendChild(addOpt);
-      item.appendChild(optsList);
-      list.appendChild(item);
+      // Options sub-list (select type only)
+      if (field.type === 'select') {
+        var ow = document.createElement('div'); ow.style.cssText='padding:4px 8px 2px 32px;display:flex;flex-direction:column;gap:5px;';
+        var ol2=document.createElement('div');ol2.style.cssText='font-size:9px;font-weight:700;color:rgba(255,255,255,0.22);text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px;';ol2.textContent='Opciones';ow.appendChild(ol2);
+        (field.options||[]).forEach(function(opt){
+          var or=document.createElement('div');or.className='cf-ed-opt-row';
+          var cp=document.createElement('input');cp.type='color';cp.value=opt.color;cp.className='cf-color-inp';
+          cp.oninput=(function(fid,oid){return function(){var pf=getProjectFields();for(var i=0;i<pf.length;i++){if(pf[i].id===fid){for(var j=0;j<(pf[i].options||[]).length;j++){if(pf[i].options[j].id===oid){pf[i].options[j].color=cp.value;break;}}break;}}projectFields=pf;saveData();};})(field.id,opt.id);
+          var oi=document.createElement('input');oi.className='cf-ed-opt-inp';oi.value=opt.label;oi.placeholder='Opción';
+          oi.oninput=(function(fid,oid){return function(){var pf=getProjectFields();for(var i=0;i<pf.length;i++){if(pf[i].id===fid){for(var j=0;j<(pf[i].options||[]).length;j++){if(pf[i].options[j].id===oid){pf[i].options[j].label=oi.value;break;}}break;}}projectFields=pf;saveData();_cfRefreshPdm();};})(field.id,opt.id);
+          var od=document.createElement('button');od.className='cf-ed-opt-del';od.textContent='×';
+          od.onclick=(function(fid,oid){return function(){var pf=getProjectFields();for(var i=0;i<pf.length;i++){if(pf[i].id===fid){pf[i].options=(pf[i].options||[]).filter(function(o){return o.id!==oid;});break;}}projects.forEach(function(p){if(p.customFieldValues&&p.customFieldValues[fid]===oid)delete p.customFieldValues[fid];});projectFields=pf;saveData();renderCfEdList();_cfRefreshPdm();};})(field.id,opt.id);
+          or.appendChild(cp);or.appendChild(oi);or.appendChild(od);ow.appendChild(or);
+        });
+        var ao=document.createElement('button');ao.className='cf-add-opt-btn';ao.textContent='+ Agregar opción';
+        ao.onclick=(function(fid){return function(){var nid='opt_'+Date.now();var pf=getProjectFields();for(var i=0;i<pf.length;i++){if(pf[i].id===fid){if(!pf[i].options)pf[i].options=[];pf[i].options.push({id:nid,label:'Nueva opción',color:'#6B7280'});break;}}projectFields=pf;saveData();renderCfEdList();};})(field.id);
+        ow.appendChild(ao);list.appendChild(ow);
+      }
     });
+
+    // Add field section
+    var sep=document.createElement('div');sep.style.cssText='margin-top:6px;padding-top:12px;border-top:0.5px solid rgba(255,255,255,0.07);';
+    var addLbl=document.createElement('div');addLbl.style.cssText='font-size:10px;font-weight:700;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;';addLbl.textContent='Agregar campo';
+    var tr=document.createElement('div');tr.className='cf-add-type-row';
+    [{t:'text',l:'📝 Texto'},{t:'date',l:'📅 Fecha'},{t:'person',l:'👤 Persona'},{t:'select',l:'🔘 Selección'}].forEach(function(opt){
+      var btn=document.createElement('button');btn.className='cf-add-type-btn';btn.textContent=opt.l;
+      btn.onclick=(function(tp){return function(){
+        var nid='cf_'+Date.now();var nf={id:nid,label:'Nuevo campo',type:tp,isStd:false,visible:true};
+        if(tp==='select')nf.options=[{id:'opt_'+Date.now(),label:'Opción 1',color:'#1A6FD4'}];
+        var pf=getProjectFields().slice();pf.push(nf);projectFields=pf;_syncCustomFieldsCompat();saveData();renderCfEdList();_cfRefreshPdm();
+      };})(opt.t);
+      tr.appendChild(btn);
+    });
+    sep.appendChild(addLbl);sep.appendChild(tr);list.appendChild(sep);
   }
 
-  window.cfAddField = function() {
-    customFields.push({id:'cf_'+Date.now(), label:'Nuevo campo', options:[{id:'opt_'+Date.now(),label:'Opción 1',color:'#1A6FD4'}]});
-    saveData(); renderCfEdList(); _cfRefreshPdm();
-  };
+  // Drag to reorder fields in editor
+  function _startCfDrag(e, fromIdx, rowEl) {
+    e.preventDefault();
+    _cfDrag = {fromIdx:fromIdx, rowEl:rowEl};
+    rowEl.style.opacity = '0.4';
+    document.addEventListener('pointermove', _onCfDragMove);
+    document.addEventListener('pointerup', _onCfDragEnd);
+  }
+  function _onCfDragMove(e) {
+    if (!_cfDrag) return;
+    var rows = document.querySelectorAll('#cfEdList .cf-field-row-ed');
+    rows.forEach(function(r){ r.classList.remove('cf-drag-over'); });
+    rows.forEach(function(r){ var rect=r.getBoundingClientRect(); if(e.clientY>=rect.top&&e.clientY<=rect.bottom&&r!==_cfDrag.rowEl)r.classList.add('cf-drag-over'); });
+  }
+  function _onCfDragEnd(e) {
+    document.removeEventListener('pointermove', _onCfDragMove);
+    document.removeEventListener('pointerup', _onCfDragEnd);
+    if (!_cfDrag) return;
+    _cfDrag.rowEl.style.opacity = '';
+    var rows = document.querySelectorAll('#cfEdList .cf-field-row-ed');
+    var toIdx = _cfDrag.fromIdx;
+    rows.forEach(function(r){ r.classList.remove('cf-drag-over'); var rect=r.getBoundingClientRect(); if(e.clientY>=rect.top&&e.clientY<=rect.bottom&&r!==_cfDrag.rowEl)toIdx=parseInt(r.dataset.idx||0); });
+    if (toIdx !== _cfDrag.fromIdx) {
+      var pf=getProjectFields().slice();
+      var moved=pf.splice(_cfDrag.fromIdx,1)[0];
+      var insertAt = toIdx > _cfDrag.fromIdx ? toIdx - 1 : toIdx;
+      pf.splice(insertAt,0,moved);
+      projectFields=pf; _syncCustomFieldsCompat(); saveData(); renderCfEdList(); _cfRefreshPdm();
+    }
+    _cfDrag = null;
+  }
+
+  window.cfAddField = function() {}; // handled inline above
 
   var RESP_NAMES = {AR:'Ana R.', LM:'Luis M.', SV:'Sofía V.', RG:'Rodrigo G.'};
   var RESP_OPTS = [['','— Nadie'],['AR','Ana Ramírez'],['LM','Luis Mora'],['SV','Sofía Vega'],['RG','Rodrigo Gil']];
@@ -2792,6 +2823,64 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     saveData(); renderDetailTasks(); updateCardBadge(detailProjectId);
   }
 
+  function renderPdmFields(p, cat) {
+    var wrap = document.getElementById('pdmDynFields'); if (!wrap) return;
+    wrap.innerHTML = '';
+    var fields = getProjectFields();
+    fields.forEach(function(field) {
+      if (!field.visible) return;
+      var row = document.createElement('div'); row.className = 'pdm-field';
+      var lbl = document.createElement('div'); lbl.className = 'pdm-lbl'; lbl.textContent = field.label;
+      row.appendChild(lbl);
+
+      if (field.type === 'text') {
+        var inp = document.createElement('input'); inp.className = 'pdm-inp';
+        inp.id = _STD_DOM[field.id] || field.id;
+        inp.placeholder = field.label;
+        inp.value = field.id === 'std_cliente' ? (p.client || '') : ((p.customFieldValues || {})[field.id] || '');
+        inp.addEventListener('input', _pdmAutoSave);
+        row.appendChild(inp);
+
+      } else if (field.type === 'stage') {
+        var ssel = document.createElement('select'); ssel.className = 'pdm-inp'; ssel.id = 'pdmStage';
+        if (cat) { cat.stages.forEach(function(st){ var o=document.createElement('option');o.value=st;o.textContent=st;if(st===p.stage)o.selected=true;ssel.appendChild(o); }); }
+        ssel.addEventListener('change', _pdmAutoSaveNow);
+        row.appendChild(ssel);
+
+      } else if (field.type === 'date') {
+        var di = document.createElement('input'); di.className = 'pdm-inp'; di.type = 'date';
+        di.id = _STD_DOM[field.id] || field.id;
+        di.value = field.id === 'std_deadline' ? (p.deadline || '') : ((p.customFieldValues || {})[field.id] || '');
+        di.addEventListener('change', _pdmAutoSaveNow);
+        row.appendChild(di);
+
+      } else if (field.type === 'person') {
+        var psel = document.createElement('select'); psel.className = 'pdm-inp';
+        psel.id = _STD_DOM[field.id] || field.id;
+        var none2 = document.createElement('option'); none2.value = ''; none2.textContent = '— Sin responsable';
+        psel.appendChild(none2);
+        teamMembers.forEach(function(m){ var o=document.createElement('option');o.value=m.id;o.textContent=m.name;psel.appendChild(o); });
+        psel.value = field.id === 'std_resp' ? (p.team && p.team[0] ? p.team[0] : '') : ((p.customFieldValues || {})[field.id] || '');
+        psel.addEventListener('change', _pdmAutoSaveNow);
+        row.appendChild(psel);
+
+      } else if (field.type === 'select' && field.options) {
+        var vals2 = p.customFieldValues || {};
+        var sOptId = vals2[field.id] || '';
+        var sOpt = sOptId ? _getCfOpt(field, sOptId) : null;
+        var badge = document.createElement('div');
+        if (sOpt) {
+          badge.className = 'cf-value-badge';
+          badge.style.cssText = 'background:'+sOpt.color+'22;color:'+sOpt.color+';border-color:'+sOpt.color+'44;';
+          badge.textContent = sOpt.label;
+        } else { badge.className = 'cf-value-empty'; badge.textContent = '— Sin seleccionar'; }
+        badge.onclick = (function(fld){ return function(e){ e.stopPropagation(); openCfPicker(fld, badge, p); }; })(field);
+        row.appendChild(badge);
+      }
+      wrap.appendChild(row);
+    });
+  }
+
   function saveProjDetail() {
     var p = null;
     for (var i = 0; i < projects.length; i++) { if (projects[i].id === detailProjectId) { p = projects[i]; break; } }
@@ -2799,10 +2888,10 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     var oldStage = p.stage;
     var newName = document.getElementById('pdmName').value.trim();
     if (newName) p.name = newName;
-    p.client = document.getElementById('pdmClient').value.trim() || '—';
-    p.deadline = document.getElementById('pdmDeadline').value;
-    p.team[0] = document.getElementById('pdmResp').value;
-    var newStage = document.getElementById('pdmStage').value;
+    var _cl = document.getElementById('pdmClient'); if (_cl) p.client = _cl.value.trim() || '—';
+    var _dl = document.getElementById('pdmDeadline'); if (_dl) p.deadline = _dl.value;
+    var _re = document.getElementById('pdmResp'); if (_re) p.team[0] = _re.value;
+    var newStage = document.getElementById('pdmStage') ? document.getElementById('pdmStage').value : p.stage;
     if (newStage && newStage !== oldStage) {
       p.stage = newStage;
       if (!p.stageEntryDates) p.stageEntryDates = {};
@@ -3055,8 +3144,20 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
       if (d.teamMembers) { _wsTeamMembers = d.teamMembers; _syncTeamData(d.teamMembers); }
       if (d.taskGroups) { _wsTaskGroups = d.taskGroups; }
       if (d.statusColumns) statusColumns = d.statusColumns;
-      if (d.customFields) customFields = d.customFields;
-      if (d.hiddenStdFields) hiddenStdFields = d.hiddenStdFields;
+      if (d.projectFields) {
+        projectFields = d.projectFields;
+      } else {
+        // Migrate from old customFields + hiddenStdFields
+        var _pf = DEFAULT_PROJECT_FIELDS.map(function(f){
+          var hidden = (d.hiddenStdFields||[]).indexOf(f.id.replace('std_','')) >= 0;
+          return Object.assign({},f,{visible:!hidden});
+        });
+        (d.customFields||[]).forEach(function(cf){
+          _pf.push({id:cf.id,label:cf.label,type:'select',isStd:false,visible:true,options:cf.options||[]});
+        });
+        projectFields = _pf;
+      }
+      _syncCustomFieldsCompat();
     }
     // Migración: quitar Negociación y asegurar Entregado al final
     var migrated = false;
