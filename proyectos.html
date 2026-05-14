@@ -752,6 +752,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
   var entregadoCollapsed = false;
   var _statusView = false;
   var _sDragId = null;
+  var _sDragType = null; // 'project' | 'cobranza'
   var statusColumns = null;
   var cobranzaCards = [];
   var _cbAddColId = null;
@@ -1012,17 +1013,23 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     var _sbScroll = wrap.scrollLeft;
     wrap.innerHTML = '';
 
+    var allProjs = projects.filter(function(p) {
+      return p.catId !== 'cotizaciones' && (activeFilter === 'all' || p.catId === activeFilter);
+    });
+
     getStatusCols().forEach(function(col) {
       var colEl = document.createElement('div');
       colEl.className = 'status-col';
       colEl.style.cssText = 'background:' + col.bg + ';border:0.5px solid ' + col.border + ';';
 
-      var cards = cobranzaCards.filter(function(c) { return c.colId === col.id; });
+      var projCards = allProjs.filter(function(p) { return _normFinStatus(p) === col.id; });
+      var cbCards   = cobranzaCards.filter(function(c) { return c.colId === col.id; });
+      var totalCnt  = projCards.length + cbCards.length;
 
       var hdr = document.createElement('div'); hdr.className = 'status-col-hdr';
       var dot = document.createElement('div'); dot.className='status-col-dot'; dot.style.background=col.color;
       var ttl = document.createElement('span'); ttl.className='status-col-title'; ttl.style.color=col.color; ttl.textContent=col.label;
-      var cnt = document.createElement('span'); cnt.className='status-col-count'; cnt.textContent=cards.length;
+      var cnt = document.createElement('span'); cnt.className='status-col-count'; cnt.textContent=totalCnt;
       var editBtn = document.createElement('button');
       editBtn.style.cssText='background:none;border:none;color:rgba(255,255,255,0.18);font-size:13px;cursor:pointer;padding:0 3px;line-height:1;margin-left:auto;transition:color .15s;';
       editBtn.textContent='✎'; editBtn.title='Editar columna';
@@ -1033,7 +1040,10 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
       colEl.appendChild(hdr);
 
       var body = document.createElement('div'); body.className='status-col-body'; body.dataset.colid=col.id;
-      cards.forEach(function(c) { body.appendChild(buildCobranzaCard(c, col)); });
+      // Connected project cards
+      projCards.forEach(function(p) { body.appendChild(buildConnectedCard(p, col)); });
+      // Standalone cobranza cards
+      cbCards.forEach(function(c) { body.appendChild(buildCobranzaCard(c, col)); });
 
       body.addEventListener('dragover', function(e) {
         e.preventDefault(); body.classList.add('drag-over');
@@ -1043,9 +1053,13 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
       body.addEventListener('dragleave', function(e) { if (!body.contains(e.relatedTarget)) body.classList.remove('drag-over'); });
       body.addEventListener('drop', (function(cid){ return function(e) {
         e.preventDefault(); body.classList.remove('drag-over');
-        if (!_sDragId && _sDragId !== 0) return;
-        for (var i=0;i<cobranzaCards.length;i++){if(cobranzaCards[i].id===_sDragId){cobranzaCards[i].colId=cid;break;}}
-        _sDragId = null; saveData(); renderStatusBoard();
+        if (_sDragId === null) return;
+        if (_sDragType === 'project') {
+          for (var i=0;i<projects.length;i++){if(projects[i].id===_sDragId){projects[i].finStatus=cid;break;}}
+        } else {
+          for (var i=0;i<cobranzaCards.length;i++){if(cobranzaCards[i].id===_sDragId){cobranzaCards[i].colId=cid;break;}}
+        }
+        _sDragId=null; _sDragType=null; saveData(); renderStatusBoard();
       };})(col.id));
 
       colEl.appendChild(body);
@@ -1087,6 +1101,27 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     wrap.scrollLeft = _sbScroll;
   }
 
+  function buildConnectedCard(p, col) {
+    var cat = null;
+    for (var i=0;i<categories.length;i++){if(categories[i].id===p.catId){cat=categories[i];break;}}
+    var card = document.createElement('div'); card.className='status-card'; card.draggable=true; card.dataset.id=p.id;
+    var bar = document.createElement('div'); bar.className='status-card-bar'; bar.style.background=cat?cat.color:col.color; card.appendChild(bar);
+    var name = document.createElement('div'); name.className='status-card-name'; name.textContent=p.name; card.appendChild(name);
+    var cl = document.createElement('div'); cl.className='status-card-client'; cl.textContent=p.client||'—'; card.appendChild(cl);
+    var footer = document.createElement('div'); footer.className='status-card-footer';
+    if (cat) {
+      var cb = document.createElement('span'); cb.className='status-cat-badge';
+      cb.style.cssText='background:'+cat.color+'22;color:'+cat.color+';'; cb.textContent=cat.label;
+      footer.appendChild(cb);
+    }
+    var stg = document.createElement('span'); stg.className='status-stage-lbl'; stg.textContent=p.stage||''; footer.appendChild(stg);
+    card.appendChild(footer);
+    card.addEventListener('dragstart',(function(pid){return function(){_sDragId=pid;_sDragType='project';card.classList.add('s-dragging');};})(p.id));
+    card.addEventListener('dragend',function(){card.classList.remove('s-dragging');_sDragId=null;_sDragType=null;});
+    card.addEventListener('click',function(){openProjDetail(p.id);});
+    return card;
+  }
+
   function buildCobranzaCard(c, col) {
     var card = document.createElement('div'); card.className='status-card'; card.draggable=true; card.dataset.id=c.id;
     var bar = document.createElement('div'); bar.className='status-card-bar'; bar.style.background=col.color; card.appendChild(bar);
@@ -1097,6 +1132,10 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     }
 
     var footer = document.createElement('div'); footer.className='status-card-footer';
+    var indBadge = document.createElement('span');
+    indBadge.style.cssText='font-size:8px;font-weight:700;color:rgba(255,255,255,0.18);background:rgba(255,255,255,0.05);border-radius:4px;padding:1px 5px;letter-spacing:.04em;';
+    indBadge.textContent='MANUAL';
+    footer.appendChild(indBadge);
     var spacer = document.createElement('span'); spacer.style.flex='1'; footer.appendChild(spacer);
 
     var editBtn = document.createElement('button');
@@ -1115,8 +1154,8 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 
     footer.appendChild(editBtn); footer.appendChild(delBtn); card.appendChild(footer);
 
-    card.addEventListener('dragstart',(function(cid){return function(){_sDragId=cid;card.classList.add('s-dragging');};})(c.id));
-    card.addEventListener('dragend',function(){card.classList.remove('s-dragging');_sDragId=null;});
+    card.addEventListener('dragstart',(function(cid){return function(){_sDragId=cid;_sDragType='cobranza';card.classList.add('s-dragging');};})(c.id));
+    card.addEventListener('dragend',function(){card.classList.remove('s-dragging');_sDragId=null;_sDragType=null;});
     return card;
   }
 
