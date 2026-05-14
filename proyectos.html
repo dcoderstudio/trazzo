@@ -449,7 +449,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 </div>
 
 <!-- COBRANZA CARD DETAIL -->
-<div class="overlay" id="cbDetailOverlay">
+<div class="overlay" id="cbDetailOverlay" onclick="if(event.target===this)closeCbDetail()">
   <div class="pdm" style="max-width:480px;">
     <div class="pdm-header">
       <input class="pdm-title" id="cbdName" placeholder="Nombre del proyecto">
@@ -1089,32 +1089,16 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 
       colEl.appendChild(body);
 
-      // Inline add form / button
       var addWrap = document.createElement('div'); addWrap.style.cssText='padding:4px 8px 8px;';
-      if (_cbAddColId === col.id) {
-        var form = document.createElement('div'); form.style.cssText='display:flex;flex-direction:column;gap:5px;';
-        var ni = document.createElement('input'); ni.className='cb-card-inp'; ni.placeholder='Nombre del proyecto';
-        var ci2 = document.createElement('input'); ci2.className='cb-card-inp'; ci2.placeholder='Cliente (opcional)'; ci2.style.fontSize='10px';
-        var fr2 = document.createElement('div'); fr2.style.cssText='display:flex;gap:5px;';
-        var sv = document.createElement('button'); sv.className='cb-card-save'; sv.textContent='Agregar';
-        var cn = document.createElement('button'); cn.className='cb-card-cancel'; cn.textContent='Cancelar';
-        sv.onclick = (function(cid){ return function() {
-          var n=ni.value.trim(); if(!n) return;
-          cobranzaCards.push({id:Date.now(),name:n,client:ci2.value.trim(),colId:cid});
-          _cbAddColId=null; saveData(); renderStatusBoard();
-        };})(col.id);
-        cn.onclick = function(){ _cbAddColId=null; renderStatusBoard(); };
-        ni.onkeydown = function(e){ if(e.key==='Enter')sv.onclick(); if(e.key==='Escape')cn.onclick(); };
-        fr2.appendChild(sv); fr2.appendChild(cn);
-        form.appendChild(ni); form.appendChild(ci2); form.appendChild(fr2);
-        addWrap.appendChild(form);
-        setTimeout(function(){ ni.focus(); }, 40);
-      } else {
-        var addBtn2 = document.createElement('button'); addBtn2.className='cb-add-btn';
-        addBtn2.textContent='+ Agregar';
-        addBtn2.onclick = (function(cid){ return function(){ _cbAddColId=cid; renderStatusBoard(); };})(col.id);
-        addWrap.appendChild(addBtn2);
-      }
+      var addBtn2 = document.createElement('button'); addBtn2.className='cb-add-btn';
+      addBtn2.textContent='+ Agregar';
+      addBtn2.onclick = (function(cid){ return function(){
+        var newCard = {id:Date.now(), name:'', client:'', colId:cid};
+        cobranzaCards.push(newCard);
+        saveData(); renderStatusBoard();
+        openCbDetail(newCard.id);
+      };})(col.id);
+      addWrap.appendChild(addBtn2);
       colEl.appendChild(addWrap);
       wrap.appendChild(colEl);
     });
@@ -1223,6 +1207,11 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     document.getElementById('cbDetailOverlay').classList.add('open');
   };
   window.closeCbDetail = function() {
+    var c = _getCbCard();
+    if (c && !c.name.trim()) {
+      cobranzaCards = cobranzaCards.filter(function(x){ return x.id !== cbDetailCardId; });
+      saveData(); if (_statusView) renderStatusBoard();
+    }
     document.getElementById('cbDetailOverlay').classList.remove('open');
     cbDetailCardId = null;
   };
