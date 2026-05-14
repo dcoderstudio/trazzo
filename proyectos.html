@@ -374,6 +374,11 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 .cf-color-inp::-webkit-color-swatch{border:none;border-radius:50%;}
 .cf-color-inp::-moz-color-swatch{border:none;border-radius:50%;}
 .cf-color-inp:hover{border-color:rgba(255,255,255,0.5);}
+.cf-std-grid{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;}
+.cf-std-toggle{padding:5px 12px;border-radius:20px;border:0.5px solid rgba(255,255,255,0.12);background:transparent;color:rgba(255,255,255,0.35);font-size:11px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s;display:flex;align-items:center;gap:5px;}
+.cf-std-toggle:hover{border-color:rgba(255,255,255,0.28);color:rgba(255,255,255,0.7);}
+.cf-std-toggle.on{background:rgba(255,255,255,0.1);border-color:rgba(255,255,255,0.3);color:#fff;}
+.cf-ed-sep{font-size:9px;font-weight:700;color:rgba(255,255,255,0.25);text-transform:uppercase;letter-spacing:.08em;padding-bottom:4px;border-bottom:0.5px solid rgba(255,255,255,0.06);}
 </style>
 </head>
 <body>
@@ -582,10 +587,10 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     </div>
     <div class="pdm-body">
       <div class="pdm-info">
-        <div class="pdm-field"><div class="pdm-lbl">Cliente</div><input class="pdm-inp" id="pdmClient" placeholder="Nombre del cliente"></div>
-        <div class="pdm-field"><div class="pdm-lbl">Fase actual</div><select class="pdm-inp" id="pdmStage"></select></div>
-        <div class="pdm-field"><div class="pdm-lbl">Fecha de entrega</div><input class="pdm-inp" type="date" id="pdmDeadline"></div>
-        <div class="pdm-field"><div class="pdm-lbl">Responsable</div>
+        <div class="pdm-field" id="pdmClientRow"><div class="pdm-lbl">Cliente</div><input class="pdm-inp" id="pdmClient" placeholder="Nombre del cliente"></div>
+        <div class="pdm-field" id="pdmFaseRow"><div class="pdm-lbl">Fase actual</div><select class="pdm-inp" id="pdmStage"></select></div>
+        <div class="pdm-field" id="pdmDeadlineRow"><div class="pdm-lbl">Fecha de entrega</div><input class="pdm-inp" type="date" id="pdmDeadline"></div>
+        <div class="pdm-field" id="pdmRespRow"><div class="pdm-lbl">Responsable</div>
           <select class="pdm-inp" id="pdmResp">
             <option value="">— Sin responsable</option>
             <option value="AR">Ana Ramírez</option>
@@ -663,6 +668,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     if (_wsTaskGroups) payload.taskGroups = _wsTaskGroups;
     payload.statusColumns = getStatusCols();
     payload.customFields = customFields;
+    payload.hiddenStdFields = hiddenStdFields;
     DOC.set(payload)
       .catch(function(e){ console.warn('Error al guardar:', e); });
   }
@@ -733,7 +739,22 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
   var _sDragId = null;
   var statusColumns = null;
   var customFields = [];
+  var hiddenStdFields = [];
   var _cfPicker = null;
+
+  var STD_FIELDS = [
+    {id:'cliente',  label:'Cliente',          rowId:'pdmClientRow'},
+    {id:'fase',     label:'Fase actual',       rowId:'pdmFaseRow'},
+    {id:'deadline', label:'Fecha de entrega',  rowId:'pdmDeadlineRow'},
+    {id:'resp',     label:'Responsable',       rowId:'pdmRespRow'}
+  ];
+
+  function _applyStdVisibility() {
+    STD_FIELDS.forEach(function(f) {
+      var el = document.getElementById(f.rowId);
+      if (el) el.style.display = hiddenStdFields.indexOf(f.id) >= 0 ? 'none' : '';
+    });
+  }
   var _scEdPanel = null, _scEdColor = null, _scEdColId = null;
   var storage = null;
   try { storage = firebase.storage(); } catch(e) {}
@@ -2279,6 +2300,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     }
     document.getElementById('pdmFooterInfo').textContent = (cat ? cat.label : '') + (p.stage ? ' · ' + p.stage : '');
 
+    _applyStdVisibility();
     renderDetailTasks();
     renderDetailTimeline();
     renderPdmDocs(p);
@@ -2362,6 +2384,34 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 
   function renderCfEdList() {
     var list = document.getElementById('cfEdList'); list.innerHTML = '';
+
+    // ── Campos estándar (mostrar / ocultar) ──────────────
+    var stdSec = document.createElement('div');
+    var stdSep = document.createElement('div'); stdSep.className='cf-ed-sep'; stdSep.textContent='Campos estándar — mostrar u ocultar';
+    stdSec.appendChild(stdSep);
+    var stdGrid = document.createElement('div'); stdGrid.className='cf-std-grid';
+    STD_FIELDS.forEach(function(f) {
+      var isOn = hiddenStdFields.indexOf(f.id) === -1;
+      var btn = document.createElement('button');
+      btn.className = 'cf-std-toggle' + (isOn ? ' on' : '');
+      btn.innerHTML = (isOn ? '✓ ' : '') + f.label;
+      btn.onclick = (function(fid, b) { return function() {
+        var idx = hiddenStdFields.indexOf(fid);
+        if (idx >= 0) hiddenStdFields.splice(idx, 1);
+        else hiddenStdFields.push(fid);
+        saveData(); _applyStdVisibility(); renderCfEdList();
+      }; })(f.id, btn);
+      stdGrid.appendChild(btn);
+    });
+    stdSec.appendChild(stdGrid);
+    list.appendChild(stdSec);
+
+    // ── Campos personalizados ─────────────────────────────
+    if (customFields.length) {
+      var custSep = document.createElement('div'); custSep.className='cf-ed-sep'; custSep.style.marginTop='8px'; custSep.textContent='Campos personalizados';
+      list.appendChild(custSep);
+    }
+
     customFields.forEach(function(field) {
       var item = document.createElement('div'); item.className = 'cf-ed-field-item';
       var hdr = document.createElement('div'); hdr.className = 'cf-ed-field-hdr';
@@ -3006,6 +3056,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
       if (d.taskGroups) { _wsTaskGroups = d.taskGroups; }
       if (d.statusColumns) statusColumns = d.statusColumns;
       if (d.customFields) customFields = d.customFields;
+      if (d.hiddenStdFields) hiddenStdFields = d.hiddenStdFields;
     }
     // Migración: quitar Negociación y asegurar Entregado al final
     var migrated = false;
