@@ -300,25 +300,27 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
   // ── COLLECT ALL EVENTS ─────────────────────────────────────
   function getAllEvents() {
     var evs = [];
-    // Project deliveries
+    // Project deliveries (excluding solicitudes/cotizaciones)
     projects.forEach(function(p){
       if (!p.deadline) return;
+      if (p.catId === 'cotizaciones') return;
       var cat = getCat(p.catId);
       evs.push({id:'proj_'+p.id, date:p.deadline, title:p.name, sub:p.client||'', color:cat?cat.color:'#1A6FD4', type:'delivery', icon:'📦'});
     });
-    // Task deadlines (current stage only)
+    // Task deadlines (current stage only, excluding cotizaciones)
     projects.forEach(function(p){
       if (!p.stageTasks) return;
+      if (p.catId === 'cotizaciones') return;
       var cat = getCat(p.catId);
       var stage = p.stage;
       var tasks = p.stageTasks[stage]||[];
       tasks.forEach(function(t){
-        if (t.deadline&&!t.done) evs.push({id:'task_'+t.id, date:t.deadline, title:t.text, sub:p.name+' · '+stage, color:cat?cat.color:'#E8A020', type:'task', icon:'✓'});
+        if (t.deadline&&!t.done) evs.push({id:'task_'+t.id, date:t.deadline, title:t.text, sub:p.name+' · '+stage, color:cat?cat.color:'#E8A020', type:'task', icon:'✓', projId:p.id, stage:stage, taskId:t.id});
       });
     });
     // Standalone task deadlines
     standaloneTasks.forEach(function(t){
-      if (t.deadline&&!t.done) evs.push({id:'st_'+t.id, date:t.deadline, title:t.text, sub:'Tarea libre', color:'#E8A020', type:'task', icon:'✓'});
+      if (t.deadline&&!t.done) evs.push({id:'st_'+t.id, date:t.deadline, title:t.text, sub:'Tarea libre', color:'#E8A020', type:'task', icon:'✓', taskId:t.id, isStandalone:true});
     });
     return evs;
   }
@@ -509,23 +511,115 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     if(!evs.length){var e=document.createElement('div');e.className='cdp-empty';e.textContent='Sin eventos para este día';wrap.appendChild(e);return;}
     var byType={delivery:[],task:[],reminder:[],event:[]};
     evs.forEach(function(ev){(byType[ev.type]||(byType['reminder'])).push(ev);});
-    var sections=[{key:'delivery',label:'Entregas de proyecto'},{key:'task',label:'Vencimientos de tarea'},{key:'reminder',label:'Recordatorios'},{key:'event',label:'Eventos'}];
+    var sections=[
+      {key:'delivery', label:'📦  Fechas de entrega',   accent:'#1A6FD4'},
+      {key:'task',     label:'✓  Vencimientos de tarea', accent:'#E8A020'},
+      {key:'reminder', label:'🔔  Recordatorios',        accent:'#27AE72'},
+      {key:'event',    label:'📅  Eventos',              accent:'#8B5CF6'}
+    ];
     sections.forEach(function(s){
       var list=(byType[s.key]||[]);
       if(!list.length) return;
-      var lbl=document.createElement('div'); lbl.className='cdp-section-lbl'; lbl.textContent=s.label; wrap.appendChild(lbl);
+      var lbl=document.createElement('div'); lbl.className='cdp-section-lbl';
+      lbl.style.color=s.accent; lbl.style.opacity='.85'; lbl.textContent=s.label;
+      wrap.appendChild(lbl);
       list.forEach(function(ev){
         var row=document.createElement('div'); row.className='cdp-event-row';
-        var bar=document.createElement('div'); bar.className='cdp-ev-bar'; bar.style.background=ev.color; bar.style.minHeight='32px';
+        row.style.borderLeft='3px solid '+ev.color+'55';
+        row.style.paddingLeft='10px';
+        // Type badge
+        var badge=document.createElement('span');
+        badge.style.cssText='font-size:9px;font-weight:700;padding:2px 7px;border-radius:20px;flex-shrink:0;margin-top:1px;';
+        if(s.key==='delivery'){badge.style.background='rgba(26,111,212,.15)';badge.style.color='#5AB4E8';badge.textContent='ENTREGA';}
+        else if(s.key==='task'){badge.style.background='rgba(232,160,32,.15)';badge.style.color='#E8A020';badge.textContent='TAREA';}
+        else if(s.key==='reminder'){badge.style.background='rgba(39,174,114,.15)';badge.style.color='#27AE72';badge.textContent='RECORDATORIO';}
+        else{badge.style.background='rgba(139,92,246,.15)';badge.style.color='#8B5CF6';badge.textContent='EVENTO';}
         var info=document.createElement('div'); info.className='cdp-ev-info';
         var title=document.createElement('div'); title.className='cdp-ev-title'; title.textContent=ev.title;
         info.appendChild(title);
-        if(ev.sub){var sub=document.createElement('div');sub.className='cdp-ev-sub';sub.textContent=ev.sub;info.appendChild(sub);}
-        row.appendChild(bar); row.appendChild(info);
-        if(ev.calId){row.onclick=(function(cid){return function(){openEventModal(dateStr,null,cid);}})(ev.calId);}
+        if(ev.sub&&ev.sub.trim()){var sub=document.createElement('div');sub.className='cdp-ev-sub';sub.textContent=ev.sub;info.appendChild(sub);}
+        row.appendChild(badge); row.appendChild(info);
+        // Click actions
+        if(s.key==='task'&&(ev.taskId||ev.projId)){
+          var editBtn=document.createElement('button');
+          editBtn.style.cssText='background:none;border:none;color:rgba(255,255,255,0.18);font-size:12px;cursor:pointer;padding:2px 5px;flex-shrink:0;transition:color .15s;line-height:1;';
+          editBtn.textContent='✎'; editBtn.title='Editar tarea';
+          editBtn.onmouseover=function(){editBtn.style.color='rgba(255,255,255,0.7)';};
+          editBtn.onmouseout=function(){editBtn.style.color='rgba(255,255,255,0.18)';};
+          editBtn.onclick=(function(ev2){return function(e){e.stopPropagation();openCalTaskEdit(ev2);};})(ev);
+          row.appendChild(editBtn);
+          row.onclick=(function(ev2){return function(){openCalTaskEdit(ev2);};})(ev);
+        } else if(ev.calId){
+          row.onclick=(function(cid){return function(){openEventModal(dateStr,null,cid);}})(ev.calId);
+        }
         wrap.appendChild(row);
       });
     });
+  }
+
+  // ── TASK EDIT FROM CALENDAR ──────────────────────────────
+  function openCalTaskEdit(ev) {
+    var old=document.getElementById('calTaskEditOverlay'); if(old)old.remove();
+    var t=null, projRef=null;
+    if(ev.isStandalone){for(var i=0;i<standaloneTasks.length;i++){if(standaloneTasks[i].id===ev.taskId){t=standaloneTasks[i];break;}}}
+    else if(ev.projId){for(var i=0;i<projects.length;i++){if(projects[i].id===ev.projId){var p=projects[i];var arr=p.stageTasks&&p.stageTasks[ev.stage]||[];for(var j=0;j<arr.length;j++){if(arr[j].id===ev.taskId){t=arr[j];projRef=p;break;}}break;}}}
+    if(!t)return;
+    var ov=document.createElement('div'); ov.id='calTaskEditOverlay';
+    ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(6px);z-index:800;display:flex;align-items:center;justify-content:center;';
+    ov.onclick=function(e){if(e.target===ov)ov.remove();};
+    var panel=document.createElement('div');
+    panel.style.cssText='background:#161616;border:0.5px solid rgba(255,255,255,0.1);border-radius:18px;padding:22px 24px;width:min(94vw,420px);display:flex;flex-direction:column;gap:13px;font-family:Inter,sans-serif;';
+    var hdr=document.createElement('div'); hdr.style.cssText='display:flex;align-items:center;justify-content:space-between;';
+    var htitle=document.createElement('div'); htitle.style.cssText='font-size:13px;font-weight:700;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:.06em;'; htitle.textContent='Editar tarea';
+    var hclose=document.createElement('button'); hclose.style.cssText='background:rgba(255,255,255,0.05);border:none;color:rgba(255,255,255,0.4);font-size:15px;width:26px;height:26px;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;'; hclose.textContent='×'; hclose.onclick=function(){ov.remove();};
+    hdr.appendChild(htitle); hdr.appendChild(hclose); panel.appendChild(hdr);
+    // Done toggle
+    var doneRow=document.createElement('div'); doneRow.style.cssText='display:flex;align-items:center;gap:9px;cursor:pointer;padding:8px 10px;border-radius:10px;background:rgba(255,255,255,0.03);';
+    var doneBox=document.createElement('div'); doneBox.style.cssText='width:18px;height:18px;border-radius:5px;border:1.5px solid '+(t.done?'#27AE72':'rgba(255,255,255,0.2)')+';background:'+(t.done?'#27AE72':'transparent')+';display:flex;align-items:center;justify-content:center;flex-shrink:0;';
+    if(t.done)doneBox.innerHTML='<svg width="10" height="10" viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round"/></svg>';
+    var doneLbl=document.createElement('div'); doneLbl.style.cssText='font-size:12px;font-weight:600;color:'+(t.done?'rgba(255,255,255,0.4)':'rgba(255,255,255,0.8)')+';'+(t.done?'text-decoration:line-through;':''); doneLbl.textContent=t.text;
+    doneRow.appendChild(doneBox); doneRow.appendChild(doneLbl);
+    doneRow.onclick=function(){t.done=!t.done;_calTaskSave(t,projRef);doneBox.style.borderColor=t.done?'#27AE72':'rgba(255,255,255,0.2)';doneBox.style.background=t.done?'#27AE72':'transparent';doneBox.innerHTML=t.done?'<svg width="10" height="10" viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round"/></svg>':'';doneLbl.style.color=t.done?'rgba(255,255,255,0.4)':'rgba(255,255,255,0.8)';doneLbl.style.textDecoration=t.done?'line-through':'none';};
+    panel.appendChild(doneRow);
+    // Text input
+    var f1=document.createElement('div'); var l1=document.createElement('div'); l1.className='ml'; l1.textContent='Texto'; f1.appendChild(l1);
+    var inp=document.createElement('input'); inp.className='mi'; inp.value=t.text; inp.placeholder='Texto de la tarea'; f1.appendChild(inp); panel.appendChild(f1);
+    // Deadline
+    var f2=document.createElement('div'); var l2=document.createElement('div'); l2.className='ml'; l2.textContent='Fecha límite'; f2.appendChild(l2);
+    var dl=document.createElement('input'); dl.className='mi'; dl.type='date'; dl.value=t.deadline||''; f2.appendChild(dl); panel.appendChild(f2);
+    // Notes
+    var f3=document.createElement('div'); var l3=document.createElement('div'); l3.className='ml'; l3.textContent='Notas'; f3.appendChild(l3);
+    var notes=document.createElement('textarea'); notes.className='mi'; notes.value=t.notes||''; notes.placeholder='Notas opcionales…'; notes.style.cssText='resize:vertical;min-height:60px;font-family:Inter,sans-serif;'; f3.appendChild(notes); panel.appendChild(f3);
+    // Project info (read-only if stage task)
+    if(projRef){var pi=document.createElement('div');pi.style.cssText='font-size:10px;color:rgba(255,255,255,0.25);padding:4px 0;';pi.textContent='Proyecto: '+projRef.name+' · '+ev.stage;panel.appendChild(pi);}
+    // Buttons
+    var btns=document.createElement('div'); btns.style.cssText='display:flex;gap:8px;margin-top:2px;';
+    var delB=document.createElement('button'); delB.className='btn-danger'; delB.style.cssText='flex:none;padding:8px 14px;font-size:12px;'; delB.textContent='Eliminar';
+    delB.onclick=function(){
+      if(ev.isStandalone){_pass.standaloneTasks=(_pass.standaloneTasks||[]).filter(function(x){return x.id!==t.id;});standaloneTasks=_pass.standaloneTasks;}
+      else if(projRef){var arr=projRef.stageTasks[ev.stage]||[];projRef.stageTasks[ev.stage]=arr.filter(function(x){return x.id!==t.id;});}
+      saveData2(); ov.remove(); if(selectedDate)renderDayEvents(selectedDate); render();
+    };
+    var saveB=document.createElement('button'); saveB.className='btn-ok'; saveB.style.cssText='flex:1;'; saveB.textContent='Guardar';
+    saveB.onclick=function(){t.text=inp.value.trim()||t.text;t.deadline=dl.value;t.notes=notes.value.trim();_calTaskSave(t,projRef);ov.remove();if(selectedDate)renderDayEvents(selectedDate);render();};
+    btns.appendChild(delB); btns.appendChild(saveB); panel.appendChild(btns);
+    ov.appendChild(panel); document.body.appendChild(ov);
+    setTimeout(function(){inp.focus();inp.select();},60);
+  }
+
+  function _calTaskSave(t, projRef) {
+    if(!projRef){
+      var idx=-1; for(var i=0;i<(_pass.standaloneTasks||[]).length;i++){if(_pass.standaloneTasks[i].id===t.id){idx=i;break;}}
+      if(idx>=0){_pass.standaloneTasks[idx]=t; standaloneTasks=_pass.standaloneTasks;}
+    } else {
+      // projRef is already a reference to the object in _pass.projects
+    }
+    saveData2();
+  }
+
+  function saveData2() {
+    var payload=Object.assign({},_pass,{calendarEvents:calendarEvents});
+    DOC.set(payload).catch(function(e){console.warn('Error:',e);});
   }
 
   // ── NAVIGATION ────────────────────────────────────────────
