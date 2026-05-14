@@ -2384,7 +2384,9 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
   function _cfRefreshPdm() {
     if (!detailProjectId) return;
     var p = null; for(var i=0;i<projects.length;i++){if(projects[i].id===detailProjectId){p=projects[i];break;}}
-    if (p) renderPdmCustomFields(p);
+    if (!p) return;
+    var cat = null; for(var i=0;i<categories.length;i++){if(categories[i].id===p.catId){cat=categories[i];break;}}
+    renderPdmFields(p, cat);
   }
 
   function renderCfEdList() {
@@ -2859,7 +2861,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
         psel.id = _STD_DOM[field.id] || field.id;
         var none2 = document.createElement('option'); none2.value = ''; none2.textContent = '— Sin responsable';
         psel.appendChild(none2);
-        teamMembers.forEach(function(m){ var o=document.createElement('option');o.value=m.id;o.textContent=m.name;psel.appendChild(o); });
+        TEAM_MEMBERS.forEach(function(m){ var o=document.createElement('option');o.value=m.id;o.textContent=m.name;psel.appendChild(o); });
         psel.value = field.id === 'std_resp' ? (p.team && p.team[0] ? p.team[0] : '') : ((p.customFieldValues || {})[field.id] || '');
         psel.addEventListener('change', _pdmAutoSaveNow);
         row.appendChild(psel);
@@ -3108,11 +3110,8 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     if(detailProjectId) saveProjDetail();
   }
   document.getElementById('pdmName').addEventListener('input', _pdmAutoSave);
-  document.getElementById('pdmClient').addEventListener('input', _pdmAutoSave);
   document.getElementById('pdmMonto').addEventListener('input', _pdmAutoSave);
-  document.getElementById('pdmStage').addEventListener('change', _pdmAutoSaveNow);
-  document.getElementById('pdmDeadline').addEventListener('change', _pdmAutoSaveNow);
-  document.getElementById('pdmResp').addEventListener('change', _pdmAutoSaveNow);
+  // pdmClient, pdmStage, pdmDeadline, pdmResp are rendered dynamically by renderPdmFields — listeners attached there
 
   // ── PICKER INIT ───────────────────────────────────────
   ['mDeadline','pdmDeadline','solDeadline'].forEach(function(id){
