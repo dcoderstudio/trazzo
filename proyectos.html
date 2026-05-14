@@ -315,8 +315,8 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 .sc-add-col-wrap{flex-shrink:0;width:54px;display:flex;align-items:center;justify-content:center;border:1.5px dashed rgba(255,255,255,0.1);border-radius:16px;background:transparent;cursor:pointer;color:rgba(255,255,255,0.2);font-size:22px;font-weight:300;transition:all .18s;}
 .sc-add-col-wrap:hover{border-color:rgba(255,255,255,0.28);color:rgba(255,255,255,0.5);background:rgba(255,255,255,0.03);}
 /* PDM DOCUMENTS */
-.pdm-docs-section{border-top:0.5px solid rgba(255,255,255,0.06);padding:12px 18px 6px;display:flex;gap:14px;flex-shrink:0;}
-.pdm-doc-col{flex:1;min-width:0;}
+.pdm-docs-section{border-top:0.5px solid rgba(255,255,255,0.06);padding:12px 18px 14px;display:flex;flex-direction:column;gap:10px;flex-shrink:0;}
+.pdm-doc-col{min-width:0;}
 .pdm-doc-row{display:flex;align-items:center;gap:7px;padding:7px 10px;background:#1a1a1a;border:0.5px solid rgba(255,255,255,0.08);border-radius:10px;}
 .pdm-doc-name{font-size:11px;color:rgba(255,255,255,0.65);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .pdm-doc-link{font-size:10px;font-weight:700;color:#1A6FD4;text-decoration:none;flex-shrink:0;transition:opacity .15s;}
@@ -468,7 +468,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
       <div class="pdm-field"><div class="pdm-lbl">Cliente</div><input class="pdm-inp" id="cbdClient" placeholder="Nombre del cliente"></div>
       <div class="pdm-field"><div class="pdm-lbl">Fecha de entrega</div><input class="pdm-inp" type="date" id="cbdDeadline"></div>
       <div class="pdm-field"><div class="pdm-lbl">Fecha entregado</div><input class="pdm-inp" type="date" id="cbdCompleted"></div>
-      <div id="cbdDocs" style="display:flex;flex-direction:column;gap:6px;padding-top:8px;border-top:0.5px solid rgba(255,255,255,0.06);"></div>
+      <div id="cbdDocs" style="display:flex;flex-direction:column;gap:10px;padding-top:8px;border-top:0.5px solid rgba(255,255,255,0.06);"></div>
     </div>
   </div>
 </div>
@@ -1364,7 +1364,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     gear.onmouseout=function(){gear.style.color='rgba(255,255,255,0.2)';};
     gear.onclick=function(e){e.stopPropagation();openDocTypeEditor(gear);};
     hdr.appendChild(hlbl); hdr.appendChild(gear); wrap.appendChild(hdr);
-    var grid=document.createElement('div'); grid.style.cssText='display:flex;gap:10px;flex-wrap:wrap;';
+    var grid=document.createElement('div'); grid.style.cssText='display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;';
     getDocTypes().forEach(function(dt) {
       var col2=document.createElement('div'); col2.className='pdm-doc-col';
       var lbl2=document.createElement('div'); lbl2.className='pdm-lbl'; lbl2.textContent='📎 '+dt.label; lbl2.style.marginBottom='6px';
