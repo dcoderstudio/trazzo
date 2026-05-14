@@ -401,6 +401,15 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 .cf-add-type-btn[data-t=person]{background:rgba(139,92,246,.07);color:rgba(139,92,246,.75);border:.5px solid rgba(139,92,246,.18);}
 .cf-add-type-btn[data-t=select]{background:rgba(245,166,35,.07);color:rgba(245,166,35,.75);border:.5px solid rgba(245,166,35,.18);}
 .cf-add-type-btn:hover{filter:brightness(1.3);transform:translateY(-1px);}
+.cb-add-btn{width:100%;background:rgba(255,255,255,0.03);border:0.5px dashed rgba(255,255,255,0.1);border-radius:8px;color:rgba(255,255,255,0.28);font-size:11px;font-weight:600;padding:6px;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s;}
+.cb-add-btn:hover{border-color:rgba(255,255,255,0.22);color:rgba(255,255,255,0.6);background:rgba(255,255,255,0.05);}
+.cb-card-inp{width:100%;box-sizing:border-box;background:#111;border:0.5px solid rgba(255,255,255,0.1);border-radius:8px;padding:7px 10px;font-size:12px;font-weight:500;color:#fff;font-family:'Inter',sans-serif;outline:none;transition:border-color .15s;}
+.cb-card-inp:focus{border-color:rgba(255,255,255,0.3);}
+.cb-card-save{flex:1;background:rgba(255,255,255,0.07);border:0.5px solid rgba(255,255,255,0.12);border-radius:8px;color:rgba(255,255,255,0.75);font-size:11px;font-weight:600;padding:6px;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s;}
+.cb-card-save:hover{background:rgba(255,255,255,0.12);color:#fff;}
+.cb-card-cancel{background:none;border:none;color:rgba(255,255,255,0.28);font-size:11px;font-weight:600;padding:6px 8px;cursor:pointer;font-family:'Inter',sans-serif;transition:color .15s;}
+.cb-card-cancel:hover{color:rgba(255,255,255,0.6);}
+.cb-edit-popup{position:fixed;z-index:9999;background:#1a1a1a;border:0.5px solid rgba(255,255,255,0.12);border-radius:12px;padding:10px;width:220px;box-shadow:0 8px 32px rgba(0,0,0,.6);display:flex;flex-direction:column;gap:6px;}
 .cf-type-picker{position:fixed;z-index:9999;background:#1a1a1a;border:0.5px solid rgba(255,255,255,0.1);border-radius:12px;padding:5px;display:flex;flex-direction:column;gap:3px;box-shadow:0 8px 32px rgba(0,0,0,.6);min-width:140px;}
 .cf-type-picker-opt{display:flex;align-items:center;gap:8px;padding:7px 11px;border-radius:8px;border:none;background:transparent;color:rgba(255,255,255,0.6);font-size:11px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;transition:all .12s;text-align:left;width:100%;}
 .cf-type-picker-opt[data-t=text]:hover,.cf-type-picker-opt[data-t=text].active{background:rgba(90,180,232,.12);color:#5AB4E8;}
@@ -431,7 +440,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     <div class="tabs" id="tabs"></div>
     <button class="tab-add" id="addCatBtn">+ Categoría</button>
     <span class="count-pill" id="countPill">0 proyectos</span>
-    <button class="status-toggle-btn" id="statusToggleBtn" onclick="toggleStatusView()">📊 Estatus</button>
+    <button class="status-toggle-btn" id="statusToggleBtn" onclick="toggleStatusView()">💰 Cobranza</button>
   </div>
   <div class="board-scroll" id="boardScroll">
     <div id="boardInner"></div>
@@ -673,6 +682,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     if (_wsTeamMembers) payload.teamMembers = _wsTeamMembers;
     if (_wsTaskGroups) payload.taskGroups = _wsTaskGroups;
     payload.statusColumns = getStatusCols();
+    payload.cobranzaCards = cobranzaCards;
     payload.projectFields = getProjectFields();
     DOC.set(payload)
       .catch(function(e){ console.warn('Error al guardar:', e); });
@@ -743,6 +753,8 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
   var _statusView = false;
   var _sDragId = null;
   var statusColumns = null;
+  var cobranzaCards = [];
+  var _cbAddColId = null;
   var projectFields = null;
   var _cfPicker = null;
   var _cfDrag = null;
@@ -1000,37 +1012,28 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     var _sbScroll = wrap.scrollLeft;
     wrap.innerHTML = '';
 
-    var allProjs = projects.filter(function(p) {
-      return p.catId !== 'cotizaciones' && (activeFilter === 'all' || p.catId === activeFilter);
-    });
-
     getStatusCols().forEach(function(col) {
       var colEl = document.createElement('div');
       colEl.className = 'status-col';
       colEl.style.cssText = 'background:' + col.bg + ';border:0.5px solid ' + col.border + ';';
 
-      var cards = allProjs.filter(function(p) { return _normFinStatus(p) === col.id; });
+      var cards = cobranzaCards.filter(function(c) { return c.colId === col.id; });
 
-      // Header with edit button
-      var hdr = document.createElement('div');
-      hdr.className = 'status-col-hdr';
+      var hdr = document.createElement('div'); hdr.className = 'status-col-hdr';
       var dot = document.createElement('div'); dot.className='status-col-dot'; dot.style.background=col.color;
       var ttl = document.createElement('span'); ttl.className='status-col-title'; ttl.style.color=col.color; ttl.textContent=col.label;
       var cnt = document.createElement('span'); cnt.className='status-col-count'; cnt.textContent=cards.length;
       var editBtn = document.createElement('button');
       editBtn.style.cssText='background:none;border:none;color:rgba(255,255,255,0.18);font-size:13px;cursor:pointer;padding:0 3px;line-height:1;margin-left:auto;transition:color .15s;';
-      editBtn.textContent='✎';
-      editBtn.title='Editar columna';
-      editBtn.onclick = (function(cid, el){ return function(e){ e.stopPropagation(); openScEditor(cid, el); }; })(col.id, editBtn);
+      editBtn.textContent='✎'; editBtn.title='Editar columna';
+      editBtn.onclick=(function(cid,el){return function(e){e.stopPropagation();openScEditor(cid,el);};})(col.id,editBtn);
       editBtn.onmouseover=function(){editBtn.style.color='rgba(255,255,255,0.6)';};
       editBtn.onmouseout=function(){editBtn.style.color='rgba(255,255,255,0.18)';};
-      hdr.appendChild(dot); hdr.appendChild(ttl); hdr.appendChild(cnt); hdr.appendChild(editBtn);
+      hdr.appendChild(dot);hdr.appendChild(ttl);hdr.appendChild(cnt);hdr.appendChild(editBtn);
       colEl.appendChild(hdr);
 
-      var body = document.createElement('div');
-      body.className = 'status-col-body';
-      body.dataset.colid = col.id;
-      cards.forEach(function(p) { body.appendChild(buildStatusCard(p, col.id)); });
+      var body = document.createElement('div'); body.className='status-col-body'; body.dataset.colid=col.id;
+      cards.forEach(function(c) { body.appendChild(buildCobranzaCard(c, col)); });
 
       body.addEventListener('dragover', function(e) {
         e.preventDefault(); body.classList.add('drag-over');
@@ -1040,92 +1043,101 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
       body.addEventListener('dragleave', function(e) { if (!body.contains(e.relatedTarget)) body.classList.remove('drag-over'); });
       body.addEventListener('drop', (function(cid){ return function(e) {
         e.preventDefault(); body.classList.remove('drag-over');
-        if (_sDragId === null) return;
-        var proj = null;
-        for (var i=0;i<projects.length;i++){if(projects[i].id===_sDragId){proj=projects[i];break;}}
-        if (!proj) return;
-        proj.finStatus = cid; _sDragId = null;
-        saveData(); renderStatusBoard();
-      }; })(col.id));
+        if (!_sDragId && _sDragId !== 0) return;
+        for (var i=0;i<cobranzaCards.length;i++){if(cobranzaCards[i].id===_sDragId){cobranzaCards[i].colId=cid;break;}}
+        _sDragId = null; saveData(); renderStatusBoard();
+      };})(col.id));
 
       colEl.appendChild(body);
+
+      // Inline add form / button
+      var addWrap = document.createElement('div'); addWrap.style.cssText='padding:4px 8px 8px;';
+      if (_cbAddColId === col.id) {
+        var form = document.createElement('div'); form.style.cssText='display:flex;flex-direction:column;gap:5px;';
+        var ni = document.createElement('input'); ni.className='cb-card-inp'; ni.placeholder='Nombre del proyecto';
+        var ci2 = document.createElement('input'); ci2.className='cb-card-inp'; ci2.placeholder='Cliente (opcional)'; ci2.style.fontSize='10px';
+        var fr2 = document.createElement('div'); fr2.style.cssText='display:flex;gap:5px;';
+        var sv = document.createElement('button'); sv.className='cb-card-save'; sv.textContent='Agregar';
+        var cn = document.createElement('button'); cn.className='cb-card-cancel'; cn.textContent='Cancelar';
+        sv.onclick = (function(cid){ return function() {
+          var n=ni.value.trim(); if(!n) return;
+          cobranzaCards.push({id:Date.now(),name:n,client:ci2.value.trim(),colId:cid});
+          _cbAddColId=null; saveData(); renderStatusBoard();
+        };})(col.id);
+        cn.onclick = function(){ _cbAddColId=null; renderStatusBoard(); };
+        ni.onkeydown = function(e){ if(e.key==='Enter')sv.onclick(); if(e.key==='Escape')cn.onclick(); };
+        fr2.appendChild(sv); fr2.appendChild(cn);
+        form.appendChild(ni); form.appendChild(ci2); form.appendChild(fr2);
+        addWrap.appendChild(form);
+        setTimeout(function(){ ni.focus(); }, 40);
+      } else {
+        var addBtn2 = document.createElement('button'); addBtn2.className='cb-add-btn';
+        addBtn2.textContent='+ Agregar';
+        addBtn2.onclick = (function(cid){ return function(){ _cbAddColId=cid; renderStatusBoard(); };})(col.id);
+        addWrap.appendChild(addBtn2);
+      }
+      colEl.appendChild(addWrap);
       wrap.appendChild(colEl);
     });
 
-    // Add column button
-    var addBtn = document.createElement('button');
-    addBtn.className = 'sc-add-col-wrap';
-    addBtn.id = 'scAddColBtn';
-    addBtn.title = 'Agregar columna';
-    addBtn.innerHTML = '+';
-    addBtn.onclick = function() { addScCol(); };
-    wrap.appendChild(addBtn);
-
+    var addColBtn = document.createElement('button');
+    addColBtn.className='sc-add-col-wrap'; addColBtn.id='scAddColBtn'; addColBtn.title='Agregar columna'; addColBtn.innerHTML='+';
+    addColBtn.onclick=function(){addScCol();};
+    wrap.appendChild(addColBtn);
     wrap.scrollLeft = _sbScroll;
   }
 
-  function buildStatusCard(p, currentColId) {
-    var cat = null;
-    for (var i=0;i<categories.length;i++){if(categories[i].id===p.catId){cat=categories[i];break;}}
+  function buildCobranzaCard(c, col) {
+    var card = document.createElement('div'); card.className='status-card'; card.draggable=true; card.dataset.id=c.id;
+    var bar = document.createElement('div'); bar.className='status-card-bar'; bar.style.background=col.color; card.appendChild(bar);
 
-    var card = document.createElement('div');
-    card.className = 'status-card';
-    card.draggable = true;
-    card.dataset.id = p.id;
-
-    var bar = document.createElement('div');
-    bar.className = 'status-card-bar';
-    bar.style.background = cat ? cat.color : 'rgba(255,255,255,0.2)';
-    card.appendChild(bar);
-
-    var name = document.createElement('div');
-    name.className = 'status-card-name';
-    name.textContent = p.name;
-    card.appendChild(name);
-
-    var client = document.createElement('div');
-    client.className = 'status-card-client';
-    client.textContent = p.client || '—';
-    card.appendChild(client);
-
-    // OC badge when in "entregado" column
-    if (currentColId === 'entregado') {
-      var ocBadge = document.createElement('span');
-      ocBadge.className = 'oc-badge ' + (p.ocUrl ? 'has' : 'no');
-      ocBadge.textContent = p.ocUrl ? '✓ Con OC' : 'Sin OC';
-      card.appendChild(ocBadge);
+    var name = document.createElement('div'); name.className='status-card-name'; name.textContent=c.name; card.appendChild(name);
+    if (c.client) {
+      var cl = document.createElement('div'); cl.className='status-card-client'; cl.textContent=c.client; card.appendChild(cl);
     }
 
-    var footer = document.createElement('div');
-    footer.className = 'status-card-footer';
-    if (cat) {
-      var cb = document.createElement('span');
-      cb.className = 'status-cat-badge';
-      cb.style.cssText = 'background:' + cat.color + '22;color:' + cat.color + ';';
-      cb.textContent = cat.label;
-      footer.appendChild(cb);
-    }
-    var stageEl = document.createElement('span');
-    stageEl.className = 'status-stage-lbl';
-    stageEl.textContent = p.stage || '';
-    footer.appendChild(stageEl);
-    if (p.team && p.team.length && p.team[0]) {
-      var avWrap = document.createElement('div');
-      avWrap.style.cssText = 'display:flex;margin-left:auto;';
-      p.team.forEach(function(a) {
-        if (!a) return;
-        var av = document.createElement('div');
-        av.style.cssText = 'width:18px;height:18px;border-radius:50%;background:'+(AV_COLORS[a]||'#555')+';display:flex;align-items:center;justify-content:center;font-size:6px;font-weight:700;color:#fff;border:1.5px solid #181818;margin-left:-3px;';
-        av.textContent = a; avWrap.appendChild(av);
-      });
-      footer.appendChild(avWrap);
-    }
-    card.appendChild(footer);
+    var footer = document.createElement('div'); footer.className='status-card-footer';
+    var spacer = document.createElement('span'); spacer.style.flex='1'; footer.appendChild(spacer);
 
-    card.addEventListener('dragstart', (function(pid){ return function() { _sDragId=pid; card.classList.add('s-dragging'); }; })(p.id));
-    card.addEventListener('dragend', function() { card.classList.remove('s-dragging'); _sDragId=null; });
-    card.addEventListener('click', function() { openProjDetail(p.id); });
+    var editBtn = document.createElement('button');
+    editBtn.style.cssText='background:none;border:none;color:rgba(255,255,255,0.18);font-size:12px;cursor:pointer;padding:1px 4px;transition:color .15s;line-height:1;';
+    editBtn.textContent='✎';
+    editBtn.onmouseover=function(){editBtn.style.color='rgba(255,255,255,0.6)';};
+    editBtn.onmouseout=function(){editBtn.style.color='rgba(255,255,255,0.18)';};
+    editBtn.onclick=(function(cid){return function(e){e.stopPropagation();openEditCobranzaCard(cid);};})(c.id);
+
+    var delBtn = document.createElement('button');
+    delBtn.style.cssText='background:none;border:none;color:rgba(255,255,255,0.18);font-size:15px;cursor:pointer;padding:1px 4px;transition:color .15s;line-height:1;';
+    delBtn.textContent='×';
+    delBtn.onmouseover=function(){delBtn.style.color='#E24B4A';};
+    delBtn.onmouseout=function(){delBtn.style.color='rgba(255,255,255,0.18)';};
+    delBtn.onclick=(function(cid){return function(e){e.stopPropagation();cobranzaCards=cobranzaCards.filter(function(x){return x.id!==cid;});saveData();renderStatusBoard();};})(c.id);
+
+    footer.appendChild(editBtn); footer.appendChild(delBtn); card.appendChild(footer);
+
+    card.addEventListener('dragstart',(function(cid){return function(){_sDragId=cid;card.classList.add('s-dragging');};})(c.id));
+    card.addEventListener('dragend',function(){card.classList.remove('s-dragging');_sDragId=null;});
     return card;
+  }
+
+  function openEditCobranzaCard(cid) {
+    var c=null; for(var i=0;i<cobranzaCards.length;i++){if(cobranzaCards[i].id===cid){c=cobranzaCards[i];break;}} if(!c)return;
+    var old=document.querySelector('.cb-edit-popup'); if(old)old.remove();
+    var pop=document.createElement('div'); pop.className='cb-edit-popup';
+    var ni=document.createElement('input'); ni.className='cb-card-inp'; ni.value=c.name; ni.placeholder='Nombre';
+    var ci3=document.createElement('input'); ci3.className='cb-card-inp'; ci3.value=c.client||''; ci3.placeholder='Cliente (opcional)'; ci3.style.fontSize='10px';
+    var fr3=document.createElement('div'); fr3.style.cssText='display:flex;gap:5px;margin-top:2px;';
+    var sv=document.createElement('button'); sv.className='cb-card-save'; sv.textContent='Guardar';
+    var cn=document.createElement('button'); cn.className='cb-card-cancel'; cn.textContent='Cancelar';
+    sv.onclick=function(){var n=ni.value.trim();if(!n)return;c.name=n;c.client=ci3.value.trim();saveData();renderStatusBoard();pop.remove();};
+    cn.onclick=function(){pop.remove();};
+    fr3.appendChild(sv);fr3.appendChild(cn);
+    pop.appendChild(ni);pop.appendChild(ci3);pop.appendChild(fr3);
+    document.body.appendChild(pop);
+    var card=document.querySelector('.status-card[data-id="'+cid+'"]');
+    if(card){var r=card.getBoundingClientRect();pop.style.left=r.left+'px';pop.style.top=(r.bottom+4)+'px';}
+    setTimeout(function(){ni.focus();ni.select();},30);
+    setTimeout(function(){document.addEventListener('click',function _ep(e){if(!pop.contains(e.target)){pop.remove();document.removeEventListener('click',_ep);}});},10);
   }
 
   // ── COLUMN EDITOR ─────────────────────────────────────
@@ -1190,7 +1202,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     var cols=getStatusCols(); if(cols.length<=1)return;
     var remaining=cols.filter(function(c){return c.id!==colId;});
     var fallback=remaining[0].id;
-    projects.forEach(function(p){if(_normFinStatus(p)===colId)p.finStatus=fallback;});
+    cobranzaCards.forEach(function(c){if(c.colId===colId)c.colId=fallback;});
     statusColumns=remaining; closeScEditor(); saveData(); renderStatusBoard();
   }
 
@@ -3217,6 +3229,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
       if (d.teamMembers) { _wsTeamMembers = d.teamMembers; _syncTeamData(d.teamMembers); }
       if (d.taskGroups) { _wsTaskGroups = d.taskGroups; }
       if (d.statusColumns) statusColumns = d.statusColumns;
+      if (d.cobranzaCards) cobranzaCards = d.cobranzaCards;
       if (d.projectFields) {
         projectFields = d.projectFields;
       } else {
