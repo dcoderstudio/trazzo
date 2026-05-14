@@ -410,6 +410,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 .cb-card-cancel{background:none;border:none;color:rgba(255,255,255,0.28);font-size:11px;font-weight:600;padding:6px 8px;cursor:pointer;font-family:'Inter',sans-serif;transition:color .15s;}
 .cb-card-cancel:hover{color:rgba(255,255,255,0.6);}
 .cb-edit-popup{position:fixed;z-index:9999;background:#1a1a1a;border:0.5px solid rgba(255,255,255,0.12);border-radius:12px;padding:10px;width:220px;box-shadow:0 8px 32px rgba(0,0,0,.6);display:flex;flex-direction:column;gap:6px;}
+.doc-ed-panel{position:fixed;z-index:9999;background:#1a1a1a;border:0.5px solid rgba(255,255,255,0.12);border-radius:14px;padding:13px 14px;width:230px;box-shadow:0 8px 32px rgba(0,0,0,.65);font-family:'Inter',sans-serif;}
 .cf-type-picker{position:fixed;z-index:9999;background:#1a1a1a;border:0.5px solid rgba(255,255,255,0.1);border-radius:12px;padding:5px;display:flex;flex-direction:column;gap:3px;box-shadow:0 8px 32px rgba(0,0,0,.6);min-width:140px;}
 .cf-type-picker-opt{display:flex;align-items:center;gap:8px;padding:7px 11px;border-radius:8px;border:none;background:transparent;color:rgba(255,255,255,0.6);font-size:11px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;transition:all .12s;text-align:left;width:100%;}
 .cf-type-picker-opt[data-t=text]:hover,.cf-type-picker-opt[data-t=text].active{background:rgba(90,180,232,.12);color:#5AB4E8;}
@@ -467,7 +468,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
       <div class="pdm-field"><div class="pdm-lbl">Cliente</div><input class="pdm-inp" id="cbdClient" placeholder="Nombre del cliente"></div>
       <div class="pdm-field"><div class="pdm-lbl">Fecha de entrega</div><input class="pdm-inp" type="date" id="cbdDeadline"></div>
       <div class="pdm-field"><div class="pdm-lbl">Fecha entregado</div><input class="pdm-inp" type="date" id="cbdCompleted"></div>
-      <div id="cbdDocs" style="display:flex;gap:10px;flex-wrap:wrap;padding-top:4px;border-top:0.5px solid rgba(255,255,255,0.06);"></div>
+      <div id="cbdDocs" style="display:flex;flex-direction:column;gap:6px;padding-top:8px;border-top:0.5px solid rgba(255,255,255,0.06);"></div>
     </div>
   </div>
 </div>
@@ -707,6 +708,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     if (_wsTaskGroups) payload.taskGroups = _wsTaskGroups;
     payload.statusColumns = getStatusCols();
     payload.cobranzaCards = cobranzaCards;
+    payload.docTypes = getDocTypes();
     payload.projectFields = getProjectFields();
     DOC.set(payload)
       .catch(function(e){ console.warn('Error al guardar:', e); });
@@ -779,6 +781,13 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
   var _sDragType = null; // 'project' | 'cobranza'
   var statusColumns = null;
   var cobranzaCards = [];
+  var docTypes = null;
+  var DEFAULT_DOC_TYPES = [
+    {id:'cotizacion',   label:'Cotización'},
+    {id:'oc',          label:'Orden de compra'},
+    {id:'comprobante', label:'Comprobante de entrega'}
+  ];
+  function getDocTypes() { return (docTypes && docTypes.length) ? docTypes : DEFAULT_DOC_TYPES.map(function(d){return Object.assign({},d);}); }
   var _cbAddColId = null;
   var cbDetailCardId = null;
   var projectFields = null;
@@ -1232,42 +1241,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
   }
   function renderCbDocs(c) {
     var wrap = document.getElementById('cbdDocs'); if (!wrap) return;
-    wrap.innerHTML = '';
-    [{type:'cotizacion',label:'📄 Cotización',urlKey:'cotizacionUrl',nameKey:'cotizacionName'},
-     {type:'oc',        label:'📋 Orden de compra',urlKey:'ocUrl',nameKey:'ocName'}
-    ].forEach(function(doc) {
-      var col2 = document.createElement('div'); col2.className='pdm-doc-col';
-      var lbl2 = document.createElement('div'); lbl2.className='pdm-lbl'; lbl2.textContent=doc.label; lbl2.style.marginBottom='6px';
-      col2.appendChild(lbl2);
-      if (c[doc.urlKey]) {
-        var row2=document.createElement('div'); row2.className='pdm-doc-row';
-        var nm2=document.createElement('span'); nm2.className='pdm-doc-name'; nm2.textContent=c[doc.nameKey]||'Documento';
-        var lnk2=document.createElement('a'); lnk2.className='pdm-doc-link'; lnk2.href=c[doc.urlKey]; lnk2.target='_blank'; lnk2.rel='noopener'; lnk2.textContent='Ver PDF';
-        var del2=document.createElement('button'); del2.className='pdm-doc-del'; del2.textContent='×'; del2.title='Quitar';
-        del2.onclick=(function(uk,nk){return function(){c[uk]=null;c[nk]=null;saveData();renderCbDocs(c);};})(doc.urlKey,doc.nameKey);
-        row2.appendChild(nm2);row2.appendChild(lnk2);row2.appendChild(del2);col2.appendChild(row2);
-      } else {
-        var finp2=document.createElement('input');finp2.type='file';finp2.accept='.pdf,.PDF,application/pdf';finp2.style.display='none';
-        var btn2=document.createElement('button');btn2.className='pdm-upload-btn';btn2.innerHTML='<span>📎</span> Subir PDF';
-        var prog2=document.createElement('div');prog2.className='pdm-upload-prog';
-        btn2.onclick=function(){finp2.click();};
-        finp2.addEventListener('change',function(){
-          var file=finp2.files[0];if(!file)return;
-          btn2.style.opacity='0.5';prog2.style.color='rgba(255,255,255,0.3)';prog2.textContent='Subiendo…';
-          if(!storage){prog2.style.color='#E24B4A';prog2.textContent='⚠ Firebase Storage no configurado';btn2.style.opacity='';return;}
-          var path='cobranza/'+c.id+'/'+doc.type+'/'+file.name;
-          var ref2=storage.ref(path);
-          var task2=ref2.put(file);
-          task2.on('state_changed',
-            function(snap){prog2.textContent='Subiendo… '+Math.round(snap.bytesTransferred/snap.totalBytes*100)+'%';},
-            function(err){prog2.style.color='#E24B4A';prog2.textContent='⚠ Error: '+err.message;btn2.style.opacity='';},
-            function(){ref2.getDownloadURL().then(function(url){c[doc.urlKey]=url;c[doc.nameKey]=file.name;saveData();renderCbDocs(c);});}
-          );
-        });
-        col2.appendChild(finp2);col2.appendChild(btn2);col2.appendChild(prog2);
-      }
-      wrap.appendChild(col2);
-    });
+    _renderDocsSection(wrap, c, 'cobranza/'+c.id, function(){ saveData(); renderCbDocs(c); });
   }
 
   // ── COLUMN EDITOR ─────────────────────────────────────
@@ -1345,47 +1319,110 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
   }
 
   // ── DOCUMENT UPLOAD (PDFs) ────────────────────────────
+  function _buildDocSlot(objRef, docId, storagePath, onSave) {
+    if (!objRef.docs) objRef.docs = {};
+    // Migrate legacy fields (cotizacionUrl, ocUrl)
+    if (docId==='cotizacion' && objRef.cotizacionUrl && !objRef.docs.cotizacion) objRef.docs.cotizacion={url:objRef.cotizacionUrl,name:objRef.cotizacionName||''};
+    if (docId==='oc' && objRef.ocUrl && !objRef.docs.oc) objRef.docs.oc={url:objRef.ocUrl,name:objRef.ocName||''};
+    var doc = objRef.docs[docId] || null;
+    if (doc && doc.url) {
+      var row=document.createElement('div'); row.className='pdm-doc-row';
+      var nm=document.createElement('span'); nm.className='pdm-doc-name'; nm.textContent=doc.name||'Documento';
+      var lnk=document.createElement('a'); lnk.className='pdm-doc-link'; lnk.href=doc.url; lnk.target='_blank'; lnk.rel='noopener'; lnk.textContent='Ver PDF';
+      var del=document.createElement('button'); del.className='pdm-doc-del'; del.textContent='×'; del.title='Quitar';
+      del.onclick=function(){ delete objRef.docs[docId]; saveData(); onSave(); };
+      row.appendChild(nm);row.appendChild(lnk);row.appendChild(del); return row;
+    } else {
+      var wrap2=document.createElement('div');
+      var finp=document.createElement('input'); finp.type='file'; finp.accept='.pdf,.PDF,application/pdf'; finp.style.display='none';
+      var btn=document.createElement('button'); btn.className='pdm-upload-btn'; btn.innerHTML='<span>📎</span> Subir PDF';
+      var prog=document.createElement('div'); prog.className='pdm-upload-prog';
+      btn.onclick=function(){finp.click();};
+      finp.addEventListener('change',function(){
+        var file=finp.files[0]; if(!file)return;
+        btn.style.opacity='0.5'; prog.style.color='rgba(255,255,255,0.3)'; prog.textContent='Subiendo…';
+        if(!storage){prog.style.color='#E24B4A';prog.textContent='⚠ Storage no configurado';btn.style.opacity='';return;}
+        var ref=storage.ref(storagePath+'/'+file.name);
+        ref.put(file).on('state_changed',
+          function(snap){prog.textContent='Subiendo… '+Math.round(snap.bytesTransferred/snap.totalBytes*100)+'%';},
+          function(err){prog.style.color='#E24B4A';prog.textContent='⚠ '+err.message;btn.style.opacity='';},
+          function(){ref.getDownloadURL().then(function(url){if(!objRef.docs)objRef.docs={};objRef.docs[docId]={url:url,name:file.name};saveData();onSave();});}
+        );
+      });
+      wrap2.appendChild(finp);wrap2.appendChild(btn);wrap2.appendChild(prog); return wrap2;
+    }
+  }
+
+  function _renderDocsSection(wrap, objRef, storageBase, onSave, editAnchorId) {
+    wrap.innerHTML='';
+    var hdr=document.createElement('div'); hdr.style.cssText='display:flex;align-items:center;justify-content:space-between;width:100%;margin-bottom:8px;';
+    var hlbl=document.createElement('div'); hlbl.className='pdm-lbl'; hlbl.style.marginBottom='0'; hlbl.textContent='Documentos';
+    var gear=document.createElement('button');
+    gear.style.cssText='background:none;border:none;color:rgba(255,255,255,0.2);font-size:12px;cursor:pointer;padding:1px 4px;transition:color .15s;font-family:Inter,sans-serif;font-weight:700;';
+    gear.textContent='⚙ Gestionar'; gear.title='Agregar / quitar tipos de documento';
+    gear.onmouseover=function(){gear.style.color='rgba(255,255,255,0.6)';};
+    gear.onmouseout=function(){gear.style.color='rgba(255,255,255,0.2)';};
+    gear.onclick=function(e){e.stopPropagation();openDocTypeEditor(gear);};
+    hdr.appendChild(hlbl); hdr.appendChild(gear); wrap.appendChild(hdr);
+    var grid=document.createElement('div'); grid.style.cssText='display:flex;gap:10px;flex-wrap:wrap;';
+    getDocTypes().forEach(function(dt) {
+      var col2=document.createElement('div'); col2.className='pdm-doc-col';
+      var lbl2=document.createElement('div'); lbl2.className='pdm-lbl'; lbl2.textContent='📎 '+dt.label; lbl2.style.marginBottom='6px';
+      col2.appendChild(lbl2);
+      col2.appendChild(_buildDocSlot(objRef, dt.id, storageBase+'/'+dt.id, onSave));
+      grid.appendChild(col2);
+    });
+    wrap.appendChild(grid);
+  }
+
   function renderPdmDocs(p) {
     var wrap=document.getElementById('pdmDocsSection'); if(!wrap)return;
-    wrap.innerHTML='';
-    [{type:'cotizacion',label:'📄 Cotización',urlKey:'cotizacionUrl',nameKey:'cotizacionName'},
-     {type:'oc',        label:'📋 Orden de compra',urlKey:'ocUrl',nameKey:'ocName'}
-    ].forEach(function(doc) {
-      var col=document.createElement('div'); col.className='pdm-doc-col';
-      var lbl=document.createElement('div'); lbl.className='pdm-lbl'; lbl.textContent=doc.label; lbl.style.marginBottom='6px';
-      col.appendChild(lbl);
-      if (p[doc.urlKey]) {
-        var row=document.createElement('div'); row.className='pdm-doc-row';
-        var nm=document.createElement('span'); nm.className='pdm-doc-name'; nm.textContent=p[doc.nameKey]||'Documento';
-        var lnk=document.createElement('a'); lnk.className='pdm-doc-link'; lnk.href=p[doc.urlKey]; lnk.target='_blank'; lnk.rel='noopener'; lnk.textContent='Ver PDF';
-        var del=document.createElement('button'); del.className='pdm-doc-del'; del.textContent='×'; del.title='Quitar';
-        del.onclick=(function(uk,nk){return function(){ p[uk]=null;p[nk]=null;saveData();renderPdmDocs(p); };})(doc.urlKey,doc.nameKey);
-        row.appendChild(nm);row.appendChild(lnk);row.appendChild(del);col.appendChild(row);
-      } else {
-        var finp=document.createElement('input'); finp.type='file'; finp.accept='.pdf,.PDF,application/pdf'; finp.style.display='none';
-        var btn=document.createElement('button'); btn.className='pdm-upload-btn';
-        btn.innerHTML='<span>📎</span> Subir PDF';
-        var prog=document.createElement('div'); prog.className='pdm-upload-prog';
-        btn.onclick=function(){finp.click();};
-        finp.addEventListener('change',function(){
-          var file=finp.files[0]; if(!file)return;
-          btn.style.opacity='0.5'; prog.style.color='rgba(255,255,255,0.3)'; prog.textContent='Subiendo…';
-          if(!storage){
-            prog.style.color='#E24B4A'; prog.textContent='⚠ Firebase Storage no configurado'; btn.style.opacity=''; return;
-          }
-          var path='proyectos/'+p.id+'/'+doc.type+'/'+file.name;
-          var ref=storage.ref(path);
-          var task=ref.put(file);
-          task.on('state_changed',
-            function(snap){prog.textContent='Subiendo… '+Math.round(snap.bytesTransferred/snap.totalBytes*100)+'%';},
-            function(err){prog.style.color='#E24B4A';prog.textContent='⚠ Error: '+err.message;btn.style.opacity='';},
-            function(){ref.getDownloadURL().then(function(url){p[doc.urlKey]=url;p[doc.nameKey]=file.name;saveData();renderPdmDocs(p);});}
-          );
-        });
-        col.appendChild(finp); col.appendChild(btn); col.appendChild(prog);
-      }
-      wrap.appendChild(col);
-    });
+    _renderDocsSection(wrap, p, 'proyectos/'+p.id, function(){ saveData(); renderPdmDocs(p); });
+  }
+
+  var _docEdPanel = null;
+  function openDocTypeEditor(anchorEl) {
+    if (_docEdPanel) { _docEdPanel.remove(); _docEdPanel=null; return; }
+    var panel=document.createElement('div'); panel.className='doc-ed-panel'; _docEdPanel=panel;
+    function refresh() {
+      panel.innerHTML='';
+      var ttl=document.createElement('div'); ttl.style.cssText='font-size:10px;font-weight:700;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px;'; ttl.textContent='Tipos de documento'; panel.appendChild(ttl);
+      getDocTypes().forEach(function(dt) {
+        var row=document.createElement('div'); row.style.cssText='display:flex;align-items:center;gap:6px;margin-bottom:5px;';
+        var lbl=document.createElement('div'); lbl.style.cssText='flex:1;font-size:12px;color:rgba(255,255,255,0.75);font-weight:500;'; lbl.textContent=dt.label;
+        var del=document.createElement('button'); del.style.cssText='background:none;border:none;color:rgba(255,255,255,0.2);font-size:14px;cursor:pointer;padding:0 3px;line-height:1;transition:color .15s;';
+        del.textContent='×'; del.title='Quitar tipo';
+        del.onmouseover=function(){del.style.color='#E24B4A';};
+        del.onmouseout=function(){del.style.color='rgba(255,255,255,0.2)';};
+        del.onclick=function(){
+          var dts=getDocTypes().filter(function(x){return x.id!==dt.id;});
+          docTypes=dts; saveData(); refresh();
+          var pdp=document.getElementById('pdmDocsSection'); if(pdp&&detailProjectId){var pp=null;for(var i=0;i<projects.length;i++){if(projects[i].id===detailProjectId){pp=projects[i];break;}}if(pp)renderPdmDocs(pp);}
+          var cbp=document.getElementById('cbdDocs'); if(cbp&&cbDetailCardId){var cc=_getCbCard();if(cc)renderCbDocs(cc);}
+        };
+        row.appendChild(lbl); row.appendChild(del); panel.appendChild(row);
+      });
+      var sep=document.createElement('div'); sep.style.cssText='border-top:0.5px solid rgba(255,255,255,0.06);margin:8px 0 6px;'; panel.appendChild(sep);
+      var addRow=document.createElement('div'); addRow.style.cssText='display:flex;gap:5px;align-items:center;';
+      var inp=document.createElement('input'); inp.className='cb-card-inp'; inp.style.cssText='flex:1;font-size:11px;padding:5px 8px;'; inp.placeholder='Nuevo tipo…';
+      var addBtn=document.createElement('button'); addBtn.className='cb-card-save'; addBtn.style.cssText='padding:5px 10px;font-size:11px;white-space:nowrap;'; addBtn.textContent='+ Agregar';
+      var doAdd=function(){
+        var lbl2=inp.value.trim(); if(!lbl2)return;
+        var nid='doc_'+Date.now();
+        var dts=getDocTypes().slice(); dts.push({id:nid,label:lbl2});
+        docTypes=dts; saveData(); inp.value=''; refresh();
+        var pdp=document.getElementById('pdmDocsSection'); if(pdp&&detailProjectId){var pp=null;for(var i=0;i<projects.length;i++){if(projects[i].id===detailProjectId){pp=projects[i];break;}}if(pp)renderPdmDocs(pp);}
+        var cbp=document.getElementById('cbdDocs'); if(cbp&&cbDetailCardId){var cc=_getCbCard();if(cc)renderCbDocs(cc);}
+      };
+      addBtn.onclick=doAdd; inp.onkeydown=function(e){if(e.key==='Enter')doAdd();};
+      addRow.appendChild(inp); addRow.appendChild(addBtn); panel.appendChild(addRow);
+    }
+    refresh();
+    document.body.appendChild(panel);
+    var r=anchorEl.getBoundingClientRect();
+    panel.style.left=Math.min(r.left,window.innerWidth-240)+'px';
+    panel.style.top=(r.bottom+5)+'px';
+    setTimeout(function(){document.addEventListener('click',function _deo(e){if(_docEdPanel&&!_docEdPanel.contains(e.target)&&e.target!==anchorEl){_docEdPanel.remove();_docEdPanel=null;document.removeEventListener('click',_deo);}});},10);
   }
 
   // ── COLUMN ────────────────────────────────────────────
@@ -3364,6 +3401,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
       if (d.taskGroups) { _wsTaskGroups = d.taskGroups; }
       if (d.statusColumns) statusColumns = d.statusColumns;
       if (d.cobranzaCards) cobranzaCards = d.cobranzaCards;
+      if (d.docTypes) docTypes = d.docTypes;
       if (d.projectFields) {
         projectFields = d.projectFields;
       } else {
