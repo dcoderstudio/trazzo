@@ -277,6 +277,31 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 .phase-add-card{border:1.5px dashed rgba(255,255,255,0.12);border-radius:12px;width:120px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;color:rgba(255,255,255,0.28);font-size:11px;font-weight:600;font-family:'Inter',sans-serif;transition:all .15s;gap:5px;min-height:88px;}
 .phase-add-card:hover{border-color:rgba(255,255,255,0.3);color:rgba(255,255,255,0.65);background:rgba(255,255,255,0.03);}
 .phase-footer{display:flex;gap:8px;justify-content:flex-end;padding-top:8px;border-top:0.5px solid rgba(255,255,255,0.06);}
+/* STATUS BOARD */
+.status-board-wrap{display:flex;gap:14px;padding:20px 28px 24px;height:calc(100vh - 52px - 48px);overflow-x:auto;overflow-y:hidden;}
+.status-board-wrap::-webkit-scrollbar{height:5px;}
+.status-board-wrap::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.12);border-radius:3px;}
+.status-col{flex-shrink:0;width:260px;display:flex;flex-direction:column;border-radius:16px;padding:14px 12px 12px;}
+.status-col-hdr{display:flex;align-items:center;gap:8px;padding:0 2px 12px;flex-shrink:0;}
+.status-col-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.status-col-title{font-size:12px;font-weight:700;letter-spacing:.02em;flex:1;}
+.status-col-count{font-size:11px;font-weight:700;background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.4);padding:2px 8px;border-radius:10px;}
+.status-col-body{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding:2px 0 4px;}
+.status-col-body::-webkit-scrollbar{width:3px;}
+.status-col-body::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:2px;}
+.status-col-body.drag-over{background:rgba(255,255,255,0.04);border-radius:10px;}
+.status-card{background:#181818;border:0.5px solid rgba(255,255,255,0.08);border-radius:12px;padding:12px 12px 10px 16px;cursor:grab;user-select:none;position:relative;overflow:hidden;transition:transform .12s,box-shadow .12s;flex-shrink:0;}
+.status-card:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(0,0,0,.5);border-color:rgba(255,255,255,0.15);}
+.status-card.s-dragging{opacity:.1;cursor:grabbing;}
+.status-card-bar{position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:3px 0 0 3px;}
+.status-card-name{font-size:13px;font-weight:600;color:rgba(255,255,255,0.9);margin-bottom:3px;line-height:1.3;}
+.status-card-client{font-size:10px;color:rgba(255,255,255,0.3);margin-bottom:8px;}
+.status-card-footer{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+.status-cat-badge{font-size:9px;font-weight:700;padding:2px 8px;border-radius:20px;white-space:nowrap;}
+.status-stage-lbl{font-size:9px;color:rgba(255,255,255,0.22);margin-left:auto;white-space:nowrap;}
+.status-toggle-btn{background:rgba(255,255,255,0.06);border:0.5px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.5);font-size:11px;font-weight:600;padding:5px 12px;border-radius:20px;cursor:pointer;font-family:'Inter',sans-serif;white-space:nowrap;transition:all .15s;flex-shrink:0;}
+.status-toggle-btn:hover{background:rgba(255,255,255,0.1);border-color:rgba(255,255,255,0.28);color:#fff;}
+.status-toggle-btn.active{background:rgba(255,255,255,0.12);border-color:rgba(255,255,255,0.35);color:#fff;}
 </style>
 </head>
 <body>
@@ -301,10 +326,12 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     <div class="tabs" id="tabs"></div>
     <button class="tab-add" id="addCatBtn">+ Categoría</button>
     <span class="count-pill" id="countPill">0 proyectos</span>
+    <button class="status-toggle-btn" id="statusToggleBtn" onclick="toggleStatusView()">📊 Estatus</button>
   </div>
   <div class="board-scroll" id="boardScroll">
     <div id="boardInner"></div>
   </div>
+  <div class="status-board-wrap" id="statusBoard" style="display:none;"></div>
 </div>
 
 <!-- PROJECT MODAL -->
@@ -608,6 +635,16 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
   var dragId = null;
   var solCollapsed = false;
   var entregadoCollapsed = false;
+  var _statusView = false;
+  var _sDragId = null;
+
+  var STATUS_COLS = [
+    {id:'oc',        label:'Orden de compra', color:'#1A6FD4', bg:'rgba(26,111,212,0.08)',   border:'rgba(26,111,212,0.18)'},
+    {id:'proceso',   label:'En proceso',      color:'#E8A020', bg:'rgba(232,160,32,0.08)',   border:'rgba(232,160,32,0.18)'},
+    {id:'entregado', label:'Entregado',        color:'#27AE72', bg:'rgba(39,174,114,0.08)',  border:'rgba(39,174,114,0.18)'},
+    {id:'facturado', label:'Facturado',        color:'#8B5CF6', bg:'rgba(139,92,246,0.08)',  border:'rgba(139,92,246,0.18)'},
+    {id:'cobrado',   label:'Cobrado',          color:'#5DB832', bg:'rgba(93,184,50,0.08)',   border:'rgba(93,184,50,0.18)'}
+  ];
   var nextId = 14;
   var catIdCounter = 20;
   var presetCat = null;
@@ -789,6 +826,148 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
       var _cid = _newLanes[_ri].dataset.catid;
       if (_scrollSave[_cid]) _newLanes[_ri].scrollLeft = _scrollSave[_cid];
     }
+
+    // Keep status board in sync if visible
+    if (_statusView) renderStatusBoard();
+  }
+
+  // ── STATUS BOARD ──────────────────────────────────────
+  window.toggleStatusView = function() {
+    _statusView = !_statusView;
+    document.getElementById('boardScroll').style.display  = _statusView ? 'none' : '';
+    document.getElementById('statusBoard').style.display  = _statusView ? 'flex'  : 'none';
+    document.getElementById('statusToggleBtn').classList.toggle('active', _statusView);
+    if (_statusView) renderStatusBoard();
+  };
+
+  function renderStatusBoard() {
+    var wrap = document.getElementById('statusBoard');
+    // Save scroll position
+    var _sbScroll = wrap.scrollLeft;
+    wrap.innerHTML = '';
+
+    var allProjs = projects.filter(function(p) {
+      return p.catId !== 'cotizaciones' && (activeFilter === 'all' || p.catId === activeFilter);
+    });
+
+    STATUS_COLS.forEach(function(col) {
+      var colEl = document.createElement('div');
+      colEl.className = 'status-col';
+      colEl.style.cssText = 'background:' + col.bg + ';border:0.5px solid ' + col.border + ';';
+
+      var cards = allProjs.filter(function(p) { return (p.finStatus || 'proceso') === col.id; });
+
+      var hdr = document.createElement('div');
+      hdr.className = 'status-col-hdr';
+      hdr.innerHTML = '<div class="status-col-dot" style="background:' + col.color + ';"></div>'
+        + '<span class="status-col-title" style="color:' + col.color + ';">' + col.label + '</span>'
+        + '<span class="status-col-count">' + cards.length + '</span>';
+      colEl.appendChild(hdr);
+
+      var body = document.createElement('div');
+      body.className = 'status-col-body';
+      body.dataset.colid = col.id;
+
+      cards.forEach(function(p) { body.appendChild(buildStatusCard(p)); });
+
+      body.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        body.classList.add('drag-over');
+        var dragging = document.querySelector('.status-card.s-dragging');
+        if (dragging && !body.contains(dragging)) body.appendChild(dragging);
+      });
+      body.addEventListener('dragleave', function(e) {
+        if (!body.contains(e.relatedTarget)) body.classList.remove('drag-over');
+      });
+      body.addEventListener('drop', function(e) {
+        e.preventDefault();
+        body.classList.remove('drag-over');
+        if (_sDragId === null) return;
+        var proj = null;
+        for (var i=0;i<projects.length;i++){if(projects[i].id===_sDragId){proj=projects[i];break;}}
+        if (!proj) return;
+        proj.finStatus = col.id;
+        _sDragId = null;
+        saveData();
+        renderStatusBoard();
+      });
+
+      colEl.appendChild(body);
+      wrap.appendChild(colEl);
+    });
+
+    wrap.scrollLeft = _sbScroll;
+  }
+
+  function buildStatusCard(p) {
+    var cat = null;
+    for (var i=0;i<categories.length;i++){if(categories[i].id===p.catId){cat=categories[i];break;}}
+
+    var card = document.createElement('div');
+    card.className = 'status-card';
+    card.draggable = true;
+    card.dataset.id = p.id;
+
+    var bar = document.createElement('div');
+    bar.className = 'status-card-bar';
+    bar.style.background = cat ? cat.color : 'rgba(255,255,255,0.2)';
+    card.appendChild(bar);
+
+    var name = document.createElement('div');
+    name.className = 'status-card-name';
+    name.textContent = p.name;
+    card.appendChild(name);
+
+    var client = document.createElement('div');
+    client.className = 'status-card-client';
+    client.textContent = p.client || '—';
+    card.appendChild(client);
+
+    var footer = document.createElement('div');
+    footer.className = 'status-card-footer';
+
+    if (cat) {
+      var cb = document.createElement('span');
+      cb.className = 'status-cat-badge';
+      cb.style.cssText = 'background:' + cat.color + '22;color:' + cat.color + ';';
+      cb.textContent = cat.label;
+      footer.appendChild(cb);
+    }
+
+    var stageEl = document.createElement('span');
+    stageEl.className = 'status-stage-lbl';
+    stageEl.textContent = p.stage || '';
+    footer.appendChild(stageEl);
+
+    // Team avatars
+    if (p.team && p.team.length && p.team[0]) {
+      var avWrap = document.createElement('div');
+      avWrap.style.cssText = 'display:flex;margin-left:auto;';
+      p.team.forEach(function(a) {
+        if (!a) return;
+        var av = document.createElement('div');
+        av.style.cssText = 'width:18px;height:18px;border-radius:50%;background:' + (AV_COLORS[a]||'#555') + ';'
+          + 'display:flex;align-items:center;justify-content:center;font-size:6px;font-weight:700;color:#fff;'
+          + 'border:1.5px solid #181818;margin-left:-3px;';
+        av.textContent = a;
+        avWrap.appendChild(av);
+      });
+      footer.appendChild(avWrap);
+    }
+
+    card.appendChild(footer);
+
+    card.addEventListener('dragstart', (function(pid){ return function() {
+      _sDragId = pid;
+      card.classList.add('s-dragging');
+    }; })(p.id));
+    card.addEventListener('dragend', function() {
+      card.classList.remove('s-dragging');
+      _sDragId = null;
+    });
+    card.addEventListener('click', function() { openProjDetail(p.id); });
+
+    return card;
   }
 
   // ── COLUMN ────────────────────────────────────────────
@@ -865,6 +1044,13 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
       if (!p.stageEntryDates) p.stageEntryDates = {};
       p.stageEntryDates[stage] = new Date().toISOString().split('T')[0];
       seedStageTasks(p, cat, stage);
+      // Auto-sync finStatus
+      var _isLast = cat.stages.length > 0 && stage === cat.stages[cat.stages.length - 1];
+      if (_isLast && (!p.finStatus || p.finStatus === 'proceso' || p.finStatus === 'oc')) {
+        p.finStatus = 'entregado';
+      } else if (!_isLast && p.finStatus === 'entregado') {
+        p.finStatus = 'proceso';
+      }
       saveData();
       renderBoard();
     }
