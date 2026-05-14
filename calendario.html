@@ -344,10 +344,19 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
   }
 
   function getEventsForDate(dateStr) {
-    var evs = getAllEvents().filter(function(e){return e.date===dateStr;});
+    var base = getAllEvents().filter(function(e){return e.date===dateStr;});
+    var calEvs = [];
     getCustomEventsFor(dateStr).forEach(function(ev){
-      evs.push({id:'cal_'+ev.id+(ev.isRepeat?'_r':''), date:ev.date, title:ev.title, sub:ev.notes||'', color:ev.color||'#27AE72', type:ev.type||'reminder', icon:'🔔', calId:ev.id, isRepeat:ev.isRepeat});
+      calEvs.push({id:'cal_'+ev.id+(ev.isRepeat?'_r':''), date:ev.date, title:ev.title, sub:ev.notes||'', color:ev.color||'#27AE72', type:ev.type||'reminder', icon:'🔔', calId:ev.id, isRepeat:ev.isRepeat});
     });
+    // Remove standalone tasks that already appear as a calendar task event (same title+date)
+    var calTaskKeys = {};
+    calEvs.forEach(function(e){ if(e.type==='task') calTaskKeys[e.title+'|'+e.date]=true; });
+    base = base.filter(function(e){
+      if (e.id && e.id.indexOf('st_')===0 && calTaskKeys[e.title+'|'+e.date]) return false;
+      return true;
+    });
+    var evs = base.concat(calEvs);
     evs.sort(function(a,b){return a.date<b.date?-1:1;});
     return evs;
   }
@@ -365,15 +374,11 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     var firstDay = new Date(curYear,curMonth,1);
     var lastDay = new Date(curYear,curMonth+1,0);
     var startDow = firstDay.getDay(); var off = startDow===0?6:startDow-1;
-    var allEvs = getAllEvents();
     var evByDate = {};
-    allEvs.forEach(function(e){ if(!evByDate[e.date])evByDate[e.date]=[]; evByDate[e.date].push(e); });
-    // Add custom events
     var rangeStart = addDays(firstDay,-off); var rangeEnd = addDays(lastDay,7);
     var d2 = new Date(rangeStart);
     while(d2<=rangeEnd){
-      var ds = fmt(d2); var cevs = getCustomEventsFor(ds);
-      cevs.forEach(function(ev){ if(!evByDate[ds])evByDate[ds]=[]; evByDate[ds].push({id:'cal_'+ev.id,date:ds,title:ev.title,sub:'',color:ev.color||'#27AE72',type:ev.type,calId:ev.id}); });
+      var ds = fmt(d2); evByDate[ds] = getEventsForDate(ds);
       d2 = addDays(d2,1);
     }
 
