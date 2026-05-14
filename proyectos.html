@@ -448,6 +448,30 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
   <div class="status-board-wrap" id="statusBoard" style="display:none;"></div>
 </div>
 
+<!-- COBRANZA CARD DETAIL -->
+<div class="overlay" id="cbDetailOverlay">
+  <div class="pdm" style="max-width:480px;">
+    <div class="pdm-header">
+      <input class="pdm-title" id="cbdName" placeholder="Nombre del proyecto">
+      <div class="pdm-del-confirm" id="cbdDelConfirm" style="display:none;">
+        <span>¿Eliminar ficha?</span>
+        <button class="btn-c" onclick="document.getElementById('cbdDelConfirm').style.display='none';document.getElementById('cbdDeleteBtn').style.display='';" style="padding:4px 10px;font-size:11px;">No</button>
+        <button class="btn-danger" onclick="_cbdDelete()" style="padding:4px 10px;font-size:11px;">Eliminar</button>
+      </div>
+      <button class="pdm-del-btn" id="cbdDeleteBtn" title="Eliminar ficha" onclick="document.getElementById('cbdDelConfirm').style.display='flex';this.style.display='none';">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
+      </button>
+      <button class="pdm-close" onclick="closeCbDetail()">×</button>
+    </div>
+    <div style="padding:16px 20px;overflow-y:auto;display:flex;flex-direction:column;gap:13px;flex:1;">
+      <div class="pdm-field"><div class="pdm-lbl">Cliente</div><input class="pdm-inp" id="cbdClient" placeholder="Nombre del cliente"></div>
+      <div class="pdm-field"><div class="pdm-lbl">Fecha de entrega</div><input class="pdm-inp" type="date" id="cbdDeadline"></div>
+      <div class="pdm-field"><div class="pdm-lbl">Fecha entregado</div><input class="pdm-inp" type="date" id="cbdCompleted"></div>
+      <div id="cbdDocs" style="display:flex;gap:10px;flex-wrap:wrap;padding-top:4px;border-top:0.5px solid rgba(255,255,255,0.06);"></div>
+    </div>
+  </div>
+</div>
+
 <!-- CUSTOM FIELDS EDITOR -->
 <div class="cf-ed-overlay" id="cfEdOverlay" onclick="if(event.target===this)closeCfEditor()">
   <div class="cf-ed-modal">
@@ -756,6 +780,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
   var statusColumns = null;
   var cobranzaCards = [];
   var _cbAddColId = null;
+  var cbDetailCardId = null;
   var projectFields = null;
   var _cfPicker = null;
   var _cfDrag = null;
@@ -1143,7 +1168,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     editBtn.textContent='✎';
     editBtn.onmouseover=function(){editBtn.style.color='rgba(255,255,255,0.6)';};
     editBtn.onmouseout=function(){editBtn.style.color='rgba(255,255,255,0.18)';};
-    editBtn.onclick=(function(cid){return function(e){e.stopPropagation();openEditCobranzaCard(cid);};})(c.id);
+    editBtn.onclick=(function(cid){return function(e){e.stopPropagation();openCbDetail(cid);};})(c.id);
 
     var delBtn = document.createElement('button');
     delBtn.style.cssText='background:none;border:none;color:rgba(255,255,255,0.18);font-size:15px;cursor:pointer;padding:1px 4px;transition:color .15s;line-height:1;';
@@ -1156,6 +1181,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 
     card.addEventListener('dragstart',(function(cid){return function(){_sDragId=cid;_sDragType='cobranza';card.classList.add('s-dragging');};})(c.id));
     card.addEventListener('dragend',function(){card.classList.remove('s-dragging');_sDragId=null;_sDragType=null;});
+    card.addEventListener('click',function(){openCbDetail(c.id);});
     return card;
   }
 
@@ -1177,6 +1203,82 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     if(card){var r=card.getBoundingClientRect();pop.style.left=r.left+'px';pop.style.top=(r.bottom+4)+'px';}
     setTimeout(function(){ni.focus();ni.select();},30);
     setTimeout(function(){document.addEventListener('click',function _ep(e){if(!pop.contains(e.target)){pop.remove();document.removeEventListener('click',_ep);}});},10);
+  }
+
+  // ── COBRANZA CARD DETAIL ─────────────────────────────
+  function _getCbCard() {
+    for (var i=0;i<cobranzaCards.length;i++){if(cobranzaCards[i].id===cbDetailCardId)return cobranzaCards[i];}
+    return null;
+  }
+  window.openCbDetail = function(cid) {
+    cbDetailCardId = cid;
+    var c = _getCbCard(); if (!c) return;
+    document.getElementById('cbdName').value = c.name || '';
+    document.getElementById('cbdClient').value = c.client || '';
+    document.getElementById('cbdDeadline').value = c.deadline || '';
+    document.getElementById('cbdCompleted').value = c.completed || '';
+    document.getElementById('cbdDelConfirm').style.display = 'none';
+    document.getElementById('cbdDeleteBtn').style.display = '';
+    renderCbDocs(c);
+    document.getElementById('cbDetailOverlay').classList.add('open');
+  };
+  window.closeCbDetail = function() {
+    document.getElementById('cbDetailOverlay').classList.remove('open');
+    cbDetailCardId = null;
+  };
+  window._cbdDelete = function() {
+    cobranzaCards = cobranzaCards.filter(function(x){ return x.id !== cbDetailCardId; });
+    saveData(); closeCbDetail(); if (_statusView) renderStatusBoard();
+  };
+  var _cbdTimer = null;
+  function _cbdAutoSave() { clearTimeout(_cbdTimer); _cbdTimer = setTimeout(_cbdSave, 700); }
+  function _cbdSave() {
+    var c = _getCbCard(); if (!c) return;
+    var n = document.getElementById('cbdName').value.trim(); if (n) c.name = n;
+    c.client   = document.getElementById('cbdClient').value.trim();
+    c.deadline = document.getElementById('cbdDeadline').value;
+    c.completed= document.getElementById('cbdCompleted').value;
+    saveData();
+    if (_statusView) renderStatusBoard();
+  }
+  function renderCbDocs(c) {
+    var wrap = document.getElementById('cbdDocs'); if (!wrap) return;
+    wrap.innerHTML = '';
+    [{type:'cotizacion',label:'📄 Cotización',urlKey:'cotizacionUrl',nameKey:'cotizacionName'},
+     {type:'oc',        label:'📋 Orden de compra',urlKey:'ocUrl',nameKey:'ocName'}
+    ].forEach(function(doc) {
+      var col2 = document.createElement('div'); col2.className='pdm-doc-col';
+      var lbl2 = document.createElement('div'); lbl2.className='pdm-lbl'; lbl2.textContent=doc.label; lbl2.style.marginBottom='6px';
+      col2.appendChild(lbl2);
+      if (c[doc.urlKey]) {
+        var row2=document.createElement('div'); row2.className='pdm-doc-row';
+        var nm2=document.createElement('span'); nm2.className='pdm-doc-name'; nm2.textContent=c[doc.nameKey]||'Documento';
+        var lnk2=document.createElement('a'); lnk2.className='pdm-doc-link'; lnk2.href=c[doc.urlKey]; lnk2.target='_blank'; lnk2.rel='noopener'; lnk2.textContent='Ver PDF';
+        var del2=document.createElement('button'); del2.className='pdm-doc-del'; del2.textContent='×'; del2.title='Quitar';
+        del2.onclick=(function(uk,nk){return function(){c[uk]=null;c[nk]=null;saveData();renderCbDocs(c);};})(doc.urlKey,doc.nameKey);
+        row2.appendChild(nm2);row2.appendChild(lnk2);row2.appendChild(del2);col2.appendChild(row2);
+      } else {
+        var finp2=document.createElement('input');finp2.type='file';finp2.accept='.pdf,.PDF,application/pdf';finp2.style.display='none';
+        var btn2=document.createElement('button');btn2.className='pdm-upload-btn';btn2.innerHTML='<span>📎</span> Subir PDF';
+        var prog2=document.createElement('div');prog2.className='pdm-upload-prog';
+        btn2.onclick=function(){finp2.click();};
+        finp2.addEventListener('change',function(){
+          var file=finp2.files[0];if(!file)return;
+          btn2.style.opacity='0.5';prog2.style.color='rgba(255,255,255,0.3)';prog2.textContent='Subiendo…';
+          if(!storage){prog2.style.color='#E24B4A';prog2.textContent='⚠ Firebase Storage no configurado';btn2.style.opacity='';return;}
+          var path='cobranza/'+c.id+'/'+doc.type+'/'+file.name;
+          var ref2=storage.ref(path);
+          var task2=ref2.put(file);
+          task2.on('state_changed',
+            function(snap){prog2.textContent='Subiendo… '+Math.round(snap.bytesTransferred/snap.totalBytes*100)+'%';},
+            function(err){prog2.style.color='#E24B4A';prog2.textContent='⚠ Error: '+err.message;btn2.style.opacity='';},
+            function(){ref2.getDownloadURL().then(function(url){c[doc.urlKey]=url;c[doc.nameKey]=file.name;saveData();renderCbDocs(c);});}
+          );
+        });
+        col2.appendChild(finp2);col2.appendChild(btn2);col2.appendChild(prog2);
+      }
+      wrap.appendChild(col2);
+    });
   }
 
   // ── COLUMN EDITOR ─────────────────────────────────────
@@ -3236,6 +3338,10 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
   }
   document.getElementById('pdmName').addEventListener('input', _pdmAutoSave);
   document.getElementById('pdmMonto').addEventListener('input', _pdmAutoSave);
+  document.getElementById('cbdName').addEventListener('input', _cbdAutoSave);
+  document.getElementById('cbdClient').addEventListener('input', _cbdAutoSave);
+  document.getElementById('cbdDeadline').addEventListener('change', _cbdSave);
+  document.getElementById('cbdCompleted').addEventListener('change', _cbdSave);
   // pdmClient, pdmStage, pdmDeadline, pdmResp are rendered dynamically by renderPdmFields — listeners attached there
 
   // ── PICKER INIT ───────────────────────────────────────
