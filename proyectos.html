@@ -369,6 +369,11 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 .cf-add-opt-btn:hover{border-color:rgba(255,255,255,0.28);color:rgba(255,255,255,0.65);}
 .cf-add-field-btn{width:100%;background:rgba(255,255,255,0.03);border:1px dashed rgba(255,255,255,0.14);border-radius:12px;color:rgba(255,255,255,0.35);font-size:12px;font-weight:600;padding:11px;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s;}
 .cf-add-field-btn:hover{border-color:rgba(255,255,255,0.3);color:rgba(255,255,255,0.65);background:rgba(255,255,255,0.06);}
+.cf-color-inp{width:22px;height:22px;border-radius:50%;cursor:pointer;border:2.5px solid rgba(255,255,255,0.2);padding:0;flex-shrink:0;background:none;-webkit-appearance:none;appearance:none;overflow:hidden;}
+.cf-color-inp::-webkit-color-swatch-wrapper{padding:0;border-radius:50%;}
+.cf-color-inp::-webkit-color-swatch{border:none;border-radius:50%;}
+.cf-color-inp::-moz-color-swatch{border:none;border-radius:50%;}
+.cf-color-inp:hover{border-color:rgba(255,255,255,0.5);}
 </style>
 </head>
 <body>
@@ -435,9 +440,12 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     </div>
     <div id="montoRow"><div class="ml">Monto estimado</div><input class="mi" id="mMonto" placeholder="$0.00"></div>
     <div id="tipoRow"><div class="ml">Tipo de proyecto (al aceptar)</div><select class="mi" id="mTipo"></select></div>
-    <div class="mf">
-      <button class="btn-c" id="cancelProjBtn">Cancelar</button>
-      <button class="btn-ok" id="createProjBtn">Crear</button>
+    <div class="mf" style="flex-direction:column;gap:8px;">
+      <button style="background:none;border:0.5px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.35);font-size:11px;font-weight:600;padding:7px;border-radius:10px;cursor:pointer;font-family:'Inter',sans-serif;width:100%;transition:all .15s;" onclick="openCfEditor()" onmouseover="this.style.color='rgba(255,255,255,0.7)'" onmouseout="this.style.color='rgba(255,255,255,0.35)'">⚙ Personalizar campos</button>
+      <div style="display:flex;gap:8px;width:100%;">
+        <button class="btn-c" id="cancelProjBtn">Cancelar</button>
+        <button class="btn-ok" id="createProjBtn" style="flex:1;">Crear</button>
+      </div>
     </div>
   </div>
 </div>
@@ -589,7 +597,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
         <div id="pdmMontoRow" class="pdm-field" style="display:none;"><div class="pdm-lbl">Monto estimado</div><input class="pdm-inp" id="pdmMonto" placeholder="$0.00"></div>
         <div id="pdmTimeInfo"></div>
         <div class="cf-section" id="pdmCustomFields"></div>
-        <button class="cf-manage-btn" onclick="openCfEditor()">⊕ Campos personalizados</button>
+        <button class="cf-manage-btn" onclick="openCfEditor()">⚙ Personalizar campos</button>
       </div>
       <div class="pdm-tasks-col">
         <div class="pdm-task-lbl">Tareas en esta fase</div>
@@ -2380,7 +2388,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
       field.options.forEach(function(opt) {
         var r = document.createElement('div'); r.className = 'cf-ed-opt-row';
         var colorPick = document.createElement('input'); colorPick.type='color'; colorPick.value=opt.color;
-        colorPick.style.cssText = 'width:22px;height:22px;border-radius:50%;cursor:pointer;border:none;padding:0;flex-shrink:0;';
+        colorPick.className = 'cf-color-inp';
         colorPick.oninput = (function(fid,oid){ return function() {
           for(var i=0;i<customFields.length;i++){if(customFields[i].id===fid){for(var j=0;j<customFields[i].options.length;j++){if(customFields[i].options[j].id===oid){customFields[i].options[j].color=colorPick.value;break;}}break;}} saveData();
         }; })(field.id, opt.id);
