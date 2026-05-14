@@ -681,6 +681,12 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
   // ── BOARD ─────────────────────────────────────────────
   function renderBoard() {
     var inner = document.getElementById('boardInner');
+    // Preserve horizontal scroll per category before clearing
+    var _scrollSave = {};
+    var _existing = inner.querySelectorAll('.section-lanes[data-catid]');
+    for (var _si = 0; _si < _existing.length; _si++) {
+      _scrollSave[_existing[_si].dataset.catid] = _existing[_si].scrollLeft;
+    }
     inner.innerHTML = '';
 
     if (activeFilter === 'all') {
@@ -724,6 +730,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
         // lanes
         var lanes = document.createElement('div');
         lanes.className = 'section-lanes';
+        lanes.dataset.catid = cat.id;
         if (isSol && solCollapsed) {
           lanes.style.display = 'none';
         } else {
@@ -775,6 +782,13 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 
     var vis = activeFilter === 'all' ? projects : projects.filter(function(p) { return p.catId === activeFilter; });
     document.getElementById('countPill').textContent = vis.length + ' proyecto' + (vis.length !== 1 ? 's' : '');
+
+    // Restore horizontal scroll positions
+    var _newLanes = inner.querySelectorAll('.section-lanes[data-catid]');
+    for (var _ri = 0; _ri < _newLanes.length; _ri++) {
+      var _cid = _newLanes[_ri].dataset.catid;
+      if (_scrollSave[_cid]) _newLanes[_ri].scrollLeft = _scrollSave[_cid];
+    }
   }
 
   // ── COLUMN ────────────────────────────────────────────
