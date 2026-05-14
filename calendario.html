@@ -121,6 +121,13 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 .mi{background:#1e1e1e;border:0.5px solid rgba(255,255,255,0.1);border-radius:10px;padding:9px 13px;font-size:13px;color:#fff;font-family:'Inter',sans-serif;outline:none;width:100%;transition:border-color .15s;}
 .mi:focus{border-color:rgba(255,255,255,0.3);}
 .mi::placeholder{color:rgba(255,255,255,0.18);}
+input[type=date].mi,input[type=time].mi{color-scheme:dark;cursor:pointer;}
+input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-webkit-calendar-picker-indicator{filter:invert(0.5);cursor:pointer;opacity:.5;}
+input[type=date].mi::-webkit-calendar-picker-indicator:hover,input[type=time].mi::-webkit-calendar-picker-indicator:hover{opacity:1;}
+.ev-chip-delivery{background:rgba(26,111,212,.15)!important;border-left-color:#1A6FD4!important;color:#5AB4E8!important;}
+.ev-chip-task{background:rgba(232,160,32,.15)!important;border-left-color:#E8A020!important;color:#E8A020!important;}
+.ev-chip-reminder{background:rgba(39,174,114,.15)!important;border-left-color:#27AE72!important;color:#27AE72!important;}
+.ev-chip-event{background:rgba(139,92,246,.15)!important;border-left-color:#8B5CF6!important;color:#8B5CF6!important;}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
 .mf{display:flex;gap:8px;justify-content:flex-end;margin-top:4px;}
 .btn-c{background:rgba(255,255,255,0.07);border:none;color:rgba(255,255,255,0.45);font-size:12px;font-weight:600;padding:8px 16px;border-radius:10px;cursor:pointer;font-family:'Inter',sans-serif;}
@@ -399,9 +406,10 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
       var dayEvs = evByDate[ds]||[];
       var shown = dayEvs.slice(0,3);
       shown.forEach(function(ev){
-        var chip=document.createElement('div'); chip.className='ev-chip';
-        chip.style.background=ev.color+'18'; chip.style.borderLeftColor=ev.color; chip.style.color=ev.color;
-        chip.textContent=ev.title;
+        var typeClass={delivery:'ev-chip-delivery',task:'ev-chip-task',reminder:'ev-chip-reminder',event:'ev-chip-event'}[ev.type]||'ev-chip-reminder';
+        var typeIcon={delivery:'📦',task:'✓',reminder:'🔔',event:'📅'}[ev.type]||'🔔';
+        var chip=document.createElement('div'); chip.className='ev-chip '+typeClass;
+        chip.textContent=typeIcon+' '+ev.title;
         chip.onclick=(function(d,e){return function(ev2){ev2.stopPropagation();openDayPanel(d);}})(ds,ev);
         cell.appendChild(chip);
       });
@@ -437,9 +445,15 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
       var dayEvs=getEventsForDate(ds);
       if(!dayEvs.length){var em=document.createElement('div');em.style.cssText='font-size:10px;color:rgba(255,255,255,0.12);text-align:center;padding:12px 0;';em.textContent='Sin eventos';evWrap.appendChild(em);}
       dayEvs.forEach(function(ev){
+        var typeBg={delivery:'rgba(26,111,212,.12)',task:'rgba(232,160,32,.12)',reminder:'rgba(39,174,114,.12)',event:'rgba(139,92,246,.12)'}[ev.type]||'rgba(39,174,114,.12)';
+        var typeBorder={delivery:'#1A6FD4',task:'#E8A020',reminder:'#27AE72',event:'#8B5CF6'}[ev.type]||'#27AE72';
+        var typeIcon={delivery:'📦',task:'✓',reminder:'🔔',event:'📅'}[ev.type]||'🔔';
         var card=document.createElement('div'); card.className='week-ev-card';
-        card.style.background=ev.color+'12'; card.style.borderLeftColor=ev.color;
-        card.innerHTML='<div class="week-ev-title">'+ev.title.replace(/</g,'&lt;')+'</div>'+(ev.sub?'<div class="week-ev-sub">'+ev.sub.replace(/</g,'&lt;')+'</div>':'');
+        card.style.background=typeBg; card.style.borderLeftColor=typeBorder;
+        var tEl=document.createElement('div'); tEl.className='week-ev-title';
+        tEl.textContent=typeIcon+' '+ev.title;
+        card.appendChild(tEl);
+        if(ev.sub){var sEl=document.createElement('div');sEl.className='week-ev-sub';sEl.textContent=ev.sub;card.appendChild(sEl);}
         card.onclick=(function(ds2){return function(e){e.stopPropagation();openDayPanel(ds2);}})(ds);
         evWrap.appendChild(card);
       });
