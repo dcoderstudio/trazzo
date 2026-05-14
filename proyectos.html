@@ -401,6 +401,12 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 .cf-add-type-btn[data-t=person]{background:rgba(139,92,246,.07);color:rgba(139,92,246,.75);border:.5px solid rgba(139,92,246,.18);}
 .cf-add-type-btn[data-t=select]{background:rgba(245,166,35,.07);color:rgba(245,166,35,.75);border:.5px solid rgba(245,166,35,.18);}
 .cf-add-type-btn:hover{filter:brightness(1.3);transform:translateY(-1px);}
+.cf-type-picker{position:fixed;z-index:9999;background:#1a1a1a;border:0.5px solid rgba(255,255,255,0.1);border-radius:12px;padding:5px;display:flex;flex-direction:column;gap:3px;box-shadow:0 8px 32px rgba(0,0,0,.6);min-width:140px;}
+.cf-type-picker-opt{display:flex;align-items:center;gap:8px;padding:7px 11px;border-radius:8px;border:none;background:transparent;color:rgba(255,255,255,0.6);font-size:11px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;transition:all .12s;text-align:left;width:100%;}
+.cf-type-picker-opt[data-t=text]:hover,.cf-type-picker-opt[data-t=text].active{background:rgba(90,180,232,.12);color:#5AB4E8;}
+.cf-type-picker-opt[data-t=date]:hover,.cf-type-picker-opt[data-t=date].active{background:rgba(39,174,114,.12);color:#27AE72;}
+.cf-type-picker-opt[data-t=person]:hover,.cf-type-picker-opt[data-t=person].active{background:rgba(139,92,246,.12);color:#8B5CF6;}
+.cf-type-picker-opt[data-t=select]:hover,.cf-type-picker-opt[data-t=select].active{background:rgba(245,166,35,.12);color:#F5A623;}
 </style>
 </head>
 <body>
@@ -2420,16 +2426,33 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
         var pf=getProjectFields(); for(var i=0;i<pf.length;i++){if(pf[i].id===fid){pf[i].label=inp.value;break;}} projectFields=pf; saveData(); _cfRefreshPdm();
       }; })(field.id);
       row.appendChild(inp);
-      // Type pill (cycles on click)
+      // Type pill (opens picker on click)
       var tpil = document.createElement('button'); tpil.className = 'cf-type-pill'; tpil.dataset.t = field.type;
-      tpil.title = field.type === 'stage' ? 'Tipo: Fase (fijo)' : 'Clic para cambiar tipo';
       tpil.textContent = TYPE_ICONS[field.type] + ' ' + TYPE_LABELS[field.type];
       if (field.type !== 'stage') {
         tpil.onclick = (function(fid, btn){ return function(e) { e.stopPropagation();
-          var pf=getProjectFields(); for(var i=0;i<pf.length;i++){if(pf[i].id===fid){
-            var ci=TYPE_CYCLE.indexOf(pf[i].type); var nt=TYPE_CYCLE[(ci+1)%TYPE_CYCLE.length];
-            pf[i].type=nt; if(nt==='select'&&!pf[i].options)pf[i].options=[]; break;
-          }} projectFields=pf; saveData(); renderCfEdList(); _cfRefreshPdm();
+          // remove existing picker
+          var old = document.querySelector('.cf-type-picker'); if (old) old.remove();
+          var pk = document.createElement('div'); pk.className = 'cf-type-picker';
+          TYPE_CYCLE.forEach(function(t) {
+            var opt = document.createElement('button'); opt.className = 'cf-type-picker-opt'; opt.dataset.t = t;
+            opt.textContent = TYPE_ICONS[t] + ' ' + TYPE_LABELS[t];
+            var pf0=getProjectFields(); for(var i=0;i<pf0.length;i++){if(pf0[i].id===fid&&pf0[i].type===t){opt.classList.add('active');break;}}
+            opt.onclick = function(ev) { ev.stopPropagation();
+              var pf=getProjectFields(); for(var i=0;i<pf.length;i++){if(pf[i].id===fid){
+                pf[i].type=t; if(t==='select'&&!pf[i].options)pf[i].options=[]; break;
+              }} projectFields=pf; pk.remove(); saveData(); renderCfEdList(); _cfRefreshPdm();
+            };
+            pk.appendChild(opt);
+          });
+          document.body.appendChild(pk);
+          var r=btn.getBoundingClientRect();
+          pk.style.left=r.left+'px'; pk.style.top=(r.bottom+4)+'px';
+          setTimeout(function(){
+            document.addEventListener('click', function _pkOut(ev){
+              if(!pk.contains(ev.target)){pk.remove();document.removeEventListener('click',_pkOut);}
+            });
+          }, 0);
         };})(field.id, tpil);
       }
       row.appendChild(tpil);
