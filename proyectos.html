@@ -336,8 +336,8 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 .cf-field-lbl{font-size:10px;font-weight:700;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:.06em;width:96px;flex-shrink:0;}
 .cf-value-badge{font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;cursor:pointer;transition:filter .15s;border:0.5px solid transparent;}
 .cf-value-badge:hover{filter:brightness(1.25);}
-.cf-value-empty{font-size:11px;color:rgba(255,255,255,0.2);cursor:pointer;padding:3px 0;transition:color .15s;}
-.cf-value-empty:hover{color:rgba(255,255,255,0.55);}
+.cf-value-empty{font-size:11px;font-weight:600;color:rgba(255,255,255,0.28);cursor:pointer;padding:3px 11px;border-radius:20px;border:0.5px dashed rgba(255,255,255,0.14);background:rgba(255,255,255,0.02);transition:all .15s;display:inline-block;}
+.cf-value-empty:hover{color:rgba(255,255,255,0.6);border-color:rgba(255,255,255,0.28);background:rgba(255,255,255,0.05);}
 .cf-manage-btn{background:none;border:0.5px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.28);font-size:10px;font-weight:600;padding:4px 10px;border-radius:20px;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s;margin-top:8px;width:100%;}
 .cf-manage-btn:hover{border-color:rgba(255,255,255,0.28);color:rgba(255,255,255,0.65);}
 /* Option picker */
@@ -450,7 +450,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
       <button style="background:rgba(255,255,255,0.04);border:0.5px solid rgba(255,255,255,0.08);color:rgba(255,255,255,0.4);font-size:15px;cursor:pointer;line-height:1;width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;transition:all .15s;" onmouseover="this.style.background='rgba(255,255,255,0.08)';this.style.color='rgba(255,255,255,.8)'" onmouseout="this.style.background='rgba(255,255,255,0.04)';this.style.color='rgba(255,255,255,.4)'" onclick="closeCfEditor()">×</button>
     </div>
     <div id="cfEdList"></div>
-    <button class="cf-add-field-btn" onclick="cfAddField()">+ Agregar campo</button>
+    <button onclick="closeCfEditor()" style="margin-top:4px;width:100%;background:rgba(255,255,255,0.06);border:0.5px solid rgba(255,255,255,0.12);border-radius:12px;color:rgba(255,255,255,0.75);font-size:13px;font-weight:600;padding:11px;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s;" onmouseover="this.style.background='rgba(255,255,255,0.1)';this.style.color='#fff'" onmouseout="this.style.background='rgba(255,255,255,0.06)';this.style.color='rgba(255,255,255,0.75)'">✓ Guardar y cerrar</button>
   </div>
 </div>
 
@@ -2365,7 +2365,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     none.onclick = function() {
       if (!p.customFieldValues) p.customFieldValues = {};
       delete p.customFieldValues[field.id];
-      saveData(); renderPdmCustomFields(p); panel.remove(); _cfPicker = null;
+      saveData(); panel.remove(); _cfPicker = null; _cfRefreshPdm();
     };
     panel.appendChild(none);
     field.options.forEach(function(opt) {
@@ -2377,7 +2377,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
       r.onclick = function() {
         if (!p.customFieldValues) p.customFieldValues = {};
         p.customFieldValues[field.id] = opt.id;
-        saveData(); renderPdmCustomFields(p); panel.remove(); _cfPicker = null;
+        saveData(); panel.remove(); _cfPicker = null; _cfRefreshPdm();
       };
       panel.appendChild(r);
     });
