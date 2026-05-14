@@ -1346,7 +1346,17 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
         ref.put(file).on('state_changed',
           function(snap){prog.textContent='Subiendo… '+Math.round(snap.bytesTransferred/snap.totalBytes*100)+'%';},
           function(err){prog.style.color='#E24B4A';prog.textContent='⚠ '+err.message;btn.style.opacity='';},
-          function(){ref.getDownloadURL().then(function(url){if(!objRef.docs)objRef.docs={};objRef.docs[docId]={url:url,name:file.name};saveData();onSave();});}
+          function(){
+            ref.getDownloadURL().then(function(url){
+              if(!objRef.docs)objRef.docs={};
+              objRef.docs[docId]={url:url,name:file.name};
+              saveData();onSave();
+            }).catch(function(err){
+              prog.style.color='#E24B4A';
+              prog.textContent='⚠ '+err.message;
+              btn.style.opacity='';
+            });
+          }
         );
       });
       wrap2.appendChild(finp);wrap2.appendChild(btn);wrap2.appendChild(prog); return wrap2;
