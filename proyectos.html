@@ -425,7 +425,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
   <div class="logo"><div class="logo-pill">D/</div><span class="logo-name">Dcoder Studio</span></div>
   <div style="display:flex;gap:2px;">
     <button class="nav-btn" onclick="location.href='index.html'">Inicio</button>
-    <button class="nav-btn active">Proyectos</button>
+    <button class="nav-btn active" id="navProyectosBtn" onclick="if(window.toggleStatusView&&_statusView)toggleStatusView()">Proyectos</button>
     <button class="nav-btn" onclick="location.href='tareas.html'">Tareas</button>
     <button class="nav-btn" onclick="location.href='calendario.html'">Calendario</button>
     <button class="nav-btn">Equipo</button>
@@ -438,6 +438,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 
 <div class="layout">
   <div class="subbar">
+    <button id="backToProjectsBtn" onclick="toggleStatusView()" style="display:none;background:rgba(255,255,255,0.06);border:0.5px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.7);font-size:12px;font-weight:600;padding:5px 13px;border-radius:20px;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s;" onmouseover="this.style.background='rgba(255,255,255,0.1)';this.style.color='#fff'" onmouseout="this.style.background='rgba(255,255,255,0.06)';this.style.color='rgba(255,255,255,0.7)'">← Proyectos</button>
     <div class="tabs" id="tabs"></div>
     <button class="tab-add" id="addCatBtn">+ Categoría</button>
     <span class="count-pill" id="countPill">0 proyectos</span>
@@ -1034,13 +1035,58 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
   }
 
   // ── STATUS BOARD ──────────────────────────────────────
+  var _colDrag = null;
+
   window.toggleStatusView = function() {
     _statusView = !_statusView;
-    document.getElementById('boardScroll').style.display  = _statusView ? 'none' : '';
-    document.getElementById('statusBoard').style.display  = _statusView ? 'flex'  : 'none';
+    document.getElementById('boardScroll').style.display     = _statusView ? 'none' : '';
+    document.getElementById('statusBoard').style.display     = _statusView ? 'flex'  : 'none';
     document.getElementById('statusToggleBtn').classList.toggle('active', _statusView);
+    document.getElementById('backToProjectsBtn').style.display = _statusView ? '' : 'none';
+    document.getElementById('tabs').style.display            = _statusView ? 'none' : '';
+    document.getElementById('addCatBtn').style.display       = _statusView ? 'none' : '';
+    document.getElementById('countPill').style.display       = _statusView ? 'none' : '';
     if (_statusView) renderStatusBoard();
   };
+
+  function _onColDragMove(e) {
+    if (!_colDrag) return;
+    var wrap = document.getElementById('statusBoard');
+    var cols2 = wrap.querySelectorAll('.status-col');
+    cols2.forEach(function(c) { c.style.outline = ''; });
+    cols2.forEach(function(c) {
+      if (c === _colDrag.el) return;
+      var r = c.getBoundingClientRect();
+      if (e.clientX >= r.left && e.clientX <= r.right) c.style.outline = '2px solid rgba(255,255,255,0.25)';
+    });
+  }
+  function _onColDragEnd(e) {
+    document.removeEventListener('pointermove', _onColDragMove);
+    document.removeEventListener('pointerup', _onColDragEnd);
+    if (!_colDrag) return;
+    var wrap = document.getElementById('statusBoard');
+    var cols2 = wrap.querySelectorAll('.status-col');
+    var toId = null;
+    cols2.forEach(function(c) {
+      c.style.outline = '';
+      if (c === _colDrag.el) return;
+      var r = c.getBoundingClientRect();
+      if (e.clientX >= r.left && e.clientX <= r.right) toId = c.dataset.colid;
+    });
+    _colDrag.el.style.opacity = '';
+    _colDrag.el.style.boxShadow = '';
+    if (toId && toId !== _colDrag.id) {
+      var arr = getStatusCols().slice();
+      var fi = arr.findIndex(function(c){return c.id===_colDrag.id;});
+      var ti = arr.findIndex(function(c){return c.id===toId;});
+      if (fi>=0 && ti>=0) {
+        var moved = arr.splice(fi,1)[0];
+        arr.splice(ti,0,moved);
+        statusColumns = arr; saveData(); renderStatusBoard();
+      }
+    }
+    _colDrag = null;
+  }
 
   function renderStatusBoard() {
     var wrap = document.getElementById('statusBoard');
@@ -1054,13 +1100,15 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     getStatusCols().forEach(function(col) {
       var colEl = document.createElement('div');
       colEl.className = 'status-col';
+      colEl.dataset.colid = col.id;
       colEl.style.cssText = 'background:' + col.bg + ';border:0.5px solid ' + col.border + ';';
 
       var projCards = allProjs.filter(function(p) { return _normFinStatus(p) === col.id; });
       var cbCards   = cobranzaCards.filter(function(c) { return c.colId === col.id; });
       var totalCnt  = projCards.length + cbCards.length;
 
-      var hdr = document.createElement('div'); hdr.className = 'status-col-hdr';
+      var hdr = document.createElement('div'); hdr.className = 'status-col-hdr'; hdr.style.cursor='grab';
+      var dh = document.createElement('span'); dh.style.cssText='color:rgba(255,255,255,0.13);font-size:12px;margin-right:2px;user-select:none;'; dh.textContent='⠿';
       var dot = document.createElement('div'); dot.className='status-col-dot'; dot.style.background=col.color;
       var ttl = document.createElement('span'); ttl.className='status-col-title'; ttl.style.color=col.color; ttl.textContent=col.label;
       var cnt = document.createElement('span'); cnt.className='status-col-count'; cnt.textContent=totalCnt;
@@ -1070,7 +1118,19 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
       editBtn.onclick=(function(cid,el){return function(e){e.stopPropagation();openScEditor(cid,el);};})(col.id,editBtn);
       editBtn.onmouseover=function(){editBtn.style.color='rgba(255,255,255,0.6)';};
       editBtn.onmouseout=function(){editBtn.style.color='rgba(255,255,255,0.18)';};
-      hdr.appendChild(dot);hdr.appendChild(ttl);hdr.appendChild(cnt);hdr.appendChild(editBtn);
+      hdr.appendChild(dh);hdr.appendChild(dot);hdr.appendChild(ttl);hdr.appendChild(cnt);hdr.appendChild(editBtn);
+      // Drag to reorder columns
+      (function(colId, colEl2) {
+        hdr.addEventListener('pointerdown', function(e) {
+          if (e.target === editBtn || editBtn.contains(e.target)) return;
+          e.preventDefault();
+          _colDrag = {id: colId, el: colEl2, startX: e.clientX};
+          colEl2.style.opacity = '0.5';
+          colEl2.style.boxShadow = '0 0 0 2px rgba(255,255,255,0.2)';
+          document.addEventListener('pointermove', _onColDragMove);
+          document.addEventListener('pointerup', _onColDragEnd);
+        });
+      })(col.id, colEl);
       colEl.appendChild(hdr);
 
       var body = document.createElement('div'); body.className='status-col-body'; body.dataset.colid=col.id;
