@@ -514,9 +514,9 @@ function saveSess() {
 
 function restoreSess() {
   var raw = localStorage.getItem(SESS_KEY);
-  if (!raw) return;
-  var sess; try { sess = JSON.parse(raw); } catch(e) { return; }
-  if (!sess || sess.remaining <= 0) return;
+  if (!raw) { renderTaskList(); return; }
+  var sess; try { sess = JSON.parse(raw); } catch(e) { renderTaskList(); return; }
+  if (!sess || sess.remaining <= 0) { renderTaskList(); return; }
 
   var matchTask = null;
   if (sess.taskId != null) {
