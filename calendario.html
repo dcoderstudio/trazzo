@@ -215,6 +215,35 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
 .cat-color-pick{display:flex;gap:4px;flex-wrap:wrap;margin-top:4px;}
 .cat-color-sw{width:18px;height:18px;border-radius:5px;border:2px solid transparent;cursor:pointer;transition:border .12s;}
 .cat-color-sw.sel{border-color:#fff;}
+/* ORGANIZAR BUTTONS */
+.wp-btn{background:rgba(26,111,212,0.12);border:1px solid rgba(26,111,212,0.28);color:#5AB4E8;font-size:11px;font-weight:700;padding:5px 12px;border-radius:8px;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s;white-space:nowrap;}
+.wp-btn:hover{background:rgba(26,111,212,0.26);color:#fff;}
+.wp-btn-day{background:rgba(39,174,114,0.1);border:1px solid rgba(39,174,114,0.22);color:#27AE72;font-size:11px;font-weight:700;padding:5px 12px;border-radius:8px;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s;white-space:nowrap;}
+.wp-btn-day:hover{background:rgba(39,174,114,0.22);color:#fff;}
+/* WEEKLY PLANNER OVERLAY */
+.wp-overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);backdrop-filter:blur(14px);z-index:800;display:flex;align-items:flex-start;justify-content:center;padding:24px 16px 48px;overflow-y:auto;opacity:0;pointer-events:none;transition:opacity .2s;}
+.wp-overlay.open{opacity:1;pointer-events:all;}
+.wp-panel{background:#111213;border:0.5px solid rgba(255,255,255,0.09);border-radius:22px;width:min(620px,96vw);padding:28px 28px 32px;display:flex;flex-direction:column;gap:20px;transform:translateY(12px);transition:transform .22s;flex-shrink:0;}
+.wp-overlay.open .wp-panel{transform:none;}
+.wp-hdr{display:flex;align-items:center;gap:10px;}
+.wp-title{font-size:17px;font-weight:800;letter-spacing:-.02em;flex:1;}
+.wp-week-nav{display:flex;align-items:center;gap:7px;}
+.wp-week-lbl{font-size:12px;font-weight:700;color:rgba(255,255,255,0.45);min-width:168px;text-align:center;}
+.wp-nav{background:rgba(255,255,255,0.05);border:0.5px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.4);width:26px;height:26px;border-radius:7px;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;transition:all .15s;}
+.wp-nav:hover{border-color:rgba(255,255,255,0.25);color:#fff;}
+.wp-saved{font-size:10px;color:rgba(255,255,255,0.25);font-weight:600;transition:opacity .4s;flex-shrink:0;}
+.wp-close{background:none;border:none;color:rgba(255,255,255,0.3);font-size:20px;cursor:pointer;padding:0 4px;line-height:1;flex-shrink:0;}
+.wp-close:hover{color:#fff;}
+.wp-cat{border-radius:14px;padding:16px 18px;display:flex;flex-direction:column;gap:13px;}
+.wp-cat-hdr{display:flex;align-items:center;gap:8px;}
+.wp-cat-icon{font-size:15px;}
+.wp-cat-name{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.09em;}
+.wp-field{display:flex;flex-direction:column;gap:6px;}
+.wp-field-lbl{font-size:10px;font-weight:600;color:rgba(255,255,255,0.3);letter-spacing:.02em;}
+.wp-ta{background:rgba(255,255,255,0.04);border:0.5px solid rgba(255,255,255,0.08);border-radius:10px;padding:9px 12px;font-size:12px;color:rgba(255,255,255,0.82);font-family:'Inter',sans-serif;outline:none;resize:vertical;min-height:56px;line-height:1.5;width:100%;transition:border-color .15s;}
+.wp-ta::placeholder{color:rgba(255,255,255,0.14);}
+.wp-days{display:flex;gap:5px;flex-wrap:wrap;}
+.wp-day{width:30px;height:30px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;cursor:pointer;transition:all .15s;color:rgba(255,255,255,0.28);user-select:none;background:rgba(255,255,255,0.03);}
 </style>
 </head>
 <body>
@@ -275,7 +304,10 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
         <button class="cal-arrow" onclick="navNext()">&#8250;</button>
         <button class="cal-today-btn" onclick="goToday()">Hoy</button>
       </div>
-      <div style="width:96px;"></div>
+      <div style="display:flex;gap:6px;">
+        <button class="wp-btn" onclick="openWeekPlanner()">Organizar semana</button>
+        <button class="wp-btn-day" onclick="location.href='daily-hub.html'">Organizar día</button>
+      </div>
     </div>
     <!-- MEMBER FILTER BAR -->
     <div class="member-bar" id="memberBar"></div>
@@ -293,6 +325,23 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
       <button class="cdp-btn" id="cdpAddReminder" onclick="openEventModal(null,'reminder')">＋ Recordatorio</button>
       <button class="cdp-btn" id="cdpAddTask" onclick="openEventModal(null,'task')">＋ Tarea libre</button>
     </div>
+  </div>
+</div>
+
+<!-- WEEKLY PLANNER OVERLAY -->
+<div class="wp-overlay" id="wpOverlay" onclick="if(event.target===this)closeWeekPlanner()">
+  <div class="wp-panel">
+    <div class="wp-hdr">
+      <div class="wp-title">Planificación semanal</div>
+      <div class="wp-week-nav">
+        <button class="wp-nav" onclick="navWeekPlan(-1)">&#8249;</button>
+        <span class="wp-week-lbl" id="wpWeekLbl"></span>
+        <button class="wp-nav" onclick="navWeekPlan(1)">&#8250;</button>
+      </div>
+      <span class="wp-saved" id="wpSaved"></span>
+      <button class="wp-close" onclick="closeWeekPlanner()">×</button>
+    </div>
+    <div id="wpContent"></div>
   </div>
 </div>
 
@@ -371,8 +420,9 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
 
   // ── STATE ────────────────────────────────────────────────────
   var projects=[], categories=[], standaloneTasks=[], calendarEvents=[];
-  var calCategories=[], dailyPriorities={};
+  var calCategories=[], dailyPriorities={}, weekPlans={};
   var _pass={};
+  var _wpWeek=null;
   var today=new Date(); today.setHours(0,0,0,0);
   var curView='month';
   var curYear=today.getFullYear(), curMonth=today.getMonth();
@@ -1155,6 +1205,135 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
     render();
   };
 
+  // ── WEEKLY PLANNER ────────────────────────────────────────────
+  var WP_CATS=[
+    {id:'trabajo',icon:'💼',name:'Trabajo',color:'#1A6FD4',bg:'rgba(26,111,212,0.06)',brd:'rgba(26,111,212,0.18)',fields:[
+      {type:'ta',key:'entregas',lbl:'¿Qué entregas hay esta semana?',ph:'Deliverables, fechas límite, hitos…'},
+      {type:'ta',key:'prioridades',lbl:'¿Qué proyectos son prioridad?',ph:'Top 3 proyectos de la semana…'}
+    ]},
+    {id:'salud',icon:'💪',name:'Salud',color:'#27AE72',bg:'rgba(39,174,114,0.05)',brd:'rgba(39,174,114,0.16)',fields:[
+      {type:'days',key:'entrenamiento',lbl:'¿Qué días entreno?'},
+      {type:'days',key:'caminata',lbl:'¿Qué días camino?'},
+      {type:'days',key:'desayunoCasa',lbl:'¿Qué días desayuno en casa?'}
+    ]},
+    {id:'comida',icon:'🍽️',name:'Comida',color:'#E8A020',bg:'rgba(232,160,32,0.05)',brd:'rgba(232,160,32,0.16)',fields:[
+      {type:'days',key:'fueraAcomer',lbl:'¿Qué días como fuera?'},
+      {type:'ta',key:'opciones',lbl:'¿Qué opciones tengo previstas?',ph:'Pollo al horno, meal prep, ensalada…'}
+    ]},
+    {id:'crecimiento',icon:'📚',name:'Crecimiento',color:'#8B5CF6',bg:'rgba(139,92,246,0.05)',brd:'rgba(139,92,246,0.16)',fields:[
+      {type:'days',key:'ingles',lbl:'Inglés — ¿qué días?'},
+      {type:'days',key:'video',lbl:'Video — ¿qué días?'},
+      {type:'days',key:'lectura',lbl:'Lectura — ¿qué días?'}
+    ]},
+    {id:'personal',icon:'⚽',name:'Personal',color:'#D4537E',bg:'rgba(212,83,126,0.05)',brd:'rgba(212,83,126,0.16)',fields:[
+      {type:'days',key:'futbol',lbl:'Fútbol — ¿qué días?'},
+      {type:'days',key:'amigos',lbl:'Amigos — ¿qué días?'},
+      {type:'days',key:'espacioSocial',lbl:'Espacio social — ¿qué días?'}
+    ]}
+  ];
+  var WP_DAYS=[{k:'lun',l:'L'},{k:'mar',l:'M'},{k:'mie',l:'X'},{k:'jue',l:'J'},{k:'vie',l:'V'},{k:'sab',l:'S'},{k:'dom',l:'D'}];
+
+  function _getMondayOf(d){
+    var r=new Date(d); r.setHours(0,0,0,0);
+    var day=r.getDay(); r.setDate(r.getDate()-(day===0?6:day-1)); return r;
+  }
+  function _fmtWeekRange(mon){
+    var sun=new Date(mon); sun.setDate(mon.getDate()+6);
+    var M=MNS_SHORT;
+    return mon.getDate()+' '+M[mon.getMonth()]+' – '+sun.getDate()+' '+M[sun.getMonth()]+' '+sun.getFullYear();
+  }
+  function _wpKey(){return fmt(_wpWeek);}
+  function _wpGetPlan(){
+    var k=_wpKey();
+    if(!weekPlans[k])weekPlans[k]={};
+    var p=weekPlans[k];
+    WP_CATS.forEach(function(cat){
+      if(!p[cat.id])p[cat.id]={};
+      cat.fields.forEach(function(f){
+        if(f.type==='days'&&!p[cat.id][f.key])p[cat.id][f.key]=[];
+        if(f.type==='ta'&&p[cat.id][f.key]===undefined)p[cat.id][f.key]='';
+      });
+    });
+    return p;
+  }
+
+  window.openWeekPlanner=function(){
+    _wpWeek=_getMondayOf(selectedDate?parse(selectedDate):today);
+    renderWeekPlanContent();
+    document.getElementById('wpOverlay').classList.add('open');
+  };
+  window.closeWeekPlanner=function(){document.getElementById('wpOverlay').classList.remove('open');};
+  window.navWeekPlan=function(n){
+    _wpWeek=new Date(_wpWeek); _wpWeek.setDate(_wpWeek.getDate()+n*7);
+    renderWeekPlanContent();
+  };
+
+  function renderWeekPlanContent(){
+    var lbl=document.getElementById('wpWeekLbl'); if(lbl)lbl.textContent=_fmtWeekRange(_wpWeek);
+    var cont=document.getElementById('wpContent'); if(!cont)return;
+    cont.innerHTML='';
+    cont.style.cssText='display:flex;flex-direction:column;gap:14px;';
+    var k=_wpKey(); var plan=_wpGetPlan();
+    WP_CATS.forEach(function(cat){
+      var sec=document.createElement('div'); sec.className='wp-cat';
+      sec.style.background=cat.bg; sec.style.border='0.5px solid '+cat.brd;
+      var hdr=document.createElement('div'); hdr.className='wp-cat-hdr';
+      hdr.innerHTML='<span class="wp-cat-icon">'+cat.icon+'</span><span class="wp-cat-name" style="color:'+cat.color+'">'+cat.name+'</span>';
+      sec.appendChild(hdr);
+      cat.fields.forEach(function(f){
+        var field=document.createElement('div'); field.className='wp-field';
+        var fl=document.createElement('div'); fl.className='wp-field-lbl'; fl.textContent=f.lbl; field.appendChild(fl);
+        if(f.type==='ta'){
+          var ta=document.createElement('textarea'); ta.className='wp-ta';
+          ta.placeholder=f.ph||''; ta.value=plan[cat.id][f.key]||'';
+          (function(cid,fk,el){
+            el.oninput=function(){
+              if(!weekPlans[k])weekPlans[k]={};if(!weekPlans[k][cid])weekPlans[k][cid]={};
+              weekPlans[k][cid][fk]=el.value; _wpAutoSave();
+            };
+            el.onfocus=function(){el.style.borderColor=cat.color+'55';};
+            el.onblur=function(){el.style.borderColor='rgba(255,255,255,0.08)';};
+          })(cat.id,f.key,ta);
+          field.appendChild(ta);
+        } else {
+          var days=document.createElement('div'); days.className='wp-days';
+          WP_DAYS.forEach(function(wd){
+            var chip=document.createElement('div'); chip.className='wp-day'; chip.textContent=wd.l;
+            var active=(plan[cat.id][f.key]||[]).indexOf(wd.k)!==-1;
+            if(active){chip.style.background=cat.color+'28';chip.style.borderColor=cat.color;chip.style.color=cat.color;}
+            (function(cid,fk,dk,el){
+              el.onclick=function(){
+                if(!weekPlans[k])weekPlans[k]={};if(!weekPlans[k][cid])weekPlans[k][cid]={};
+                if(!weekPlans[k][cid][fk])weekPlans[k][cid][fk]=[];
+                var arr=weekPlans[k][cid][fk]; var idx=arr.indexOf(dk);
+                if(idx===-1){arr.push(dk);el.style.background=cat.color+'28';el.style.borderColor=cat.color;el.style.color=cat.color;}
+                else{arr.splice(idx,1);el.style.background='rgba(255,255,255,0.03)';el.style.borderColor='rgba(255,255,255,0.1)';el.style.color='rgba(255,255,255,0.28)';}
+                _wpAutoSave();
+              };
+            })(cat.id,f.key,wd.k,chip);
+            days.appendChild(chip);
+          });
+          field.appendChild(days);
+        }
+        sec.appendChild(field);
+      });
+      cont.appendChild(sec);
+    });
+  }
+
+  var _wpSaveT=null;
+  function _wpAutoSave(){
+    var sv=document.getElementById('wpSaved');
+    if(sv){sv.textContent='Guardando…';sv.style.opacity='1';}
+    if(_wpSaveT)clearTimeout(_wpSaveT);
+    _wpSaveT=setTimeout(function(){
+      var p=Object.assign({},_pass,{weekPlans:weekPlans});
+      DOC.set(p).catch(function(e){console.warn(e);});
+      var sv2=document.getElementById('wpSaved');
+      if(sv2){sv2.textContent='✓ Guardado';setTimeout(function(){if(sv2)sv2.style.opacity='0';},1800);}
+    },900);
+  }
+
   // ── INIT ──────────────────────────────────────────────────────
   DOC.onSnapshot(function(snap){
     if(snap.exists){
@@ -1166,6 +1345,7 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
       if(d.calendarEvents) calendarEvents=d.calendarEvents;
       if(d.calCategories&&d.calCategories.length) calCategories=d.calCategories;
       if(d.dailyPriorities) dailyPriorities=d.dailyPriorities;
+      if(d.weekPlans) weekPlans=d.weekPlans;
     }
     render();
     if(selectedDate&&curView!=='day') renderDayEvents(selectedDate);
