@@ -50,40 +50,43 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 .dh-time-sub{font-size:9px;color:rgba(90,180,232,0.4);margin-top:2px;}
 .dh-add-block-btn{background:rgba(26,111,212,0.18);border:1px solid rgba(26,111,212,0.35);color:#5AB4E8;font-size:11px;font-weight:600;padding:4px 10px;border-radius:8px;cursor:pointer;font-family:Inter,sans-serif;transition:all .15s;display:flex;align-items:center;gap:4px;}
 .dh-add-block-btn:hover{background:rgba(26,111,212,0.32);color:#fff;}
-.dh-time-outer{flex:1;overflow-y:auto;min-height:0;background:#0b0e18;}
-.dh-time-outer::-webkit-scrollbar{width:3px;}
-.dh-time-outer::-webkit-scrollbar-thumb{background:rgba(26,111,212,0.2);}
+/* ── FONDO BLANCO en la cuadrícula de horas ── */
+.dh-time-outer{flex:1;overflow-y:auto;min-height:0;background:#f5f7fb;}
+.dh-time-outer::-webkit-scrollbar{width:4px;}
+.dh-time-outer::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.12);border-radius:2px;}
 .dh-hour-grid{position:relative;}
-.dh-hour-row{display:flex;align-items:flex-start;height:56px;border-bottom:0.5px solid rgba(26,111,212,0.07);}
-.dh-hour-row.drag-over .dh-hour-slot{background:rgba(26,111,212,0.12);}
-.dh-hour-lbl{width:46px;flex-shrink:0;font-size:9px;color:rgba(90,180,232,0.25);font-weight:500;padding:0 8px 0 10px;text-align:right;margin-top:-7px;user-select:none;}
+.dh-hour-row{display:flex;align-items:flex-start;height:56px;border-bottom:0.5px solid rgba(0,0,0,0.07);}
+.dh-hour-row.drag-over .dh-hour-slot{background:rgba(26,111,212,0.08);}
+.dh-hour-lbl{width:46px;flex-shrink:0;font-size:9px;color:rgba(0,0,0,0.32);font-weight:600;padding:0 8px 0 10px;text-align:right;margin-top:-7px;user-select:none;}
 .dh-hour-slot{flex:1;position:relative;height:100%;cursor:pointer;transition:background .1s;}
 .dh-hour-slot:hover{background:rgba(26,111,212,0.05);}
-.dh-half-line{position:absolute;top:50%;left:0;right:0;border-top:0.5px solid rgba(26,111,212,0.05);pointer-events:none;}
-.dh-now-dot{position:absolute;left:38px;width:9px;height:9px;border-radius:50%;background:#E24B4A;z-index:12;pointer-events:none;transform:translateY(-4px);}
+.dh-half-line{position:absolute;top:50%;left:0;right:0;border-top:0.5px solid rgba(0,0,0,0.04);pointer-events:none;}
+.dh-now-dot{position:absolute;left:38px;width:9px;height:9px;border-radius:50%;background:#E24B4A;z-index:12;pointer-events:none;transform:translateY(-4px);box-shadow:0 0 0 3px rgba(226,75,74,0.2);}
 .dh-now-line{position:absolute;left:47px;right:0;height:1.5px;background:#E24B4A;z-index:12;pointer-events:none;}
-.dh-block{position:absolute;border-radius:8px;padding:4px 8px;cursor:pointer;overflow:hidden;border-left:3px solid transparent;transition:opacity .12s,box-shadow .15s;z-index:5;}
-.dh-block:hover{opacity:.82;box-shadow:0 4px 18px rgba(0,0,0,.6);}
-.dh-block-time{font-size:9px;font-weight:600;opacity:.65;margin-bottom:1px;}
+.dh-block{position:absolute;border-radius:9px;padding:5px 9px;cursor:pointer;overflow:hidden;border-left:4px solid transparent;transition:opacity .12s,box-shadow .15s,transform .1s;z-index:5;}
+.dh-block:hover{opacity:.9;box-shadow:0 4px 16px rgba(0,0,0,.18);transform:translateX(1px);}
+.dh-block-time{font-size:9px;font-weight:700;opacity:.75;margin-bottom:2px;}
 .dh-block-title{font-size:11px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.3;}
-.dh-block-sub{font-size:9px;opacity:.55;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px;}
-.dh-drag-ghost{position:absolute;left:49px;right:6px;border-radius:8px;border-left:3px solid #1A6FD4;background:rgba(26,111,212,0.18);z-index:8;pointer-events:none;padding:4px 8px;}
-.dh-drag-ghost-lbl{font-size:10px;font-weight:700;color:#5AB4E8;}
-/* DELIVERABLES STRIP — dark green */
-.dh-strip{flex-shrink:0;padding:8px 14px 10px;border-top:2px solid rgba(39,174,114,0.3);background:#090f0d;}
-.dh-strip-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;}
-.dh-strip-title{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#27AE72;}
-.dh-strip-items{display:flex;gap:6px;overflow-x:auto;flex-wrap:nowrap;}
+.dh-block-sub{font-size:9px;opacity:.6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px;}
+.dh-drag-ghost{position:absolute;left:49px;right:6px;border-radius:9px;border-left:4px solid #1A6FD4;background:rgba(26,111,212,0.1);z-index:8;pointer-events:none;padding:5px 9px;}
+.dh-drag-ghost-lbl{font-size:10px;font-weight:700;color:#1A6FD4;}
+/* DELIVERABLES STRIP — verde más grande */
+.dh-strip{flex-shrink:0;padding:10px 16px 12px;border-top:2px solid rgba(39,174,114,0.3);background:#090f0d;min-height:72px;}
+.dh-strip-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px;}
+.dh-strip-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:#27AE72;}
+.dh-strip-items{display:flex;gap:7px;overflow-x:auto;flex-wrap:nowrap;align-items:center;}
 .dh-strip-items::-webkit-scrollbar{display:none;}
-.dh-strip-item{display:flex;align-items:center;gap:6px;background:rgba(39,174,114,0.08);border:1px solid rgba(39,174,114,0.2);border-radius:20px;padding:4px 10px 4px 6px;white-space:nowrap;flex-shrink:0;cursor:pointer;transition:background .12s;}
-.dh-strip-item:hover{background:rgba(39,174,114,0.15);}
-.dh-strip-cb{width:14px;height:14px;border-radius:4px;border:1.5px solid rgba(39,174,114,0.4);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .15s;}
+.dh-strip-item{display:flex;align-items:center;gap:7px;background:rgba(39,174,114,0.08);border:1px solid rgba(39,174,114,0.22);border-radius:22px;padding:6px 13px 6px 8px;white-space:nowrap;flex-shrink:0;cursor:pointer;transition:all .15s;}
+.dh-strip-item:hover{background:rgba(39,174,114,0.16);border-color:rgba(39,174,114,0.4);}
+.dh-strip-cb{width:16px;height:16px;border-radius:5px;border:1.5px solid rgba(39,174,114,0.4);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .15s;}
 .dh-strip-cb.done{border-color:#27AE72;background:#27AE72;}
-.dh-strip-empty{font-size:10px;color:rgba(39,174,114,0.3);padding:2px 0;}
+.dh-strip-item-text{font-size:11px;font-weight:600;}
+.dh-strip-item-sub{font-size:9px;opacity:.6;margin-left:2px;}
+.dh-strip-empty{font-size:11px;color:rgba(39,174,114,0.35);padding:4px 0;font-style:italic;}
 /* RIGHT COLUMN */
 .dh-right{flex:1;overflow:hidden;display:flex;flex-direction:column;min-width:0;}
 /* DAY TASKS — dark amber/gold */
-.dh-daytasks{flex-shrink:0;display:flex;flex-direction:column;border-bottom:2px solid rgba(232,160,32,0.3);max-height:46%;background:#13100a;}
+.dh-daytasks{flex-shrink:0;display:flex;flex-direction:column;border-bottom:2px solid rgba(232,160,32,0.3);max-height:34%;background:#13100a;}
 .dh-dt-hdr{flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:12px 18px 10px;background:#1a1508;border-bottom:1px solid rgba(232,160,32,0.2);border-left:4px solid #E8A020;}
 .dh-dt-title{font-size:12px;font-weight:700;color:#E8A020;letter-spacing:.01em;}
 .dh-dt-sub{font-size:9px;color:rgba(232,160,32,0.4);margin-top:2px;}
@@ -110,6 +113,36 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 .dh-dt-input::placeholder{color:rgba(232,160,32,0.25);}
 .dh-dt-input-ok{background:rgba(232,160,32,0.2);border:none;color:#E8A020;font-size:12px;border-radius:8px;padding:0 10px;cursor:pointer;font-family:Inter,sans-serif;}
 .dh-dt-input-ok:hover{background:rgba(232,160,32,0.35);}
+/* REMINDERS — teal */
+.dh-reminders{flex-shrink:0;display:flex;flex-direction:column;border-bottom:2px solid rgba(44,197,210,0.25);max-height:26%;background:#080f10;}
+.dh-rem-hdr{flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:9px 18px;background:#0a1416;border-bottom:1px solid rgba(44,197,210,0.18);border-left:4px solid #2CC5D2;}
+.dh-rem-title{font-size:12px;font-weight:700;color:#2CC5D2;letter-spacing:.01em;}
+.dh-rem-sub{font-size:9px;color:rgba(44,197,210,0.4);margin-top:2px;}
+.dh-rem-add-btn{background:rgba(44,197,210,0.14);border:1px solid rgba(44,197,210,0.3);color:#2CC5D2;font-size:11px;font-weight:600;padding:4px 10px;border-radius:8px;cursor:pointer;font-family:Inter,sans-serif;transition:all .15s;}
+.dh-rem-add-btn:hover{background:rgba(44,197,210,0.26);color:#fff;}
+.dh-rem-list{overflow-y:auto;padding:0 10px 8px;background:#080f10;}
+.dh-rem-list::-webkit-scrollbar{width:3px;}
+.dh-rem-list::-webkit-scrollbar-thumb{background:rgba(44,197,210,0.2);}
+.dh-rem-empty{text-align:center;font-size:11px;color:rgba(44,197,210,0.25);padding:10px 0;border:1px dashed rgba(44,197,210,0.12);border-radius:10px;margin:6px 8px;}
+.dh-rem-row{display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:9px;transition:background .1s;border-bottom:0.5px solid rgba(44,197,210,0.06);}
+.dh-rem-row:last-child{border-bottom:none;}
+.dh-rem-row:hover{background:rgba(44,197,210,0.05);}
+.dh-rem-cb{width:15px;height:15px;border-radius:50%;border:1.5px solid rgba(44,197,210,0.4);flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;margin-top:1px;}
+.dh-rem-cb.done{border-color:#2CC5D2;background:#2CC5D2;}
+.dh-rem-info{flex:1;min-width:0;}
+.dh-rem-text{font-size:11px;font-weight:600;color:rgba(255,255,255,0.78);line-height:1.35;}
+.dh-rem-text.done{color:rgba(255,255,255,0.22);text-decoration:line-through;}
+.dh-rem-time{font-size:9px;color:rgba(44,197,210,0.5);margin-top:1px;}
+.dh-rem-del{background:none;border:none;color:rgba(255,255,255,0.1);font-size:13px;cursor:pointer;padding:0 3px;line-height:1;flex-shrink:0;transition:color .15s;}
+.dh-rem-del:hover{color:rgba(226,75,74,0.7);}
+.dh-rem-input-wrap{display:flex;gap:6px;margin:4px 12px 8px;align-items:center;}
+.dh-rem-input{flex:1;background:#0d1b1d;border:1px solid rgba(44,197,210,0.25);border-radius:8px;padding:6px 10px;font-size:12px;color:#fff;font-family:Inter,sans-serif;outline:none;}
+.dh-rem-input:focus{border-color:rgba(44,197,210,0.55);}
+.dh-rem-input::placeholder{color:rgba(44,197,210,0.25);}
+.dh-rem-time-input{background:#0d1b1d;border:1px solid rgba(44,197,210,0.2);border-radius:8px;padding:6px 8px;font-size:11px;color:rgba(255,255,255,0.6);font-family:Inter,sans-serif;outline:none;width:86px;color-scheme:dark;}
+.dh-rem-time-input:focus{border-color:rgba(44,197,210,0.45);}
+.dh-rem-input-ok{background:rgba(44,197,210,0.2);border:none;color:#2CC5D2;font-size:12px;border-radius:8px;padding:0 10px;height:32px;cursor:pointer;font-family:Inter,sans-serif;}
+.dh-rem-input-ok:hover{background:rgba(44,197,210,0.35);}
 /* TASK BANK — dark purple */
 .dh-bank{flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden;background:#0f0b1a;}
 .dh-bank-hdr{flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:10px 18px 10px;background:#150f24;border-bottom:1px solid rgba(139,92,246,0.22);border-left:4px solid #8B5CF6;}
@@ -232,6 +265,17 @@ input[type=time].mi{color-scheme:dark;cursor:pointer;}
         </div>
         <div class="dh-dt-list" id="dhDtList"></div>
       </div>
+      <!-- REMINDERS -->
+      <div class="dh-reminders">
+        <div class="dh-rem-hdr">
+          <div>
+            <div class="dh-rem-title">🔔 Recordatorios</div>
+            <div class="dh-rem-sub">Notas y alertas personales del día</div>
+          </div>
+          <button class="dh-rem-add-btn" id="dhRemAddBtn" onclick="openRemInput()">+ Agregar</button>
+        </div>
+        <div class="dh-rem-list" id="dhRemList"></div>
+      </div>
       <!-- TASK BANK -->
       <div class="dh-bank">
         <div class="dh-bank-hdr">
@@ -285,6 +329,7 @@ input[type=time].mi{color-scheme:dark;cursor:pointer;}
   var _dtInputOpen=false;
   var _dhDragTask=null;
   var _wasDrag=false, _dragActive=false, _dragStartY=0, _dragStartHour=0, _dragGhost=null;
+  var reminders={}, _remInputOpen=false;
 
   var HOUR_START=7, HOUR_END=22, HOUR_PX=56;
   var MNS_LONG=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
@@ -304,7 +349,7 @@ input[type=time].mi{color-scheme:dark;cursor:pointer;}
   function memberInitials(n){var p=n.trim().split(' ');return p.length>=2?(p[0][0]+p[1][0]).toUpperCase():n.slice(0,2).toUpperCase();}
 
   function saveData(){
-    var p=Object.assign({},_pass,{dailyBlocks:dailyBlocks,dayTasks:dayTasks,standaloneTasks:standaloneTasks});
+    var p=Object.assign({},_pass,{dailyBlocks:dailyBlocks,dayTasks:dayTasks,standaloneTasks:standaloneTasks,reminders:reminders});
     DOC.set(p).catch(function(e){console.warn(e);});
   }
 
@@ -681,6 +726,60 @@ input[type=time].mi{color-scheme:dark;cursor:pointer;}
     });
   }
 
+  // ── REMINDERS ─────────────────────────────────────────────────
+  function renderReminders(){
+    var ds=fmt(curDate);
+    var list=document.getElementById('dhRemList'); if(!list)return;
+    list.innerHTML='';
+    var items=reminders[ds]||[];
+    if(!items.length&&!_remInputOpen){
+      var empty=document.createElement('div'); empty.className='dh-rem-empty';
+      empty.textContent='Sin recordatorios · Pulsa "+ Agregar" para añadir';
+      list.appendChild(empty);
+    }
+    items.forEach(function(r){
+      var row=document.createElement('div'); row.className='dh-rem-row';
+      var cb=document.createElement('div'); cb.className='dh-rem-cb'+(r.done?' done':'');
+      if(r.done)cb.innerHTML='<svg width="7" height="7" viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round"/></svg>';
+      cb.onclick=(function(id){return function(){toggleReminder(ds,id);};})(r.id);
+      var info=document.createElement('div'); info.className='dh-rem-info';
+      var txt=document.createElement('div'); txt.className='dh-rem-text'+(r.done?' done':''); txt.textContent=r.text;
+      info.appendChild(txt);
+      if(r.time){var tm=document.createElement('div');tm.className='dh-rem-time';tm.textContent='⏰ '+r.time;info.appendChild(tm);}
+      var del=document.createElement('button'); del.className='dh-rem-del'; del.textContent='×';
+      del.onclick=(function(id){return function(){removeReminder(ds,id);};})(r.id);
+      row.appendChild(cb); row.appendChild(info); row.appendChild(del);
+      list.appendChild(row);
+    });
+    if(_remInputOpen){
+      var wrap=document.createElement('div'); wrap.className='dh-rem-input-wrap';
+      var inp=document.createElement('input'); inp.className='dh-rem-input'; inp.placeholder='Nuevo recordatorio…';
+      var tinp=document.createElement('input'); tinp.className='dh-rem-time-input'; tinp.type='time';
+      var ok=document.createElement('button'); ok.className='dh-rem-input-ok'; ok.textContent='↵';
+      var doAdd=function(){var v=inp.value.trim();if(!v)return;addReminder(v,tinp.value,ds);};
+      inp.onkeydown=function(e){if(e.key==='Enter')doAdd();if(e.key==='Escape'){_remInputOpen=false;renderReminders();}};
+      ok.onclick=doAdd;
+      wrap.appendChild(inp); wrap.appendChild(tinp); wrap.appendChild(ok);
+      list.appendChild(wrap);
+      setTimeout(function(){inp.focus();},40);
+    }
+  }
+  window.openRemInput=function(){_remInputOpen=true;renderReminders();};
+  function addReminder(text,time,ds){
+    if(!reminders[ds])reminders[ds]=[];
+    reminders[ds].push({id:Date.now(),text:text,time:time||'',done:false});
+    _remInputOpen=false;
+    saveData(); renderReminders();
+  }
+  function toggleReminder(ds,id){
+    reminders[ds]=(reminders[ds]||[]).map(function(r){return r.id===id?Object.assign({},r,{done:!r.done}):r;});
+    saveData(); renderReminders();
+  }
+  function removeReminder(ds,id){
+    reminders[ds]=(reminders[ds]||[]).filter(function(r){return r.id!==id;});
+    saveData(); renderReminders();
+  }
+
   // ── BLOCK MODAL ───────────────────────────────────────────────
   window.openBlockModal=function(ds,startHint,editId,endHint,titleHint){
     ds=ds||fmt(curDate);
@@ -734,6 +833,7 @@ input[type=time].mi{color-scheme:dark;cursor:pointer;}
     renderTimeGrid();
     renderDeliverableStrip();
     renderDayTasks();
+    renderReminders();
     renderBankSort();
     renderTaskBank();
   }
@@ -748,6 +848,7 @@ input[type=time].mi{color-scheme:dark;cursor:pointer;}
       if(d.standaloneTasks)standaloneTasks=d.standaloneTasks;
       if(d.dailyBlocks)dailyBlocks=d.dailyBlocks;
       if(d.dayTasks)dayTasks=d.dayTasks;
+      if(d.reminders)reminders=d.reminders;
     }
     renderAll();
   },function(e){console.warn(e);renderAll();});
