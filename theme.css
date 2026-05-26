@@ -1,0 +1,164 @@
+/* ── TRAZZO THEME ENGINE — Glassmorphism ──────────────────── */
+:root{
+  --t-grad:
+    radial-gradient(ellipse at 5% 45%,rgba(200,130,0,.38) 0%,transparent 55%),
+    radial-gradient(ellipse at 38% 85%,rgba(15,180,90,.28) 0%,transparent 55%),
+    radial-gradient(ellipse at 75% 25%,rgba(0,110,220,.22) 0%,transparent 55%),
+    radial-gradient(ellipse at 95% 70%,rgba(90,10,180,.3) 0%,transparent 55%),
+    #080810;
+}
+
+html,body{
+  background:var(--t-grad) !important;
+  background-attachment:fixed !important;
+}
+
+/* ── TOPBAR & SUBBARS ──────────────────────────────────── */
+.topbar{
+  background:rgba(6,6,16,.86) !important;
+  backdrop-filter:blur(30px) !important;
+  -webkit-backdrop-filter:blur(30px) !important;
+  border-bottom:0.5px solid rgba(255,255,255,.07) !important;
+}
+.subbar{
+  background:rgba(6,6,16,.76) !important;
+  backdrop-filter:blur(22px) !important;
+  -webkit-backdrop-filter:blur(22px) !important;
+  border-bottom:0.5px solid rgba(255,255,255,.06) !important;
+}
+
+/* ── MODALS ────────────────────────────────────────────── */
+.overlay{
+  background:rgba(0,0,0,.72) !important;
+  backdrop-filter:blur(16px) !important;
+  -webkit-backdrop-filter:blur(16px) !important;
+}
+.modal{
+  background:rgba(10,10,24,.94) !important;
+  border:0.5px solid rgba(255,255,255,.13) !important;
+  backdrop-filter:blur(24px) !important;
+  -webkit-backdrop-filter:blur(24px) !important;
+}
+
+/* ── INDEX ─────────────────────────────────────────────── */
+.hero-banner{
+  background:rgba(8,8,22,.76) !important;
+  backdrop-filter:blur(22px) !important;
+  -webkit-backdrop-filter:blur(22px) !important;
+  border-bottom:0.5px solid rgba(255,255,255,.07) !important;
+}
+.hero-banner::after{display:none !important;}
+.left-col{
+  background:rgba(6,6,20,.74) !important;
+  backdrop-filter:blur(20px) !important;
+  -webkit-backdrop-filter:blur(20px) !important;
+  border-right:0.5px solid rgba(255,255,255,.06) !important;
+}
+.right-col{background:transparent !important;}
+.cal-wrap{
+  background:rgba(10,10,26,.8) !important;
+  border:0.5px solid rgba(255,255,255,.1) !important;
+}
+
+/* ── TAREAS ────────────────────────────────────────────── */
+.board-wrap{background:transparent !important;}
+.tk-col{
+  backdrop-filter:blur(14px) !important;
+  -webkit-backdrop-filter:blur(14px) !important;
+}
+.tk-col-notstarted{
+  background:rgba(30,50,130,.22) !important;
+  border:0.5px solid rgba(71,130,255,.2) !important;
+}
+.tk-col-inprogress{
+  background:rgba(70,45,8,.22) !important;
+  border:0.5px solid rgba(232,160,32,.2) !important;
+}
+.tk-col-done{
+  background:rgba(12,50,32,.22) !important;
+  border:0.5px solid rgba(39,174,114,.2) !important;
+}
+.tk-card{
+  background:rgba(10,10,24,.84) !important;
+  border:0.5px solid rgba(255,255,255,.1) !important;
+  backdrop-filter:blur(12px) !important;
+  -webkit-backdrop-filter:blur(12px) !important;
+}
+.tk-card:hover{
+  background:rgba(16,16,34,.9) !important;
+  border-color:rgba(255,255,255,.2) !important;
+}
+
+/* ── PROYECTOS ─────────────────────────────────────────── */
+.board-scroll{background:transparent !important;}
+.section{background:transparent !important;}
+
+/* ── DAILY HUB ─────────────────────────────────────────── */
+.dh-wrap{background:transparent !important;}
+.dh-body{background:transparent !important;}
+.dh-header{
+  background:rgba(6,6,18,.78) !important;
+  backdrop-filter:blur(24px) !important;
+  -webkit-backdrop-filter:blur(24px) !important;
+  border-bottom:0.5px solid rgba(255,255,255,.07) !important;
+}
+.dh-left{
+  background:rgba(6,6,18,.72) !important;
+  backdrop-filter:blur(22px) !important;
+  -webkit-backdrop-filter:blur(22px) !important;
+  border-right:0.5px solid rgba(255,255,255,.08) !important;
+}
+.dh-right{background:rgba(6,6,16,.48) !important;}
+.dh-member-bar{
+  background:rgba(8,8,24,.82) !important;
+  backdrop-filter:blur(18px) !important;
+  -webkit-backdrop-filter:blur(18px) !important;
+}
+.dh-time-hdr{
+  background:rgba(8,8,26,.85) !important;
+  backdrop-filter:blur(18px) !important;
+  -webkit-backdrop-filter:blur(18px) !important;
+}
+.dh-time-outer,.dh-hour-grid{background:transparent !important;}
+
+/* ── FOCUS ─────────────────────────────────────────────── */
+.task-panel{
+  background:rgba(6,6,18,.78) !important;
+  backdrop-filter:blur(24px) !important;
+  -webkit-backdrop-filter:blur(24px) !important;
+  border-right:0.5px solid rgba(255,255,255,.07) !important;
+}
+.focus-panel{background:transparent !important;}
+
+/* ── COTIZACIÓN ────────────────────────────────────────── */
+.form-panel{
+  background:rgba(6,6,18,.86) !important;
+  backdrop-filter:blur(22px) !important;
+  -webkit-backdrop-filter:blur(22px) !important;
+  border-right:0.5px solid rgba(255,255,255,.08) !important;
+}
+.form-header,.form-body{background:transparent !important;}
+.field input,.field textarea,.svc-row input{
+  background:rgba(255,255,255,.07) !important;
+  border:0.5px solid rgba(255,255,255,.12) !important;
+}
+.field input:focus,.field textarea:focus,.svc-row input:focus{
+  border-color:rgba(255,255,255,.3) !important;
+}
+
+/* ── CALENDARIO ────────────────────────────────────────── */
+.cal-main,.cal-sidebar,.cal-layout{background:transparent !important;}
+
+/* ── STAT / INFO CARDS (index) ─────────────────────────── */
+.dh-stat,.info-card,.stat-card{
+  background:rgba(10,10,24,.78) !important;
+  backdrop-filter:blur(14px) !important;
+  -webkit-backdrop-filter:blur(14px) !important;
+  border:0.5px solid rgba(255,255,255,.09) !important;
+}
+
+/* ── SCROLLBAR global ──────────────────────────────────── */
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:4px;}
+::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,.18);}
