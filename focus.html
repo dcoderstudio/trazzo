@@ -46,6 +46,14 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 .task-av{width:18px;height:18px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:7px;font-weight:700;color:#fff;flex-shrink:0;}
 
 .tasks-footer{border-top:0.5px solid rgba(255,255,255,0.06);padding-top:10px;flex-shrink:0;}
+/* SECTIONS */
+.fp-sec-hdr{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;padding:10px 4px 5px;flex-shrink:0;display:flex;align-items:center;gap:6px;}
+.fp-sec-hdr span{opacity:.55;}
+.fp-divider{border:none;border-top:0.5px solid rgba(255,255,255,0.06);margin:4px 0 2px;flex-shrink:0;}
+.fp-rem-row{display:flex;align-items:center;gap:8px;padding:7px 12px 7px 14px;border-radius:10px;margin-bottom:4px;background:rgba(44,197,210,0.05);border:0.5px solid rgba(44,197,210,0.1);flex-shrink:0;}
+.fp-rem-dot{width:5px;height:5px;border-radius:50%;background:#2CC5D2;flex-shrink:0;}
+.fp-rem-text{font-size:11px;color:rgba(255,255,255,0.58);flex:1;line-height:1.35;}
+.fp-rem-time{font-size:9px;color:rgba(44,197,210,0.45);flex-shrink:0;}
 .task-counter{font-size:11px;color:rgba(255,255,255,0.25);}
 /* DRAG */
 .task-item{cursor:grab;}
@@ -200,9 +208,11 @@ var DOC = db.collection('workspace').doc('proyectos');
 
 // ── STATE ─────────────────────────────────────────────────────────────────────
 var projects = [], categories = [], standaloneTasks = [], teamMembers = [], taskGroups = [];
+var dayTasks = {}, reminders = {};
 var filterPerson = '';
 var allFbTasks = [];
 var displayTasks = []; // ordered view (drag reorders this)
+var todayStr = (function(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');})();
 var activeTask = null;
 var sessionLog = [];
 var SESS_KEY = 'trazzo_focus_session';
@@ -349,22 +359,67 @@ function buildTaskRow(t) {
   return row;
 }
 
+function makeSectionHdr(icon, label, color) {
+  var h = document.createElement('div'); h.className = 'fp-sec-hdr';
+  h.style.color = color || 'rgba(255,255,255,0.55)';
+  h.innerHTML = icon + ' <span>' + label + '</span>';
+  return h;
+}
+
 function renderTaskList() {
   var list = document.getElementById('tasksList');
   var empty = document.getElementById('emptyMsg');
-  list.querySelectorAll('.task-item, .focus-placeholder').forEach(function(e){ e.remove(); });
-
-  if (displayTasks.length === 0) {
-    empty.style.display = 'block';
-    empty.textContent = allFbTasks.length === 0 ? 'Sin tareas pendientes' : 'Ninguna tarea para este filtro';
-    document.getElementById('taskCounter').textContent = '0 pendientes';
-    return;
-  }
+  list.innerHTML = '';
   empty.style.display = 'none';
 
-  displayTasks.forEach(function(t) {
-    list.appendChild(buildTaskRow(t));
+  // ── 1. TAREAS PRIORITARIAS (dayTasks today) ─────────────────
+  var dtItems = (dayTasks[todayStr] || []).filter(function(t){ return !t.done; });
+  if (dtItems.length) {
+    list.appendChild(makeSectionHdr('⭐', 'Tareas prioritarias', '#E8A020'));
+    dtItems.forEach(function(t) {
+      var fakeTask = { id: 'dt_'+t.id, text: t.text, deadline: todayStr, resp: '', priority: true,
+        projectId: 'standalone', projectName: t.source || '', stage: '', catColor: '#E8A020' };
+      list.appendChild(buildTaskRow(fakeTask));
+    });
+  }
+
+  // ── 2. RECORDATORIOS (reminders today) ──────────────────────
+  var remItems = (reminders[todayStr] || []).filter(function(r){ return !r.done; });
+  if (remItems.length) {
+    list.appendChild(makeSectionHdr('🔔', 'Recordatorios', '#2CC5D2'));
+    remItems.forEach(function(r) {
+      var row = document.createElement('div'); row.className = 'fp-rem-row';
+      var dot = document.createElement('div'); dot.className = 'fp-rem-dot';
+      var txt = document.createElement('div'); txt.className = 'fp-rem-text'; txt.textContent = r.text;
+      row.appendChild(dot); row.appendChild(txt);
+      if (r.time) { var tm = document.createElement('div'); tm.className = 'fp-rem-time'; tm.textContent = r.time; row.appendChild(tm); }
+      list.appendChild(row);
+    });
+  }
+
+  // ── 3. TAREAS DEL DÍA (deadline=today, not already in prio) ─
+  var prioSourceIds = dtItems.map(function(t){ return t.sourceId; }).filter(Boolean);
+  var todayTasks = displayTasks.filter(function(t){
+    return t.deadline === todayStr && prioSourceIds.indexOf(t.id) === -1;
   });
+  if (todayTasks.length) {
+    list.appendChild(makeSectionHdr('📋', 'Tareas del día', '#27AE72'));
+    todayTasks.forEach(function(t) { list.appendChild(buildTaskRow(t)); });
+  }
+
+  // ── 4. RESTO DE TAREAS ───────────────────────────────────────
+  var restTasks = displayTasks.filter(function(t){ return t.deadline !== todayStr; });
+  if (restTasks.length) {
+    var div = document.createElement('hr'); div.className = 'fp-divider';
+    list.appendChild(div);
+    list.appendChild(makeSectionHdr('📦', 'Resto de tareas', 'rgba(255,255,255,0.3)'));
+    restTasks.forEach(function(t) { list.appendChild(buildTaskRow(t)); });
+  }
+
+  if (!dtItems.length && !remItems.length && !displayTasks.length) {
+    empty.style.display = 'block';
+    empty.textContent = 'Sin tareas pendientes';
+  }
 
   document.getElementById('taskCounter').textContent =
     displayTasks.length + ' pendiente' + (displayTasks.length !== 1 ? 's' : '');
@@ -561,6 +616,8 @@ DOC.onSnapshot(function(snap) {
   standaloneTasks = d.standaloneTasks || [];
   teamMembers     = d.teamMembers     || [];
   taskGroups      = d.taskGroups      || [];
+  dayTasks        = d.dayTasks        || {};
+  reminders       = d.reminders       || {};
   allFbTasks      = getAllTasks();
   rebuildDisplayTasks();
   renderPersonFilter();
