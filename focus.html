@@ -227,6 +227,7 @@ var interval = null;
 
 // ── DRAG STATE ────────────────────────────────────────────────────────────────
 var _fdrag = null;
+var _fdragJustEnded = false;
 
 // ── HELPERS ───────────────────────────────────────────────────────────────────
 function getCat(catId) {
@@ -397,7 +398,7 @@ function buildTaskRow(t) {
   row.appendChild(doneBtn);
 
   row.addEventListener('pointerdown', (function(task){ return function(e){ startFocusDrag(e, task); }; })(t));
-  row.addEventListener('click', (function(task){ return function(){ if(_fdrag && _fdrag.started) return; selectTask(task); }; })(t));
+  row.addEventListener('click', (function(task){ return function(){ if(_fdragJustEnded) return; selectTask(task); }; })(t));
   return row;
 }
 
@@ -564,39 +565,38 @@ function _onFDragEnd(e) {
 
   if (!drag.started) return;
 
-  // Remove ghost and placeholder, restore opacity
-  if (drag.ghost) drag.ghost.remove();
-  var srcEl = document.querySelector('.task-item[data-taskid="' + String(drag.task.id) + '"]');
-  if (srcEl) srcEl.classList.remove('fdragging');
+  _fdragJustEnded = true;
+  setTimeout(function(){ _fdragJustEnded = false; }, 200);
 
-  // Compute new index from placeholder position
+  if (drag.ghost) drag.ghost.remove();
+
+  var srcEl = document.querySelector('.task-item[data-taskid="' + String(drag.task.id) + '"]');
+
   if (drag.placeholder && drag.placeholder.parentNode) {
     var list = document.getElementById('tasksList');
-    var children = Array.from(list.children);
-    var phIdx = children.indexOf(drag.placeholder);
+    // Move source element to where placeholder sits, then remove placeholder
+    if (srcEl) {
+      drag.placeholder.parentNode.insertBefore(srcEl, drag.placeholder);
+      srcEl.classList.remove('fdragging');
+    }
     drag.placeholder.remove();
 
-    // Count real task items before placeholder (excluding dragged)
-    var newIdx = 0;
-    for (var i = 0; i < phIdx; i++) {
-      if (children[i].classList && children[i].classList.contains('task-item') && children[i].dataset.taskid !== String(drag.task.id)) {
-        newIdx++;
+    // Sync displayTasks order to match new DOM order (in-place, no rebuild)
+    var newOrder = [];
+    list.querySelectorAll('.task-item').forEach(function(el) {
+      for (var i = 0; i < displayTasks.length; i++) {
+        if (String(displayTasks[i].id) === el.dataset.taskid) {
+          newOrder.push(displayTasks[i]);
+          break;
+        }
       }
-    }
-
-    // Reorder displayTasks
-    var oldIdx = -1;
-    for (var j=0;j<displayTasks.length;j++){ if(String(displayTasks[j].id)===String(drag.task.id)){oldIdx=j;break;} }
-    if (oldIdx !== -1) {
-      displayTasks.splice(oldIdx, 1);
-      var insertAt = Math.min(newIdx, displayTasks.length);
-      displayTasks.splice(insertAt, 0, drag.task);
-    }
-  } else if (drag.placeholder) {
-    drag.placeholder.remove();
+    });
+    if (newOrder.length) displayTasks = newOrder;
+  } else {
+    if (drag.placeholder) drag.placeholder.remove();
+    if (srcEl) srcEl.classList.remove('fdragging');
   }
-
-  renderTaskList();
+  // No renderTaskList() — DOM is updated in-place so tasks stay visible
 }
 
 // ── TASK SELECTION ────────────────────────────────────────────────────────────
