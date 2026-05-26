@@ -292,6 +292,13 @@ function rebuildDisplayTasks() {
 }
 
 // ── FOCUS DONE ACTIONS ────────────────────────────────────────────────────────
+function _removeTaskRow(selector) {
+  var el = document.querySelector(selector);
+  if (el) el.remove();
+  var cnt = document.getElementById('taskCounter');
+  if (cnt) cnt.textContent = displayTasks.length + ' pendiente' + (displayTasks.length !== 1 ? 's' : '');
+}
+
 function markFocusTaskDone(task) {
   if (task.projectId === 'standalone') {
     standaloneTasks = standaloneTasks.map(function(t){ return String(t.id)===String(task.id)?Object.assign({},t,{done:true}):t; });
@@ -304,8 +311,10 @@ function markFocusTaskDone(task) {
     });
   }
   allFbTasks = getAllTasks(); rebuildDisplayTasks();
-  focusSaveData(); renderTaskList();
+  focusSaveData();
+  _removeTaskRow('.task-item[data-taskid="' + String(task.id) + '"]');
 }
+
 function markFocusDayTaskDone(dtTask) {
   var ds = todayStr;
   dayTasks[ds] = (dayTasks[ds]||[]).map(function(t){
@@ -316,11 +325,14 @@ function markFocusDayTaskDone(dtTask) {
     return Object.assign({},t,{done:nd});
   });
   allFbTasks = getAllTasks(); rebuildDisplayTasks();
-  focusSaveData(); renderTaskList();
+  focusSaveData();
+  _removeTaskRow('.task-item[data-taskid="dt_' + dtTask.id + '"]');
 }
+
 function toggleFocusReminder(id) {
   reminders[todayStr] = (reminders[todayStr]||[]).map(function(r){ return r.id===id?Object.assign({},r,{done:!r.done}):r; });
-  focusSaveData(); renderTaskList();
+  focusSaveData();
+  _removeTaskRow('.fp-rem-row[data-remid="' + id + '"]');
 }
 
 // ── PERSON FILTER ─────────────────────────────────────────────────────────────
@@ -447,7 +459,7 @@ function renderTaskList() {
   if (remItems.length) {
     list.appendChild(makeSectionHdr('🔔', 'Recordatorios', '#2CC5D2'));
     remItems.forEach(function(r) {
-      var row = document.createElement('div'); row.className = 'fp-rem-row'; row.style.cursor='pointer';
+      var row = document.createElement('div'); row.className = 'fp-rem-row'; row.style.cursor='pointer'; row.dataset.remid = r.id;
       var dot = document.createElement('div'); dot.className = 'fp-rem-dot';
       var txt = document.createElement('div'); txt.className = 'fp-rem-text'; txt.textContent = r.text;
       row.appendChild(dot); row.appendChild(txt);
