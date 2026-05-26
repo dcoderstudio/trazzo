@@ -77,8 +77,8 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 .dh-right::-webkit-scrollbar{width:3px;}
 .dh-right::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.07);border-radius:2px;}
 /* TAREAS PRIORITARIAS — amber card */
-.dh-daytasks{flex-shrink:0;display:flex;flex-direction:column;border-radius:12px;overflow:hidden;background:rgba(255,255,255,0.026);border:0.5px solid rgba(255,255,255,0.07);border-left:4px solid #E8A020;}
-.dh-dt-hdr{flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:11px 16px 10px;background:rgba(232,160,32,0.05);border-bottom:0.5px solid rgba(255,255,255,0.06);}
+.dh-daytasks{flex-shrink:0;display:flex;flex-direction:column;border-radius:12px;overflow:hidden;background:linear-gradient(160deg,rgba(80,45,160,0.28) 0%,rgba(40,20,80,0.18) 40%,rgba(12,12,20,0.92) 100%);border:0.5px solid rgba(139,92,246,0.22);border-left:4px solid #E8A020;}
+.dh-dt-hdr{flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:11px 16px 10px;background:rgba(100,60,200,0.07);border-bottom:0.5px solid rgba(139,92,246,0.12);}
 .dh-dt-title{font-size:12px;font-weight:700;color:#E8A020;letter-spacing:.01em;}
 .dh-dt-sub{font-size:9px;color:rgba(232,160,32,0.38);margin-top:2px;}
 .dh-dt-add-btn{background:rgba(232,160,32,0.12);border:1px solid rgba(232,160,32,0.26);color:#E8A020;font-size:11px;font-weight:600;padding:4px 10px;border-radius:8px;cursor:pointer;font-family:Inter,sans-serif;transition:all .15s;}
@@ -91,7 +91,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 .dh-dt-row.dt-over-top{box-shadow:0 -2px 0 #E8A020!important;}
 .dh-dt-row.dt-over-bot{box-shadow:0 2px 0 #E8A020!important;}
 .dh-dt-empty{text-align:center;font-size:11px;color:rgba(232,160,32,0.2);padding:16px 0;border:1px dashed rgba(232,160,32,0.12);border-radius:10px;margin:8px 8px 0;}
-.dh-dt-row{display:flex;align-items:flex-start;gap:8px;padding:7px 10px;border-radius:9px;transition:background .1s;border-bottom:0.5px solid rgba(255,255,255,0.04);}
+.dh-dt-row{display:flex;align-items:flex-start;gap:8px;padding:7px 10px;border-radius:9px;transition:background .1s;border-bottom:0.5px solid rgba(255,255,255,0.04);user-select:none;-webkit-user-select:none;}
 .dh-dt-row:last-child{border-bottom:none;}
 .dh-dt-row:hover{background:rgba(255,255,255,0.04);}
 .dh-dt-cb{width:16px;height:16px;border-radius:5px;border:1.5px solid rgba(232,160,32,0.3);flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;margin-top:1px;}
@@ -108,8 +108,8 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 .dh-dt-input-ok{background:rgba(232,160,32,0.18);border:none;color:#E8A020;font-size:12px;border-radius:8px;padding:0 10px;cursor:pointer;font-family:Inter,sans-serif;}
 .dh-dt-input-ok:hover{background:rgba(232,160,32,0.32);}
 /* RECORDATORIOS — teal card */
-.dh-reminders{flex-shrink:0;display:flex;flex-direction:column;border-radius:12px;overflow:hidden;background:rgba(255,255,255,0.026);border:0.5px solid rgba(255,255,255,0.07);border-left:4px solid #2CC5D2;}
-.dh-rem-hdr{flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:11px 16px 10px;background:rgba(44,197,210,0.05);border-bottom:0.5px solid rgba(255,255,255,0.06);}
+.dh-reminders{flex-shrink:0;display:flex;flex-direction:column;border-radius:12px;overflow:hidden;background:linear-gradient(160deg,rgba(18,38,72,0.55) 0%,rgba(14,22,50,0.4) 50%,rgba(12,12,20,0.92) 100%);border:0.5px solid rgba(44,197,210,0.18);border-left:4px solid #2CC5D2;}
+.dh-rem-hdr{flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:11px 16px 10px;background:rgba(44,197,210,0.05);border-bottom:0.5px solid rgba(44,197,210,0.1);}
 .dh-rem-title{font-size:12px;font-weight:700;color:#2CC5D2;letter-spacing:.01em;}
 .dh-rem-sub{font-size:9px;color:rgba(44,197,210,0.38);margin-top:2px;}
 .dh-rem-add-btn{background:rgba(44,197,210,0.12);border:1px solid rgba(44,197,210,0.26);color:#2CC5D2;font-size:11px;font-weight:600;padding:4px 10px;border-radius:8px;cursor:pointer;font-family:Inter,sans-serif;transition:all .15s;}
@@ -138,8 +138,8 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 .dh-rem-input-ok{background:rgba(44,197,210,0.18);border:none;color:#2CC5D2;font-size:12px;border-radius:8px;padding:0 10px;height:32px;cursor:pointer;font-family:Inter,sans-serif;}
 .dh-rem-input-ok:hover{background:rgba(44,197,210,0.32);}
 /* ENTREGAS Y TAREAS DEL DÍA — green card */
-.dh-deliveries{flex-shrink:0;display:flex;flex-direction:column;border-radius:12px;overflow:hidden;background:rgba(255,255,255,0.026);border:0.5px solid rgba(255,255,255,0.07);border-left:4px solid #27AE72;}
-.dh-dv-hdr{flex-shrink:0;display:flex;align-items:center;gap:10px;padding:11px 16px 10px;background:rgba(39,174,114,0.05);border-bottom:0.5px solid rgba(255,255,255,0.06);}
+.dh-deliveries{flex-shrink:0;display:flex;flex-direction:column;border-radius:12px;overflow:hidden;background:linear-gradient(160deg,rgba(18,55,35,0.55) 0%,rgba(14,40,25,0.35) 40%,rgba(12,12,20,0.92) 100%);border:0.5px solid rgba(39,174,114,0.2);border-left:4px solid #27AE72;}
+.dh-dv-hdr{flex-shrink:0;display:flex;align-items:center;gap:10px;padding:11px 16px 10px;background:rgba(39,174,114,0.06);border-bottom:0.5px solid rgba(39,174,114,0.12);}
 .dh-dv-hdr-info{flex:1;}
 .dh-dv-title{font-size:12px;font-weight:700;color:#27AE72;letter-spacing:.01em;}
 .dh-dv-sub{font-size:9px;color:rgba(39,174,114,0.38);margin-top:2px;}
