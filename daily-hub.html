@@ -552,7 +552,7 @@ input[type=time].mi{color-scheme:dark;cursor:pointer;}
     requestAnimationFrame(tick);
     var toast=document.createElement('div');
     toast.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:10000;background:rgba(15,15,20,0.88);border:1px solid rgba(232,160,32,0.45);backdrop-filter:blur(24px);border-radius:28px;padding:28px 48px;text-align:center;pointer-events:none;animation:dhCelebFadeIn .35s cubic-bezier(.34,1.56,.64,1) forwards;';
-    toast.innerHTML='<div style="font-size:44px;margin-bottom:10px;">🎉</div><div style="font-size:20px;font-weight:800;color:#E8A020;letter-spacing:-.02em;">¡Tareas completadas!</div><div style="font-size:12px;color:rgba(255,255,255,0.38);margin-top:6px;">Excelente trabajo hoy</div>';
+    toast.innerHTML='<div style="font-size:44px;margin-bottom:10px;">🔥</div><div style="font-size:20px;font-weight:800;color:#E8A020;letter-spacing:-.02em;">¡Completaste lo más importante!</div><div style="font-size:12px;color:rgba(255,255,255,0.45);margin-top:6px;line-height:1.5;">Vas por buen camino hoy.<br>El resto del día es tuyo.</div>';
     document.body.appendChild(toast);
     setTimeout(function(){toast.style.cssText+=';transition:opacity .5s;opacity:0;';setTimeout(function(){toast.remove();},500);},2200);
   }
@@ -614,13 +614,18 @@ input[type=time].mi{color-scheme:dark;cursor:pointer;}
   }
   function addDayTaskDirectly(text,ds){
     if(!dayTasks[ds])dayTasks[ds]=[];
-    var newId=Date.now();
-    dayTasks[ds].push({id:newId,text:text,done:false,sourceId:null,sourceType:null,source:'Manual'});
-    if(!_pass.standaloneTasks)_pass.standaloneTasks=[];
-    _pass.standaloneTasks.push({id:newId+1,text:text,done:false,deadline:ds,resp:'',priority:false,notes:''});
-    standaloneTasks=_pass.standaloneTasks;
+    var stId=Date.now(); var dtId=stId+1;
+    standaloneTasks.push({id:stId,text:text,done:false,deadline:ds,resp:'',priority:false,notes:''});
+    dayTasks[ds].push({id:dtId,text:text,done:false,sourceId:stId,sourceType:'standalone',source:'Manual'});
     _dtInputOpen=false;
     saveData(); renderDayTasks(); renderDeliveries(); renderHeader();
+  }
+  function syncDayTaskDone(sourceType,sourceId,done){
+    var ds=fmt(curDate);
+    if(!(dayTasks[ds]&&dayTasks[ds].length))return;
+    dayTasks[ds]=dayTasks[ds].map(function(t){
+      return(t.sourceType===sourceType&&t.sourceId===sourceId)?Object.assign({},t,{done:done}):t;
+    });
   }
   function toggleDayTask(ds,id){
     dayTasks[ds]=(dayTasks[ds]||[]).map(function(t){
@@ -670,8 +675,10 @@ input[type=time].mi{color-scheme:dark;cursor:pointer;}
         if(t.deadline!==ds)return;
         items.push({text:t.text,sub:p.name,color:color,done:t.done,resp:t.resp||'',
           toggle:(function(tid,pid,stg){return function(){
-            for(var i=0;i<projects.length;i++){if(projects[i].id===pid){var arr=(projects[i].stageTasks&&projects[i].stageTasks[stg])||[];projects[i].stageTasks[stg]=arr.map(function(x){return x.id===tid?Object.assign({},x,{done:!x.done}):x;});break;}}
-            saveData();renderDeliveries();renderHeader();
+            var nd;
+            for(var i=0;i<projects.length;i++){if(projects[i].id===pid){var arr=(projects[i].stageTasks&&projects[i].stageTasks[stg])||[];var found=arr.filter(function(x){return x.id===tid;})[0];nd=found?!found.done:true;projects[i].stageTasks[stg]=arr.map(function(x){return x.id===tid?Object.assign({},x,{done:nd}):x;});break;}}
+            syncDayTaskDone('project',tid,nd);
+            saveData();renderDeliveries();renderDayTasks();renderHeader();
           };})(t.id,p.id,stage)
         });
       });
@@ -680,8 +687,9 @@ input[type=time].mi{color-scheme:dark;cursor:pointer;}
       if(t.deadline!==ds)return;
       items.push({text:t.text,sub:'Tarea libre',color:'#E8A020',done:t.done,resp:t.resp||'',
         toggle:(function(tid){return function(){
-          standaloneTasks=standaloneTasks.map(function(s){return s.id===tid?Object.assign({},s,{done:!s.done}):s;});
-          saveData();renderDeliveries();renderHeader();
+          var nd; standaloneTasks=standaloneTasks.map(function(s){if(s.id!==tid)return s;nd=!s.done;return Object.assign({},s,{done:nd});});
+          syncDayTaskDone('standalone',tid,nd);
+          saveData();renderDeliveries();renderDayTasks();renderHeader();
         };})(t.id)
       });
     });
