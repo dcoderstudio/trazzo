@@ -208,7 +208,7 @@ var DOC = db.collection('workspace').doc('proyectos');
 
 // ── STATE ─────────────────────────────────────────────────────────────────────
 var projects = [], categories = [], standaloneTasks = [], teamMembers = [], taskGroups = [];
-var dayTasks = {}, reminders = {};
+var dayTasks = {}, reminders = {}, _focusPass = {};
 var filterPerson = '';
 var allFbTasks = [];
 var displayTasks = []; // ordered view (drag reorders this)
@@ -290,6 +290,38 @@ function rebuildDisplayTasks() {
   displayTasks = filtered;
 }
 
+// ── FOCUS DONE ACTIONS ────────────────────────────────────────────────────────
+function markFocusTaskDone(task) {
+  if (task.projectId === 'standalone') {
+    standaloneTasks = standaloneTasks.map(function(t){ return String(t.id)===String(task.id)?Object.assign({},t,{done:true}):t; });
+  } else {
+    projects = projects.map(function(p){
+      if (p.id !== task.projectId) return p;
+      var arr = (p.stageTasks && p.stageTasks[task.stage]) || [];
+      p.stageTasks[task.stage] = arr.map(function(t){ return String(t.id)===String(task.id)?Object.assign({},t,{done:true}):t; });
+      return p;
+    });
+  }
+  allFbTasks = getAllTasks(); rebuildDisplayTasks();
+  focusSaveData(); renderTaskList();
+}
+function markFocusDayTaskDone(dtTask) {
+  var ds = todayStr;
+  dayTasks[ds] = (dayTasks[ds]||[]).map(function(t){
+    if(t.id!==dtTask.id)return t;
+    var nd=!t.done;
+    if(t.sourceType==='standalone'&&t.sourceId){standaloneTasks=standaloneTasks.map(function(s){return s.id===t.sourceId?Object.assign({},s,{done:nd}):s;});}
+    else if(t.sourceType==='project'&&t.projId){for(var i=0;i<projects.length;i++){if(projects[i].id===t.projId){var arr=(projects[i].stageTasks&&projects[i].stageTasks[t.stage])||[];projects[i].stageTasks[t.stage]=arr.map(function(s){return s.id===t.sourceId?Object.assign({},s,{done:nd}):s;});break;}}}
+    return Object.assign({},t,{done:nd});
+  });
+  allFbTasks = getAllTasks(); rebuildDisplayTasks();
+  focusSaveData(); renderTaskList();
+}
+function toggleFocusReminder(id) {
+  reminders[todayStr] = (reminders[todayStr]||[]).map(function(r){ return r.id===id?Object.assign({},r,{done:!r.done}):r; });
+  focusSaveData(); renderTaskList();
+}
+
 // ── PERSON FILTER ─────────────────────────────────────────────────────────────
 function renderPersonFilter() {
   var row = document.getElementById('focusPersonRow');
@@ -354,6 +386,16 @@ function buildTaskRow(t) {
     }
   }
 
+  var doneBtn = document.createElement('div');
+  doneBtn.style.cssText = 'width:16px;height:16px;border-radius:50%;border:1.5px solid rgba(255,255,255,0.18);flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;margin-left:4px;';
+  doneBtn.title = 'Marcar como hecha';
+  doneBtn.innerHTML = '<svg width="8" height="8" viewBox="0 0 12 12" style="opacity:0;transition:opacity .15s"><polyline points="2,6 5,9 10,3" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round"/></svg>';
+  doneBtn.onmouseenter = function(){ doneBtn.style.borderColor='#27AE72'; doneBtn.style.background='rgba(39,174,114,0.15)'; doneBtn.querySelector('svg').style.opacity='1'; };
+  doneBtn.onmouseleave = function(){ doneBtn.style.borderColor='rgba(255,255,255,0.18)'; doneBtn.style.background=''; doneBtn.querySelector('svg').style.opacity='0'; };
+  doneBtn.addEventListener('pointerdown', function(e){ e.stopPropagation(); });
+  doneBtn.onclick = (function(task){ return function(e){ e.stopPropagation(); markFocusTaskDone(task); }; })(t);
+  row.appendChild(doneBtn);
+
   row.addEventListener('pointerdown', (function(task){ return function(e){ startFocusDrag(e, task); }; })(t));
   row.addEventListener('click', (function(task){ return function(){ if(_fdrag && _fdrag.started) return; selectTask(task); }; })(t));
   return row;
@@ -377,9 +419,25 @@ function renderTaskList() {
   if (dtItems.length) {
     list.appendChild(makeSectionHdr('⭐', 'Tareas prioritarias', '#E8A020'));
     dtItems.forEach(function(t) {
+      var row = document.createElement('div');
+      row.className = 'task-item' + (activeTask && String(activeTask.id) === 'dt_'+t.id ? ' active-task' : '');
+      row.dataset.taskid = 'dt_'+t.id;
+      var bar = document.createElement('div'); bar.className = 'task-bar'; bar.style.background = '#E8A020'; row.appendChild(bar);
+      var pb = document.createElement('span'); pb.className = 'task-badge prio'; pb.textContent = '⚑'; row.appendChild(pb);
+      var nameEl = document.createElement('span'); nameEl.className = 'task-name'; nameEl.textContent = t.text; row.appendChild(nameEl);
+      var cb = document.createElement('div');
+      cb.style.cssText = 'width:16px;height:16px;border-radius:50%;border:1.5px solid rgba(232,160,32,0.3);flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;margin-left:4px;';
+      cb.innerHTML = '<svg width="8" height="8" viewBox="0 0 12 12" style="opacity:0;transition:opacity .15s"><polyline points="2,6 5,9 10,3" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round"/></svg>';
+      cb.onmouseenter=function(){cb.style.borderColor='#27AE72';cb.style.background='rgba(39,174,114,0.15)';cb.querySelector('svg').style.opacity='1';};
+      cb.onmouseleave=function(){cb.style.borderColor='rgba(232,160,32,0.3)';cb.style.background='';cb.querySelector('svg').style.opacity='0';};
+      cb.addEventListener('pointerdown',function(e){e.stopPropagation();});
+      cb.onclick=(function(dtTask){return function(e){e.stopPropagation();markFocusDayTaskDone(dtTask);};})(t);
+      row.appendChild(cb);
       var fakeTask = { id: 'dt_'+t.id, text: t.text, deadline: todayStr, resp: '', priority: true,
         projectId: 'standalone', projectName: t.source || '', stage: '', catColor: '#E8A020' };
-      list.appendChild(buildTaskRow(fakeTask));
+      row.addEventListener('pointerdown', (function(task){ return function(e){ startFocusDrag(e, task); }; })(fakeTask));
+      row.addEventListener('click', (function(task){ return function(){ if(_fdrag && _fdrag.started) return; selectTask(task); }; })(fakeTask));
+      list.appendChild(row);
     });
   }
 
@@ -388,11 +446,18 @@ function renderTaskList() {
   if (remItems.length) {
     list.appendChild(makeSectionHdr('🔔', 'Recordatorios', '#2CC5D2'));
     remItems.forEach(function(r) {
-      var row = document.createElement('div'); row.className = 'fp-rem-row';
+      var row = document.createElement('div'); row.className = 'fp-rem-row'; row.style.cursor='pointer';
       var dot = document.createElement('div'); dot.className = 'fp-rem-dot';
       var txt = document.createElement('div'); txt.className = 'fp-rem-text'; txt.textContent = r.text;
       row.appendChild(dot); row.appendChild(txt);
       if (r.time) { var tm = document.createElement('div'); tm.className = 'fp-rem-time'; tm.textContent = r.time; row.appendChild(tm); }
+      var cb = document.createElement('div');
+      cb.style.cssText = 'width:14px;height:14px;border-radius:50%;border:1.5px solid rgba(44,197,210,0.3);flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;';
+      cb.title = 'Marcar como hecho';
+      cb.onmouseenter=function(){cb.style.borderColor='#2CC5D2';cb.style.background='rgba(44,197,210,0.15)';};
+      cb.onmouseleave=function(){cb.style.borderColor='rgba(44,197,210,0.3)';cb.style.background='';};
+      cb.onclick = (function(id){ return function(e){ e.stopPropagation(); toggleFocusReminder(id); }; })(r.id);
+      row.appendChild(cb);
       list.appendChild(row);
     });
   }
@@ -539,7 +604,9 @@ function selectTask(task) {
   activeTask = task;
   if (!running) { remaining = duration; updateDisplay(); }
   updateFocusLabel();
-  renderTaskList();
+  document.querySelectorAll('#tasksList .task-item').forEach(function(row){
+    row.classList.toggle('active-task', String(row.dataset.taskid) === String(task.id));
+  });
   saveSess();
 }
 
@@ -618,12 +685,18 @@ DOC.onSnapshot(function(snap) {
   taskGroups      = d.taskGroups      || [];
   dayTasks        = d.dayTasks        || {};
   reminders       = d.reminders       || {};
+  _focusPass      = Object.assign({}, d);
   allFbTasks      = getAllTasks();
   rebuildDisplayTasks();
   renderPersonFilter();
   if (_firstLoad) { _firstLoad = false; restoreSess(); }
   else { renderTaskList(); }
 });
+
+function focusSaveData(){
+  var p=Object.assign({},_focusPass,{projects:projects,standaloneTasks:standaloneTasks,dayTasks:dayTasks,reminders:reminders});
+  DOC.set(p).catch(function(e){console.warn(e);});
+}
 
 // ── ALARM ─────────────────────────────────────────────────────────────────────
 function playAlarm() {
