@@ -224,7 +224,7 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
 /* WEEKLY PLANNER OVERLAY */
 .wp-overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);backdrop-filter:blur(14px);z-index:800;display:flex;align-items:flex-start;justify-content:center;padding:24px 16px 48px;overflow-y:auto;opacity:0;pointer-events:none;transition:opacity .2s;}
 .wp-overlay.open{opacity:1;pointer-events:all;}
-.wp-panel{background:#111213;border:0.5px solid rgba(255,255,255,0.09);border-radius:22px;width:min(620px,96vw);padding:28px 28px 32px;display:flex;flex-direction:column;gap:20px;transform:translateY(12px);transition:transform .22s;flex-shrink:0;}
+.wp-panel{background:#111213;border:0.5px solid rgba(255,255,255,0.09);border-radius:22px;width:min(780px,96vw);padding:28px 28px 32px;display:flex;flex-direction:column;gap:20px;transform:translateY(12px);transition:transform .22s;flex-shrink:0;}
 .wp-overlay.open .wp-panel{transform:none;}
 .wp-hdr{display:flex;align-items:center;gap:10px;}
 .wp-title{font-size:17px;font-weight:800;letter-spacing:-.02em;flex:1;}
@@ -235,16 +235,40 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
 .wp-saved{font-size:10px;color:rgba(255,255,255,0.25);font-weight:600;transition:opacity .4s;flex-shrink:0;}
 .wp-close{background:none;border:none;color:rgba(255,255,255,0.3);font-size:20px;cursor:pointer;padding:0 4px;line-height:1;flex-shrink:0;}
 .wp-close:hover{color:#fff;}
-.wp-cat{border-radius:14px;padding:16px 18px;display:flex;flex-direction:column;gap:13px;}
-.wp-cat-hdr{display:flex;align-items:center;gap:8px;}
-.wp-cat-icon{font-size:15px;}
-.wp-cat-name{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.09em;}
-.wp-field{display:flex;flex-direction:column;gap:6px;}
-.wp-field-lbl{font-size:10px;font-weight:600;color:rgba(255,255,255,0.3);letter-spacing:.02em;}
-.wp-ta{background:rgba(255,255,255,0.04);border:0.5px solid rgba(255,255,255,0.08);border-radius:10px;padding:9px 12px;font-size:12px;color:rgba(255,255,255,0.82);font-family:'Inter',sans-serif;outline:none;resize:vertical;min-height:56px;line-height:1.5;width:100%;transition:border-color .15s;}
-.wp-ta::placeholder{color:rgba(255,255,255,0.14);}
-.wp-days{display:flex;gap:5px;flex-wrap:wrap;}
-.wp-day{width:30px;height:30px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;cursor:pointer;transition:all .15s;color:rgba(255,255,255,0.28);user-select:none;background:rgba(255,255,255,0.03);}
+/* WEEKLY PLANNER GRID */
+.wpg-daytab{flex:1;padding:8px 4px;text-align:center;cursor:pointer;border-radius:10px;font-family:Inter,sans-serif;transition:all .15s;background:rgba(255,255,255,.03);border:0.5px solid rgba(255,255,255,.07);}
+.wpg-daytab.active{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.22);}
+.wpg-daytab-name{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.25);}
+.wpg-daytab.active .wpg-daytab-name{color:rgba(255,255,255,.55);}
+.wpg-daytab-num{font-size:20px;font-weight:800;line-height:1.2;color:rgba(255,255,255,.5);}
+.wpg-daytab.active .wpg-daytab-num{color:#fff;}
+.wpg-daytab.today-tab .wpg-daytab-num{color:#5B9FFF;}
+.wpg-daytab.active.today-tab .wpg-daytab-num{color:#5B9FFF;}
+.wpg-dot{width:4px;height:4px;border-radius:50%;background:#E8A020;margin:3px auto 0;}
+.wpg-section{border-radius:12px;padding:13px 15px;display:flex;flex-direction:column;gap:9px;}
+.wpg-sec-hdr{display:flex;align-items:center;justify-content:space-between;}
+.wpg-sec-title{display:flex;align-items:center;gap:7px;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.09em;}
+.wpg-sec-add{background:rgba(255,255,255,.07);border:0.5px solid rgba(255,255,255,.12);color:rgba(255,255,255,.55);font-size:11px;font-weight:600;padding:4px 11px;border-radius:20px;cursor:pointer;font-family:Inter,sans-serif;transition:all .15s;}
+.wpg-sec-add:hover{background:rgba(255,255,255,.12);color:#fff;}
+.wpg-slot{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.04);border-radius:9px;padding:6px 10px;}
+.wpg-slot-time{background:rgba(255,255,255,.06);border:0.5px solid rgba(255,255,255,.1);border-radius:7px;padding:4px 7px;font-size:12px;color:#fff;font-family:Inter,sans-serif;outline:none;width:86px;color-scheme:dark;}
+.wpg-slot-time:focus{border-color:rgba(255,255,255,.3);}
+.wpg-slot-notes{flex:1;background:transparent;border:none;outline:none;font-size:11px;color:rgba(255,255,255,.55);font-family:Inter,sans-serif;}
+.wpg-slot-notes::placeholder{color:rgba(255,255,255,.2);}
+.wpg-slot-del{background:none;border:none;color:rgba(255,255,255,.18);font-size:16px;cursor:pointer;padding:0 3px;line-height:1;transition:color .15s;flex-shrink:0;}
+.wpg-slot-del:hover{color:rgba(226,75,74,.7);}
+.wpg-food-row{display:flex;gap:6px;}
+.wpg-food-btn{flex:1;padding:8px 10px;border-radius:9px;border:0.5px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);color:rgba(255,255,255,.35);font-size:11px;font-weight:700;cursor:pointer;font-family:Inter,sans-serif;transition:all .15s;text-align:center;}
+.wpg-food-btn.sel-casa{background:rgba(39,174,114,.15);border-color:rgba(39,174,114,.45);color:#27AE72;}
+.wpg-food-btn.sel-fuera{background:rgba(232,160,32,.15);border-color:rgba(232,160,32,.45);color:#E8A020;}
+.wpg-food-notes{background:rgba(255,255,255,.04);border:0.5px solid rgba(255,255,255,.08);border-radius:9px;padding:8px 11px;font-size:12px;color:rgba(255,255,255,.75);font-family:Inter,sans-serif;outline:none;resize:none;min-height:46px;width:100%;transition:border-color .15s;line-height:1.5;}
+.wpg-food-notes::placeholder{color:rgba(255,255,255,.18);}
+.wpg-proj-sel{flex:1;background:rgba(255,255,255,.06);border:0.5px solid rgba(255,255,255,.1);border-radius:7px;padding:5px 8px;font-size:12px;color:#fff;font-family:Inter,sans-serif;outline:none;}
+.wpg-proj-sel:focus{border-color:rgba(255,255,255,.3);}
+.wpg-custom-input{flex:1;background:rgba(255,255,255,.06);border:0.5px solid rgba(255,255,255,.1);border-radius:7px;padding:5px 8px;font-size:12px;color:#fff;font-family:Inter,sans-serif;outline:none;}
+.wpg-custom-input:focus{border-color:rgba(255,255,255,.3);}
+.wpg-apply-btn{background:linear-gradient(135deg,rgba(26,111,212,.38),rgba(139,92,246,.28));border:0.5px solid rgba(100,150,255,.3);color:#fff;font-size:12px;font-weight:700;padding:11px 20px;border-radius:12px;cursor:pointer;font-family:Inter,sans-serif;transition:all .18s;width:100%;}
+.wpg-apply-btn:hover{filter:brightness(1.15);}
 </style>
 </head>
 <body>
@@ -423,7 +447,7 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
   var projects=[], categories=[], standaloneTasks=[], calendarEvents=[];
   var calCategories=[], dailyPriorities={}, weekPlans={};
   var _pass={};
-  var _wpWeek=null;
+  var _wpWeek=null; var _wpSelDay=null;
   var today=new Date(); today.setHours(0,0,0,0);
   var curView='month';
   var curYear=today.getFullYear(), curMonth=today.getMonth();
@@ -1207,33 +1231,6 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
   };
 
   // ── WEEKLY PLANNER ────────────────────────────────────────────
-  var WP_CATS=[
-    {id:'trabajo',icon:'💼',name:'Trabajo',color:'#1A6FD4',bg:'rgba(26,111,212,0.06)',brd:'rgba(26,111,212,0.18)',fields:[
-      {type:'ta',key:'entregas',lbl:'¿Qué entregas hay esta semana?',ph:'Deliverables, fechas límite, hitos…'},
-      {type:'ta',key:'prioridades',lbl:'¿Qué proyectos son prioridad?',ph:'Top 3 proyectos de la semana…'}
-    ]},
-    {id:'salud',icon:'💪',name:'Salud',color:'#27AE72',bg:'rgba(39,174,114,0.05)',brd:'rgba(39,174,114,0.16)',fields:[
-      {type:'days',key:'entrenamiento',lbl:'¿Qué días entreno?'},
-      {type:'days',key:'caminata',lbl:'¿Qué días camino?'},
-      {type:'days',key:'desayunoCasa',lbl:'¿Qué días desayuno en casa?'}
-    ]},
-    {id:'comida',icon:'🍽️',name:'Comida',color:'#E8A020',bg:'rgba(232,160,32,0.05)',brd:'rgba(232,160,32,0.16)',fields:[
-      {type:'days',key:'fueraAcomer',lbl:'¿Qué días como fuera?'},
-      {type:'ta',key:'opciones',lbl:'¿Qué opciones tengo previstas?',ph:'Pollo al horno, meal prep, ensalada…'}
-    ]},
-    {id:'crecimiento',icon:'📚',name:'Crecimiento',color:'#8B5CF6',bg:'rgba(139,92,246,0.05)',brd:'rgba(139,92,246,0.16)',fields:[
-      {type:'days',key:'ingles',lbl:'Inglés — ¿qué días?'},
-      {type:'days',key:'video',lbl:'Video — ¿qué días?'},
-      {type:'days',key:'lectura',lbl:'Lectura — ¿qué días?'}
-    ]},
-    {id:'personal',icon:'⚽',name:'Personal',color:'#D4537E',bg:'rgba(212,83,126,0.05)',brd:'rgba(212,83,126,0.16)',fields:[
-      {type:'days',key:'futbol',lbl:'Fútbol — ¿qué días?'},
-      {type:'days',key:'amigos',lbl:'Amigos — ¿qué días?'},
-      {type:'days',key:'espacioSocial',lbl:'Espacio social — ¿qué días?'}
-    ]}
-  ];
-  var WP_DAYS=[{k:'lun',l:'L'},{k:'mar',l:'M'},{k:'mie',l:'X'},{k:'jue',l:'J'},{k:'vie',l:'V'},{k:'sab',l:'S'},{k:'dom',l:'D'}];
-
   function _getMondayOf(d){
     var r=new Date(d); r.setHours(0,0,0,0);
     var day=r.getDay(); r.setDate(r.getDate()-(day===0?6:day-1)); return r;
@@ -1244,82 +1241,222 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
     return mon.getDate()+' '+M[mon.getMonth()]+' – '+sun.getDate()+' '+M[sun.getMonth()]+' '+sun.getFullYear();
   }
   function _wpKey(){return fmt(_wpWeek);}
-  function _wpGetPlan(){
+  function _wpGetDays(){
+    var days=[]; for(var i=0;i<7;i++){var d=new Date(_wpWeek);d.setDate(d.getDate()+i);days.push(d);} return days;
+  }
+  function _wpDayData(ds){
     var k=_wpKey();
     if(!weekPlans[k])weekPlans[k]={};
-    var p=weekPlans[k];
-    WP_CATS.forEach(function(cat){
-      if(!p[cat.id])p[cat.id]={};
-      cat.fields.forEach(function(f){
-        if(f.type==='days'&&!p[cat.id][f.key])p[cat.id][f.key]=[];
-        if(f.type==='ta'&&p[cat.id][f.key]===undefined)p[cat.id][f.key]='';
-      });
+    if(!weekPlans[k].days)weekPlans[k].days={};
+    if(!weekPlans[k].days[ds])weekPlans[k].days[ds]={};
+    var dd=weekPlans[k].days[ds];
+    if(!dd.exercise)dd.exercise=[];
+    if(!dd.food)dd.food={where:null,notes:''};
+    if(!dd.classes)dd.classes=[];
+    if(!dd.deliveries)dd.deliveries=[];
+    return dd;
+  }
+  function _wpRgb(h){return parseInt(h.slice(1,3),16)+','+parseInt(h.slice(3,5),16)+','+parseInt(h.slice(5,7),16);}
+  function _wpSecWrap(color,icon,label){
+    var sec=document.createElement('div'); sec.className='wpg-section';
+    sec.style.cssText='border-radius:12px;padding:13px 15px;display:flex;flex-direction:column;gap:9px;background:rgba('+_wpRgb(color)+',.06);border:0.5px solid rgba('+_wpRgb(color)+',.22);';
+    var hdr=document.createElement('div'); hdr.className='wpg-sec-hdr';
+    var titleEl=document.createElement('span'); titleEl.className='wpg-sec-title';
+    titleEl.innerHTML='<span style="font-size:14px">'+icon+'</span><span style="color:'+color+'">'+label+'</span>';
+    hdr.appendChild(titleEl); sec.appendChild(hdr); return {sec:sec,hdr:hdr};
+  }
+  function _wpMakeSlot(item,arr,notePh,rebuildFn){
+    var row=document.createElement('div'); row.className='wpg-slot';
+    var ti=document.createElement('input'); ti.type='time'; ti.className='wpg-slot-time'; ti.value=item.time||'';
+    ti.oninput=function(){item.time=ti.value;_wpAutoSave();};
+    var ni=document.createElement('input'); ni.type='text'; ni.className='wpg-slot-notes'; ni.placeholder=notePh||'Notas…'; ni.value=item.notes||'';
+    ni.oninput=function(){item.notes=ni.value;_wpAutoSave();};
+    var db=document.createElement('button'); db.className='wpg-slot-del'; db.innerHTML='×';
+    db.onmouseenter=function(){db.style.color='rgba(226,75,74,.75)';};
+    db.onmouseleave=function(){db.style.color='rgba(255,255,255,.18)';};
+    db.onclick=function(){var idx=arr.indexOf(item);if(idx!==-1)arr.splice(idx,1);_wpAutoSave();rebuildFn();};
+    row.appendChild(ti); row.appendChild(ni); row.appendChild(db); return row;
+  }
+  function _wpAddBtn(label,color,clickFn){
+    var b=document.createElement('button'); b.className='wpg-sec-add';
+    b.style.cssText='background:rgba('+_wpRgb(color)+',.1);border:0.5px solid rgba('+_wpRgb(color)+',.22);color:'+color+';font-size:11px;font-weight:600;padding:5px 12px;border-radius:20px;cursor:pointer;font-family:Inter,sans-serif;transition:all .15s;align-self:flex-start;';
+    b.textContent=label; b.onclick=clickFn; return b;
+  }
+
+  function _wpRenderExercise(parent,ds,dd){
+    var w=_wpSecWrap('#27AE72','💪','Ejercicio');
+    dd.exercise.forEach(function(item){
+      w.sec.appendChild(_wpMakeSlot(item,dd.exercise,'Notas del entrenamiento…',function(){renderWeekPlanContent();}));
     });
-    return p;
+    w.sec.appendChild(_wpAddBtn('+ Agregar sesión','#27AE72',function(){
+      dd.exercise.push({id:Date.now(),time:'',notes:''});_wpAutoSave();renderWeekPlanContent();
+    }));
+    parent.appendChild(w.sec);
+  }
+  function _wpRenderFood(parent,ds,dd){
+    var w=_wpSecWrap('#E8A020','🍽️','Comida');
+    var fr=document.createElement('div'); fr.className='wpg-food-row';
+    ['casa','fuera'].forEach(function(opt){
+      var b=document.createElement('button'); b.className='wpg-food-btn';
+      if(dd.food.where===opt)b.classList.add('sel-'+opt);
+      b.textContent=opt==='casa'?'🏠 En casa':'🍴 Fuera';
+      b.onclick=function(){dd.food.where=(dd.food.where===opt)?null:opt;_wpAutoSave();renderWeekPlanContent();};
+      fr.appendChild(b);
+    });
+    w.sec.appendChild(fr);
+    var nt=document.createElement('textarea'); nt.className='wpg-food-notes';
+    nt.placeholder='Opciones de comida, meal prep…'; nt.value=dd.food.notes||''; nt.rows=2;
+    nt.oninput=function(){dd.food.notes=nt.value;_wpAutoSave();};
+    nt.onfocus=function(){nt.style.borderColor='rgba(232,160,32,.35)';};
+    nt.onblur=function(){nt.style.borderColor='rgba(255,255,255,.08)';};
+    w.sec.appendChild(nt);
+    parent.appendChild(w.sec);
+  }
+  function _wpRenderClasses(parent,ds,dd){
+    var w=_wpSecWrap('#8B5CF6','📚','Inglés / Clases');
+    dd.classes.forEach(function(item){
+      w.sec.appendChild(_wpMakeSlot(item,dd.classes,'Materia o nota…',function(){renderWeekPlanContent();}));
+    });
+    w.sec.appendChild(_wpAddBtn('+ Agregar clase','#8B5CF6',function(){
+      dd.classes.push({id:Date.now(),time:'',notes:''});_wpAutoSave();renderWeekPlanContent();
+    }));
+    parent.appendChild(w.sec);
+  }
+  function _wpRenderDeliveries(parent,ds,dd){
+    var w=_wpSecWrap('#1A6FD4','📦','Entregas');
+    dd.deliveries.forEach(function(item){
+      var row=document.createElement('div'); row.className='wpg-slot';
+      var sel=document.createElement('select'); sel.className='wpg-proj-sel';
+      var optC=document.createElement('option'); optC.value='__custom__'; optC.textContent='— Externo / personalizado —'; sel.appendChild(optC);
+      var active=(projects||[]).filter(function(p){return !p.status||p.status==='active'||p.status==='en-progreso'||p.status==='En progreso'||p.status==='en progreso';});
+      active.forEach(function(p){
+        var o=document.createElement('option'); o.value=String(p.id); o.textContent=p.name||p.title||'Sin nombre';
+        if(item.projectId===String(p.id))o.selected=true; sel.appendChild(o);
+      });
+      if(!item.projectId||item.projectId==='__custom__')optC.selected=true;
+      var ci=document.createElement('input'); ci.type='text'; ci.className='wpg-custom-input';
+      ci.placeholder='Nombre del proyecto…'; ci.value=item.customName||'';
+      ci.style.display=(item.projectId&&item.projectId!=='__custom__')?'none':'block';
+      ci.oninput=function(){item.customName=ci.value;item.projectName=ci.value;_wpAutoSave();};
+      sel.onchange=function(){
+        if(sel.value==='__custom__'){item.projectId=null;item.projectName=item.customName||'';ci.style.display='block';}
+        else{item.projectId=sel.value;var pr=active.find(function(p){return String(p.id)===sel.value;});item.projectName=pr?(pr.name||pr.title||''):'';ci.style.display='none';}
+        _wpAutoSave();
+      };
+      var db=document.createElement('button'); db.className='wpg-slot-del'; db.innerHTML='×';
+      db.onmouseenter=function(){db.style.color='rgba(226,75,74,.75)';};
+      db.onmouseleave=function(){db.style.color='rgba(255,255,255,.18)';};
+      db.onclick=function(){var idx=dd.deliveries.indexOf(item);if(idx!==-1)dd.deliveries.splice(idx,1);_wpAutoSave();renderWeekPlanContent();};
+      row.appendChild(sel); row.appendChild(ci); row.appendChild(db); w.sec.appendChild(row);
+    });
+    w.sec.appendChild(_wpAddBtn('+ Agregar entrega','#1A6FD4',function(){
+      dd.deliveries.push({id:Date.now(),projectId:null,projectName:'',customName:''});_wpAutoSave();renderWeekPlanContent();
+    }));
+    parent.appendChild(w.sec);
   }
 
   window.openWeekPlanner=function(){
     _wpWeek=_getMondayOf(selectedDate?parse(selectedDate):today);
+    _wpSelDay=null;
     renderWeekPlanContent();
     document.getElementById('wpOverlay').classList.add('open');
   };
   window.closeWeekPlanner=function(){document.getElementById('wpOverlay').classList.remove('open');};
   window.navWeekPlan=function(n){
     _wpWeek=new Date(_wpWeek); _wpWeek.setDate(_wpWeek.getDate()+n*7);
+    _wpSelDay=null;
     renderWeekPlanContent();
   };
 
   function renderWeekPlanContent(){
     var lbl=document.getElementById('wpWeekLbl'); if(lbl)lbl.textContent=_fmtWeekRange(_wpWeek);
     var cont=document.getElementById('wpContent'); if(!cont)return;
-    cont.innerHTML='';
-    cont.style.cssText='display:flex;flex-direction:column;gap:14px;';
-    var k=_wpKey(); var plan=_wpGetPlan();
-    WP_CATS.forEach(function(cat){
-      var sec=document.createElement('div'); sec.className='wp-cat';
-      sec.style.background=cat.bg; sec.style.border='0.5px solid '+cat.brd;
-      var hdr=document.createElement('div'); hdr.className='wp-cat-hdr';
-      hdr.innerHTML='<span class="wp-cat-icon">'+cat.icon+'</span><span class="wp-cat-name" style="color:'+cat.color+'">'+cat.name+'</span>';
-      sec.appendChild(hdr);
-      cat.fields.forEach(function(f){
-        var field=document.createElement('div'); field.className='wp-field';
-        var fl=document.createElement('div'); fl.className='wp-field-lbl'; fl.textContent=f.lbl; field.appendChild(fl);
-        if(f.type==='ta'){
-          var ta=document.createElement('textarea'); ta.className='wp-ta';
-          ta.placeholder=f.ph||''; ta.value=plan[cat.id][f.key]||'';
-          (function(cid,fk,el){
-            el.oninput=function(){
-              if(!weekPlans[k])weekPlans[k]={};if(!weekPlans[k][cid])weekPlans[k][cid]={};
-              weekPlans[k][cid][fk]=el.value; _wpAutoSave();
-            };
-            el.onfocus=function(){el.style.borderColor=cat.color+'55';};
-            el.onblur=function(){el.style.borderColor='rgba(255,255,255,0.08)';};
-          })(cat.id,f.key,ta);
-          field.appendChild(ta);
-        } else {
-          var days=document.createElement('div'); days.className='wp-days';
-          WP_DAYS.forEach(function(wd){
-            var chip=document.createElement('div'); chip.className='wp-day'; chip.textContent=wd.l;
-            var active=(plan[cat.id][f.key]||[]).indexOf(wd.k)!==-1;
-            if(active){chip.style.background=cat.color+'28';chip.style.borderColor=cat.color;chip.style.color=cat.color;}
-            (function(cid,fk,dk,el){
-              el.onclick=function(){
-                if(!weekPlans[k])weekPlans[k]={};if(!weekPlans[k][cid])weekPlans[k][cid]={};
-                if(!weekPlans[k][cid][fk])weekPlans[k][cid][fk]=[];
-                var arr=weekPlans[k][cid][fk]; var idx=arr.indexOf(dk);
-                if(idx===-1){arr.push(dk);el.style.background=cat.color+'28';el.style.borderColor=cat.color;el.style.color=cat.color;}
-                else{arr.splice(idx,1);el.style.background='rgba(255,255,255,0.03)';el.style.borderColor='rgba(255,255,255,0.1)';el.style.color='rgba(255,255,255,0.28)';}
-                _wpAutoSave();
-              };
-            })(cat.id,f.key,wd.k,chip);
-            days.appendChild(chip);
-          });
-          field.appendChild(days);
-        }
-        sec.appendChild(field);
-      });
-      cont.appendChild(sec);
+    cont.innerHTML=''; cont.style.cssText='display:flex;flex-direction:column;gap:14px;';
+    var days=_wpGetDays(); var todayStr=fmt(today);
+    var k=_wpKey();
+    // Default select today if in week, else Monday
+    if(!_wpSelDay){
+      var inWeek=days.filter(function(d){return fmt(d)===todayStr;});
+      _wpSelDay=inWeek.length?todayStr:fmt(days[0]);
+    }
+    // Day tabs
+    var tabsRow=document.createElement('div'); tabsRow.style.cssText='display:flex;gap:5px;';
+    var DAY_NAMES=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+    days.forEach(function(d){
+      var ds=fmt(d);
+      var tab=document.createElement('button'); tab.className='wpg-daytab'+(ds===_wpSelDay?' active':'')+(ds===todayStr?' today-tab':'');
+      var nm=document.createElement('div'); nm.className='wpg-daytab-name'; nm.textContent=DAY_NAMES[d.getDay()]; tab.appendChild(nm);
+      var nu=document.createElement('div'); nu.className='wpg-daytab-num'; nu.textContent=d.getDate(); tab.appendChild(nu);
+      // Dot if day has data
+      var dd2=k&&weekPlans[k]&&weekPlans[k].days&&weekPlans[k].days[ds];
+      if(dd2&&(dd2.exercise&&dd2.exercise.length||dd2.classes&&dd2.classes.length||dd2.food&&dd2.food.where||dd2.deliveries&&dd2.deliveries.length)){
+        var dot=document.createElement('div'); dot.className='wpg-dot'; tab.appendChild(dot);
+      }
+      (function(selDs){tab.onclick=function(){_wpSelDay=selDs;renderWeekPlanContent();};})(ds);
+      tabsRow.appendChild(tab);
     });
+    cont.appendChild(tabsRow);
+    // Day detail
+    var detail=document.createElement('div'); detail.style.cssText='display:flex;flex-direction:column;gap:10px;';
+    var dd=_wpDayData(_wpSelDay);
+    _wpRenderExercise(detail,_wpSelDay,dd);
+    _wpRenderFood(detail,_wpSelDay,dd);
+    _wpRenderClasses(detail,_wpSelDay,dd);
+    _wpRenderDeliveries(detail,_wpSelDay,dd);
+    cont.appendChild(detail);
+    // Apply button
+    var applyBtn=document.createElement('button'); applyBtn.id='_wpApplyBtn'; applyBtn.className='wpg-apply-btn';
+    applyBtn.textContent='Aplicar semana al Daily Hub';
+    applyBtn.onclick=function(){_wpApplyToHub(k);};
+    cont.appendChild(applyBtn);
+  }
+
+  function _wpApplyToHub(k){
+    var plan=weekPlans[k]; if(!plan||!plan.days)return;
+    var days=_wpGetDays();
+    var dailyBlocks=JSON.parse(JSON.stringify(_pass.dailyBlocks||{}));
+    var dayTasks=JSON.parse(JSON.stringify(_pass.dayTasks||{}));
+    // Remove old wpGenerated entries for this week
+    days.forEach(function(d){
+      var ds=fmt(d);
+      if(dailyBlocks[ds])dailyBlocks[ds]=dailyBlocks[ds].filter(function(b){return !b.wpGenerated;});
+      if(dayTasks[ds])dayTasks[ds]=dayTasks[ds].filter(function(t){return !t.wpGenerated;});
+    });
+    // Write new entries
+    days.forEach(function(d){
+      var ds=fmt(d); var dd=plan.days[ds]; if(!dd)return;
+      if(!dailyBlocks[ds])dailyBlocks[ds]=[];
+      if(!dayTasks[ds])dayTasks[ds]=[];
+      // Exercise → dailyBlocks
+      (dd.exercise||[]).forEach(function(ex){
+        if(!ex.time)return;
+        var ph=ex.time.split(':'); var eh=(parseInt(ph[0])+1)%24; var et=String(eh).padStart(2,'0')+':'+ph[1];
+        dailyBlocks[ds].push({id:'wp_ex_'+ex.id,start:ex.time,end:et,title:'Ejercicio'+(ex.notes?' · '+ex.notes:''),color:'#27AE72',wpGenerated:true,personal:true});
+      });
+      // Classes → dailyBlocks
+      (dd.classes||[]).forEach(function(cl){
+        if(!cl.time)return;
+        var ph=cl.time.split(':'); var eh=(parseInt(ph[0])+1)%24; var et=String(eh).padStart(2,'0')+':'+ph[1];
+        dailyBlocks[ds].push({id:'wp_cl_'+cl.id,start:cl.time,end:et,title:cl.notes||'Inglés',color:'#8B5CF6',wpGenerated:true,personal:true});
+      });
+      dailyBlocks[ds].sort(function(a,b){return(a.start||'')<(b.start||'')?-1:1;});
+      // Food → dayTasks
+      if(dd.food&&dd.food.where){
+        var ft=dd.food.where==='casa'?('Preparar comida'+(dd.food.notes?' · '+dd.food.notes:'')):('Almuerzo fuera'+(dd.food.notes?' · '+dd.food.notes:''));
+        dayTasks[ds].push({id:'wp_food_'+ds,text:ft,done:false,wpGenerated:true,personal:true,source:'Planner'});
+      }
+      // Deliveries → dayTasks
+      (dd.deliveries||[]).forEach(function(deliv,i){
+        var name=deliv.projectName||deliv.customName||'Entrega';
+        dayTasks[ds].push({id:'wp_deliv_'+ds+'_'+i,text:'Entrega: '+name,done:false,wpGenerated:true,source:'Planner',projId:deliv.projectId||null});
+      });
+    });
+    var p=Object.assign({},_pass,{dailyBlocks:dailyBlocks,dayTasks:dayTasks,weekPlans:weekPlans});
+    DOC.set(p).then(function(){
+      _pass=Object.assign({},_pass,{dailyBlocks:dailyBlocks,dayTasks:dayTasks});
+      var btn=document.getElementById('_wpApplyBtn');
+      if(btn){btn.textContent='✓ Aplicado al Daily Hub';setTimeout(function(){if(btn)btn.textContent='Aplicar semana al Daily Hub';},2500);}
+    }).catch(function(e){console.warn(e);});
   }
 
   var _wpSaveT=null;
