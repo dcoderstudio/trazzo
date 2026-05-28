@@ -824,7 +824,7 @@ input[type=time].mi{color-scheme:dark;cursor:pointer;}
   function _dtHighlightGridHour(e,outer){
     var grid=document.getElementById('dhHourGrid'); if(!grid)return;
     outer.classList.add('dt-drag-over');
-    var relY=e.clientY-grid.getBoundingClientRect().top+outer.scrollTop;
+    var relY=e.clientY-grid.getBoundingClientRect().top;
     var hour=Math.max(HOUR_START,Math.min(HOUR_END-1,Math.floor(relY/HOUR_PX)+HOUR_START));
     if(_dtHoverHour===hour)return; _dtHoverHour=hour;
     grid.querySelectorAll('.dh-hour-row').forEach(function(r,i){r.classList.toggle('drag-over',i===(hour-HOUR_START));});
@@ -853,7 +853,7 @@ input[type=time].mi{color-scheme:dark;cursor:pointer;}
       if(e.clientX>=or.left&&e.clientX<=or.right&&e.clientY>=or.top&&e.clientY<=or.bottom){
         if(drag.ph&&drag.ph.parentNode)drag.ph.parentNode.removeChild(drag.ph);
         var grid=document.getElementById('dhHourGrid');
-        var relY=e.clientY-grid.getBoundingClientRect().top+outer.scrollTop;
+        var relY=e.clientY-grid.getBoundingClientRect().top;
         var hour=Math.max(HOUR_START,Math.min(HOUR_END-1,Math.floor(relY/HOUR_PX)+HOUR_START));
         var ds0=fmt(curDate);
         var tasks0=(dayTasks[ds0]||[]).filter(function(t){return !t.done;});
@@ -1092,7 +1092,7 @@ input[type=time].mi{color-scheme:dark;cursor:pointer;}
   function _dvHighlightGridHour(e,outer){
     var grid=document.getElementById('dhHourGrid'); if(!grid)return;
     outer.classList.add('dt-drag-over');
-    var relY=e.clientY-grid.getBoundingClientRect().top+outer.scrollTop;
+    var relY=e.clientY-grid.getBoundingClientRect().top;
     var hour=Math.max(HOUR_START,Math.min(HOUR_END-1,Math.floor(relY/HOUR_PX)+HOUR_START));
     if(_dvHoverHour===hour)return; _dvHoverHour=hour;
     grid.querySelectorAll('.dh-hour-row').forEach(function(r,i){r.classList.toggle('drag-over',i===(hour-HOUR_START));});
@@ -1121,7 +1121,7 @@ input[type=time].mi{color-scheme:dark;cursor:pointer;}
       if(e.clientX>=or.left&&e.clientX<=or.right&&e.clientY>=or.top&&e.clientY<=or.bottom){
         if(drag.ph&&drag.ph.parentNode)drag.ph.parentNode.removeChild(drag.ph);
         var grid=document.getElementById('dhHourGrid');
-        var relY=e.clientY-grid.getBoundingClientRect().top+outer.scrollTop;
+        var relY=e.clientY-grid.getBoundingClientRect().top;
         var hour=Math.max(HOUR_START,Math.min(HOUR_END-1,Math.floor(relY/HOUR_PX)+HOUR_START));
         _createBlockDirect(fmt(curDate),fmtTime(hour,0),addOneHour(fmtTime(hour,0)),drag.item.text,drag.item.color||'#27AE72');
         return;
