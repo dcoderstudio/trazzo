@@ -855,7 +855,10 @@ input[type=time].mi{color-scheme:dark;cursor:pointer;}
         var grid=document.getElementById('dhHourGrid');
         var relY=e.clientY-grid.getBoundingClientRect().top+outer.scrollTop;
         var hour=Math.max(HOUR_START,Math.min(HOUR_END-1,Math.floor(relY/HOUR_PX)+HOUR_START));
-        openBlockModal(fmt(curDate),fmtTime(hour,0),null,addOneHour(fmtTime(hour,0)),drag.task.text);
+        var ds0=fmt(curDate);
+        var tasks0=(dayTasks[ds0]||[]).filter(function(t){return !t.done;});
+        var ci=0; for(var ii=0;ii<tasks0.length;ii++){if(tasks0[ii].id===drag.task.id){ci=ii;break;}}
+        _createBlockDirect(ds0,fmtTime(hour,0),addOneHour(fmtTime(hour,0)),drag.task.text,CARD_COLORS[ci%CARD_COLORS.length]);
         return;
       }
     }
@@ -1120,7 +1123,7 @@ input[type=time].mi{color-scheme:dark;cursor:pointer;}
         var grid=document.getElementById('dhHourGrid');
         var relY=e.clientY-grid.getBoundingClientRect().top+outer.scrollTop;
         var hour=Math.max(HOUR_START,Math.min(HOUR_END-1,Math.floor(relY/HOUR_PX)+HOUR_START));
-        openBlockModal(fmt(curDate),fmtTime(hour,0),null,addOneHour(fmtTime(hour,0)),drag.item.text);
+        _createBlockDirect(fmt(curDate),fmtTime(hour,0),addOneHour(fmtTime(hour,0)),drag.item.text,drag.item.color||'#27AE72');
         return;
       }
     }
@@ -1218,6 +1221,12 @@ input[type=time].mi{color-scheme:dark;cursor:pointer;}
     saveData(); closeBlockModal(); renderAll();
   };
   function deleteBlock(ds,id){if(dailyBlocks[ds])dailyBlocks[ds]=dailyBlocks[ds].filter(function(b){return b.id!==id;});saveData();renderAll();}
+  function _createBlockDirect(ds,start,end,title,color){
+    if(!dailyBlocks[ds])dailyBlocks[ds]=[];
+    dailyBlocks[ds].push({id:Date.now(),title:title,sub:'',start:start,end:end,color:color||'#1A6FD4'});
+    dailyBlocks[ds].sort(function(a,c){return(a.start||'')<(c.start||'')?-1:1;});
+    saveData(); renderTimeGrid(); renderHeader();
+  }
   function buildBmColors(sel){
     var row=document.getElementById('bmColorRow'); row.innerHTML='';
     BLOCK_COLORS.forEach(function(bc){
