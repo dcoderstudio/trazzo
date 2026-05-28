@@ -3771,7 +3771,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
         var hasTpl = categories[fi].templates && Object.keys(categories[fi].templates).length > 0;
         var nu = fi<0 || categories[fi].stages.join('|')!==cfg.stages.join('|') || !hasTpl || (cfg.tplVersion && categories[fi].tplVersion!==cfg.tplVersion);
         if (nu) {
-          if (fi>=0) { categories[fi].label=cfg.label; categories[fi].color=cfg.color; categories[fi].stages=cfg.stages; categories[fi].stageDays=cfg.stageDays; categories[fi].templates=cfg.templates; categories[fi].payments=cfg.payments; }
+          if (fi>=0) { categories[fi].label=cfg.label; categories[fi].color=cfg.color; categories[fi].stages=cfg.stages; categories[fi].stageDays=cfg.stageDays; categories[fi].templates=cfg.templates; categories[fi].payments=cfg.payments; if(cfg.tplVersion)categories[fi].tplVersion=cfg.tplVersion; }
           else { categories.push(cfg); }
           migrated=true;
         }
