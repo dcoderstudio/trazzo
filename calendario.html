@@ -1361,7 +1361,12 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
     renderWeekPlanContent();
     document.getElementById('wpOverlay').classList.add('open');
   };
-  window.closeWeekPlanner=function(){document.getElementById('wpOverlay').classList.remove('open');};
+  window.closeWeekPlanner=function(){
+    document.getElementById('wpOverlay').classList.remove('open');
+    _wpWeek=null;
+    // Re-sync weekPlans from _pass now that the panel is closed
+    if(_pass.weekPlans) weekPlans=_pass.weekPlans;
+  };
   window.navWeekPlan=function(n){
     _wpWeek=new Date(_wpWeek); _wpWeek.setDate(_wpWeek.getDate()+n*7);
     _wpSelDay=null;
@@ -1483,7 +1488,10 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
       if(d.calendarEvents) calendarEvents=d.calendarEvents;
       if(d.calCategories&&d.calCategories.length) calCategories=d.calCategories;
       if(d.dailyPriorities) dailyPriorities=d.dailyPriorities;
-      if(d.weekPlans) weekPlans=d.weekPlans;
+      // Don't overwrite weekPlans while the planner is open — doing so breaks
+      // the object references held by the exercise/class input closures, causing
+      // typed times to be lost before Apply is clicked.
+      if(d.weekPlans && !_wpWeek) weekPlans=d.weekPlans;
     }
     render();
     if(selectedDate&&curView!=='day') renderDayEvents(selectedDate);
