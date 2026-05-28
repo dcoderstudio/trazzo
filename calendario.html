@@ -1421,15 +1421,12 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
     var days=_wpGetDays();
     var dailyBlocks=JSON.parse(JSON.stringify(_pass.dailyBlocks||{}));
     var dayTasks=JSON.parse(JSON.stringify(_pass.dayTasks||{}));
-    var standaloneTasks=JSON.parse(JSON.stringify(_pass.standaloneTasks||[]));
     // Remove old wpGenerated entries for this week
     days.forEach(function(d){
       var ds=fmt(d);
       if(dailyBlocks[ds])dailyBlocks[ds]=dailyBlocks[ds].filter(function(b){return !b.wpGenerated;});
       if(dayTasks[ds])dayTasks[ds]=dayTasks[ds].filter(function(t){return !t.wpGenerated;});
     });
-    // Remove old wpGenerated food tasks from standaloneTasks
-    standaloneTasks=standaloneTasks.filter(function(t){return !(t.wpGenerated&&t.source==='PlannerFood');});
     // Write new entries
     days.forEach(function(d){
       var ds=fmt(d); var dd=plan.days[ds]; if(!dd)return;
@@ -1448,16 +1445,12 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
         dailyBlocks[ds].push({id:'wp_cl_'+cl.id,start:cl.time,end:et,title:cl.notes||'Inglés',color:'#8B5CF6',wpGenerated:true,personal:true});
       });
       dailyBlocks[ds].sort(function(a,b){return(a.start||'')<(b.start||'')?-1:1;});
-      // Food → standaloneTasks (visible in tareas.html)
+      // Food → dayTasks (solo visible en Daily Hub, no en tareas.html)
       if(dd.food&&dd.food.where){
         var ft=dd.food.where==='casa'
           ?('Planear comida en casa'+(dd.food.notes?' · '+dd.food.notes:''))
           :('Preparar comida para llevar o planear comida'+(dd.food.notes?' · '+dd.food.notes:''));
-        standaloneTasks.push({
-          id:'wp_food_'+ds, text:ft, done:false, deadline:ds,
-          colStatus:null, sortOrder:Date.now(), resp:'',
-          wpGenerated:true, source:'PlannerFood', notes:''
-        });
+        dayTasks[ds].push({id:'wp_food_'+ds,text:ft,done:false,wpGenerated:true,personal:true,source:'Planner'});
       }
       // Deliveries → dayTasks
       (dd.deliveries||[]).forEach(function(deliv,i){
@@ -1465,9 +1458,9 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
         dayTasks[ds].push({id:'wp_deliv_'+ds+'_'+i,text:'Entrega: '+name,done:false,wpGenerated:true,source:'Planner',projId:deliv.projectId||null});
       });
     });
-    var p=Object.assign({},_pass,{dailyBlocks:dailyBlocks,dayTasks:dayTasks,standaloneTasks:standaloneTasks,weekPlans:weekPlans});
+    var p=Object.assign({},_pass,{dailyBlocks:dailyBlocks,dayTasks:dayTasks,weekPlans:weekPlans});
     DOC.set(p).then(function(){
-      _pass=Object.assign({},_pass,{dailyBlocks:dailyBlocks,dayTasks:dayTasks,standaloneTasks:standaloneTasks});
+      _pass=Object.assign({},_pass,{dailyBlocks:dailyBlocks,dayTasks:dayTasks});
       var btn=document.getElementById('_wpApplyBtn');
       if(btn){btn.textContent='✓ Aplicado al Daily Hub';setTimeout(function(){if(btn)btn.textContent='Aplicar semana al Daily Hub';},2500);}
     }).catch(function(e){console.warn(e);});

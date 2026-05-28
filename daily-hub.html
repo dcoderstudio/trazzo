@@ -85,11 +85,17 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 .dh-dt-add-btn{background:rgba(232,160,32,0.12);border:1px solid rgba(232,160,32,0.26);color:#E8A020;font-size:11px;font-weight:600;padding:4px 10px;border-radius:8px;cursor:pointer;font-family:Inter,sans-serif;transition:all .15s;}
 .dh-dt-add-btn:hover{background:rgba(232,160,32,0.24);color:#fff;}
 .dh-dt-list{display:flex;flex-direction:column;gap:6px;padding:8px;}
-.dh-dt-card{flex-shrink:0;border-radius:12px;padding:10px 14px;display:flex;align-items:center;gap:12px;position:relative;cursor:pointer;transition:filter .15s,transform .1s;user-select:none;-webkit-user-select:none;overflow:hidden;}
+.dh-dt-card{flex-shrink:0;border-radius:12px;padding:10px 14px;display:flex;align-items:center;gap:10px;position:relative;cursor:grab;transition:filter .15s,transform .1s,box-shadow .15s;user-select:none;-webkit-user-select:none;overflow:hidden;}
 .dh-dt-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,0.04) 0%,transparent 60%);pointer-events:none;}
-.dh-dt-card:hover{filter:brightness(1.12);transform:translateX(2px);}
+.dh-dt-card:hover{filter:brightness(1.12);transform:translateX(2px);box-shadow:0 6px 20px rgba(0,0,0,.5);}
+.dh-dt-card:active{cursor:grabbing;}
 .dh-dt-card.done-card{opacity:.35;}
 .dh-dt-card.dt-dragging{opacity:.06;cursor:grabbing;}
+.dh-dt-drag-handle{display:flex;flex-direction:column;gap:3px;flex-shrink:0;opacity:.22;padding:2px 0;}
+.dh-dt-drag-handle span{display:block;width:14px;height:1.5px;background:currentColor;border-radius:2px;}
+.dh-dt-card:hover .dh-dt-drag-handle{opacity:.5;}
+/* Grid highlight when dragging task over it */
+.dh-time-outer.dt-drag-over{background:rgba(26,111,212,0.06);outline:1.5px dashed rgba(26,111,212,0.3);outline-offset:-2px;border-radius:8px;}
 .dh-dt-card-num{font-size:32px;font-weight:800;opacity:.18;flex-shrink:0;font-variant-numeric:tabular-nums;line-height:1;letter-spacing:-.04em;min-width:36px;text-align:right;}
 .dh-dt-card-body{flex:1;min-width:0;}
 .dh-dt-card-text{font-size:13px;font-weight:700;color:#fff;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
@@ -244,7 +250,7 @@ input[type=time].mi{color-scheme:dark;cursor:pointer;}
         <div class="dh-dt-hdr">
           <div>
             <div class="dh-dt-title">⭐ Tareas principales del día</div>
-            <div class="dh-dt-sub">Arrastra desde el banco o agrega manualmente</div>
+            <div class="dh-dt-sub">Arrastra al horario para programar · reordena · agrega</div>
           </div>
           <button class="dh-dt-add-btn" id="dhDtAddBtn" onclick="openDtInput()">+ Agregar</button>
         </div>
@@ -599,6 +605,9 @@ input[type=time].mi{color-scheme:dark;cursor:pointer;}
       card.style.border='0.5px solid rgba('+rgb+',.28)';
       card.style.borderLeft='3px solid '+c;
 
+      // Drag handle
+      var handle=document.createElement('div'); handle.className='dh-dt-drag-handle';
+      for(var li=0;li<3;li++){var s=document.createElement('span');handle.appendChild(s);}
       // Number accent
       var num=document.createElement('div'); num.className='dh-dt-card-num'; num.textContent=String(i+1).padStart(2,'0'); num.style.color=c;
       // Body
@@ -617,7 +626,7 @@ input[type=time].mi{color-scheme:dark;cursor:pointer;}
       del.addEventListener('pointerdown',function(e){e.stopPropagation();});
       del.onclick=(function(id){return function(e){e.stopPropagation();removeDayTask(ds,id);};})(t.id);
 
-      card.appendChild(num); card.appendChild(body); card.appendChild(chk); card.appendChild(del);
+      card.appendChild(handle); card.appendChild(num); card.appendChild(body); card.appendChild(chk); card.appendChild(del);
       // Edit on click
       card.onclick=(function(task){return function(e){if(!_dtWasDrag)openDtEditPopup(task,ds);};})(t);
       // Drag
@@ -684,6 +693,7 @@ input[type=time].mi{color-scheme:dark;cursor:pointer;}
   }
   function _dtHighlightGridHour(e,outer){
     var grid=document.getElementById('dhHourGrid'); if(!grid)return;
+    outer.classList.add('dt-drag-over');
     var relY=e.clientY-grid.getBoundingClientRect().top+outer.scrollTop;
     var hour=Math.max(HOUR_START,Math.min(HOUR_END-1,Math.floor(relY/HOUR_PX)+HOUR_START));
     if(_dtHoverHour===hour)return; _dtHoverHour=hour;
@@ -691,6 +701,7 @@ input[type=time].mi{color-scheme:dark;cursor:pointer;}
   }
   function _dtClearGridHighlight(){
     _dtHoverHour=null;
+    var outer=document.getElementById('dhTimeOuter'); if(outer)outer.classList.remove('dt-drag-over');
     var grid=document.getElementById('dhHourGrid');
     if(grid)grid.querySelectorAll('.dh-hour-row').forEach(function(r){r.classList.remove('drag-over');});
   }
