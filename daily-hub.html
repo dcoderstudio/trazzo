@@ -85,7 +85,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 .dh-dt-add-btn{background:rgba(232,160,32,0.12);border:1px solid rgba(232,160,32,0.26);color:#E8A020;font-size:11px;font-weight:600;padding:4px 10px;border-radius:8px;cursor:pointer;font-family:Inter,sans-serif;transition:all .15s;}
 .dh-dt-add-btn:hover{background:rgba(232,160,32,0.24);color:#fff;}
 .dh-dt-list{display:flex;flex-direction:column;gap:6px;padding:8px;}
-.dh-dt-card{flex-shrink:0;border-radius:12px;padding:10px 14px;display:flex;align-items:center;gap:10px;position:relative;cursor:grab;transition:filter .15s,transform .1s,box-shadow .15s;user-select:none;-webkit-user-select:none;overflow:hidden;}
+.dh-dt-card{flex-shrink:0;border-radius:12px;padding:10px 14px;display:flex;align-items:center;gap:10px;position:relative;cursor:grab;transition:filter .15s,transform .1s,box-shadow .15s;user-select:none;-webkit-user-select:none;touch-action:none;overflow:hidden;}
 .dh-dt-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,0.04) 0%,transparent 60%);pointer-events:none;}
 .dh-dt-card:hover{filter:brightness(1.12);transform:translateX(2px);box-shadow:0 6px 20px rgba(0,0,0,.5);}
 .dh-dt-card:active{cursor:grabbing;}
@@ -652,20 +652,23 @@ input[type=time].mi{color-scheme:dark;cursor:pointer;}
   }
 
   function _dtDragStart(e,task,rowEl){
-    _dtPDrag={task:task,rowEl:rowEl,startX:e.clientX,startY:e.clientY,started:false,ghost:null,ph:null,offsetX:0,offsetY:0};
-    document.addEventListener('pointermove',_dtDragMove);
-    document.addEventListener('pointerup',_dtDragEnd);
+    e.preventDefault();
     document.body.style.userSelect='none';
+    _dtPDrag={task:task,rowEl:rowEl,startX:e.clientX,startY:e.clientY,started:false,ghost:null,ph:null,offsetX:0,offsetY:0};
+    document.addEventListener('pointermove',_dtDragMove,{passive:false});
+    document.addEventListener('pointerup',_dtDragEnd);
+    document.addEventListener('pointercancel',_dtDragEnd);
   }
   function _dtDragMove(e){
     if(!_dtPDrag)return;
+    e.preventDefault();
     var dx=e.clientX-_dtPDrag.startX,dy=e.clientY-_dtPDrag.startY;
     if(!_dtPDrag.started){
       if(Math.abs(dx)<6&&Math.abs(dy)<6)return;
       _dtPDrag.started=true;
       var rect=_dtPDrag.rowEl.getBoundingClientRect();
       var ghost=_dtPDrag.rowEl.cloneNode(true);
-      ghost.style.cssText='position:fixed;z-index:9200;width:'+rect.width+'px;pointer-events:none;border-radius:9px;box-shadow:0 20px 50px rgba(0,0,0,.88);transform:rotate(1.5deg) scale(1.04);opacity:.93;';
+      ghost.style.cssText='position:fixed;z-index:9200;width:'+rect.width+'px;pointer-events:none;border-radius:9px;box-shadow:0 20px 50px rgba(0,0,0,.88);transform:rotate(1.5deg) scale(1.04);opacity:.93;transition:none;';
       ghost.style.left=rect.left+'px'; ghost.style.top=rect.top+'px';
       document.body.appendChild(ghost); _dtPDrag.ghost=ghost;
       _dtPDrag.offsetX=e.clientX-rect.left; _dtPDrag.offsetY=e.clientY-rect.top;
@@ -708,6 +711,7 @@ input[type=time].mi{color-scheme:dark;cursor:pointer;}
   function _dtDragEnd(e){
     document.removeEventListener('pointermove',_dtDragMove);
     document.removeEventListener('pointerup',_dtDragEnd);
+    document.removeEventListener('pointercancel',_dtDragEnd);
     document.body.style.userSelect='';
     if(!_dtPDrag)return;
     var drag=_dtPDrag; _dtPDrag=null;
