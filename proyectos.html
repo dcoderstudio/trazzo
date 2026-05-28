@@ -1855,6 +1855,13 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
         + (payDone ? '✓ ' : '💰 ') + payLabel + '</span></div>';
     }
 
+    // Company footer
+    if (co) {
+      html += '<div style="display:flex;justify-content:flex-end;align-items:center;margin-top:8px;padding-top:6px;border-top:0.5px solid rgba('+_coRgb(co.color)+',.15);">'
+        + '<span style="font-size:8px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:'+co.color+';opacity:.75;">'+co.name+'</span>'
+        + '</div>';
+    }
+
     card.innerHTML = html;
 
     // convert button
