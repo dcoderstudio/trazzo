@@ -3694,16 +3694,16 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
           }
         },
         {
-          id:'disenoproducto', label:'Diseño de producto', color:'#D85A30',
+          id:'disenoproducto', label:'Diseño de producto', color:'#D85A30', tplVersion:2,
           stages:['Briefing y referencias','Definición de requerimientos','Conceptualización del producto','Visualización final / renders','Propuesta económica de producción','Archivos técnicos','Muestra y ajustes','Producción','Entrega del producto'],
           stageDays:{'Briefing y referencias':3,'Definición de requerimientos':5,'Conceptualización del producto':10,'Visualización final / renders':14,'Propuesta económica de producción':5,'Archivos técnicos':14,'Muestra y ajustes':14,'Producción':30,'Entrega del producto':5},
           payments:{'Conceptualización del producto':pay('1er anticipo','Costo fijo de diseño'),'Archivos técnicos':pay('Liquidación digitalización','Al entregar archivos técnicos'),'Producción':pay('Anticipo fabricación','Cliente decide si produce'),'Entrega del producto':pay('Liquidación final','')},
           templates:{
             'Briefing y referencias':[mk('Reunión inicial de briefing con el cliente'),mk('Recolectar referencias visuales y de mercado'),mk('Investigar competencia y tendencias del sector'),mk('Documentar contexto del producto y usuario objetivo')],
-            'Definición de requerimientos':[mk('Definir funcionalidad, dimensiones y materiales del producto'),mk('Establecer restricciones técnicas y de producción'),mk('Confirmar presupuesto de diseño y alcance'),mk('Firmar brief de diseño de producto')],
+            'Definición de requerimientos':[mk('Definir funcionalidad, dimensiones y materiales del producto'),mk('Establecer restricciones técnicas y de producción'),mk('Confirmar presupuesto de diseño y alcance')],
             'Conceptualización del producto':[mk('Desarrollo de conceptos y bocetos preliminares'),mk('Selección de dirección conceptual con el cliente'),mk('Propuesta de materiales y procesos de fabricación'),mk('Aprobación de concepto para avanzar a visualización')],
-            'Visualización final / renders':[mk('Modelado 3D del producto con detalles de diseño'),mk('Renders fotorrealistas en diferentes ángulos'),mk('Exploración de variantes de color y acabado'),mk('Aprobación visual definitiva del cliente')],
-            'Propuesta económica de producción':[mk('Cotización detallada de materiales y procesos'),mk('Comparar cotizaciones de proveedores'),mk('Presentar propuesta económica al cliente'),mk('Confirmar si el cliente decide producir')],
+            'Visualización final / renders':[mk('Modelado 3D del producto con detalles de diseño'),mk('Renders fotorrealistas en diferentes ángulos'),mk('Aprobación visual definitiva del cliente')],
+            'Propuesta económica de producción':[mk('Cotización detallada de materiales y procesos'),mk('Presentar propuesta económica al cliente')],
             'Archivos técnicos':[mk('Planos técnicos con cotas y tolerancias'),mk('Especificaciones de materiales y acabados'),mk('Archivos CAD para producción'),mk('Revisión y aprobación de archivos técnicos')],
             'Muestra y ajustes':[mk('Fabricación de prototipo o muestra física'),mk('Revisión funcional y estética de la muestra'),mk('Presentación y aprobación de muestra con cliente'),mk('Documentar ajustes para producción final')],
             'Producción':[mk('Confirmar orden de producción con proveedor'),mk('Seguimiento de avances de fabricación'),mk('Control de calidad en proceso'),mk('Aprobación del lote de producción final')],
