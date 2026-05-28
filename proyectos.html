@@ -3676,20 +3676,20 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
       function pay(a,d) { return {label:a,amount:a,description:d}; }
       var cfgs = [
         {
-          id:'interiorismo', label:'Interiorismo', color:'#C0436E',
+          id:'interiorismo', label:'Interiorismo', color:'#C0436E', tplVersion:2,
           stages:['Primer acercamiento','Levantamiento en sitio','Definición de requerimientos','Propuesta conceptual','Visualización / renders','Plan de trabajo','Archivos técnicos','Fabricación y compras','Ejecución e instalación','Entrega final'],
           stageDays:{'Primer acercamiento':2,'Levantamiento en sitio':2,'Definición de requerimientos':3,'Propuesta conceptual':10,'Visualización / renders':14,'Plan de trabajo':3,'Archivos técnicos':14,'Fabricación y compras':21,'Ejecución e instalación':30,'Entrega final':3},
           payments:{'Propuesta conceptual':pay('1er anticipo','Cobro de diseño'),'Plan de trabajo':pay('Liquidación diseño','Al entregar renders aprobados'),'Fabricación y compras':pay('Anticipo ejecución','Antes de fabricar'),'Entrega final':pay('Liquidación final','')},
           templates:{
-            'Primer acercamiento':[mk('Llamada o reunión inicial con el cliente'),mk('Escuchar necesidades y visión del espacio'),mk('Presentar proceso y propuesta de valor'),mk('Confirmar interés y viabilidad del proyecto')],
+            'Primer acercamiento':[mk('Llamada o reunión inicial con el cliente')],
             'Levantamiento en sitio':[mk('Visita y medición del espacio a intervenir'),mk('Registro fotográfico del estado actual'),mk('Identificar condiciones estructurales e instalaciones'),mk('Generar plano base del espacio')],
             'Definición de requerimientos':[mk('Definir programa de espacios y necesidades específicas'),mk('Establecer estilo, referencias y paleta de preferencias'),mk('Confirmar presupuesto de ejecución y alcance'),mk('Firmar brief o contrato de diseño')],
-            'Propuesta conceptual':[mk('Desarrollar concepto y narrativa del proyecto'),mk('Moodboard con referencias de estilo y materiales'),mk('Distribución y zonificación del espacio'),mk('Presentar concepto al cliente y obtener aprobación')],
-            'Visualización / renders':[mk('Renders 3D de los espacios clave'),mk('Selección definitiva de acabados y mobiliario'),mk('Revisión interna de calidad'),mk('Presentar y obtener aprobación visual del cliente')],
-            'Plan de trabajo':[mk('Definir cronograma de fabricación e instalación'),mk('Asignar contratistas y proveedores'),mk('Confirmar disponibilidad de materiales clave'),mk('Compartir cronograma con cliente')],
-            'Archivos técnicos':[mk('Planos de distribución y detalles constructivos'),mk('Planos de instalaciones eléctricas e hidráulicas'),mk('Especificaciones técnicas de materiales y acabados'),mk('Revisión y aprobación final de archivos')],
-            'Fabricación y compras':[mk('Órdenes de compra de materiales y mobiliario'),mk('Seguimiento de elementos a medida con fabricantes'),mk('Recepción y revisión de materiales'),mk('Logística y almacenamiento previo a instalación')],
-            'Ejecución e instalación':[mk('Supervisión de obra civil y acabados en sitio'),mk('Instalación de mobiliario y elementos decorativos'),mk('Coordinación de instalaciones especiales'),mk('Revisión de avances con cliente')],
+            'Propuesta conceptual':[mk('Desarrollar concepto y narrativa del proyecto'),mk('Presentar concepto al cliente y obtener aprobación')],
+            'Visualización / renders':[mk('Renders 3D de los espacios clave')],
+            'Plan de trabajo':[mk('Definir cronograma de fabricación e instalación'),mk('Compartir cronograma con cliente')],
+            'Archivos técnicos':[mk('Planos de distribución y detalles constructivos'),mk('Archivos de elementos adicionales'),mk('Revisión y aprobación final de archivos')],
+            'Fabricación y compras':[mk('Fabricación de proyecto de interiorismo')],
+            'Ejecución e instalación':[mk('Instalación de mobiliario y elementos decorativos'),mk('Coordinación de instalaciones especiales'),mk('Revisión de avances con cliente')],
             'Entrega final':[mk('Recorrido final de inspección con cliente'),mk('Correcciones y ajustes de última hora'),mk('Registro fotográfico profesional del proyecto'),mk('Firma de acta de entrega y cierre de contrato')]
           }
         },
@@ -3769,7 +3769,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
         var fi=-1;
         for (var i=0;i<categories.length;i++) { if (categories[i].id===cfg.id) { fi=i; break; } }
         var hasTpl = categories[fi].templates && Object.keys(categories[fi].templates).length > 0;
-        var nu = fi<0 || categories[fi].stages.join('|')!==cfg.stages.join('|') || !hasTpl;
+        var nu = fi<0 || categories[fi].stages.join('|')!==cfg.stages.join('|') || !hasTpl || (cfg.tplVersion && categories[fi].tplVersion!==cfg.tplVersion);
         if (nu) {
           if (fi>=0) { categories[fi].label=cfg.label; categories[fi].color=cfg.color; categories[fi].stages=cfg.stages; categories[fi].stageDays=cfg.stageDays; categories[fi].templates=cfg.templates; categories[fi].payments=cfg.payments; }
           else { categories.push(cfg); }
