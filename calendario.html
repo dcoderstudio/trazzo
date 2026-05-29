@@ -362,8 +362,8 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
 .wko-goal-inp{flex:1;background:rgba(255,255,255,.05);border:0.5px solid rgba(255,255,255,.1);border-radius:8px;padding:5px 8px;font-size:11px;color:#fff;font-family:Inter,sans-serif;outline:none;}
 .wko-goal-inp:focus{border-color:rgba(255,255,255,.25);}
 .wko-goal-inp::placeholder{color:rgba(255,255,255,.18);}
-.wko-goal-inp-ok{background:rgba(255,255,255,.08);border:none;color:#fff;font-size:14px;border-radius:8px;width:30px;flex-shrink:0;cursor:pointer;line-height:30px;font-family:Inter,sans-serif;}
-.wko-goal-inp-ok:hover{background:rgba(255,255,255,.16);}
+.wko-goal-inp-ok{background:rgba(255,255,255,.1);border:none;color:rgba(255,255,255,.7);font-size:18px;border-radius:8px;width:30px;flex-shrink:0;cursor:pointer;line-height:30px;font-family:Inter,sans-serif;transition:background .15s,color .15s;}
+.wko-goal-inp-ok:hover{background:rgba(255,255,255,.2);color:#fff;}
 .wko-goal-all-done{font-size:10px;font-weight:700;color:#27AE72;text-align:center;padding:8px 4px 2px;letter-spacing:.02em;}
 @keyframes wko-celebrate-pop{0%{transform:scale(0) translateY(0);opacity:1;}100%{transform:scale(1.5) translateY(-38px);opacity:0;}}
 .wko-celebrate-dot{position:absolute;width:7px;height:7px;border-radius:50%;pointer-events:none;z-index:1;animation:wko-celebrate-pop .65s ease-out forwards;}
@@ -1765,36 +1765,30 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
     // ── SECTION 1: Objetivos de la semana ──
     var sh1=document.createElement('div');sh1.className='wko-rp-sec-hdr';
     var sl1=document.createElement('div');sl1.className='wko-rp-sec';sl1.textContent='Objetivos de la semana';
-    var addGoalBtn=document.createElement('button');addGoalBtn.className='wko-rp-sec-add';addGoalBtn.title='Agregar objetivo';addGoalBtn.textContent='+';
-    sh1.appendChild(sl1);sh1.appendChild(addGoalBtn);sc.appendChild(sh1);
+    sh1.appendChild(sl1);sc.appendChild(sh1);
 
     var goals=(_wkoGoals[_wkoWK()]||[]);
-    if(!goals.length){var eg=document.createElement('div');eg.className='wko-rp-empty';eg.textContent='Sin objetivos esta semana';sc.appendChild(eg);}
-    else goals.forEach(function(g,i){sc.appendChild(_wkoGoalItem(g,i));});
+    goals.forEach(function(g,i){sc.appendChild(_wkoGoalItem(g,i));});
+    if(goals.length&&goals.every(function(g){return g.done;})){
+      var allDoneEl=document.createElement('div');allDoneEl.className='wko-goal-all-done';
+      allDoneEl.textContent='¡Semana cumplida!';sc.appendChild(allDoneEl);
+      setTimeout(function(){_wkoCelebrate(allDoneEl);},80);
+    }
 
-    var goalAddWrap=document.createElement('div');goalAddWrap.style.display='none';
-    var goalAddRow=document.createElement('div');goalAddRow.className='wko-goal-add-wrap';
-    var goalInp=document.createElement('input');goalInp.className='wko-goal-inp';goalInp.placeholder='Nuevo objetivo…';
-    var goalOk=document.createElement('button');goalOk.className='wko-goal-inp-ok';goalOk.textContent='↵';
+    // Always-visible goal add row
+    var goalAddRow=document.createElement('div');goalAddRow.className='wko-goal-add-wrap';goalAddRow.style.marginTop='7px';
+    var goalInp=document.createElement('input');goalInp.className='wko-goal-inp';goalInp.placeholder='Agregar objetivo…';
+    var goalOk=document.createElement('button');goalOk.className='wko-goal-inp-ok';goalOk.textContent='+';
     var doAddGoal=function(){
       var v=goalInp.value.trim();if(!v)return;
       if(!_wkoGoals[_wkoWK()])_wkoGoals[_wkoWK()]=[];
       _wkoGoals[_wkoWK()].push({id:Date.now(),text:v,done:false});
       _wkoSave();_wkoRenderRpanel();
     };
-    goalInp.onkeydown=function(e){if(e.key==='Enter')doAddGoal();if(e.key==='Escape')goalAddWrap.style.display='none';};
+    goalInp.onkeydown=function(e){if(e.key==='Enter')doAddGoal();};
     goalOk.onclick=doAddGoal;
     goalAddRow.appendChild(goalInp);goalAddRow.appendChild(goalOk);
-    goalAddWrap.appendChild(goalAddRow);sc.appendChild(goalAddWrap);
-    addGoalBtn.onclick=function(){
-      goalAddWrap.style.display=goalAddWrap.style.display==='none'?'':'none';
-      if(goalAddWrap.style.display!=='none')setTimeout(function(){goalInp.focus();},30);
-    };
-    if(goals.length&&goals.every(function(g){return g.done;})){
-      var allDoneEl=document.createElement('div');allDoneEl.className='wko-goal-all-done';
-      allDoneEl.textContent='¡Semana cumplida!';sc.appendChild(allDoneEl);
-      setTimeout(function(){_wkoCelebrate(allDoneEl);},80);
-    }
+    sc.appendChild(goalAddRow);
 
     // ── SECTION 2: Vencen esta semana ──
     var sep1=document.createElement('div');sep1.className='wko-rp-sep';sc.appendChild(sep1);
@@ -1862,10 +1856,9 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
       });
     });
     if(!hasRem){var e2=document.createElement('div');e2.className='wko-rp-empty';e2.textContent='Sin recordatorios';sc.appendChild(e2);}
-    // Reminder add form
-    var remAddBtn=document.createElement('button');remAddBtn.className='wko-rem-add-btn';remAddBtn.textContent='+ Agregar recordatorio';
-    var remAddForm=document.createElement('div');remAddForm.className='wko-rem-add-form';remAddForm.style.display='none';
-    var remInp=document.createElement('input');remInp.className='wko-rem-add-inp';remInp.placeholder='Nuevo recordatorio…';
+    // Always-visible reminder add form
+    var remAddForm=document.createElement('div');remAddForm.className='wko-rem-add-form';remAddForm.style.marginTop='8px';
+    var remInp=document.createElement('input');remInp.className='wko-rem-add-inp';remInp.placeholder='Agregar recordatorio…';
     var remDaySel=document.createElement('select');remDaySel.className='wko-rem-day-sel';
     _wkoGetDays().forEach(function(d){
       var opt=document.createElement('option');opt.value=fmt(d);
@@ -1875,24 +1868,19 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
     });
     var remRow=document.createElement('div');remRow.className='wko-rem-add-row';
     var remOk=document.createElement('button');remOk.className='wko-rem-add-ok';remOk.textContent='Guardar';
-    var remCancel=document.createElement('button');remCancel.className='wko-rem-add-cancel';remCancel.textContent='Cancelar';
     var doAddRem=function(){
       var v=remInp.value.trim();if(!v)return;
       var ds=remDaySel.value;
       if(!_pass.reminders)_pass.reminders={};
       if(!_pass.reminders[ds])_pass.reminders[ds]=[];
       _pass.reminders[ds].push({id:Date.now(),text:v,done:false});
-      saveData2();remAddForm.style.display='none';remInp.value='';_wkoRenderRpanel();
+      saveData2();remInp.value='';_wkoRenderRpanel();
     };
-    remInp.onkeydown=function(e){if(e.key==='Enter')doAddRem();if(e.key==='Escape')remAddForm.style.display='none';};
-    remOk.onclick=doAddRem;remCancel.onclick=function(){remAddForm.style.display='none';};
-    remRow.appendChild(remOk);remRow.appendChild(remCancel);
+    remInp.onkeydown=function(e){if(e.key==='Enter')doAddRem();};
+    remOk.onclick=doAddRem;
+    remRow.appendChild(remOk);
     remAddForm.appendChild(remInp);remAddForm.appendChild(remDaySel);remAddForm.appendChild(remRow);
-    remAddBtn.onclick=function(){
-      remAddForm.style.display=remAddForm.style.display==='none'?'':'none';
-      if(remAddForm.style.display!=='none')setTimeout(function(){remInp.focus();},30);
-    };
-    sc.appendChild(remAddBtn);sc.appendChild(remAddForm);
+    sc.appendChild(remAddForm);
 
     // ── SECTION 4: Tareas pendientes ──
     var sep3=document.createElement('div');sep3.className='wko-rp-sep';sc.appendChild(sep3);
