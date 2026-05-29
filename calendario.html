@@ -1396,7 +1396,9 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
   }
   // ── NEW WEEKLY TIME GRID IMPLEMENTATION ───────────────────────
   var HPXW=40,HSW=7,HEW=22;
-  var _wkoW=null,_wkoDB={},_wkoDT={},_wkoGoals={},_wkoTaskOrder={},_wkoGcEvs={},_wkoGcTok=null,_wkoGapiRdy=false;
+  var _wkoW=null,_wkoDB={},_wkoDT={},_wkoGoals={},_wkoTaskOrder={},_wkoGcEvs={},_wkoGcTok=null,_wkoGapiRdy=false,_wkoGsiReady=false,_wkoTokenClient=null;
+  var WKO_GC_CLIENT_ID='106264633340-2golmdmit2b5sddsjirbb1hjlri2r6lu.apps.googleusercontent.com';
+  var WKO_GC_SCOPES='https://www.googleapis.com/auth/calendar.readonly';
   var _wkoBmDs=null,_wkoBmId=null,_wkoBmColor='#1A6FD4';
   var _wkoLastWeekTasks=[];
   function _wkoWK(){return _wkoW?fmt(_wkoW):null;}
@@ -1417,7 +1419,7 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
     _wkoGoals=JSON.parse(JSON.stringify(_pass.weekGoals||{}));
     _wkoTaskOrder=JSON.parse(JSON.stringify(_pass.weekTaskOrder||{}));
     _wkoGcEvs={};
-    _wkoRestoreGcTok();
+    if(_wkoGcTok){if(_wkoW)_wkoGetDays().forEach(function(d){_wkoFetchGc(fmt(d));});}
     document.getElementById('wkoOv').classList.add('open');
     _wkoRender();
   };
@@ -1597,15 +1599,37 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
     gapi.load('client',function(){
       gapi.client.init({}).then(function(){
         return gapi.client.load('https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest');
-      }).then(function(){_wkoGapiRdy=true;_wkoRestoreGcTok();}).catch(function(){});
+      }).then(function(){_wkoGapiRdy=true;_wkoTryInitGc();}).catch(function(){});
     });
   };
-  function _wkoRestoreGcTok(){
-    if(!_wkoGapiRdy)return;
+  window.wkoGcInitGsi=function(){_wkoGsiReady=true;_wkoTryInitGc();};
+  function _wkoTryInitGc(){
+    if(!_wkoGapiRdy||!_wkoGsiReady)return;
+    _wkoTokenClient=google.accounts.oauth2.initTokenClient({
+      client_id:WKO_GC_CLIENT_ID,scope:WKO_GC_SCOPES,
+      callback:function(r){
+        if(r.error){console.warn('WKO GC auth:',r.error);localStorage.removeItem('gc_was_connected');_wkoRenderGcBtn();return;}
+        _wkoGcTok=r.access_token;
+        var tok={access_token:r.access_token,expires_at:Date.now()+(r.expires_in-60)*1000};
+        localStorage.setItem('gc_token',JSON.stringify(tok));
+        localStorage.setItem('gc_was_connected','1');
+        gapi.client.setToken({access_token:r.access_token});
+        _wkoRenderGcBtn();
+        if(_wkoW)_wkoGetDays().forEach(function(d){_wkoFetchGc(fmt(d));});
+      }
+    });
     try{
       var s=JSON.parse(localStorage.getItem('gc_token')||'null');
-      if(s&&s.expires_at>Date.now()){_wkoGcTok=s.access_token;gapi.client.setToken({access_token:_wkoGcTok});_wkoRenderGcBtn();if(_wkoW)_wkoGetDays().forEach(function(d){_wkoFetchGc(fmt(d));});}
-    }catch(e){}
+      if(s&&s.expires_at>Date.now()){_wkoGcTok=s.access_token;gapi.client.setToken({access_token:s.access_token});_wkoRenderGcBtn();if(_wkoW)_wkoGetDays().forEach(function(d){_wkoFetchGc(fmt(d));});}
+      else if(localStorage.getItem('gc_was_connected')){_wkoTokenClient.requestAccessToken({prompt:''});}
+      else{_wkoRenderGcBtn();}
+    }catch(e){_wkoRenderGcBtn();}
+  }
+  function _wkoGcConnect(){if(_wkoTokenClient)_wkoTokenClient.requestAccessToken({prompt:_wkoGcTok?'':'consent'});}
+  function _wkoGcDisconnect(){
+    if(_wkoGcTok)try{google.accounts.oauth2.revoke(_wkoGcTok,function(){});}catch(e){}
+    _wkoGcTok=null;localStorage.removeItem('gc_token');localStorage.removeItem('gc_was_connected');
+    _wkoGcEvs={};_wkoRenderGcBtn();_wkoRenderGrid();
   }
   function _wkoFetchGc(ds){
     if(!_wkoGcTok||!_wkoGapiRdy||_wkoGcEvs[ds]!==undefined)return;
@@ -1627,10 +1651,19 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
   }
   function _wkoRenderGcBtn(){
     var el=document.getElementById('wkoGcBtn');if(!el)return;el.innerHTML='';
-    var tok=localStorage.getItem('gc_token');if(!tok)return;
-    var btn=document.createElement('button');btn.className='wko-gc-btn'+(_wkoGcTok?' on':'');
-    btn.textContent=_wkoGcTok?'● Google Cal':'Google Cal';
-    el.appendChild(btn);
+    if(_wkoGcTok){
+      var btn=document.createElement('button');btn.className='wko-gc-btn on';
+      btn.textContent='● Google Cal';
+      btn.title='Desconectar Google Calendar';
+      btn.onclick=function(){_wkoGcDisconnect();};
+      el.appendChild(btn);
+    } else {
+      var btn=document.createElement('button');btn.className='wko-gc-btn';
+      btn.textContent='Conectar Google Cal';
+      btn.title='Conectar Google Calendar';
+      btn.onclick=function(){_wkoGcConnect();};
+      el.appendChild(btn);
+    }
   }
   function _wpKey(){return _wkoW?fmt(_wkoW):null;}
 
@@ -2093,5 +2126,6 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
 </script>
 <script src="theme.js"></script>
 <script src="https://apis.google.com/js/api.js" onload="wkoGcInitGapi()" async defer></script>
+<script src="https://accounts.google.com/gsi/client" onload="wkoGcInitGsi()" async defer></script>
 </body>
 </html>
