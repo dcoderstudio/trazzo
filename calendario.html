@@ -334,23 +334,30 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
 /* Right panel */
 .wko-body{display:flex;flex:1;overflow:hidden;}
 .wko-left{display:flex;flex-direction:column;flex:1;overflow:hidden;min-width:0;}
-.wko-rpanel{width:255px;flex-shrink:0;border-left:0.5px solid rgba(255,255,255,.07);display:flex;flex-direction:column;overflow:hidden;}
-.wko-rp-scroll{flex:1;overflow-y:auto;padding:12px 12px 20px;}
+.wko-rpanel{width:262px;flex-shrink:0;border-left:0.5px solid rgba(255,255,255,.07);display:flex;flex-direction:column;overflow:hidden;}
+.wko-rp-scroll{flex:1;overflow-y:auto;padding:12px 10px 20px;}
 .wko-rp-scroll::-webkit-scrollbar{width:3px;}
 .wko-rp-scroll::-webkit-scrollbar-thumb{background:rgba(255,255,255,.07);border-radius:2px;}
-.wko-rp-sec{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.22);margin:14px 0 6px;display:flex;align-items:center;gap:5px;}
+.wko-rp-sec{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.22);margin:16px 0 7px;display:flex;align-items:center;gap:5px;}
 .wko-rp-sec:first-child{margin-top:0;}
-.wko-rp-sep{border-top:0.5px solid rgba(255,255,255,.06);margin:14px 0 0;}
-.wko-rp-day{font-size:8px;font-weight:700;color:rgba(255,255,255,.25);margin:7px 0 3px;text-transform:uppercase;letter-spacing:.06em;}
-.wko-rp-card{display:flex;align-items:center;gap:6px;padding:5px 7px;border-radius:8px;margin-bottom:3px;cursor:grab;user-select:none;touch-action:none;border-left:2.5px solid transparent;transition:filter .1s;}
-.wko-rp-card:hover{filter:brightness(1.2);}
-.wko-rp-card.done .wko-rp-card-txt{text-decoration:line-through;opacity:.35;}
-.wko-rp-card.dim{opacity:.45;}
-.wko-rp-card-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
-.wko-rp-card-txt{font-size:10px;font-weight:500;color:rgba(255,255,255,.75);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.wko-rp-empty{font-size:9px;color:rgba(255,255,255,.14);padding:6px 0;}
+.wko-rp-sep{border-top:0.5px solid rgba(255,255,255,.06);margin:16px 0 0;}
+.wko-rp-day{font-size:8px;font-weight:700;color:rgba(255,255,255,.3);margin:9px 0 4px;text-transform:uppercase;letter-spacing:.06em;}
+.wko-rp-empty{font-size:9px;color:rgba(255,255,255,.14);padding:6px 2px;}
+.wko-dc{border-radius:10px;padding:7px 8px 7px 6px;display:flex;align-items:center;gap:7px;position:relative;cursor:grab;margin-bottom:5px;transition:filter .15s,transform .1s,box-shadow .15s;user-select:none;touch-action:none;overflow:hidden;}
+.wko-dc::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.04) 0%,transparent 60%);pointer-events:none;}
+.wko-dc:hover{filter:brightness(1.12);transform:translateX(2px);box-shadow:0 4px 16px rgba(0,0,0,.45);}
+.wko-dc.done-card .wko-dc-text{text-decoration:line-through;opacity:.35;}
+.wko-dc.reorder-hi{outline:1.5px dashed rgba(255,255,255,.4);}
+.wko-dc-handle{display:flex;flex-direction:column;gap:2.5px;flex-shrink:0;padding:1px 0;opacity:.28;}
+.wko-dc-handle span{display:block;width:13px;height:1.5px;border-radius:2px;background:#fff;}
+.wko-dc-num{font-size:20px;font-weight:800;opacity:.14;flex-shrink:0;font-variant-numeric:tabular-nums;line-height:1;min-width:22px;text-align:right;}
+.wko-dc-body{flex:1;min-width:0;}
+.wko-dc-text{font-size:11px;font-weight:700;color:#fff;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.wko-dc-src{font-size:8px;font-weight:600;opacity:.38;margin-top:1px;}
+.wko-dc-check{width:19px;height:19px;border-radius:50%;border:1.5px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;transition:all .15s;}
+.wko-dc-check:hover{border-color:rgba(255,255,255,.5);}
 .wko-slot.drop-hi{background:rgba(91,159,255,.18) !important;outline:1.5px dashed rgba(91,159,255,.5);}
-.wko-rp-ghost{position:fixed;pointer-events:none;z-index:2000;border-radius:8px;padding:4px 9px;font-size:10px;font-weight:600;color:rgba(255,255,255,.9);white-space:nowrap;max-width:170px;overflow:hidden;text-overflow:ellipsis;border-left:2.5px solid;}
+.wko-rp-ghost{position:fixed;pointer-events:none;z-index:2000;border-radius:10px;padding:5px 10px;font-size:10px;font-weight:700;color:rgba(255,255,255,.9);white-space:nowrap;max-width:180px;overflow:hidden;text-overflow:ellipsis;}
 </style>
 </head>
 <body>
@@ -1582,6 +1589,38 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
 
   // ── RIGHT PANEL ───────────────────────────────────────────────
   var DNAMES_S=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+  var WKO_CARD_COLORS=['#1A6FD4','#8B5CF6','#E8A020','#27AE72','#D4537E'];
+  function _wkoHexRgb(h){return parseInt(h.slice(1,3),16)+','+parseInt(h.slice(3,5),16)+','+parseInt(h.slice(5,7),16);}
+
+  function _wkoRpCard(text,done,color,idx,srcLabel,meta){
+    var rgb=_wkoHexRgb(color);
+    var card=document.createElement('div');
+    card.className='wko-dc'+(done?' done-card':'');
+    card.style.background='linear-gradient(135deg,rgba('+rgb+',.28) 0%,rgba('+rgb+',.10) 100%)';
+    card.style.border='0.5px solid rgba('+rgb+',.32)';
+    card.style.borderLeft='3px solid '+color;
+    if(meta){card.dataset.sec=meta.sec;card.dataset.ds=meta.ds||'';card.dataset.idx=String(meta.dataIdx);}
+    // Drag handle
+    var handle=document.createElement('div');handle.className='wko-dc-handle';
+    for(var li=0;li<3;li++){var s=document.createElement('span');handle.appendChild(s);}
+    // Number accent
+    var num=document.createElement('div');num.className='wko-dc-num';
+    num.textContent=String(idx+1).padStart(2,'0');num.style.color=color;
+    // Body
+    var body=document.createElement('div');body.className='wko-dc-body';
+    var txt=document.createElement('div');txt.className='wko-dc-text';txt.textContent=text;
+    body.appendChild(txt);
+    if(srcLabel){var src=document.createElement('div');src.className='wko-dc-src';src.style.color=color;src.textContent=srcLabel;body.appendChild(src);}
+    // Checkmark
+    var chk=document.createElement('div');chk.className='wko-dc-check';
+    chk.style.borderColor=done?'transparent':'rgba('+rgb+',.4)';
+    if(done){chk.style.background=color;chk.innerHTML='<svg width="9" height="9" viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3" stroke="#fff" stroke-width="2.5" fill="none" stroke-linecap="round"/></svg>';}
+    chk.addEventListener('pointerdown',function(e){e.stopPropagation();});
+    card.appendChild(handle);card.appendChild(num);card.appendChild(body);card.appendChild(chk);
+    card.addEventListener('pointerdown',function(e){_wkoRpDragStart(e,text,color,card);},{passive:false});
+    return card;
+  }
+
   function _wkoRenderRpanel(){
     var rp=document.getElementById('wkoRp');if(!rp)return;rp.innerHTML='';
     var sc=document.createElement('div');sc.className='wko-rp-scroll';
@@ -1589,18 +1628,21 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
     var s1=document.createElement('div');s1.className='wko-rp-sec';s1.textContent='Tareas de la semana';sc.appendChild(s1);
     var hasTasks=false;
     _wkoGetDays().forEach(function(d){
-      var ds=fmt(d); var tasks=(_wkoDT[ds]||[]);if(!tasks.length)return; hasTasks=true;
+      var ds=fmt(d);var tasks=(_wkoDT[ds]||[]);if(!tasks.length)return;hasTasks=true;
       var dl=document.createElement('div');dl.className='wko-rp-day';dl.textContent=DNAMES_S[d.getDay()]+' '+d.getDate();sc.appendChild(dl);
-      tasks.forEach(function(t){sc.appendChild(_wkoRpCard(t.text,t.done,'#E8A020',t.text,'#E8A020'));});
+      tasks.forEach(function(t,i){
+        var c=t.color||WKO_CARD_COLORS[i%WKO_CARD_COLORS.length];
+        sc.appendChild(_wkoRpCard(t.text,t.done,c,i,DNAMES_S[d.getDay()],{sec:'tasks',ds:ds,dataIdx:i}));
+      });
     });
     if(!hasTasks){var e1=document.createElement('div');e1.className='wko-rp-empty';e1.textContent='Sin tareas esta semana';sc.appendChild(e1);}
     // ── Recordatorios ──
     var s2=document.createElement('div');s2.className='wko-rp-sec';s2.textContent='Recordatorios';sc.appendChild(s2);
     var hasRem=false;
     _wkoGetDays().forEach(function(d){
-      var ds=fmt(d); var rems=((_pass.reminders||{})[ds]||[]);if(!rems.length)return; hasRem=true;
+      var ds=fmt(d);var rems=((_pass.reminders||{})[ds]||[]);if(!rems.length)return;hasRem=true;
       var dl=document.createElement('div');dl.className='wko-rp-day';dl.textContent=DNAMES_S[d.getDay()]+' '+d.getDate();sc.appendChild(dl);
-      rems.forEach(function(r){sc.appendChild(_wkoRpCard(r.text,r.done,'#27AE72',r.text,'#27AE72'));});
+      rems.forEach(function(r,i){sc.appendChild(_wkoRpCard(r.text,r.done,'#27AE72',i,DNAMES_S[d.getDay()],null));});
     });
     if(!hasRem){var e2=document.createElement('div');e2.className='wko-rp-empty';e2.textContent='Sin recordatorios';sc.appendChild(e2);}
     // ── Tareas pendientes ──
@@ -1609,32 +1651,25 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
     var pending=(standaloneTasks||[]).filter(function(t){return !t.done;});
     if(!pending.length){var e3=document.createElement('div');e3.className='wko-rp-empty';e3.textContent='Sin tareas pendientes';sc.appendChild(e3);}
     else{
-      pending.slice(0,25).forEach(function(t){sc.appendChild(_wkoRpCard(t.text,false,'#8B5CF6',t.text,'#8B5CF6',true));});
+      pending.slice(0,25).forEach(function(t,i){
+        var c=WKO_CARD_COLORS[i%WKO_CARD_COLORS.length];
+        sc.appendChild(_wkoRpCard(t.text,false,c,i,'Tarea',{sec:'standalone',ds:'',dataIdx:i}));
+      });
       if(pending.length>25){var m=document.createElement('div');m.className='wko-rp-empty';m.textContent='+'+(pending.length-25)+' más';sc.appendChild(m);}
     }
     rp.appendChild(sc);
   }
 
-  function _wkoRpCard(text,done,color,dragText,dragColor,dim){
-    var card=document.createElement('div');card.className='wko-rp-card'+(done?' done':'')+(dim?' dim':'');
-    card.style.cssText='background:'+color+'14;border-left-color:'+color+';';
-    var dot=document.createElement('div');dot.className='wko-rp-card-dot';dot.style.background=color;
-    var txt=document.createElement('div');txt.className='wko-rp-card-txt';txt.textContent=text;
-    card.appendChild(dot);card.appendChild(txt);
-    card.addEventListener('pointerdown',function(e){_wkoRpDragStart(e,dragText||text,dragColor||color);},{passive:false});
-    return card;
-  }
-
   // ── DRAG FROM RIGHT PANEL ─────────────────────────────────────
   var _wkoRpDrag=null;
-  function _wkoRpDragStart(e,text,color){
+  function _wkoRpDragStart(e,text,color,srcCard){
     if(e.button&&e.button!==0)return;
     e.preventDefault();
     var ghost=document.createElement('div');ghost.className='wko-rp-ghost';
-    ghost.style.cssText='position:fixed;pointer-events:none;z-index:2000;background:'+color+'28;border-left:2.5px solid '+color+';border-radius:8px;padding:4px 9px;font-size:10px;font-weight:600;color:rgba(255,255,255,.9);white-space:nowrap;max-width:170px;overflow:hidden;text-overflow:ellipsis;';
+    ghost.style.cssText='background:rgba('+_wkoHexRgb(color)+',.25);border:0.5px solid '+color+';border-left:3px solid '+color+';';
     ghost.textContent=text;
     document.body.appendChild(ghost);
-    _wkoRpDrag={text:text,color:color,ghost:ghost,hoverSlot:null};
+    _wkoRpDrag={text:text,color:color,ghost:ghost,hoverSlot:null,hoverDc:null,srcCard:srcCard||null};
     _wkoRpMoveGhost(e);
     document.addEventListener('pointermove',_wkoRpOnMove,{passive:false});
     document.addEventListener('pointerup',_wkoRpOnUp);
@@ -1647,19 +1682,45 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
   function _wkoRpOnMove(e){
     e.preventDefault();
     _wkoRpMoveGhost(e);
-    if(_wkoRpDrag.hoverSlot){_wkoRpDrag.hoverSlot.classList.remove('drop-hi');_wkoRpDrag.hoverSlot=null;}
     var el=document.elementFromPoint(e.clientX,e.clientY);
+    var dc=el&&el.closest('.wko-dc');
     var slot=el&&el.closest('.wko-slot');
-    if(slot){slot.classList.add('drop-hi');_wkoRpDrag.hoverSlot=slot;}
+    if(_wkoRpDrag.hoverDc&&_wkoRpDrag.hoverDc!==dc){_wkoRpDrag.hoverDc.classList.remove('reorder-hi');_wkoRpDrag.hoverDc=null;}
+    if(_wkoRpDrag.hoverSlot&&_wkoRpDrag.hoverSlot!==slot){_wkoRpDrag.hoverSlot.classList.remove('drop-hi');_wkoRpDrag.hoverSlot=null;}
+    if(dc&&dc!==_wkoRpDrag.srcCard){dc.classList.add('reorder-hi');_wkoRpDrag.hoverDc=dc;}
+    else if(slot){slot.classList.add('drop-hi');_wkoRpDrag.hoverSlot=slot;}
   }
   function _wkoRpOnUp(e){
     document.removeEventListener('pointermove',_wkoRpOnMove);
     document.removeEventListener('pointerup',_wkoRpOnUp);
     if(!_wkoRpDrag)return;
     if(_wkoRpDrag.hoverSlot)_wkoRpDrag.hoverSlot.classList.remove('drop-hi');
+    if(_wkoRpDrag.hoverDc)_wkoRpDrag.hoverDc.classList.remove('reorder-hi');
     _wkoRpDrag.ghost.remove();
-    var slot=_wkoRpDrag.hoverSlot;
-    if(slot){
+    var drag=_wkoRpDrag;_wkoRpDrag=null;
+    var slot=drag.hoverSlot;
+    var dc=drag.hoverDc;
+    var srcCard=drag.srcCard;
+    if(dc&&srcCard&&dc.dataset.sec){
+      // Reorder within section
+      var srcSec=srcCard.dataset.sec,tgtSec=dc.dataset.sec;
+      var srcDs=srcCard.dataset.ds,tgtDs=dc.dataset.ds;
+      var srcIdx=parseInt(srcCard.dataset.idx),tgtIdx=parseInt(dc.dataset.idx);
+      if(srcSec===tgtSec&&srcDs===tgtDs&&srcIdx!==tgtIdx){
+        if(srcSec==='tasks'&&srcDs){
+          var arr=(_wkoDT[srcDs]||[]).slice();
+          var item=arr.splice(srcIdx,1)[0];arr.splice(tgtIdx,0,item);
+          _wkoDT[srcDs]=arr;_wkoSave();_wkoRenderRpanel();
+        }else if(srcSec==='standalone'){
+          var pend=(standaloneTasks||[]).filter(function(t){return !t.done;});
+          var done2=(standaloneTasks||[]).filter(function(t){return t.done;});
+          var moved=pend.splice(srcIdx,1)[0];pend.splice(tgtIdx,0,moved);
+          standaloneTasks=pend.concat(done2);_pass.standaloneTasks=standaloneTasks;
+          saveData2();_wkoRenderRpanel();
+        }
+      }
+    }else if(slot){
+      // Drop on time grid
       var dcol=slot.closest('.wko-dcol');
       if(dcol){
         var hgrid=slot.parentElement;
@@ -1673,13 +1734,12 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
         if(dayIdx>=0&&dayIdx<days.length){
           var ds=fmt(days[dayIdx]);
           if(!_wkoDB[ds])_wkoDB[ds]=[];
-          _wkoDB[ds].push({id:Date.now(),title:_wkoRpDrag.text,start:_wkoFT(hour,0),end:_wkoFT(Math.min(hour+1,HEW),0),color:_wkoRpDrag.color||'#1A6FD4',sub:''});
+          _wkoDB[ds].push({id:Date.now(),title:drag.text,start:_wkoFT(hour,0),end:_wkoFT(Math.min(hour+1,HEW),0),color:drag.color||'#1A6FD4',sub:''});
           _wkoDB[ds].sort(function(a,b){return(a.start||'')<(b.start||'')?-1:1;});
           _wkoSave();_wkoRenderGrid();
         }
       }
     }
-    _wkoRpDrag=null;
   }
 
   // ── INIT ──────────────────────────────────────────────────────
@@ -1698,7 +1758,7 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
       // typed times to be lost before Apply is clicked.
       if(d.weekPlans && !_wkoW) weekPlans=d.weekPlans;
       if(d.dailyBlocks && _wkoW){_wkoDB=JSON.parse(JSON.stringify(d.dailyBlocks));_wkoRenderGrid && _wkoRenderGrid();}
-      if(d.dayTasks && _wkoW) _wkoDT=JSON.parse(JSON.stringify(d.dayTasks||{}));
+      if(d.dayTasks && _wkoW){_wkoDT=JSON.parse(JSON.stringify(d.dayTasks||{}));_wkoRenderRpanel && _wkoRenderRpanel();}
     }
     render();
     if(selectedDate&&curView!=='day') renderDayEvents(selectedDate);
