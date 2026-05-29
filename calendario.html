@@ -343,11 +343,40 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
 .wko-rp-sep{border-top:0.5px solid rgba(255,255,255,.06);margin:16px 0 0;}
 .wko-rp-day{font-size:8px;font-weight:700;color:rgba(255,255,255,.3);margin:9px 0 4px;text-transform:uppercase;letter-spacing:.06em;}
 .wko-rp-empty{font-size:9px;color:rgba(255,255,255,.14);padding:6px 2px;}
+.wko-rp-sec-hdr{display:flex;align-items:center;margin:16px 0 7px;}
+.wko-rp-sec-hdr:first-child{margin-top:0;}
+.wko-rp-sec-hdr .wko-rp-sec{margin:0;flex:1;}
+.wko-rp-sec-add{background:none;border:none;color:rgba(255,255,255,.2);font-size:16px;cursor:pointer;padding:0 2px;line-height:1;transition:color .15s;font-family:Inter,sans-serif;}
+.wko-rp-sec-add:hover{color:rgba(255,255,255,.6);}
+/* Goal checklist */
+.wko-goal-item{display:flex;align-items:center;gap:8px;padding:5px 3px;border-radius:7px;transition:background .1s;}
+.wko-goal-item:hover{background:rgba(255,255,255,.04);}
+.wko-goal-item.done .wko-goal-text{text-decoration:line-through;opacity:.28;}
+.wko-goal-chk{width:18px;height:18px;border-radius:50%;border:1.5px solid rgba(255,255,255,.2);flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;}
+.wko-goal-chk:hover{border-color:rgba(255,255,255,.5);}
+.wko-goal-chk.checked{background:#27AE72;border-color:#27AE72;}
+.wko-goal-text{font-size:11px;font-weight:500;color:rgba(255,255,255,.8);flex:1;line-height:1.35;word-break:break-word;}
+.wko-goal-del{background:none;border:none;color:rgba(255,255,255,.1);font-size:13px;cursor:pointer;padding:0 2px;line-height:1;flex-shrink:0;transition:color .15s;}
+.wko-goal-del:hover{color:rgba(226,75,74,.7);}
+.wko-goal-add-wrap{display:flex;gap:5px;margin-top:5px;}
+.wko-goal-inp{flex:1;background:rgba(255,255,255,.05);border:0.5px solid rgba(255,255,255,.1);border-radius:8px;padding:5px 8px;font-size:11px;color:#fff;font-family:Inter,sans-serif;outline:none;}
+.wko-goal-inp:focus{border-color:rgba(255,255,255,.25);}
+.wko-goal-inp::placeholder{color:rgba(255,255,255,.18);}
+.wko-goal-inp-ok{background:rgba(255,255,255,.08);border:none;color:#fff;font-size:14px;border-radius:8px;width:30px;flex-shrink:0;cursor:pointer;line-height:30px;font-family:Inter,sans-serif;}
+.wko-goal-inp-ok:hover{background:rgba(255,255,255,.16);}
+.wko-goal-all-done{font-size:10px;font-weight:700;color:#27AE72;text-align:center;padding:8px 4px 2px;letter-spacing:.02em;}
+@keyframes wko-celebrate-pop{0%{transform:scale(0) translateY(0);opacity:1;}100%{transform:scale(1.5) translateY(-38px);opacity:0;}}
+.wko-celebrate-dot{position:absolute;width:7px;height:7px;border-radius:50%;pointer-events:none;z-index:1;animation:wko-celebrate-pop .65s ease-out forwards;}
+/* Deadline task cards */
 .wko-dc{border-radius:10px;padding:7px 8px 7px 6px;display:flex;align-items:center;gap:7px;position:relative;cursor:grab;margin-bottom:5px;transition:filter .15s,transform .1s,box-shadow .15s;user-select:none;touch-action:none;overflow:hidden;}
 .wko-dc::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.04) 0%,transparent 60%);pointer-events:none;}
 .wko-dc:hover{filter:brightness(1.12);transform:translateX(2px);box-shadow:0 4px 16px rgba(0,0,0,.45);}
 .wko-dc.done-card .wko-dc-text{text-decoration:line-through;opacity:.35;}
 .wko-dc.reorder-hi{outline:1.5px dashed rgba(255,255,255,.4);}
+.wko-dc.neutral{background:rgba(255,255,255,.04) !important;border:0.5px solid rgba(255,255,255,.07) !important;border-left:3px solid rgba(255,255,255,.12) !important;}
+.wko-dc.neutral .wko-dc-text{opacity:.5;}
+.wko-dc.neutral .wko-dc-num{color:rgba(255,255,255,.18) !important;opacity:1;}
+.wko-dc.neutral .wko-dc-src{opacity:.22;}
 .wko-dc-handle{display:flex;flex-direction:column;gap:2.5px;flex-shrink:0;padding:1px 0;opacity:.28;}
 .wko-dc-handle span{display:block;width:13px;height:1.5px;border-radius:2px;background:#fff;}
 .wko-dc-num{font-size:20px;font-weight:800;opacity:.14;flex-shrink:0;font-variant-numeric:tabular-nums;line-height:1;min-width:22px;text-align:right;}
@@ -356,6 +385,19 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
 .wko-dc-src{font-size:8px;font-weight:600;opacity:.38;margin-top:1px;}
 .wko-dc-check{width:19px;height:19px;border-radius:50%;border:1.5px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;transition:all .15s;}
 .wko-dc-check:hover{border-color:rgba(255,255,255,.5);}
+/* Reminder add */
+.wko-rem-add-btn{display:flex;align-items:center;gap:5px;font-size:9px;color:rgba(255,255,255,.2);cursor:pointer;padding:5px 2px;transition:color .15s;border:none;background:none;font-family:Inter,sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.06em;width:100%;}
+.wko-rem-add-btn:hover{color:rgba(255,255,255,.5);}
+.wko-rem-add-form{margin-top:5px;display:flex;flex-direction:column;gap:5px;}
+.wko-rem-add-inp{background:rgba(255,255,255,.05);border:0.5px solid rgba(255,255,255,.1);border-radius:8px;padding:5px 8px;font-size:11px;color:#fff;font-family:Inter,sans-serif;outline:none;width:100%;}
+.wko-rem-add-inp:focus{border-color:rgba(255,255,255,.25);}
+.wko-rem-add-inp::placeholder{color:rgba(255,255,255,.18);}
+.wko-rem-day-sel{background:rgba(255,255,255,.05);border:0.5px solid rgba(255,255,255,.1);border-radius:8px;padding:4px 7px;font-size:10px;color:rgba(255,255,255,.7);font-family:Inter,sans-serif;outline:none;width:100%;}
+.wko-rem-day-sel option{background:#141420;color:#fff;}
+.wko-rem-add-row{display:flex;gap:5px;}
+.wko-rem-add-ok{flex:1;background:rgba(39,174,114,.14);border:0.5px solid rgba(39,174,114,.3);color:#27AE72;font-size:11px;font-weight:600;border-radius:8px;padding:5px;cursor:pointer;font-family:Inter,sans-serif;}
+.wko-rem-add-ok:hover{background:rgba(39,174,114,.26);}
+.wko-rem-add-cancel{background:rgba(255,255,255,.05);border:0.5px solid rgba(255,255,255,.08);color:rgba(255,255,255,.35);font-size:11px;border-radius:8px;padding:5px 8px;cursor:pointer;font-family:Inter,sans-serif;}
 .wko-slot.drop-hi{background:rgba(91,159,255,.18) !important;outline:1.5px dashed rgba(91,159,255,.5);}
 .wko-rp-ghost{position:fixed;pointer-events:none;z-index:2000;border-radius:10px;padding:5px 10px;font-size:10px;font-weight:700;color:rgba(255,255,255,.9);white-space:nowrap;max-width:180px;overflow:hidden;text-overflow:ellipsis;}
 </style>
@@ -1353,22 +1395,24 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
   }
   // ── NEW WEEKLY TIME GRID IMPLEMENTATION ───────────────────────
   var HPXW=40,HSW=7,HEW=22;
-  var _wkoW=null,_wkoDB={},_wkoDT={},_wkoGcEvs={},_wkoGcTok=null,_wkoGapiRdy=false;
+  var _wkoW=null,_wkoDB={},_wkoDT={},_wkoGoals={},_wkoGcEvs={},_wkoGcTok=null,_wkoGapiRdy=false;
   var _wkoBmDs=null,_wkoBmId=null,_wkoBmColor='#1A6FD4';
+  function _wkoWK(){return _wkoW?fmt(_wkoW):null;}
   var WKO_COLS=[{c:'#1A6FD4',l:'Trabajo'},{c:'#27AE72',l:'Foco'},{c:'#8B5CF6',l:'Reunión'},{c:'#E8A020',l:'Urgente'},{c:'#D4537E',l:'Personal'},{c:'#2CC5D2',l:'Otro'}];
 
   function _wkoGetDays(){var a=[];for(var i=0;i<7;i++){var d=new Date(_wkoW);d.setDate(d.getDate()+i);a.push(d);}return a;}
   function _wkoPT(t){var p=(t||'00:00').split(':');return{h:parseInt(p[0]),m:parseInt(p[1]||0)};}
   function _wkoFT(h,m){return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0');}
   function _wkoSave(){
-    var p=Object.assign({},_pass,{dailyBlocks:_wkoDB,dayTasks:_wkoDT});
-    DOC.set(p).then(function(){_pass=Object.assign({},_pass,{dailyBlocks:_wkoDB,dayTasks:_wkoDT});}).catch(function(e){console.warn(e);});
+    var p=Object.assign({},_pass,{dailyBlocks:_wkoDB,dayTasks:_wkoDT,weekGoals:_wkoGoals});
+    DOC.set(p).then(function(){_pass=Object.assign({},_pass,{dailyBlocks:_wkoDB,dayTasks:_wkoDT,weekGoals:_wkoGoals});}).catch(function(e){console.warn(e);});
   }
 
   window.openWeekPlanner=function(){
     _wkoW=_getMondayOf(selectedDate?parse(selectedDate):today);
     _wkoDB=JSON.parse(JSON.stringify(_pass.dailyBlocks||{}));
     _wkoDT=JSON.parse(JSON.stringify(_pass.dayTasks||{}));
+    _wkoGoals=JSON.parse(JSON.stringify(_pass.weekGoals||{}));
     _wkoGcEvs={};
     _wkoRestoreGcTok();
     document.getElementById('wkoOv').classList.add('open');
@@ -1589,10 +1633,13 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
 
   // ── RIGHT PANEL ───────────────────────────────────────────────
   var DNAMES_S=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+  var MNAMES_S=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
   var WKO_CARD_COLORS=['#1A6FD4','#8B5CF6','#E8A020','#27AE72','#D4537E'];
   function _wkoHexRgb(h){return parseInt(h.slice(1,3),16)+','+parseInt(h.slice(3,5),16)+','+parseInt(h.slice(5,7),16);}
+  function _wkoFmtDl(ds){var d=new Date(ds+'T12:00:00');return DNAMES_S[d.getDay()]+' '+d.getDate()+' '+MNAMES_S[d.getMonth()];}
 
-  function _wkoRpCard(text,done,color,idx,srcLabel,meta){
+  // Colored DH-style card. onCheck: optional fn called when checkmark clicked.
+  function _wkoRpCard(text,done,color,idx,srcLabel,meta,onCheck){
     var rgb=_wkoHexRgb(color);
     var card=document.createElement('div');
     card.className='wko-dc'+(done?' done-card':'');
@@ -1600,82 +1647,215 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
     card.style.border='0.5px solid rgba('+rgb+',.32)';
     card.style.borderLeft='3px solid '+color;
     if(meta){card.dataset.sec=meta.sec;card.dataset.ds=meta.ds||'';card.dataset.idx=String(meta.dataIdx);}
-    // Drag handle
     var handle=document.createElement('div');handle.className='wko-dc-handle';
     for(var li=0;li<3;li++){var s=document.createElement('span');handle.appendChild(s);}
-    // Number accent
     var num=document.createElement('div');num.className='wko-dc-num';
     num.textContent=String(idx+1).padStart(2,'0');num.style.color=color;
-    // Body
     var body=document.createElement('div');body.className='wko-dc-body';
     var txt=document.createElement('div');txt.className='wko-dc-text';txt.textContent=text;
     body.appendChild(txt);
     if(srcLabel){var src=document.createElement('div');src.className='wko-dc-src';src.style.color=color;src.textContent=srcLabel;body.appendChild(src);}
-    // Checkmark
     var chk=document.createElement('div');chk.className='wko-dc-check';
     chk.style.borderColor=done?'transparent':'rgba('+rgb+',.4)';
     if(done){chk.style.background=color;chk.innerHTML='<svg width="9" height="9" viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3" stroke="#fff" stroke-width="2.5" fill="none" stroke-linecap="round"/></svg>';}
     chk.addEventListener('pointerdown',function(e){e.stopPropagation();});
+    if(onCheck)chk.onclick=function(e){e.stopPropagation();onCheck();};
     card.appendChild(handle);card.appendChild(num);card.appendChild(body);card.appendChild(chk);
     card.addEventListener('pointerdown',function(e){_wkoRpDragStart(e,text,color,card);},{passive:false});
     return card;
   }
 
-  var MNAMES_S=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
-  function _wkoFmtDl(ds){var d=new Date(ds+'T12:00:00');return DNAMES_S[d.getDay()]+' '+d.getDate()+' '+MNAMES_S[d.getMonth()];}
+  // Muted neutral card (tareas pendientes — same color, no gradient)
+  function _wkoRpCardNeutral(text,idx,meta){
+    var card=document.createElement('div');card.className='wko-dc neutral';
+    if(meta){card.dataset.sec=meta.sec;card.dataset.ds=meta.ds||'';card.dataset.idx=String(meta.dataIdx);}
+    var handle=document.createElement('div');handle.className='wko-dc-handle';
+    for(var li=0;li<3;li++){var s=document.createElement('span');handle.appendChild(s);}
+    var num=document.createElement('div');num.className='wko-dc-num';num.textContent=String(idx+1).padStart(2,'0');
+    var body=document.createElement('div');body.className='wko-dc-body';
+    var txt=document.createElement('div');txt.className='wko-dc-text';txt.textContent=text;
+    body.appendChild(txt);
+    var chk=document.createElement('div');chk.className='wko-dc-check';
+    chk.addEventListener('pointerdown',function(e){e.stopPropagation();});
+    card.appendChild(handle);card.appendChild(num);card.appendChild(body);card.appendChild(chk);
+    card.addEventListener('pointerdown',function(e){_wkoRpDragStart(e,text,'#888',card);},{passive:false});
+    return card;
+  }
+
+  // Goal checklist item
+  function _wkoGoalItem(g,i){
+    var item=document.createElement('div');item.className='wko-goal-item'+(g.done?' done':'');
+    var chk=document.createElement('div');chk.className='wko-goal-chk'+(g.done?' checked':'');
+    if(g.done)chk.innerHTML='<svg width="9" height="9" viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3" stroke="#fff" stroke-width="2.5" fill="none" stroke-linecap="round"/></svg>';
+    chk.onclick=(function(ii){return function(){
+      var arr=(_wkoGoals[_wkoWK()]||[]);if(!arr[ii])return;
+      arr[ii]=Object.assign({},arr[ii],{done:!arr[ii].done});
+      _wkoSave();_wkoRenderRpanel();
+    };})(i);
+    var txt=document.createElement('div');txt.className='wko-goal-text';txt.textContent=g.text;
+    var del=document.createElement('button');del.className='wko-goal-del';del.textContent='×';
+    del.onclick=(function(ii){return function(){
+      var arr=(_wkoGoals[_wkoWK()]||[]).slice();arr.splice(ii,1);
+      _wkoGoals[_wkoWK()]=arr;_wkoSave();_wkoRenderRpanel();
+    };})(i);
+    item.appendChild(chk);item.appendChild(txt);item.appendChild(del);
+    return item;
+  }
+
+  // Confetti burst on all-done
+  function _wkoCelebrate(anchor){
+    if(!anchor||!anchor.parentElement)return;
+    var parent=anchor.parentElement;parent.style.position='relative';parent.style.overflow='hidden';
+    var cols=['#27AE72','#1A6FD4','#E8A020','#8B5CF6','#D4537E'];
+    for(var i=0;i<18;i++){(function(ci){
+      setTimeout(function(){
+        var dot=document.createElement('div');dot.className='wko-celebrate-dot';
+        dot.style.cssText='left:'+(8+Math.random()*84)+'%;top:4px;background:'+cols[ci%cols.length]+';';
+        parent.appendChild(dot);setTimeout(function(){dot.remove();},900);
+      },ci*30);
+    })(i);}
+  }
 
   function _wkoRenderRpanel(){
     var rp=document.getElementById('wkoRp');if(!rp)return;rp.innerHTML='';
     var sc=document.createElement('div');sc.className='wko-rp-scroll';
-    // ── Tareas de la semana (tasks with deadline this week) ──
-    var s1=document.createElement('div');s1.className='wko-rp-sec';s1.textContent='Vencen esta semana';sc.appendChild(s1);
+
+    // ── SECTION 1: Objetivos de la semana ──
+    var sh1=document.createElement('div');sh1.className='wko-rp-sec-hdr';
+    var sl1=document.createElement('div');sl1.className='wko-rp-sec';sl1.textContent='Objetivos de la semana';
+    var addGoalBtn=document.createElement('button');addGoalBtn.className='wko-rp-sec-add';addGoalBtn.title='Agregar objetivo';addGoalBtn.textContent='+';
+    sh1.appendChild(sl1);sh1.appendChild(addGoalBtn);sc.appendChild(sh1);
+
+    var goals=(_wkoGoals[_wkoWK()]||[]);
+    if(!goals.length){var eg=document.createElement('div');eg.className='wko-rp-empty';eg.textContent='Sin objetivos esta semana';sc.appendChild(eg);}
+    else goals.forEach(function(g,i){sc.appendChild(_wkoGoalItem(g,i));});
+
+    var goalAddWrap=document.createElement('div');goalAddWrap.style.display='none';
+    var goalAddRow=document.createElement('div');goalAddRow.className='wko-goal-add-wrap';
+    var goalInp=document.createElement('input');goalInp.className='wko-goal-inp';goalInp.placeholder='Nuevo objetivo…';
+    var goalOk=document.createElement('button');goalOk.className='wko-goal-inp-ok';goalOk.textContent='↵';
+    var doAddGoal=function(){
+      var v=goalInp.value.trim();if(!v)return;
+      if(!_wkoGoals[_wkoWK()])_wkoGoals[_wkoWK()]=[];
+      _wkoGoals[_wkoWK()].push({id:Date.now(),text:v,done:false});
+      _wkoSave();_wkoRenderRpanel();
+    };
+    goalInp.onkeydown=function(e){if(e.key==='Enter')doAddGoal();if(e.key==='Escape')goalAddWrap.style.display='none';};
+    goalOk.onclick=doAddGoal;
+    goalAddRow.appendChild(goalInp);goalAddRow.appendChild(goalOk);
+    goalAddWrap.appendChild(goalAddRow);sc.appendChild(goalAddWrap);
+    addGoalBtn.onclick=function(){
+      goalAddWrap.style.display=goalAddWrap.style.display==='none'?'':'none';
+      if(goalAddWrap.style.display!=='none')setTimeout(function(){goalInp.focus();},30);
+    };
+    if(goals.length&&goals.every(function(g){return g.done;})){
+      var allDoneEl=document.createElement('div');allDoneEl.className='wko-goal-all-done';
+      allDoneEl.textContent='¡Semana cumplida!';sc.appendChild(allDoneEl);
+      setTimeout(function(){_wkoCelebrate(allDoneEl);},80);
+    }
+
+    // ── SECTION 2: Vencen esta semana ──
+    var sep1=document.createElement('div');sep1.className='wko-rp-sep';sc.appendChild(sep1);
+    var sh2=document.createElement('div');sh2.className='wko-rp-sec-hdr';sh2.style.marginTop='10px';
+    var sl2=document.createElement('div');sl2.className='wko-rp-sec';sl2.textContent='Vencen esta semana';
+    sh2.appendChild(sl2);sc.appendChild(sh2);
     var days=_wkoGetDays();
     var wkS=fmt(days[0]),wkE=fmt(days[days.length-1]);
     var weekTasks=[];
     (standaloneTasks||[]).forEach(function(t){
-      if(!t.deadline||t.done)return;
-      if(t.deadline>=wkS&&t.deadline<=wkE) weekTasks.push({text:t.text,deadline:t.deadline,color:'#E8A020',sub:'Tarea libre',done:t.done});
+      if(!t.deadline)return;
+      if(t.deadline>=wkS&&t.deadline<=wkE)weekTasks.push({
+        text:t.text,deadline:t.deadline,color:'#E8A020',sub:'Tarea libre',done:t.done,
+        onCheck:(function(id){return function(){
+          for(var i=0;i<standaloneTasks.length;i++){if(standaloneTasks[i].id===id){standaloneTasks[i].done=!standaloneTasks[i].done;_pass.standaloneTasks=standaloneTasks;saveData2();_wkoRenderRpanel();return;}}
+        };})(t.id)
+      });
     });
     (projects||[]).forEach(function(p){
       if(!p.stageTasks||p.catId==='cotizaciones')return;
       var cat=getCat(p.catId);var c=cat?cat.color:'#8B5CF6';
       var stage=p.stage;
       (p.stageTasks[stage]||[]).forEach(function(t){
-        if(!t.deadline||t.done)return;
-        if(t.deadline>=wkS&&t.deadline<=wkE) weekTasks.push({text:t.text,deadline:t.deadline,color:c,sub:p.name,done:t.done});
+        if(!t.deadline)return;
+        if(t.deadline>=wkS&&t.deadline<=wkE)weekTasks.push({
+          text:t.text,deadline:t.deadline,color:c,sub:p.name,done:t.done,
+          onCheck:(function(pid,st,tid){return function(){
+            for(var i=0;i<projects.length;i++){if(projects[i].id===pid){var arr=projects[i].stageTasks[st]||[];for(var j=0;j<arr.length;j++){if(arr[j].id===tid){arr[j].done=!arr[j].done;saveData2();_wkoRenderRpanel();return;}}}}
+          };})(p.id,stage,t.id)
+        });
       });
     });
     weekTasks.sort(function(a,b){return a.deadline<b.deadline?-1:1;});
-    if(!weekTasks.length){var e1=document.createElement('div');e1.className='wko-rp-empty';e1.textContent='Sin tareas con fecha límite esta semana';sc.appendChild(e1);}
+    if(!weekTasks.length){var e1=document.createElement('div');e1.className='wko-rp-empty';e1.textContent='Sin vencimientos esta semana';sc.appendChild(e1);}
     else{
       var lastDay='';
       weekTasks.forEach(function(t,i){
-        if(t.deadline!==lastDay){
-          lastDay=t.deadline;
-          var dl=document.createElement('div');dl.className='wko-rp-day';dl.textContent=_wkoFmtDl(t.deadline).toUpperCase();sc.appendChild(dl);
-        }
-        var dlLabel='Vence: '+_wkoFmtDl(t.deadline);
-        sc.appendChild(_wkoRpCard(t.text,t.done,t.color,i,t.sub+' · '+dlLabel,null));
+        if(t.deadline!==lastDay){lastDay=t.deadline;var dl=document.createElement('div');dl.className='wko-rp-day';dl.textContent=_wkoFmtDl(t.deadline).toUpperCase();sc.appendChild(dl);}
+        sc.appendChild(_wkoRpCard(t.text,t.done,t.color,i,t.sub,null,t.onCheck));
       });
     }
-    // ── Recordatorios ──
-    var s2=document.createElement('div');s2.className='wko-rp-sec';s2.textContent='Recordatorios';sc.appendChild(s2);
+
+    // ── SECTION 3: Recordatorios ──
+    var sep2=document.createElement('div');sep2.className='wko-rp-sep';sc.appendChild(sep2);
+    var sh3=document.createElement('div');sh3.className='wko-rp-sec-hdr';sh3.style.marginTop='10px';
+    var sl3=document.createElement('div');sl3.className='wko-rp-sec';sl3.textContent='Recordatorios';
+    sh3.appendChild(sl3);sc.appendChild(sh3);
     var hasRem=false;
     _wkoGetDays().forEach(function(d){
       var ds=fmt(d);var rems=((_pass.reminders||{})[ds]||[]);if(!rems.length)return;hasRem=true;
       var dl=document.createElement('div');dl.className='wko-rp-day';dl.textContent=DNAMES_S[d.getDay()]+' '+d.getDate();sc.appendChild(dl);
-      rems.forEach(function(r,i){sc.appendChild(_wkoRpCard(r.text,r.done,'#27AE72',i,DNAMES_S[d.getDay()],null));});
+      rems.forEach(function(r,i){
+        sc.appendChild(_wkoRpCard(r.text,r.done,'#27AE72',i,DNAMES_S[d.getDay()],null,
+          (function(rds,rid){return function(){
+            var arr=((_pass.reminders||{})[rds]||[]);
+            for(var j=0;j<arr.length;j++){if(arr[j].id===rid){arr[j].done=!arr[j].done;saveData2();_wkoRenderRpanel();return;}}
+          };})(ds,r.id)
+        ));
+      });
     });
     if(!hasRem){var e2=document.createElement('div');e2.className='wko-rp-empty';e2.textContent='Sin recordatorios';sc.appendChild(e2);}
-    // ── Tareas pendientes ──
-    var sep=document.createElement('div');sep.className='wko-rp-sep';sc.appendChild(sep);
-    var s3=document.createElement('div');s3.className='wko-rp-sec';s3.style.marginTop='10px';s3.textContent='Tareas pendientes';sc.appendChild(s3);
+    // Reminder add form
+    var remAddBtn=document.createElement('button');remAddBtn.className='wko-rem-add-btn';remAddBtn.textContent='+ Agregar recordatorio';
+    var remAddForm=document.createElement('div');remAddForm.className='wko-rem-add-form';remAddForm.style.display='none';
+    var remInp=document.createElement('input');remInp.className='wko-rem-add-inp';remInp.placeholder='Nuevo recordatorio…';
+    var remDaySel=document.createElement('select');remDaySel.className='wko-rem-day-sel';
+    _wkoGetDays().forEach(function(d){
+      var opt=document.createElement('option');opt.value=fmt(d);
+      opt.textContent=DNAMES_S[d.getDay()]+' '+d.getDate()+' '+MNAMES_S[d.getMonth()];
+      if(fmt(d)===fmt(today))opt.selected=true;
+      remDaySel.appendChild(opt);
+    });
+    var remRow=document.createElement('div');remRow.className='wko-rem-add-row';
+    var remOk=document.createElement('button');remOk.className='wko-rem-add-ok';remOk.textContent='Guardar';
+    var remCancel=document.createElement('button');remCancel.className='wko-rem-add-cancel';remCancel.textContent='Cancelar';
+    var doAddRem=function(){
+      var v=remInp.value.trim();if(!v)return;
+      var ds=remDaySel.value;
+      if(!_pass.reminders)_pass.reminders={};
+      if(!_pass.reminders[ds])_pass.reminders[ds]=[];
+      _pass.reminders[ds].push({id:Date.now(),text:v,done:false});
+      saveData2();remAddForm.style.display='none';remInp.value='';_wkoRenderRpanel();
+    };
+    remInp.onkeydown=function(e){if(e.key==='Enter')doAddRem();if(e.key==='Escape')remAddForm.style.display='none';};
+    remOk.onclick=doAddRem;remCancel.onclick=function(){remAddForm.style.display='none';};
+    remRow.appendChild(remOk);remRow.appendChild(remCancel);
+    remAddForm.appendChild(remInp);remAddForm.appendChild(remDaySel);remAddForm.appendChild(remRow);
+    remAddBtn.onclick=function(){
+      remAddForm.style.display=remAddForm.style.display==='none'?'':'none';
+      if(remAddForm.style.display!=='none')setTimeout(function(){remInp.focus();},30);
+    };
+    sc.appendChild(remAddBtn);sc.appendChild(remAddForm);
+
+    // ── SECTION 4: Tareas pendientes ──
+    var sep3=document.createElement('div');sep3.className='wko-rp-sep';sc.appendChild(sep3);
+    var sh4=document.createElement('div');sh4.className='wko-rp-sec-hdr';sh4.style.marginTop='10px';
+    var sl4=document.createElement('div');sl4.className='wko-rp-sec';sl4.textContent='Tareas pendientes';
+    sh4.appendChild(sl4);sc.appendChild(sh4);
     var pending=(standaloneTasks||[]).filter(function(t){return !t.done;});
     if(!pending.length){var e3=document.createElement('div');e3.className='wko-rp-empty';e3.textContent='Sin tareas pendientes';sc.appendChild(e3);}
     else{
       pending.slice(0,25).forEach(function(t,i){
-        var c=WKO_CARD_COLORS[i%WKO_CARD_COLORS.length];
-        sc.appendChild(_wkoRpCard(t.text,false,c,i,'Tarea',{sec:'standalone',ds:'',dataIdx:i}));
+        sc.appendChild(_wkoRpCardNeutral(t.text,i,{sec:'standalone',ds:'',dataIdx:i}));
       });
       if(pending.length>25){var m=document.createElement('div');m.className='wko-rp-empty';m.textContent='+'+(pending.length-25)+' más';sc.appendChild(m);}
     }
@@ -1780,7 +1960,9 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
       // typed times to be lost before Apply is clicked.
       if(d.weekPlans && !_wkoW) weekPlans=d.weekPlans;
       if(d.dailyBlocks && _wkoW){_wkoDB=JSON.parse(JSON.stringify(d.dailyBlocks));_wkoRenderGrid && _wkoRenderGrid();}
-      if(d.dayTasks && _wkoW){_wkoDT=JSON.parse(JSON.stringify(d.dayTasks||{}));_wkoRenderRpanel && _wkoRenderRpanel();}
+      if(d.dayTasks && _wkoW){_wkoDT=JSON.parse(JSON.stringify(d.dayTasks||{}));}
+      if(d.weekGoals){_wkoGoals=JSON.parse(JSON.stringify(d.weekGoals));}
+      if(_wkoW){_wkoRenderRpanel && _wkoRenderRpanel();}
     }
     render();
     if(selectedDate&&curView!=='day') renderDayEvents(selectedDate);
