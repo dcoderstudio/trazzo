@@ -51,6 +51,14 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 .dh-time-sub{font-size:9px;color:rgba(90,180,232,0.4);margin-top:2px;}
 .dh-add-block-btn{background:rgba(26,111,212,0.18);border:1px solid rgba(26,111,212,0.35);color:#5AB4E8;font-size:11px;font-weight:600;padding:4px 10px;border-radius:8px;cursor:pointer;font-family:Inter,sans-serif;transition:all .15s;display:flex;align-items:center;gap:4px;}
 .dh-add-block-btn:hover{background:rgba(26,111,212,0.32);color:#fff;}
+/* Google Calendar */
+.dh-gc-block{position:absolute;border-radius:7px;padding:3px 8px 3px 9px;overflow:hidden;border-left:3px solid #4285F4;background:rgba(66,133,244,0.11);z-index:3;cursor:default;left:49px;right:6px;}
+.dh-gc-block-time{font-size:8px;font-weight:700;color:#4285F4;opacity:.85;margin-bottom:1px;}
+.dh-gc-block-title{font-size:10px;font-weight:600;color:rgba(255,255,255,.72);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.dh-gc-badge{float:right;font-size:7px;font-weight:800;color:#4285F4;opacity:.65;margin-left:4px;margin-top:1px;}
+.dh-gc-btn{display:flex;align-items:center;gap:5px;background:none;border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.32);font-size:10px;font-weight:600;padding:4px 9px;border-radius:8px;cursor:pointer;font-family:Inter,sans-serif;transition:all .15s;flex-shrink:0;}
+.dh-gc-btn:hover{border-color:rgba(66,133,244,0.5);color:rgba(66,133,244,0.9);background:rgba(66,133,244,0.08);}
+.dh-gc-btn.gc-on{border-color:rgba(66,133,244,0.35);color:rgba(66,133,244,0.85);background:rgba(66,133,244,0.1);}
 /* TIME OUTER */
 .dh-time-outer{flex:1;overflow-y:auto;min-height:0;background:#0b0e18;}
 .dh-time-outer::-webkit-scrollbar{width:4px;}
@@ -239,10 +247,13 @@ input[type=time].mi{color-scheme:dark;cursor:pointer;}
             <div class="dh-time-title">⏱ Planeación del día</div>
             <div class="dh-time-sub">Click en hora para agregar · Arrastra tareas desde la derecha</div>
           </div>
-          <button class="dh-add-block-btn" onclick="openBlockModal(null,null,null)">
-            <svg width="9" height="9" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="6" y1="1" x2="6" y2="11"/><line x1="1" y1="6" x2="11" y2="6"/></svg>
-            Bloque
-          </button>
+          <div style="display:flex;align-items:center;gap:7px;">
+            <div id="dhGcBtn"></div>
+            <button class="dh-add-block-btn" onclick="openBlockModal(null,null,null)">
+              <svg width="9" height="9" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="6" y1="1" x2="6" y2="11"/><line x1="1" y1="6" x2="11" y2="6"/></svg>
+              Bloque
+            </button>
+          </div>
         </div>
         <div class="dh-time-outer" id="dhTimeOuter">
           <div class="dh-hour-grid" id="dhHourGrid"></div>
@@ -332,6 +343,94 @@ input[type=time].mi{color-scheme:dark;cursor:pointer;}
   var _dtPDrag=null, _dtWasDrag=false, _dtHoverHour=null, _dtEditPopup=null;
   var _dvPDrag=null, _dvWasDrag=false, _dvHoverHour=null;
   var _blockManip=null, _blockManipMoved=false;
+
+  // ── GOOGLE CALENDAR ───────────────────────────────────────────
+  var GC_CLIENT_ID='TU_CLIENT_ID.apps.googleusercontent.com'; // ← reemplaza con tu Client ID
+  var GC_SCOPES='https://www.googleapis.com/auth/calendar.readonly';
+  var _gcEvents={}, _gcToken=null, _gcTokenClient=null, _gcGapiReady=false, _gcGsiReady=false;
+
+  window.gcInitGapi=function(){
+    gapi.load('client',function(){
+      gapi.client.init({}).then(function(){
+        return gapi.client.load('https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest');
+      }).then(function(){_gcGapiReady=true;_gcTryInit();});
+    });
+  };
+  window.gcInitGsi=function(){_gcGsiReady=true;_gcTryInit();};
+
+  function _gcTryInit(){
+    if(!_gcGapiReady||!_gcGsiReady)return;
+    if(GC_CLIENT_ID==='TU_CLIENT_ID.apps.googleusercontent.com'){renderGcBtn();return;}
+    _gcTokenClient=google.accounts.oauth2.initTokenClient({
+      client_id:GC_CLIENT_ID, scope:GC_SCOPES,
+      callback:function(r){
+        if(r.error){console.warn('GC auth:',r.error);return;}
+        _gcToken={access_token:r.access_token,expires_at:Date.now()+(r.expires_in-60)*1000};
+        localStorage.setItem('gc_token',JSON.stringify(_gcToken));
+        gapi.client.setToken({access_token:_gcToken.access_token});
+        gcFetchEvents(fmt(curDate)); renderGcBtn();
+      }
+    });
+    try{var s=JSON.parse(localStorage.getItem('gc_token')||'null');
+      if(s&&s.expires_at>Date.now()){_gcToken=s;gapi.client.setToken({access_token:s.access_token});gcFetchEvents(fmt(curDate));}
+    }catch(e){}
+    renderGcBtn();
+  }
+  window.gcConnect=function(){if(_gcTokenClient)_gcTokenClient.requestAccessToken({prompt:_gcToken?'':'consent'});};
+  window.gcDisconnect=function(){
+    if(_gcToken)try{google.accounts.oauth2.revoke(_gcToken.access_token,function(){});}catch(e){}
+    _gcToken=null; localStorage.removeItem('gc_token'); _gcEvents={};
+    renderGcBtn(); renderTimeGrid();
+  };
+  function gcFetchEvents(ds){
+    if(!_gcToken||!_gcGapiReady)return;
+    if(_gcEvents[ds])return; // ya cargado
+    var d=new Date(ds+'T00:00:00');
+    gapi.client.calendar.events.list({
+      calendarId:'primary',timeMin:d.toISOString(),
+      timeMax:new Date(d.getTime()+86400000).toISOString(),
+      singleEvents:true,orderBy:'startTime',maxResults:50
+    }).then(function(r){
+      _gcEvents[ds]=(r.result.items||[]).filter(function(e){return e.start&&e.start.dateTime;});
+      renderTimeGrid();
+    }).catch(function(e){
+      if(e.status===401){_gcToken=null;localStorage.removeItem('gc_token');renderGcBtn();}
+    });
+  }
+  function renderGcBtn(){
+    var el=document.getElementById('dhGcBtn'); if(!el)return;
+    el.innerHTML='';
+    var btn=document.createElement('button'); btn.className='dh-gc-btn'+(_gcToken?' gc-on':'');
+    if(GC_CLIENT_ID==='TU_CLIENT_ID.apps.googleusercontent.com'){
+      btn.style.display='none'; el.appendChild(btn); return;
+    }
+    if(_gcToken){
+      btn.innerHTML='<svg width="10" height="10" viewBox="0 0 24 24"><path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.477 17.523 2 12 2C6.477 2 2 6.477 2 12C2 17.523 6.477 22 12 22Z" stroke="#4285F4" stroke-width="2" fill="none"/><path d="M9 12L11 14L15 10" stroke="#34A853" stroke-width="2" stroke-linecap="round" fill="none"/></svg>Google Cal';
+      btn.title='Desconectar Google Calendar';
+      btn.onclick=function(){if(confirm('¿Desconectar Google Calendar?'))gcDisconnect();};
+    }else{
+      btn.innerHTML='<svg width="10" height="10" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>Google Cal';
+      btn.title='Conectar Google Calendar'; btn.onclick=gcConnect;
+    }
+    el.appendChild(btn);
+  }
+  function placeGcBlocks(grid,ds){
+    (_gcEvents[ds]||[]).forEach(function(ev){
+      var sd=new Date(ev.start.dateTime),ed=new Date(ev.end.dateTime);
+      var sh=sd.getHours(),sm=sd.getMinutes(),eh=ed.getHours(),em=ed.getMinutes();
+      if(sh>=HOUR_END||eh<=HOUR_START)return;
+      var top=Math.max(0,(sh-HOUR_START)*HOUR_PX+(sm/60)*HOUR_PX);
+      var bot=Math.min((HOUR_END-HOUR_START)*HOUR_PX,(eh-HOUR_START)*HOUR_PX+(em/60)*HOUR_PX);
+      var el=document.createElement('div'); el.className='dh-gc-block';
+      el.style.top=top+'px'; el.style.height=Math.max(18,bot-top-1)+'px';
+      var badge=document.createElement('div'); badge.className='dh-gc-badge'; badge.textContent='G';
+      var tl=document.createElement('div'); tl.className='dh-gc-block-time';
+      tl.textContent=String(sh).padStart(2,'0')+':'+String(sm).padStart(2,'0')+' – '+String(eh).padStart(2,'0')+':'+String(em).padStart(2,'0');
+      var tt=document.createElement('div'); tt.className='dh-gc-block-title'; tt.textContent=ev.summary||'Evento';
+      el.appendChild(badge); el.appendChild(tl); el.appendChild(tt);
+      grid.appendChild(el);
+    });
+  }
   var _wasDrag=false, _dragActive=false, _dragStartY=0, _dragStartHour=0, _dragGhost=null;
   var reminders={}, _remInputOpen=false;
 
@@ -444,6 +543,8 @@ input[type=time].mi{color-scheme:dark;cursor:pointer;}
     }
 
     placeBlocks(grid,dailyBlocks[ds]||[],ds);
+    if(_gcToken&&!_gcEvents[ds])gcFetchEvents(ds);
+    placeGcBlocks(grid,ds);
 
     setTimeout(function(){
       var outer=document.getElementById('dhTimeOuter'); if(!outer)return;
@@ -1272,5 +1373,7 @@ input[type=time].mi{color-scheme:dark;cursor:pointer;}
 (function(){var SK='trazzo_focus_session';var _el=null,_int=null;function _fmt(s){s=Math.max(0,s);return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');}function _read(){try{return JSON.parse(localStorage.getItem(SK)||'null');}catch(e){return null;}}function _write(s){if(!s||s.remaining<=0){localStorage.removeItem(SK);return;}localStorage.setItem(SK,JSON.stringify(s));}function _hide(){if(_int){clearInterval(_int);_int=null;}if(_el){_el.remove();_el=null;}}function _startTick(){if(_int)clearInterval(_int);_int=setInterval(function(){var s=_read();if(!s||!s.running){clearInterval(_int);_int=null;if(_el){var pp=document.getElementById('_mfpp');if(pp)pp.textContent='▶';}return;}s.remaining--;s.ts=Date.now();_write(s);var tEl=document.getElementById('_mft');if(tEl)tEl.textContent=_fmt(s.remaining);if(s.remaining<=0){clearInterval(_int);_int=null;_hide();}},1000);}function _render(){var sess=_read();if(!sess||sess.remaining<=0){_hide();return;}if(sess.running&&sess.ts){var el=Math.floor((Date.now()-sess.ts)/1000);if(el>0){sess.remaining=Math.max(0,sess.remaining-el);sess.ts=Date.now();_write(sess);if(sess.remaining<=0){_hide();return;}}}if(!_el){_el=document.createElement('div');_el.style.cssText='position:fixed;top:12px;right:14px;z-index:99999;display:flex;align-items:center;gap:7px;background:#1a1a1a;border:0.5px solid rgba(232,160,32,0.4);border-radius:20px;padding:6px 8px 6px 12px;font-family:Inter,sans-serif;cursor:pointer;box-shadow:0 4px 20px rgba(0,0,0,.7);user-select:none;';_el.innerHTML='<span style="font-size:12px;color:#E8A020;font-weight:700;">⚡</span><span id="_mfn" style="max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;font-weight:500;color:rgba(255,255,255,0.55);"></span><span id="_mft" style="font-size:12px;font-weight:700;color:#E8A020;font-variant-numeric:tabular-nums;min-width:40px;text-align:right;"></span><button id="_mfpp" style="background:rgba(255,255,255,0.07);border:none;color:rgba(255,255,255,0.5);font-size:12px;cursor:pointer;border-radius:10px;padding:2px 8px;font-family:Inter,sans-serif;line-height:1.7;">⏸</button><button id="_mfst" style="background:none;border:none;color:rgba(255,255,255,0.25);font-size:16px;cursor:pointer;padding:0 4px;line-height:1;">×</button>';document.body.appendChild(_el);_el.addEventListener('click',function(e){if(e.target.tagName!=='BUTTON')location.href='focus.html';});document.getElementById('_mfpp').addEventListener('click',function(e){e.stopPropagation();_toggle();});document.getElementById('_mfst').addEventListener('click',function(e){e.stopPropagation();localStorage.removeItem(SK);_hide();});}document.getElementById('_mfn').textContent=sess.taskText||'';document.getElementById('_mft').textContent=_fmt(sess.remaining);document.getElementById('_mfpp').textContent=sess.running?'⏸':'▶';if(sess.running&&!_int)_startTick();else if(!sess.running&&_int){clearInterval(_int);_int=null;}}function _toggle(){var s=_read();if(!s)return;s.running=!s.running;s.ts=Date.now();_write(s);var pp=document.getElementById('_mfpp');if(pp)pp.textContent=s.running?'⏸':'▶';if(s.running)_startTick();else if(_int){clearInterval(_int);_int=null;}}_render();})();
 </script>
 <script src="theme.js"></script>
+<script src="https://apis.google.com/js/api.js" onload="gcInitGapi()" async defer></script>
+<script src="https://accounts.google.com/gsi/client" onload="gcInitGsi()" async defer></script>
 </body>
 </html>
