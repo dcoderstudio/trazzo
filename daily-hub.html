@@ -167,6 +167,14 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 .dh-dv-list::-webkit-scrollbar{width:3px;}
 .dh-dv-list::-webkit-scrollbar-thumb{background:rgba(39,174,114,0.14);}
 .dh-dv-empty{text-align:center;font-size:11px;color:rgba(39,174,114,0.22);padding:18px 0;}
+.dh-dv-add-btn{background:rgba(39,174,114,0.12);border:1px solid rgba(39,174,114,0.26);color:#27AE72;font-size:11px;font-weight:600;padding:4px 10px;border-radius:8px;cursor:pointer;font-family:Inter,sans-serif;transition:all .15s;}
+.dh-dv-add-btn:hover{background:rgba(39,174,114,0.24);color:#fff;}
+.dh-dv-input-wrap{display:flex;gap:6px;margin:4px 8px 6px;}
+.dh-dv-input{flex:1;background:rgba(255,255,255,0.06);border:1px solid rgba(39,174,114,0.25);border-radius:8px;padding:6px 10px;font-size:12px;color:#fff;font-family:Inter,sans-serif;outline:none;}
+.dh-dv-input:focus{border-color:rgba(39,174,114,0.55);}
+.dh-dv-input::placeholder{color:rgba(39,174,114,0.22);}
+.dh-dv-input-ok{background:rgba(39,174,114,0.18);border:none;color:#27AE72;font-size:12px;border-radius:8px;padding:0 12px;cursor:pointer;font-family:Inter,sans-serif;transition:all .15s;}
+.dh-dv-input-ok:hover{background:rgba(39,174,114,0.32);}
 .dh-dv-row{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:9px;transition:background .1s;border-bottom:0.5px solid rgba(255,255,255,0.04);}
 .dh-dv-row:last-child{border-bottom:none;}
 .dh-dv-row:hover{background:rgba(255,255,255,0.04);}
@@ -292,6 +300,7 @@ input[type=time].mi{color-scheme:dark;cursor:pointer;}
             <div class="dh-dv-title">📋 Tareas del día</div>
             <div class="dh-dv-sub">Tareas con vencimiento hoy</div>
           </div>
+          <button class="dh-dv-add-btn" id="dhDvAddBtn" onclick="openDvInput()">+ Agregar</button>
         </div>
         <div class="dh-dv-list" id="dhDvList"></div>
       </div>
@@ -338,7 +347,7 @@ input[type=time].mi{color-scheme:dark;cursor:pointer;}
   var curDate=new Date(todayD);
   var selectedMember=null, _taskSort='fecha';
   var _bmEditId=null, _bmSelColor='#1A6FD4';
-  var _dtInputOpen=false;
+  var _dtInputOpen=false, _dvInputOpen=false;
   var _dhDragTask=null;
   var _dtPDrag=null, _dtWasDrag=false, _dtHoverHour=null, _dtEditPopup=null;
   var _dvPDrag=null, _dvWasDrag=false, _dvHoverHour=null;
@@ -1003,6 +1012,14 @@ input[type=time].mi{color-scheme:dark;cursor:pointer;}
   }
 
   window.openDtInput=function(){var ds=fmt(curDate);if((dayTasks[ds]||[]).length>=5)return;_dtInputOpen=true;renderDayTasks();};
+  window.openDvInput=function(){_dvInputOpen=true;renderDeliveries();};
+  function addDeliveryTask(text,ds){
+    if(!standaloneTasks)standaloneTasks=[];
+    standaloneTasks.push({id:Date.now(),text:text,done:false,deadline:ds,resp:'',priority:false,notes:''});
+    _pass.standaloneTasks=standaloneTasks;
+    _dvInputOpen=false;
+    saveData();renderDeliveries();renderHeader();
+  }
 
   function addToDayTasks(task,ds){
     if(!dayTasks[ds])dayTasks[ds]=[];
@@ -1134,7 +1151,7 @@ input[type=time].mi{color-scheme:dark;cursor:pointer;}
     });
     if(selectedMember)items=items.filter(function(i){return !i.resp||i.resp===''||i.resp===selectedMember;});
     items.sort(function(a,b){return(a.done?1:0)-(b.done?1:0);});
-    if(!items.length){wrap.innerHTML='<div class="dh-dv-empty">Sin tareas para hoy</div>';return;}
+    if(!items.length){wrap.innerHTML='<div class="dh-dv-empty">Sin tareas para hoy</div>';}
     items.forEach(function(item,i){
       var c=item.color||CARD_COLORS[i%CARD_COLORS.length];
       var rgb=_hexRgb(c);
@@ -1166,6 +1183,20 @@ input[type=time].mi{color-scheme:dark;cursor:pointer;}
       card.addEventListener('pointerdown',(function(it,cardEl){return function(e){if(e.button&&e.button!==0)return;_dvDragStart(e,it,cardEl);};})(item,card));
       wrap.appendChild(card);
     });
+    // Inline add input
+    if(_dvInputOpen){
+      var iWrap=document.createElement('div');iWrap.className='dh-dv-input-wrap';
+      var iInp=document.createElement('input');iInp.className='dh-dv-input';iInp.placeholder='Nueva tarea para hoy…';
+      var iOk=document.createElement('button');iOk.className='dh-dv-input-ok';iOk.textContent='↵';
+      var doAdd=function(){var v=iInp.value.trim();if(!v)return;addDeliveryTask(v,ds);};
+      iInp.onkeydown=function(e){if(e.key==='Enter')doAdd();if(e.key==='Escape'){_dvInputOpen=false;renderDeliveries();}};
+      iOk.onclick=doAdd;
+      iWrap.appendChild(iInp);iWrap.appendChild(iOk);
+      wrap.appendChild(iWrap);
+      setTimeout(function(){iInp.focus();},30);
+    }
+    var addBtn=document.getElementById('dhDvAddBtn');
+    if(addBtn)addBtn.style.display=_dvInputOpen?'none':'';
   }
 
   function _dvDragStart(e,item,rowEl){
