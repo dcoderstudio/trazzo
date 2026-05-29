@@ -364,22 +364,24 @@ input[type=time].mi{color-scheme:dark;cursor:pointer;}
     _gcTokenClient=google.accounts.oauth2.initTokenClient({
       client_id:GC_CLIENT_ID, scope:GC_SCOPES,
       callback:function(r){
-        if(r.error){console.warn('GC auth:',r.error);return;}
+        if(r.error){console.warn('GC auth:',r.error);localStorage.removeItem('gc_was_connected');return;}
         _gcToken={access_token:r.access_token,expires_at:Date.now()+(r.expires_in-60)*1000};
         localStorage.setItem('gc_token',JSON.stringify(_gcToken));
+        localStorage.setItem('gc_was_connected','1');
         gapi.client.setToken({access_token:_gcToken.access_token});
         gcFetchEvents(fmt(curDate)); renderGcBtn();
       }
     });
     try{var s=JSON.parse(localStorage.getItem('gc_token')||'null');
       if(s&&s.expires_at>Date.now()){_gcToken=s;gapi.client.setToken({access_token:s.access_token});gcFetchEvents(fmt(curDate));}
+      else if(localStorage.getItem('gc_was_connected')){_gcTokenClient.requestAccessToken({prompt:''});}
     }catch(e){}
     renderGcBtn();
   }
   window.gcConnect=function(){if(_gcTokenClient)_gcTokenClient.requestAccessToken({prompt:_gcToken?'':'consent'});};
   window.gcDisconnect=function(){
     if(_gcToken)try{google.accounts.oauth2.revoke(_gcToken.access_token,function(){});}catch(e){}
-    _gcToken=null; localStorage.removeItem('gc_token'); _gcEvents={};
+    _gcToken=null; localStorage.removeItem('gc_token'); localStorage.removeItem('gc_was_connected'); _gcEvents={};
     renderGcBtn(); renderTimeGrid();
   };
   function gcFetchEvents(ds){
