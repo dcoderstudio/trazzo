@@ -1621,21 +1621,43 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
     return card;
   }
 
+  var MNAMES_S=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+  function _wkoFmtDl(ds){var d=new Date(ds+'T12:00:00');return DNAMES_S[d.getDay()]+' '+d.getDate()+' '+MNAMES_S[d.getMonth()];}
+
   function _wkoRenderRpanel(){
     var rp=document.getElementById('wkoRp');if(!rp)return;rp.innerHTML='';
     var sc=document.createElement('div');sc.className='wko-rp-scroll';
-    // ── Tareas de la semana ──
-    var s1=document.createElement('div');s1.className='wko-rp-sec';s1.textContent='Tareas de la semana';sc.appendChild(s1);
-    var hasTasks=false;
-    _wkoGetDays().forEach(function(d){
-      var ds=fmt(d);var tasks=(_wkoDT[ds]||[]);if(!tasks.length)return;hasTasks=true;
-      var dl=document.createElement('div');dl.className='wko-rp-day';dl.textContent=DNAMES_S[d.getDay()]+' '+d.getDate();sc.appendChild(dl);
-      tasks.forEach(function(t,i){
-        var c=t.color||WKO_CARD_COLORS[i%WKO_CARD_COLORS.length];
-        sc.appendChild(_wkoRpCard(t.text,t.done,c,i,DNAMES_S[d.getDay()],{sec:'tasks',ds:ds,dataIdx:i}));
+    // ── Tareas de la semana (tasks with deadline this week) ──
+    var s1=document.createElement('div');s1.className='wko-rp-sec';s1.textContent='Vencen esta semana';sc.appendChild(s1);
+    var days=_wkoGetDays();
+    var wkS=fmt(days[0]),wkE=fmt(days[days.length-1]);
+    var weekTasks=[];
+    (standaloneTasks||[]).forEach(function(t){
+      if(!t.deadline||t.done)return;
+      if(t.deadline>=wkS&&t.deadline<=wkE) weekTasks.push({text:t.text,deadline:t.deadline,color:'#E8A020',sub:'Tarea libre',done:t.done});
+    });
+    (projects||[]).forEach(function(p){
+      if(!p.stageTasks||p.catId==='cotizaciones')return;
+      var cat=getCat(p.catId);var c=cat?cat.color:'#8B5CF6';
+      var stage=p.stage;
+      (p.stageTasks[stage]||[]).forEach(function(t){
+        if(!t.deadline||t.done)return;
+        if(t.deadline>=wkS&&t.deadline<=wkE) weekTasks.push({text:t.text,deadline:t.deadline,color:c,sub:p.name,done:t.done});
       });
     });
-    if(!hasTasks){var e1=document.createElement('div');e1.className='wko-rp-empty';e1.textContent='Sin tareas esta semana';sc.appendChild(e1);}
+    weekTasks.sort(function(a,b){return a.deadline<b.deadline?-1:1;});
+    if(!weekTasks.length){var e1=document.createElement('div');e1.className='wko-rp-empty';e1.textContent='Sin tareas con fecha límite esta semana';sc.appendChild(e1);}
+    else{
+      var lastDay='';
+      weekTasks.forEach(function(t,i){
+        if(t.deadline!==lastDay){
+          lastDay=t.deadline;
+          var dl=document.createElement('div');dl.className='wko-rp-day';dl.textContent=_wkoFmtDl(t.deadline).toUpperCase();sc.appendChild(dl);
+        }
+        var dlLabel='Vence: '+_wkoFmtDl(t.deadline);
+        sc.appendChild(_wkoRpCard(t.text,t.done,t.color,i,t.sub+' · '+dlLabel,null));
+      });
+    }
     // ── Recordatorios ──
     var s2=document.createElement('div');s2.className='wko-rp-sec';s2.textContent='Recordatorios';sc.appendChild(s2);
     var hasRem=false;
