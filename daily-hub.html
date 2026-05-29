@@ -384,15 +384,24 @@ input[type=time].mi{color-scheme:dark;cursor:pointer;}
   };
   function gcFetchEvents(ds){
     if(!_gcToken||!_gcGapiReady)return;
-    if(_gcEvents[ds])return; // ya cargado
+    if(_gcEvents[ds])return;
     var d=new Date(ds+'T00:00:00');
-    gapi.client.calendar.events.list({
-      calendarId:'primary',timeMin:d.toISOString(),
-      timeMax:new Date(d.getTime()+86400000).toISOString(),
-      singleEvents:true,orderBy:'startTime',maxResults:50
-    }).then(function(r){
-      _gcEvents[ds]=(r.result.items||[]).filter(function(e){return e.start&&e.start.dateTime;});
-      renderTimeGrid();
+    var tMin=d.toISOString(), tMax=new Date(d.getTime()+86400000).toISOString();
+    gapi.client.calendar.calendarList.list({minAccessRole:'reader'}).then(function(cl){
+      var cals=(cl.result.items||[]).map(function(c){return{id:c.id,color:c.backgroundColor};});
+      if(!cals.length)cals=[{id:'primary',color:null}];
+      var all=[], done=0;
+      cals.forEach(function(cal){
+        gapi.client.calendar.events.list({
+          calendarId:cal.id,timeMin:tMin,timeMax:tMax,
+          singleEvents:true,orderBy:'startTime',maxResults:50
+        }).then(function(r){
+          var evs=(r.result.items||[]).filter(function(e){return e.start&&e.start.dateTime;});
+          evs.forEach(function(e){e._calColor=cal.color;});
+          all=all.concat(evs);
+          if(++done===cals.length){_gcEvents[ds]=all;renderTimeGrid();}
+        }).catch(function(){if(++done===cals.length){_gcEvents[ds]=all;renderTimeGrid();}});
+      });
     }).catch(function(e){
       if(e.status===401){_gcToken=null;localStorage.removeItem('gc_token');renderGcBtn();}
     });
@@ -421,8 +430,10 @@ input[type=time].mi{color-scheme:dark;cursor:pointer;}
       if(sh>=HOUR_END||eh<=HOUR_START)return;
       var top=Math.max(0,(sh-HOUR_START)*HOUR_PX+(sm/60)*HOUR_PX);
       var bot=Math.min((HOUR_END-HOUR_START)*HOUR_PX,(eh-HOUR_START)*HOUR_PX+(em/60)*HOUR_PX);
+      var col=ev._calColor||'#4285F4';
       var el=document.createElement('div'); el.className='dh-gc-block';
       el.style.top=top+'px'; el.style.height=Math.max(18,bot-top-1)+'px';
+      el.style.borderLeftColor=col; el.style.background=col+'1a';
       var badge=document.createElement('div'); badge.className='dh-gc-badge'; badge.textContent='G';
       var tl=document.createElement('div'); tl.className='dh-gc-block-time';
       tl.textContent=String(sh).padStart(2,'0')+':'+String(sm).padStart(2,'0')+' – '+String(eh).padStart(2,'0')+':'+String(em).padStart(2,'0');
