@@ -1724,7 +1724,9 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
   }
 
   function _wkoRenderRpanel(){
-    var rp=document.getElementById('wkoRp');if(!rp)return;rp.innerHTML='';
+    var rp=document.getElementById('wkoRp');if(!rp)return;
+    var _prevScroll=0;var _prevSc=rp.querySelector('.wko-rp-scroll');if(_prevSc)_prevScroll=_prevSc.scrollTop;
+    rp.innerHTML='';
     var sc=document.createElement('div');sc.className='wko-rp-scroll';
 
     // ── SECTION 1: Objetivos de la semana ──
@@ -1873,6 +1875,7 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
       if(pending.length>25){var m=document.createElement('div');m.className='wko-rp-empty';m.textContent='+'+(pending.length-25)+' más';sc.appendChild(m);}
     }
     rp.appendChild(sc);
+    sc.scrollTop=_prevScroll;
   }
 
   // ── DRAG FROM RIGHT PANEL ─────────────────────────────────────
