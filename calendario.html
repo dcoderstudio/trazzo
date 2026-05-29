@@ -269,6 +269,68 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
 .wpg-custom-input:focus{border-color:rgba(255,255,255,.3);}
 .wpg-apply-btn{background:linear-gradient(135deg,rgba(26,111,212,.38),rgba(139,92,246,.28));border:0.5px solid rgba(100,150,255,.3);color:#fff;font-size:12px;font-weight:700;padding:11px 20px;border-radius:12px;cursor:pointer;font-family:Inter,sans-serif;transition:all .18s;width:100%;}
 .wpg-apply-btn:hover{filter:brightness(1.15);}
+/* ── WEEKLY TIME GRID OVERLAY ─────────────────────────────────── */
+.wko-ov{position:fixed;inset:0;background:rgba(6,7,8,.97);z-index:900;display:flex;flex-direction:column;opacity:0;pointer-events:none;transition:opacity .18s;}
+.wko-ov.open{opacity:1;pointer-events:all;}
+.wko-hdr{display:flex;align-items:center;gap:8px;padding:12px 20px;border-bottom:0.5px solid rgba(255,255,255,.08);flex-shrink:0;}
+.wko-title{font-size:15px;font-weight:800;letter-spacing:-.02em;flex:1;}
+.wko-nav{background:rgba(255,255,255,.06);border:0.5px solid rgba(255,255,255,.1);color:rgba(255,255,255,.45);width:26px;height:26px;border-radius:7px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:all .15s;line-height:1;}
+.wko-nav:hover{border-color:rgba(255,255,255,.25);color:#fff;}
+.wko-wlbl{font-size:11px;font-weight:700;color:rgba(255,255,255,.4);min-width:150px;text-align:center;}
+.wko-today-btn{background:none;border:0.5px solid rgba(255,255,255,.13);color:rgba(255,255,255,.4);font-size:10px;font-weight:600;padding:4px 10px;border-radius:7px;cursor:pointer;font-family:Inter,sans-serif;transition:all .15s;}
+.wko-today-btn:hover{border-color:rgba(255,255,255,.3);color:#fff;}
+.wko-close{background:none;border:none;color:rgba(255,255,255,.3);font-size:22px;cursor:pointer;padding:0 4px;line-height:1;flex-shrink:0;}
+.wko-close:hover{color:#fff;}
+.wko-gc-btn{display:flex;align-items:center;gap:5px;background:none;border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.32);font-size:10px;font-weight:600;padding:4px 9px;border-radius:8px;cursor:pointer;font-family:Inter,sans-serif;transition:all .15s;flex-shrink:0;}
+.wko-gc-btn:hover{border-color:rgba(66,133,244,.5);color:rgba(66,133,244,.9);background:rgba(66,133,244,.08);}
+.wko-gc-btn.on{border-color:rgba(52,168,83,.4);color:#34A853;background:rgba(52,168,83,.08);}
+/* Grid */
+.wko-grid-outer{flex:1;overflow:auto;}
+.wko-grid-outer::-webkit-scrollbar{width:4px;height:4px;}
+.wko-grid-outer::-webkit-scrollbar-thumb{background:rgba(255,255,255,.07);border-radius:2px;}
+.wko-grid{display:flex;min-width:660px;}
+.wko-tcol{width:44px;flex-shrink:0;position:sticky;left:0;z-index:6;background:#0a0a0b;}
+.wko-tcol-hdr{height:50px;border-bottom:0.5px solid rgba(255,255,255,.07);position:sticky;top:0;z-index:7;background:#0a0a0b;}
+.wko-hrlbl{height:40px;display:flex;align-items:flex-start;justify-content:flex-end;padding:4px 7px 0 0;font-size:9px;font-weight:600;color:rgba(255,255,255,.18);flex-shrink:0;}
+.wko-dcol{flex:1;min-width:95px;border-right:0.5px solid rgba(255,255,255,.05);display:flex;flex-direction:column;}
+.wko-dhdr{height:50px;display:flex;flex-direction:column;align-items:center;justify-content:center;border-bottom:0.5px solid rgba(255,255,255,.07);position:sticky;top:0;z-index:5;background:#0a0a0b;cursor:pointer;transition:background .12s;gap:1px;}
+.wko-dhdr:hover{background:#121213;}
+.wko-dname{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.22);}
+.wko-dnum{font-size:18px;font-weight:800;color:rgba(255,255,255,.6);line-height:1;}
+.wko-today-col .wko-dnum{color:#5B9FFF;}
+.wko-today-col .wko-dhdr{border-bottom-color:rgba(91,159,255,.25);}
+.wko-hgrid{position:relative;}
+.wko-slot{height:40px;border-bottom:0.5px solid rgba(255,255,255,.035);cursor:pointer;transition:background .09s;}
+.wko-slot:hover{background:rgba(255,255,255,.025);}
+.wko-block{position:absolute;left:2px;right:2px;border-radius:5px;padding:2px 5px;overflow:hidden;border-left:3px solid;cursor:pointer;z-index:3;transition:filter .12s;}
+.wko-block:hover{filter:brightness(1.2);}
+.wko-btime{font-size:7px;font-weight:700;opacity:.75;line-height:1.3;white-space:nowrap;}
+.wko-btitle{font-size:9px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.wko-gcblock{position:absolute;left:2px;right:2px;border-radius:5px;padding:2px 5px;overflow:hidden;border-left:3px solid;z-index:2;}
+.wko-gctitle{font-size:9px;font-weight:500;color:rgba(255,255,255,.7);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+/* Footer */
+.wko-footer{border-top:0.5px solid rgba(255,255,255,.07);flex-shrink:0;overflow-x:auto;max-height:100px;}
+.wko-footer::-webkit-scrollbar{height:3px;}
+.wko-ftrow{display:flex;min-width:660px;}
+.wko-ftspacer{width:44px;flex-shrink:0;}
+.wko-ftcol{flex:1;min-width:95px;padding:6px 6px 8px;border-right:0.5px solid rgba(255,255,255,.04);}
+.wko-fttask{font-size:9px;color:rgba(255,255,255,.5);padding:1px 0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.wko-fttask.done{opacity:.35;text-decoration:line-through;}
+/* Block modal */
+.wko-modal-ov{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(8px);z-index:1100;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .15s;}
+.wko-modal-ov.open{opacity:1;pointer-events:all;}
+.wko-modal{background:#191919;border:0.5px solid rgba(255,255,255,.12);border-radius:18px;padding:22px;width:min(380px,94vw);display:flex;flex-direction:column;gap:12px;}
+.wko-mlbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:rgba(255,255,255,.3);margin-bottom:4px;}
+.wko-minp{background:#222;border:0.5px solid rgba(255,255,255,.1);border-radius:9px;padding:8px 12px;font-size:12px;color:#fff;font-family:Inter,sans-serif;outline:none;width:100%;transition:border-color .15s;}
+.wko-minp:focus{border-color:rgba(255,255,255,.3);}
+.wko-minp::placeholder{color:rgba(255,255,255,.18);}
+.wko-mrow{display:flex;gap:8px;}
+.wko-mbtn-ok{background:#fff;border:none;color:#0c0c0c;font-size:12px;font-weight:700;padding:8px 16px;border-radius:9px;cursor:pointer;font-family:Inter,sans-serif;}
+.wko-mbtn-c{background:rgba(255,255,255,.07);border:none;color:rgba(255,255,255,.45);font-size:12px;font-weight:600;padding:8px 14px;border-radius:9px;cursor:pointer;font-family:Inter,sans-serif;}
+.wko-mbtn-del{background:rgba(226,75,74,.1);border:0.5px solid rgba(226,75,74,.25);color:#E24B4A;font-size:12px;font-weight:600;padding:8px 12px;border-radius:9px;cursor:pointer;font-family:Inter,sans-serif;}
+.wko-color-row{display:flex;gap:5px;flex-wrap:wrap;}
+.wko-color-sw{width:22px;height:22px;border-radius:6px;border:2.5px solid transparent;cursor:pointer;transition:border .12s;flex-shrink:0;}
+.wko-color-sw.sel{border-color:#fff;}
 </style>
 </head>
 <body>
@@ -353,20 +415,37 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
   </div>
 </div>
 
-<!-- WEEKLY PLANNER OVERLAY -->
-<div class="wp-overlay" id="wpOverlay" onclick="if(event.target===this)closeWeekPlanner()">
-  <div class="wp-panel">
-    <div class="wp-hdr">
-      <div class="wp-title">Planificación semanal</div>
-      <div class="wp-week-nav">
-        <button class="wp-nav" onclick="navWeekPlan(-1)">&#8249;</button>
-        <span class="wp-week-lbl" id="wpWeekLbl"></span>
-        <button class="wp-nav" onclick="navWeekPlan(1)">&#8250;</button>
-      </div>
-      <span class="wp-saved" id="wpSaved"></span>
-      <button class="wp-close" onclick="closeWeekPlanner()">×</button>
+<!-- WEEKLY TIME GRID OVERLAY -->
+<div class="wko-ov" id="wkoOv">
+  <div class="wko-hdr">
+    <div class="wko-title">Semana</div>
+    <button class="wko-nav" onclick="navWeekPlan(-1)">&#8249;</button>
+    <span class="wko-wlbl" id="wkoLbl"></span>
+    <button class="wko-nav" onclick="navWeekPlan(1)">&#8250;</button>
+    <button class="wko-today-btn" onclick="wkoGoToday()">Hoy</button>
+    <div id="wkoGcBtn"></div>
+    <button class="wko-close" onclick="closeWeekPlanner()">&#215;</button>
+  </div>
+  <div class="wko-grid-outer" id="wkoOuter"></div>
+  <div class="wko-footer" id="wkoFooter"></div>
+</div>
+<!-- WEEKLY BLOCK MODAL -->
+<div class="wko-modal-ov" id="wkoBmOv" onclick="if(event.target===this)wkoBmClose()">
+  <div class="wko-modal">
+    <div style="font-size:14px;font-weight:700;" id="wkoBmTitle">Nuevo bloque</div>
+    <div><div class="wko-mlbl">Título</div><input class="wko-minp" id="wkoBmTi" placeholder="Nombre del bloque"></div>
+    <div class="wko-mrow">
+      <div style="flex:1"><div class="wko-mlbl">Inicio</div><input class="wko-minp" type="time" id="wkoBmSt" style="color-scheme:dark"></div>
+      <div style="flex:1"><div class="wko-mlbl">Fin</div><input class="wko-minp" type="time" id="wkoBmEn" style="color-scheme:dark"></div>
     </div>
-    <div id="wpContent"></div>
+    <div><div class="wko-mlbl" style="margin-bottom:6px">Color</div><div class="wko-color-row" id="wkoBmCols"></div></div>
+    <div class="wko-mrow" style="justify-content:space-between;margin-top:2px;">
+      <button class="wko-mbtn-del" id="wkoBmDel" onclick="wkoBmDelete()">Eliminar</button>
+      <div style="display:flex;gap:6px;">
+        <button class="wko-mbtn-c" onclick="wkoBmClose()">Cancelar</button>
+        <button class="wko-mbtn-ok" onclick="wkoBmSave()">Guardar</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -1230,7 +1309,7 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
     render();
   };
 
-  // ── WEEKLY PLANNER ────────────────────────────────────────────
+  // ── WEEKLY TIME GRID ──────────────────────────────────────────
   function _getMondayOf(d){
     var r=new Date(d); r.setHours(0,0,0,0);
     var day=r.getDay(); r.setDate(r.getDate()-(day===0?6:day-1)); return r;
@@ -1240,244 +1319,241 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
     var M=MNS_SHORT;
     return mon.getDate()+' '+M[mon.getMonth()]+' – '+sun.getDate()+' '+M[sun.getMonth()]+' '+sun.getFullYear();
   }
-  function _wpKey(){return fmt(_wpWeek);}
-  function _wpGetDays(){
-    var days=[]; for(var i=0;i<7;i++){var d=new Date(_wpWeek);d.setDate(d.getDate()+i);days.push(d);} return days;
-  }
-  function _wpDayData(ds){
-    var k=_wpKey();
-    if(!weekPlans[k])weekPlans[k]={};
-    if(!weekPlans[k].days)weekPlans[k].days={};
-    if(!weekPlans[k].days[ds])weekPlans[k].days[ds]={};
-    var dd=weekPlans[k].days[ds];
-    if(!dd.exercise)dd.exercise=[];
-    if(!dd.food)dd.food={where:null,notes:''};
-    if(!dd.classes)dd.classes=[];
-    if(!dd.deliveries)dd.deliveries=[];
-    return dd;
-  }
-  function _wpRgb(h){return parseInt(h.slice(1,3),16)+','+parseInt(h.slice(3,5),16)+','+parseInt(h.slice(5,7),16);}
-  function _wpSecWrap(color,icon,label){
-    var sec=document.createElement('div'); sec.className='wpg-section';
-    sec.style.cssText='border-radius:12px;padding:13px 15px;display:flex;flex-direction:column;gap:9px;background:rgba('+_wpRgb(color)+',.06);border:0.5px solid rgba('+_wpRgb(color)+',.22);';
-    var hdr=document.createElement('div'); hdr.className='wpg-sec-hdr';
-    var titleEl=document.createElement('span'); titleEl.className='wpg-sec-title';
-    titleEl.innerHTML='<span style="font-size:14px">'+icon+'</span><span style="color:'+color+'">'+label+'</span>';
-    hdr.appendChild(titleEl); sec.appendChild(hdr); return {sec:sec,hdr:hdr};
-  }
-  function _wpMakeSlot(item,arr,notePh,rebuildFn){
-    var row=document.createElement('div'); row.className='wpg-slot';
-    var ti=document.createElement('input'); ti.type='time'; ti.className='wpg-slot-time'; ti.value=item.time||'';
-    ti.oninput=function(){item.time=ti.value;_wpAutoSave();};
-    var ni=document.createElement('input'); ni.type='text'; ni.className='wpg-slot-notes'; ni.placeholder=notePh||'Notas…'; ni.value=item.notes||'';
-    ni.oninput=function(){item.notes=ni.value;_wpAutoSave();};
-    var db=document.createElement('button'); db.className='wpg-slot-del'; db.innerHTML='×';
-    db.onmouseenter=function(){db.style.color='rgba(226,75,74,.75)';};
-    db.onmouseleave=function(){db.style.color='rgba(255,255,255,.18)';};
-    db.onclick=function(){var idx=arr.indexOf(item);if(idx!==-1)arr.splice(idx,1);_wpAutoSave();rebuildFn();};
-    row.appendChild(ti); row.appendChild(ni); row.appendChild(db); return row;
-  }
-  function _wpAddBtn(label,color,clickFn){
-    var b=document.createElement('button'); b.className='wpg-sec-add';
-    b.style.cssText='background:rgba('+_wpRgb(color)+',.1);border:0.5px solid rgba('+_wpRgb(color)+',.22);color:'+color+';font-size:11px;font-weight:600;padding:5px 12px;border-radius:20px;cursor:pointer;font-family:Inter,sans-serif;transition:all .15s;align-self:flex-start;';
-    b.textContent=label; b.onclick=clickFn; return b;
-  }
+  // ── NEW WEEKLY TIME GRID IMPLEMENTATION ───────────────────────
+  var HPXW=40,HSW=7,HEW=22;
+  var _wkoW=null,_wkoDB={},_wkoDT={},_wkoGcEvs={},_wkoGcTok=null,_wkoGapiRdy=false;
+  var _wkoBmDs=null,_wkoBmId=null,_wkoBmColor='#1A6FD4';
+  var WKO_COLS=[{c:'#1A6FD4',l:'Trabajo'},{c:'#27AE72',l:'Foco'},{c:'#8B5CF6',l:'Reunión'},{c:'#E8A020',l:'Urgente'},{c:'#D4537E',l:'Personal'},{c:'#2CC5D2',l:'Otro'}];
 
-  function _wpRenderExercise(parent,ds,dd){
-    var w=_wpSecWrap('#27AE72','💪','Ejercicio');
-    dd.exercise.forEach(function(item){
-      w.sec.appendChild(_wpMakeSlot(item,dd.exercise,'Notas del entrenamiento…',function(){renderWeekPlanContent();}));
-    });
-    w.sec.appendChild(_wpAddBtn('+ Agregar sesión','#27AE72',function(){
-      dd.exercise.push({id:Date.now(),time:'',notes:''});_wpAutoSave();renderWeekPlanContent();
-    }));
-    parent.appendChild(w.sec);
-  }
-  function _wpRenderFood(parent,ds,dd){
-    var w=_wpSecWrap('#E8A020','🍽️','Comida');
-    var fr=document.createElement('div'); fr.className='wpg-food-row';
-    ['casa','fuera'].forEach(function(opt){
-      var b=document.createElement('button'); b.className='wpg-food-btn';
-      if(dd.food.where===opt)b.classList.add('sel-'+opt);
-      b.textContent=opt==='casa'?'🏠 En casa':'🍴 Fuera';
-      b.onclick=function(){dd.food.where=(dd.food.where===opt)?null:opt;_wpAutoSave();renderWeekPlanContent();};
-      fr.appendChild(b);
-    });
-    w.sec.appendChild(fr);
-    var nt=document.createElement('textarea'); nt.className='wpg-food-notes';
-    nt.placeholder='Opciones de comida, meal prep…'; nt.value=dd.food.notes||''; nt.rows=2;
-    nt.oninput=function(){dd.food.notes=nt.value;_wpAutoSave();};
-    nt.onfocus=function(){nt.style.borderColor='rgba(232,160,32,.35)';};
-    nt.onblur=function(){nt.style.borderColor='rgba(255,255,255,.08)';};
-    w.sec.appendChild(nt);
-    parent.appendChild(w.sec);
-  }
-  function _wpRenderClasses(parent,ds,dd){
-    var w=_wpSecWrap('#8B5CF6','📚','Inglés / Clases');
-    dd.classes.forEach(function(item){
-      w.sec.appendChild(_wpMakeSlot(item,dd.classes,'Materia o nota…',function(){renderWeekPlanContent();}));
-    });
-    w.sec.appendChild(_wpAddBtn('+ Agregar clase','#8B5CF6',function(){
-      dd.classes.push({id:Date.now(),time:'',notes:''});_wpAutoSave();renderWeekPlanContent();
-    }));
-    parent.appendChild(w.sec);
-  }
-  function _wpRenderDeliveries(parent,ds,dd){
-    var w=_wpSecWrap('#1A6FD4','📦','Entregas');
-    dd.deliveries.forEach(function(item){
-      var row=document.createElement('div'); row.className='wpg-slot';
-      var sel=document.createElement('select'); sel.className='wpg-proj-sel';
-      var optC=document.createElement('option'); optC.value='__custom__'; optC.textContent='— Externo / personalizado —'; sel.appendChild(optC);
-      var active=(projects||[]).filter(function(p){return !p.status||p.status==='active'||p.status==='en-progreso'||p.status==='En progreso'||p.status==='en progreso';});
-      active.forEach(function(p){
-        var o=document.createElement('option'); o.value=String(p.id); o.textContent=p.name||p.title||'Sin nombre';
-        if(item.projectId===String(p.id))o.selected=true; sel.appendChild(o);
-      });
-      if(!item.projectId||item.projectId==='__custom__')optC.selected=true;
-      var ci=document.createElement('input'); ci.type='text'; ci.className='wpg-custom-input';
-      ci.placeholder='Nombre del proyecto…'; ci.value=item.customName||'';
-      ci.style.display=(item.projectId&&item.projectId!=='__custom__')?'none':'block';
-      ci.oninput=function(){item.customName=ci.value;item.projectName=ci.value;_wpAutoSave();};
-      sel.onchange=function(){
-        if(sel.value==='__custom__'){item.projectId=null;item.projectName=item.customName||'';ci.style.display='block';}
-        else{item.projectId=sel.value;var pr=active.find(function(p){return String(p.id)===sel.value;});item.projectName=pr?(pr.name||pr.title||''):'';ci.style.display='none';}
-        _wpAutoSave();
-      };
-      var db=document.createElement('button'); db.className='wpg-slot-del'; db.innerHTML='×';
-      db.onmouseenter=function(){db.style.color='rgba(226,75,74,.75)';};
-      db.onmouseleave=function(){db.style.color='rgba(255,255,255,.18)';};
-      db.onclick=function(){var idx=dd.deliveries.indexOf(item);if(idx!==-1)dd.deliveries.splice(idx,1);_wpAutoSave();renderWeekPlanContent();};
-      row.appendChild(sel); row.appendChild(ci); row.appendChild(db); w.sec.appendChild(row);
-    });
-    w.sec.appendChild(_wpAddBtn('+ Agregar entrega','#1A6FD4',function(){
-      dd.deliveries.push({id:Date.now(),projectId:null,projectName:'',customName:''});_wpAutoSave();renderWeekPlanContent();
-    }));
-    parent.appendChild(w.sec);
+  function _wkoGetDays(){var a=[];for(var i=0;i<7;i++){var d=new Date(_wkoW);d.setDate(d.getDate()+i);a.push(d);}return a;}
+  function _wkoPT(t){var p=(t||'00:00').split(':');return{h:parseInt(p[0]),m:parseInt(p[1]||0)};}
+  function _wkoFT(h,m){return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0');}
+  function _wkoSave(){
+    var p=Object.assign({},_pass,{dailyBlocks:_wkoDB,dayTasks:_wkoDT});
+    DOC.set(p).then(function(){_pass=Object.assign({},_pass,{dailyBlocks:_wkoDB,dayTasks:_wkoDT});}).catch(function(e){console.warn(e);});
   }
 
   window.openWeekPlanner=function(){
-    _wpWeek=_getMondayOf(selectedDate?parse(selectedDate):today);
-    _wpSelDay=null;
-    renderWeekPlanContent();
-    document.getElementById('wpOverlay').classList.add('open');
+    _wkoW=_getMondayOf(selectedDate?parse(selectedDate):today);
+    _wkoDB=JSON.parse(JSON.stringify(_pass.dailyBlocks||{}));
+    _wkoDT=JSON.parse(JSON.stringify(_pass.dayTasks||{}));
+    _wkoGcEvs={};
+    _wkoRestoreGcTok();
+    document.getElementById('wkoOv').classList.add('open');
+    _wkoRender();
   };
-  window.closeWeekPlanner=function(){
-    document.getElementById('wpOverlay').classList.remove('open');
-    _wpWeek=null;
-    // Re-sync weekPlans from _pass now that the panel is closed
-    if(_pass.weekPlans) weekPlans=_pass.weekPlans;
-  };
-  window.navWeekPlan=function(n){
-    _wpWeek=new Date(_wpWeek); _wpWeek.setDate(_wpWeek.getDate()+n*7);
-    _wpSelDay=null;
-    renderWeekPlanContent();
-  };
+  window.closeWeekPlanner=function(){document.getElementById('wkoOv').classList.remove('open');};
+  window.navWeekPlan=function(n){_wkoW=new Date(_wkoW);_wkoW.setDate(_wkoW.getDate()+n*7);_wkoGcEvs={};_wkoRender();};
+  window.wkoGoToday=function(){_wkoW=_getMondayOf(today);_wkoGcEvs={};_wkoRender();};
 
-  function renderWeekPlanContent(){
-    var lbl=document.getElementById('wpWeekLbl'); if(lbl)lbl.textContent=_fmtWeekRange(_wpWeek);
-    var cont=document.getElementById('wpContent'); if(!cont)return;
-    cont.innerHTML=''; cont.style.cssText='display:flex;flex-direction:column;gap:14px;';
-    var days=_wpGetDays(); var todayStr=fmt(today);
-    var k=_wpKey();
-    // Default select today if in week, else Monday
-    if(!_wpSelDay){
-      var inWeek=days.filter(function(d){return fmt(d)===todayStr;});
-      _wpSelDay=inWeek.length?todayStr:fmt(days[0]);
+  function _wkoRender(){
+    var lbl=document.getElementById('wkoLbl');if(lbl)lbl.textContent=_fmtWeekRange(_wkoW);
+    _wkoRenderGrid(); _wkoRenderFooter(); _wkoRenderGcBtn();
+  }
+
+  function _wkoRenderGrid(){
+    var outer=document.getElementById('wkoOuter');if(!outer)return;
+    var prevScroll=outer.scrollTop;
+    outer.innerHTML='';
+    var grid=document.createElement('div');grid.className='wko-grid';
+    // Time label column
+    var tcol=document.createElement('div');tcol.className='wko-tcol';
+    var thdr=document.createElement('div');thdr.className='wko-tcol-hdr';tcol.appendChild(thdr);
+    for(var h=HSW;h<=HEW;h++){var ll=document.createElement('div');ll.className='wko-hrlbl';ll.textContent=h+':00';tcol.appendChild(ll);}
+    grid.appendChild(tcol);
+    // Day columns
+    var days=_wkoGetDays();var todayStr=fmt(today);
+    var DNAMES=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+    days.forEach(function(d){
+      var ds=fmt(d);
+      var dcol=document.createElement('div');dcol.className='wko-dcol'+(ds===todayStr?' wko-today-col':'');
+      var dhdr=document.createElement('div');dhdr.className='wko-dhdr';
+      dhdr.innerHTML='<div class="wko-dname">'+DNAMES[d.getDay()]+' '+d.getDate()+'</div>';
+      var dnum=document.createElement('div');dnum.className='wko-dnum';dnum.textContent=MNS_SHORT[d.getMonth()];
+      dhdr.appendChild(dnum);dcol.appendChild(dhdr);
+      var hgrid=document.createElement('div');hgrid.className='wko-hgrid';
+      hgrid.style.height=(HEW-HSW+1)*HPXW+'px';
+      for(var hh=HSW;hh<=HEW;hh++){
+        (function(hour){
+          var sl=document.createElement('div');sl.className='wko-slot';
+          sl.onclick=function(e){if(e.target===sl)wkoBmOpen(ds,hour,null);};
+          hgrid.appendChild(sl);
+        })(hh);
+      }
+      if(ds===todayStr){
+        var now=new Date();var nh=now.getHours(),nm=now.getMinutes();
+        if(nh>=HSW&&nh<HEW){
+          var nt=(nh-HSW)*HPXW+(nm/60)*HPXW;
+          var nl=document.createElement('div');nl.style.cssText='position:absolute;left:0;right:0;height:1.5px;background:#E24B4A;z-index:10;pointer-events:none;top:'+nt+'px;';
+          var nd=document.createElement('div');nd.style.cssText='position:absolute;left:0;width:7px;height:7px;border-radius:50%;background:#E24B4A;z-index:11;pointer-events:none;top:'+(nt-3.5)+'px;';
+          hgrid.appendChild(nl);hgrid.appendChild(nd);
+        }
+      }
+      _wkoPlaceBlocks(hgrid,ds);
+      if(_wkoGcTok){if(!_wkoGcEvs[ds])_wkoFetchGc(ds);else _wkoPlaceGcBlocks(hgrid,ds);}
+      dcol.appendChild(hgrid);grid.appendChild(dcol);
+    });
+    outer.appendChild(grid);
+    outer.scrollTop=prevScroll||(8-HSW)*HPXW;
+  }
+
+  function _wkoCalcCols(items){
+    for(var i=0;i<items.length;i++)items[i].col=0;
+    for(var i=1;i<items.length;i++){
+      var used=[];
+      for(var j=0;j<i;j++){if(items[i].top<items[j].bot&&items[i].bot>items[j].top)used.push(items[j].col);}
+      var c=0;while(used.indexOf(c)>=0)c++;items[i].col=c;
     }
-    // Day tabs
-    var tabsRow=document.createElement('div'); tabsRow.style.cssText='display:flex;gap:5px;';
-    var DAY_NAMES=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
-    days.forEach(function(d){
-      var ds=fmt(d);
-      var tab=document.createElement('button'); tab.className='wpg-daytab'+(ds===_wpSelDay?' active':'')+(ds===todayStr?' today-tab':'');
-      var nm=document.createElement('div'); nm.className='wpg-daytab-name'; nm.textContent=DAY_NAMES[d.getDay()]; tab.appendChild(nm);
-      var nu=document.createElement('div'); nu.className='wpg-daytab-num'; nu.textContent=d.getDate(); tab.appendChild(nu);
-      // Dot if day has data
-      var dd2=k&&weekPlans[k]&&weekPlans[k].days&&weekPlans[k].days[ds];
-      if(dd2&&(dd2.exercise&&dd2.exercise.length||dd2.classes&&dd2.classes.length||dd2.food&&dd2.food.where||dd2.deliveries&&dd2.deliveries.length)){
-        var dot=document.createElement('div'); dot.className='wpg-dot'; tab.appendChild(dot);
-      }
-      (function(selDs){tab.onclick=function(){_wpSelDay=selDs;renderWeekPlanContent();};})(ds);
-      tabsRow.appendChild(tab);
-    });
-    cont.appendChild(tabsRow);
-    // Day detail
-    var detail=document.createElement('div'); detail.style.cssText='display:flex;flex-direction:column;gap:10px;';
-    var dd=_wpDayData(_wpSelDay);
-    _wpRenderExercise(detail,_wpSelDay,dd);
-    _wpRenderFood(detail,_wpSelDay,dd);
-    _wpRenderClasses(detail,_wpSelDay,dd);
-    _wpRenderDeliveries(detail,_wpSelDay,dd);
-    cont.appendChild(detail);
-    // Apply button
-    var applyBtn=document.createElement('button'); applyBtn.id='_wpApplyBtn'; applyBtn.className='wpg-apply-btn';
-    applyBtn.textContent='Aplicar semana al Daily Hub';
-    applyBtn.onclick=function(){_wpApplyToHub(k);};
-    cont.appendChild(applyBtn);
+    items.forEach(function(p){var mx=p.col;items.forEach(function(q){if(q!==p&&p.top<q.bot&&p.bot>q.top)mx=Math.max(mx,q.col);});p.numCols=mx+1;});
   }
 
-  function _wpApplyToHub(k){
-    var plan=weekPlans[k]; if(!plan||!plan.days)return;
-    var days=_wpGetDays();
-    var dailyBlocks=JSON.parse(JSON.stringify(_pass.dailyBlocks||{}));
-    var dayTasks=JSON.parse(JSON.stringify(_pass.dayTasks||{}));
-    // Remove old wpGenerated entries for this week
-    days.forEach(function(d){
-      var ds=fmt(d);
-      if(dailyBlocks[ds])dailyBlocks[ds]=dailyBlocks[ds].filter(function(b){return !b.wpGenerated;});
-      if(dayTasks[ds])dayTasks[ds]=dayTasks[ds].filter(function(t){return !t.wpGenerated;});
+  function _wkoPlaceBlocks(hgrid,ds){
+    var blocks=(_wkoDB[ds]||[]);if(!blocks.length)return;
+    var items=blocks.map(function(b){
+      var s=_wkoPT(b.start),e=_wkoPT(b.end);
+      var top=(s.h-HSW)*HPXW+(s.m/60)*HPXW,bot=(e.h-HSW)*HPXW+(e.m/60)*HPXW;
+      return{b:b,top:top,bot:Math.max(bot,top+20),col:0,numCols:1};
     });
-    // Write new entries
-    days.forEach(function(d){
-      var ds=fmt(d); var dd=plan.days[ds]; if(!dd)return;
-      if(!dailyBlocks[ds])dailyBlocks[ds]=[];
-      if(!dayTasks[ds])dayTasks[ds]=[];
-      // Exercise → dailyBlocks
-      (dd.exercise||[]).forEach(function(ex){
-        if(!ex.time)return;
-        var ph=ex.time.split(':'); var eh=(parseInt(ph[0])+1)%24; var et=String(eh).padStart(2,'0')+':'+ph[1];
-        dailyBlocks[ds].push({id:'wp_ex_'+ex.id,start:ex.time,end:et,title:'Ejercicio'+(ex.notes?' · '+ex.notes:''),color:'#27AE72',wpGenerated:true,personal:true});
-      });
-      // Classes → dailyBlocks
-      (dd.classes||[]).forEach(function(cl){
-        if(!cl.time)return;
-        var ph=cl.time.split(':'); var eh=(parseInt(ph[0])+1)%24; var et=String(eh).padStart(2,'0')+':'+ph[1];
-        dailyBlocks[ds].push({id:'wp_cl_'+cl.id,start:cl.time,end:et,title:cl.notes||'Inglés',color:'#8B5CF6',wpGenerated:true,personal:true});
-      });
-      dailyBlocks[ds].sort(function(a,b){return(a.start||'')<(b.start||'')?-1:1;});
-      // Food → dayTasks (solo visible en Daily Hub, no en tareas.html)
-      if(dd.food&&dd.food.where){
-        var ft=dd.food.where==='casa'
-          ?('Planear comida en casa'+(dd.food.notes?' · '+dd.food.notes:''))
-          :('Preparar comida para llevar o planear comida'+(dd.food.notes?' · '+dd.food.notes:''));
-        dayTasks[ds].push({id:'wp_food_'+ds,text:ft,done:false,wpGenerated:true,personal:true,source:'Planner'});
-      }
-      // Deliveries → dayTasks
-      (dd.deliveries||[]).forEach(function(deliv,i){
-        var name=deliv.projectName||deliv.customName||'Entrega';
-        dayTasks[ds].push({id:'wp_deliv_'+ds+'_'+i,text:'Entrega: '+name,done:false,wpGenerated:true,source:'Planner',projId:deliv.projectId||null});
-      });
+    _wkoCalcCols(items);
+    items.forEach(function(it){
+      var b=it.b;var col=b.color||'#1A6FD4';
+      var el=document.createElement('div');el.className='wko-block';
+      el.style.top=it.top+'px';el.style.height=Math.max(18,it.bot-it.top-2)+'px';
+      el.style.borderLeftColor=col;el.style.background=col+'22';
+      if(it.numCols>1){var nc=it.numCols;var ci=it.col;el.style.left='calc(2px + '+ci+' * (100% - 4px) / '+nc+')';el.style.right='';el.style.width='calc((100% - 4px) / '+nc+')';}
+      var bt=document.createElement('div');bt.className='wko-btime';bt.style.color=col;bt.textContent=(b.start||'')+(b.end?' – '+b.end:'');
+      var btt=document.createElement('div');btt.className='wko-btitle';btt.style.color=col;btt.textContent=b.title||'';
+      el.appendChild(bt);el.appendChild(btt);
+      (function(bb,dds){el.onclick=function(e){e.stopPropagation();wkoBmOpen(dds,null,bb.id);};})(b,ds);
+      hgrid.appendChild(el);
     });
-    var p=Object.assign({},_pass,{dailyBlocks:dailyBlocks,dayTasks:dayTasks,weekPlans:weekPlans});
-    DOC.set(p).then(function(){
-      _pass=Object.assign({},_pass,{dailyBlocks:dailyBlocks,dayTasks:dayTasks});
-      var btn=document.getElementById('_wpApplyBtn');
-      if(btn){btn.textContent='✓ Aplicado al Daily Hub';setTimeout(function(){if(btn)btn.textContent='Aplicar semana al Daily Hub';},2500);}
-    }).catch(function(e){console.warn(e);});
   }
 
-  var _wpSaveT=null;
-  function _wpAutoSave(){
-    var sv=document.getElementById('wpSaved');
-    if(sv){sv.textContent='Guardando…';sv.style.opacity='1';}
-    if(_wpSaveT)clearTimeout(_wpSaveT);
-    _wpSaveT=setTimeout(function(){
-      var p=Object.assign({},_pass,{weekPlans:weekPlans});
-      DOC.set(p).catch(function(e){console.warn(e);});
-      var sv2=document.getElementById('wpSaved');
-      if(sv2){sv2.textContent='✓ Guardado';setTimeout(function(){if(sv2)sv2.style.opacity='0';},1800);}
-    },900);
+  function _wkoPlaceGcBlocks(hgrid,ds){
+    (_wkoGcEvs[ds]||[]).forEach(function(ev){
+      var sd=new Date(ev.start.dateTime),ed=new Date(ev.end.dateTime);
+      var sh=sd.getHours(),sm=sd.getMinutes(),eh=ed.getHours(),em=ed.getMinutes();
+      if(sh>=HEW||eh<=HSW)return;
+      var top=Math.max(0,(sh-HSW)*HPXW+(sm/60)*HPXW);
+      var bot=Math.min((HEW-HSW+1)*HPXW,(eh-HSW)*HPXW+(em/60)*HPXW);
+      var gcol=ev._calColor||'#4285F4';
+      var el=document.createElement('div');el.className='wko-gcblock';
+      el.style.top=top+'px';el.style.height=Math.max(16,bot-top-1)+'px';
+      el.style.borderLeftColor=gcol;el.style.background=gcol+'18';
+      var gt=document.createElement('div');gt.className='wko-gctitle';gt.textContent=ev.summary||'Evento';
+      el.appendChild(gt);hgrid.appendChild(el);
+    });
   }
+
+  function _wkoRenderFooter(){
+    var ft=document.getElementById('wkoFooter');if(!ft)return;ft.innerHTML='';
+    var row=document.createElement('div');row.className='wko-ftrow';
+    var sp=document.createElement('div');sp.className='wko-ftspacer';row.appendChild(sp);
+    _wkoGetDays().forEach(function(d){
+      var ds=fmt(d);var fc=document.createElement('div');fc.className='wko-ftcol';
+      var tasks=(_wkoDT[ds]||[]).slice(0,3);
+      if(!tasks.length){var e=document.createElement('div');e.style.cssText='font-size:9px;color:rgba(255,255,255,.12);padding:2px 0;';e.textContent='─';fc.appendChild(e);}
+      tasks.forEach(function(t){var ti=document.createElement('div');ti.className='wko-fttask'+(t.done?' done':'');ti.textContent=(t.done?'✓ ':'')+t.text;fc.appendChild(ti);});
+      var total=(_wkoDT[ds]||[]).length;
+      if(total>3){var m=document.createElement('div');m.style.cssText='font-size:8px;color:rgba(255,255,255,.22);';m.textContent='+'+(total-3)+' más';fc.appendChild(m);}
+      row.appendChild(fc);
+    });
+    ft.appendChild(row);
+  }
+
+  // Block modal
+  function wkoBmOpen(ds,startH,blockId){
+    _wkoBmDs=ds;_wkoBmId=blockId;
+    var ov=document.getElementById('wkoBmOv');
+    var cr=document.getElementById('wkoBmCols');cr.innerHTML='';
+    WKO_COLS.forEach(function(bc){
+      var sw=document.createElement('div');sw.className='wko-color-sw'+(bc.c===_wkoBmColor?' sel':'');
+      sw.style.background=bc.c;sw.title=bc.l;
+      (function(cc){sw.onclick=function(){_wkoBmColor=cc;document.querySelectorAll('.wko-color-sw').forEach(function(s){s.classList.toggle('sel',s.style.background===cc);});};})(bc.c);
+      cr.appendChild(sw);
+    });
+    if(blockId){
+      var blk=(_wkoDB[ds]||[]).filter(function(b){return b.id==blockId;})[0];
+      if(!blk)return;
+      document.getElementById('wkoBmTitle').textContent='Editar bloque';
+      document.getElementById('wkoBmTi').value=blk.title||'';
+      document.getElementById('wkoBmSt').value=blk.start||'';
+      document.getElementById('wkoBmEn').value=blk.end||'';
+      _wkoBmColor=blk.color||'#1A6FD4';
+      document.querySelectorAll('.wko-color-sw').forEach(function(s){s.classList.toggle('sel',s.style.background===_wkoBmColor);});
+      document.getElementById('wkoBmDel').style.display='';
+    } else {
+      document.getElementById('wkoBmTitle').textContent='Nuevo bloque';
+      document.getElementById('wkoBmTi').value='';
+      document.getElementById('wkoBmSt').value=_wkoFT(startH||HSW,0);
+      document.getElementById('wkoBmEn').value=_wkoFT(Math.min((startH||HSW)+1,HEW),0);
+      document.getElementById('wkoBmDel').style.display='none';
+    }
+    ov.classList.add('open');
+    document.getElementById('wkoBmTi').focus();
+  }
+  window.wkoBmClose=function(){document.getElementById('wkoBmOv').classList.remove('open');};
+  window.wkoBmSave=function(){
+    var ti=document.getElementById('wkoBmTi').value.trim()||'Bloque';
+    var st=document.getElementById('wkoBmSt').value;
+    var en=document.getElementById('wkoBmEn').value;
+    if(!_wkoBmDs)return;
+    if(!_wkoDB[_wkoBmDs])_wkoDB[_wkoBmDs]=[];
+    if(_wkoBmId){
+      _wkoDB[_wkoBmDs]=_wkoDB[_wkoBmDs].map(function(b){return b.id==_wkoBmId?Object.assign({},b,{title:ti,start:st,end:en,color:_wkoBmColor}):b;});
+    } else {
+      _wkoDB[_wkoBmDs].push({id:Date.now(),title:ti,start:st,end:en,color:_wkoBmColor,sub:''});
+      _wkoDB[_wkoBmDs].sort(function(a,b){return(a.start||'')<(b.start||'')?-1:1;});
+    }
+    _wkoSave();wkoBmClose();_wkoRender();
+  };
+  window.wkoBmDelete=function(){
+    if(!_wkoBmDs||!_wkoBmId)return;
+    _wkoDB[_wkoBmDs]=(_wkoDB[_wkoBmDs]||[]).filter(function(b){return b.id!=_wkoBmId;});
+    _wkoSave();wkoBmClose();_wkoRender();
+  };
+
+  // GC integration for weekly view
+  window.wkoGcInitGapi=function(){
+    gapi.load('client',function(){
+      gapi.client.init({}).then(function(){
+        return gapi.client.load('https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest');
+      }).then(function(){_wkoGapiRdy=true;_wkoRestoreGcTok();}).catch(function(){});
+    });
+  };
+  function _wkoRestoreGcTok(){
+    if(!_wkoGapiRdy)return;
+    try{
+      var s=JSON.parse(localStorage.getItem('gc_token')||'null');
+      if(s&&s.expires_at>Date.now()){_wkoGcTok=s.access_token;gapi.client.setToken({access_token:_wkoGcTok});_wkoRenderGcBtn();if(_wkoW)_wkoGetDays().forEach(function(d){_wkoFetchGc(fmt(d));});}
+    }catch(e){}
+  }
+  function _wkoFetchGc(ds){
+    if(!_wkoGcTok||!_wkoGapiRdy||_wkoGcEvs[ds]!==undefined)return;
+    _wkoGcEvs[ds]=null;
+    var d=new Date(ds+'T00:00:00');
+    var tMin=d.toISOString(),tMax=new Date(d.getTime()+86400000).toISOString();
+    gapi.client.calendar.calendarList.list({minAccessRole:'reader'}).then(function(cl){
+      var cals=(cl.result.items||[]).map(function(c){return{id:c.id,color:c.backgroundColor};});
+      if(!cals.length)cals=[{id:'primary',color:null}];
+      var all=[],done=0;
+      cals.forEach(function(cal){
+        gapi.client.calendar.events.list({calendarId:cal.id,timeMin:tMin,timeMax:tMax,singleEvents:true,orderBy:'startTime',maxResults:25}).then(function(r){
+          var evs=(r.result.items||[]).filter(function(e){return e.start&&e.start.dateTime;});
+          evs.forEach(function(e){e._calColor=cal.color;});all=all.concat(evs);
+          if(++done===cals.length){_wkoGcEvs[ds]=all;_wkoRenderGrid();}
+        }).catch(function(){if(++done===cals.length){_wkoGcEvs[ds]=all||[];_wkoRenderGrid();}});
+      });
+    }).catch(function(e){if(e.status===401){_wkoGcTok=null;_wkoRenderGcBtn();}});
+  }
+  function _wkoRenderGcBtn(){
+    var el=document.getElementById('wkoGcBtn');if(!el)return;el.innerHTML='';
+    var tok=localStorage.getItem('gc_token');if(!tok)return;
+    var btn=document.createElement('button');btn.className='wko-gc-btn'+(_wkoGcTok?' on':'');
+    btn.textContent=_wkoGcTok?'● Google Cal':'Google Cal';
+    el.appendChild(btn);
+  }
+  function _wpKey(){return _wkoW?fmt(_wkoW):null;}
 
   // ── INIT ──────────────────────────────────────────────────────
   DOC.onSnapshot(function(snap){
@@ -1493,7 +1569,9 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
       // Don't overwrite weekPlans while the planner is open — doing so breaks
       // the object references held by the exercise/class input closures, causing
       // typed times to be lost before Apply is clicked.
-      if(d.weekPlans && !_wpWeek) weekPlans=d.weekPlans;
+      if(d.weekPlans && !_wkoW) weekPlans=d.weekPlans;
+      if(d.dailyBlocks && _wkoW){_wkoDB=JSON.parse(JSON.stringify(d.dailyBlocks));_wkoRenderGrid && _wkoRenderGrid();}
+      if(d.dayTasks && _wkoW) _wkoDT=JSON.parse(JSON.stringify(d.dayTasks||{}));
     }
     render();
     if(selectedDate&&curView!=='day') renderDayEvents(selectedDate);
@@ -1542,5 +1620,6 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
 })();
 </script>
 <script src="theme.js"></script>
+<script src="https://apis.google.com/js/api.js" onload="wkoGcInitGapi()" async defer></script>
 </body>
 </html>
