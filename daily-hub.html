@@ -373,7 +373,6 @@ input[type=time].mi{color-scheme:dark;cursor:pointer;}
     });
     try{var s=JSON.parse(localStorage.getItem('gc_token')||'null');
       if(s&&s.expires_at>Date.now()){_gcToken=s;gapi.client.setToken({access_token:s.access_token});gcFetchEvents(fmt(curDate));}
-      else if(s){_gcTokenClient.requestAccessToken({prompt:''});}
     }catch(e){}
     renderGcBtn();
   }
