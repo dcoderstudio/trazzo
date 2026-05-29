@@ -1,0 +1,20 @@
+{
+  "name": "Trazzo",
+  "short_name": "Trazzo",
+  "description": "Dcoder Studio — gestión de proyectos y planificación",
+  "start_url": "/daily-hub.html",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0c0c0c",
+  "theme_color": "#1A6FD4",
+  "icons": [
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [],
+  "categories": ["productivity", "business"]
+}
