@@ -429,6 +429,10 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
 .wko-rem-add-ok:hover{background:rgba(39,174,114,.26);}
 .wko-rem-add-cancel{background:rgba(255,255,255,.05);border:0.5px solid rgba(255,255,255,.08);color:rgba(255,255,255,.35);font-size:11px;border-radius:8px;padding:5px 8px;cursor:pointer;font-family:Inter,sans-serif;}
 .wko-slot.drop-hi{background:rgba(91,159,255,.18) !important;outline:1.5px dashed rgba(91,159,255,.5);}
+.wko-rp-done-toggle{background:none;border:none;color:rgba(255,255,255,.25);font-size:9px;font-weight:700;cursor:pointer;padding:3px 2px 6px;font-family:Inter,sans-serif;text-transform:uppercase;letter-spacing:.04em;transition:color .15s;width:100%;text-align:left;}
+.wko-rp-done-toggle:hover{color:rgba(255,255,255,.55);}
+.wko-rp-day-empty{font-size:9px;color:rgba(255,255,255,.1);padding:7px 6px;border:0.5px dashed rgba(255,255,255,.07);border-radius:8px;text-align:center;margin:2px 0 4px;transition:all .15s;}
+.wko-rp-day-empty.drop-hi,.wko-rp-day.drop-hi{background:rgba(91,159,255,.12) !important;outline:1.5px dashed rgba(91,159,255,.45) !important;border-radius:6px;color:rgba(91,159,255,.8) !important;}
 .wko-rp-ghost{position:fixed;pointer-events:none;z-index:2000;border-radius:10px;padding:5px 10px;font-size:10px;font-weight:700;color:rgba(255,255,255,.9);white-space:nowrap;max-width:180px;overflow:hidden;text-overflow:ellipsis;}
 </style>
 </head>
@@ -1719,6 +1723,7 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
 
   // ── RIGHT PANEL ───────────────────────────────────────────────
   var DNAMES_S=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+  var _wkoDoneCollapsed={};
   var MNAMES_S=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
   var WKO_CARD_COLORS=['#1A6FD4','#8B5CF6','#E8A020','#27AE72','#D4537E'];
   function _wkoHexRgb(h){return parseInt(h.slice(1,3),16)+','+parseInt(h.slice(3,5),16)+','+parseInt(h.slice(5,7),16);}
@@ -1756,7 +1761,7 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
   }
 
   // Muted neutral card (tareas pendientes — same color, no gradient)
-  function _wkoRpCardNeutral(text,idx,meta){
+  function _wkoRpCardNeutral(text,idx,meta,dragCfg){
     var card=document.createElement('div');card.className='wko-dc neutral';
     if(meta){card.dataset.sec=meta.sec;card.dataset.ds=meta.ds||'';card.dataset.idx=String(meta.dataIdx);}
     var handle=document.createElement('div');handle.className='wko-dc-handle';
@@ -1768,7 +1773,7 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
     var chk=document.createElement('div');chk.className='wko-dc-check';
     chk.addEventListener('pointerdown',function(e){e.stopPropagation();});
     card.appendChild(handle);card.appendChild(num);card.appendChild(body);card.appendChild(chk);
-    card.addEventListener('pointerdown',function(e){_wkoRpDragStart(e,text,'#888',card);},{passive:false});
+    card.addEventListener('pointerdown',function(e){_wkoRpDragStart(e,text,'#888',card,dragCfg||null);},{passive:false});
     return card;
   }
 
@@ -1935,23 +1940,44 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
         });
       });
     });
-    // Sort: by position in saved order (within same day), then by deadline date
+    // Sort within each day by saved order; done tasks always go last
     weekTasks.sort(function(a,b){
       if(a.deadline!==b.deadline)return a.deadline<b.deadline?-1:1;
+      var ad=a.done?1:0,bd=b.done?1:0;if(ad!==bd)return ad-bd;
       var ai=wkOrder.indexOf(String(a.id)),bi=wkOrder.indexOf(String(b.id));
       if(ai!==-1&&bi!==-1)return ai-bi;
       if(ai!==-1)return -1;if(bi!==-1)return 1;return 0;
     });
     _wkoLastWeekTasks=weekTasks;
-    if(!weekTasks.length){var e1=document.createElement('div');e1.className='wko-rp-empty';e1.textContent='Sin vencimientos esta semana';sc.appendChild(e1);}
-    else{
-      var lastDay='';
-      weekTasks.forEach(function(t,i){
-        var c=WKO_CARD_COLORS[i%WKO_CARD_COLORS.length];
-        if(t.deadline!==lastDay){lastDay=t.deadline;var dl=document.createElement('div');dl.className='wko-rp-day';dl.textContent=_wkoFmtDl(t.deadline).toUpperCase();sc.appendChild(dl);}
-        sc.appendChild(_wkoRpCard(t.text,t.done,c,i,t.sub,{sec:'deadline',ds:t.deadline,taskid:String(t.id),dataIdx:i},t.onCheck,{type:'deadline',updateFn:t.updateFn}));
+    // Group by day — always show all 7 days
+    var colorIdx=0;
+    days.forEach(function(d){
+      var ds=fmt(d);
+      var dl=document.createElement('div');dl.className='wko-rp-day';dl.dataset.dday=ds;
+      dl.textContent=_wkoFmtDl(ds).toUpperCase();
+      sc.appendChild(dl);
+      var dayUndone=weekTasks.filter(function(t){return t.deadline===ds&&!t.done;});
+      var dayDone=weekTasks.filter(function(t){return t.deadline===ds&&t.done;});
+      if(!dayUndone.length&&!dayDone.length){
+        var empty=document.createElement('div');empty.className='wko-rp-day-empty';
+        empty.dataset.dday=ds;empty.textContent='Suelta una tarea aquí para asignarla';
+        sc.appendChild(empty);
+      }
+      dayUndone.forEach(function(t){
+        var c=WKO_CARD_COLORS[colorIdx%WKO_CARD_COLORS.length];colorIdx++;
+        sc.appendChild(_wkoRpCard(t.text,false,c,colorIdx-1,t.sub,{sec:'deadline',ds:t.deadline,taskid:String(t.id),dataIdx:colorIdx-1},t.onCheck,{type:'deadline',updateFn:t.updateFn}));
       });
-    }
+      if(dayDone.length){
+        var isCol=!!_wkoDoneCollapsed[ds];
+        var tog=document.createElement('button');tog.className='wko-rp-done-toggle';
+        tog.textContent=(isCol?'▶ ':'▼ ')+dayDone.length+(dayDone.length===1?' completada':' completadas');
+        tog.onclick=(function(dsi){return function(){_wkoDoneCollapsed[dsi]=!_wkoDoneCollapsed[dsi];_wkoRenderRpanel();};})(ds);
+        sc.appendChild(tog);
+        if(!isCol)dayDone.forEach(function(t,i){
+          sc.appendChild(_wkoRpCard(t.text,true,'#888',colorIdx+i,t.sub,{sec:'deadline',ds:t.deadline,taskid:String(t.id),dataIdx:colorIdx+i},t.onCheck,{type:'deadline',updateFn:t.updateFn}));
+        });
+      }
+    });
 
     // ── SECTION 3: Recordatorios ──
     var sep2=document.createElement('div');sep2.className='wko-rp-sep';sc.appendChild(sep2);
@@ -2007,7 +2033,12 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
     if(!pending.length){var e3=document.createElement('div');e3.className='wko-rp-empty';e3.textContent='Sin tareas pendientes';sc.appendChild(e3);}
     else{
       pending.slice(0,25).forEach(function(t,i){
-        sc.appendChild(_wkoRpCardNeutral(t.text,i,{sec:'standalone',ds:'',dataIdx:i}));
+        sc.appendChild(_wkoRpCardNeutral(t.text,i,{sec:'standalone',ds:'',dataIdx:i},{
+          type:'deadline',
+          updateFn:(function(id){return function(newDs){
+            for(var j=0;j<standaloneTasks.length;j++){if(standaloneTasks[j].id===id){standaloneTasks[j].deadline=newDs;_pass.standaloneTasks=standaloneTasks;saveData2();_wkoRenderRpanel();return;}}
+          };})(t.id)
+        }));
       });
       if(pending.length>25){var m=document.createElement('div');m.className='wko-rp-empty';m.textContent='+'+(pending.length-25)+' más';sc.appendChild(m);}
     }
@@ -2039,7 +2070,7 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
     ghost.textContent=text;
     document.body.appendChild(ghost);
     _wkoRpDrag={
-      text:text,color:color,ghost:ghost,hoverSlot:null,hoverDc:null,srcCard:srcCard||null,
+      text:text,color:color,ghost:ghost,hoverSlot:null,hoverDc:null,hoverDayEl:null,srcCard:srcCard||null,
       insertBefore:true,
       type:(dragCfg&&dragCfg.type)||'block',
       updateFn:(dragCfg&&dragCfg.updateFn)||null
@@ -2059,9 +2090,13 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
     var el=document.elementFromPoint(e.clientX,e.clientY);
     var dc=el&&el.closest('.wko-dc:not(.dragging)');
     var slot=el&&el.closest('.wko-slot');
+    var dayEl=el&&(el.closest('.wko-rp-day[data-dday]')||el.closest('.wko-rp-day-empty[data-dday]'));
     // Slot highlight
     if(_wkoRpDrag.hoverSlot&&_wkoRpDrag.hoverSlot!==slot){_wkoRpDrag.hoverSlot.classList.remove('drop-hi');_wkoRpDrag.hoverSlot=null;}
     if(slot){slot.classList.add('drop-hi');_wkoRpDrag.hoverSlot=slot;}
+    // Day header/empty zone highlight
+    if(_wkoRpDrag.hoverDayEl&&_wkoRpDrag.hoverDayEl!==dayEl){_wkoRpDrag.hoverDayEl.classList.remove('drop-hi');_wkoRpDrag.hoverDayEl=null;}
+    if(dayEl&&!dc){dayEl.classList.add('drop-hi');_wkoRpDrag.hoverDayEl=dayEl;}
     // Card insert indicator
     if(dc&&dc!==_wkoRpDrag.srcCard){
       var rect=dc.getBoundingClientRect();
@@ -2077,12 +2112,17 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
     document.removeEventListener('pointerup',_wkoRpOnUp);
     if(!_wkoRpDrag)return;
     if(_wkoRpDrag.hoverSlot)_wkoRpDrag.hoverSlot.classList.remove('drop-hi');
+    if(_wkoRpDrag.hoverDayEl)_wkoRpDrag.hoverDayEl.classList.remove('drop-hi');
     _wkoRemoveInsert();
     _wkoRpDrag.ghost.remove();
     if(_wkoRpDrag.srcCard)_wkoRpDrag.srcCard.classList.remove('dragging');
     var drag=_wkoRpDrag;_wkoRpDrag=null;
     var slot=drag.hoverSlot;
     var dc=drag.hoverDc;
+    // Drop on day header/empty zone → assign deadline
+    if(drag.hoverDayEl&&drag.updateFn&&!dc&&!slot){
+      drag.updateFn(drag.hoverDayEl.dataset.dday);return;
+    }
     var srcCard=drag.srcCard;
 
     if(dc&&srcCard&&srcCard!==dc){
