@@ -1947,9 +1947,9 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
     entDays.forEach(function(d){
       var ds=fmt(d);
       var items=[];
-      // From calendar events (projects with delivery date)
+      // From calendar events (projects/custom events — exclude standalone tasks, handled separately)
       getEventsForDate(ds).forEach(function(ev){
-        if(ev.type==='delivery')items.push({id:'cal_'+ev.id,text:ev.title,done:false,fromCal:true,sub:ev.sub||''});
+        if(ev.type==='delivery'&&ev.id.indexOf('st_')!==0)items.push({id:'cal_'+ev.id,text:ev.title,done:false,fromCal:true,sub:ev.sub||''});
       });
       // From standalone tasks with isDelivery flag
       (standaloneTasks||[]).forEach(function(t){
