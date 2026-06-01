@@ -1439,6 +1439,12 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
     var p=Object.assign({},_pass,{dailyBlocks:_wkoDB,dayTasks:_wkoDT,weekGoals:_wkoGoals,weekTaskOrder:_wkoTaskOrder,mealPlan:_wkoMealPlan});
     DOC.set(p).then(function(){_pass=Object.assign({},_pass,{dailyBlocks:_wkoDB,dayTasks:_wkoDT,weekGoals:_wkoGoals,weekTaskOrder:_wkoTaskOrder,mealPlan:_wkoMealPlan});}).catch(function(e){console.warn(e);});
   }
+  function _wkoSaveMeal(){
+    // Update _pass immediately so any subsequent save from any page includes current meal plan
+    _pass.mealPlan=JSON.parse(JSON.stringify(_wkoMealPlan));
+    // Targeted update — only touches mealPlan field, no risk of overwriting other data
+    DOC.update({mealPlan:_wkoMealPlan}).catch(function(e){console.warn('meal save:',e);});
+  }
 
   window.openWeekPlanner=function(){
     _wkoW=_getMondayOf(selectedDate?parse(selectedDate):today);
@@ -1863,12 +1869,12 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
       btnH.onclick=(function(dsi){return function(){
         if(!_wkoMealPlan[dsi])_wkoMealPlan[dsi]={type:null,note:''};
         _wkoMealPlan[dsi].type=(_wkoMealPlan[dsi].type==='home'?null:'home');
-        _wkoSave();_wkoRenderRpanel();
+        _wkoSaveMeal();_wkoRenderRpanel();
       };})(ds);
       btnO.onclick=(function(dsi){return function(){
         if(!_wkoMealPlan[dsi])_wkoMealPlan[dsi]={type:null,note:''};
         _wkoMealPlan[dsi].type=(_wkoMealPlan[dsi].type==='out'?null:'out');
-        _wkoSave();_wkoRenderRpanel();
+        _wkoSaveMeal();_wkoRenderRpanel();
       };})(ds);
       btns.appendChild(btnH);btns.appendChild(btnO);
       // Note input
@@ -1878,7 +1884,7 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
       noteInp.onblur=(function(dsi){return function(){
         if(!_wkoMealPlan[dsi])_wkoMealPlan[dsi]={type:null,note:''};
         _wkoMealPlan[dsi].note=noteInp.value.trim();
-        _wkoSave();
+        _wkoSaveMeal();
       };})(ds);
       noteInp.onkeydown=function(e){if(e.key==='Enter')noteInp.blur();};
       row.appendChild(lbl);row.appendChild(btns);row.appendChild(noteInp);
