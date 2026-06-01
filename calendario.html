@@ -75,6 +75,33 @@ body{height:100%;min-height:-webkit-fill-available;background:#0c0c0c;color:#fff
 .prio-input{flex:1;background:#1e1e1e;border:0.5px solid rgba(255,255,255,0.1);border-radius:7px;padding:5px 8px;font-size:11px;color:#fff;font-family:Inter,sans-serif;outline:none;}
 .prio-input:focus{border-color:rgba(255,255,255,0.3);}
 .prio-input::placeholder{color:rgba(255,255,255,0.18);}
+/* Month goals & reminders (sidebar) */
+.cal-month-sec{margin-top:16px;padding-top:14px;border-top:0.5px solid rgba(255,255,255,0.06);position:relative;}
+.cal-month-sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;}
+.cal-month-sec-title{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,0.2);}
+.cal-month-add-btn{background:none;border:none;color:rgba(255,255,255,0.2);font-size:16px;cursor:pointer;padding:0;line-height:1;transition:color .15s;}
+.cal-month-add-btn:hover{color:rgba(255,255,255,0.6);}
+.cal-month-item{display:flex;align-items:flex-start;gap:6px;padding:4px 0;border-bottom:0.5px solid rgba(255,255,255,0.04);}
+.cal-month-item:last-of-type{border-bottom:none;}
+.cal-month-chk{width:15px;height:15px;border-radius:50%;border:1.5px solid rgba(255,255,255,0.2);flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;margin-top:1px;}
+.cal-month-chk:hover{border-color:rgba(255,255,255,0.5);}
+.cal-month-goals .cal-month-chk{border-color:rgba(232,160,32,0.35);}
+.cal-month-goals .cal-month-chk.done{background:#E8A020;border-color:#E8A020;}
+.cal-month-rems .cal-month-chk{border-color:rgba(44,197,210,0.35);}
+.cal-month-rems .cal-month-chk.done{background:#2CC5D2;border-color:#2CC5D2;}
+.cal-month-text{font-size:11px;color:rgba(255,255,255,0.7);flex:1;line-height:1.4;word-break:break-word;}
+.cal-month-text.done{color:rgba(255,255,255,0.22);text-decoration:line-through;}
+.cal-month-del{background:none;border:none;color:rgba(255,255,255,0.1);font-size:13px;cursor:pointer;padding:0 2px;line-height:1;flex-shrink:0;transition:color .15s;}
+.cal-month-del:hover{color:rgba(226,75,74,0.7);}
+.cal-month-inp-wrap{display:flex;gap:5px;margin-top:6px;}
+.cal-month-inp{flex:1;background:#1e1e1e;border:0.5px solid rgba(255,255,255,0.1);border-radius:7px;padding:5px 8px;font-size:11px;color:#fff;font-family:Inter,sans-serif;outline:none;}
+.cal-month-inp:focus{border-color:rgba(255,255,255,0.3);}
+.cal-month-inp::placeholder{color:rgba(255,255,255,0.15);}
+.cal-month-inp-ok{background:rgba(255,255,255,0.07);border:none;color:rgba(255,255,255,0.6);font-size:14px;border-radius:7px;width:28px;flex-shrink:0;cursor:pointer;line-height:28px;font-family:Inter,sans-serif;transition:background .15s;}
+.cal-month-inp-ok:hover{background:rgba(255,255,255,0.14);}
+.cal-month-all-done{font-size:9px;font-weight:700;color:#E8A020;text-align:center;padding:6px 2px 2px;letter-spacing:.03em;}
+@keyframes cal-month-burst{0%{transform:scale(0) translateY(0);opacity:1;}100%{transform:scale(1.6) translateY(-32px);opacity:0;}}
+.cal-month-dot{position:absolute;width:6px;height:6px;border-radius:50%;pointer-events:none;animation:cal-month-burst .6s ease-out forwards;}
 .prio-input-ok{background:rgba(255,255,255,0.08);border:none;color:#fff;font-size:12px;border-radius:7px;padding:0 9px;cursor:pointer;font-family:Inter,sans-serif;line-height:28px;}
 .prio-input-ok:hover{background:rgba(255,255,255,0.15);}
 /* MAIN AREA */
@@ -509,6 +536,22 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
       </div>
       <div id="sidebarCats"></div>
     </div>
+    <!-- MONTH GOALS -->
+    <div class="cal-month-sec cal-month-goals">
+      <div class="cal-month-sec-hdr">
+        <span class="cal-month-sec-title">🎯 Objetivos del mes</span>
+        <button class="cal-month-add-btn" id="btnAddMonthGoal" onclick="openMonthGoalInput()">+</button>
+      </div>
+      <div id="monthGoalsList"></div>
+    </div>
+    <!-- MONTH REMINDERS -->
+    <div class="cal-month-sec cal-month-rems">
+      <div class="cal-month-sec-hdr">
+        <span class="cal-month-sec-title">🔔 Recordatorios del mes</span>
+        <button class="cal-month-add-btn" id="btnAddMonthRem" onclick="openMonthRemInput()">+</button>
+      </div>
+      <div id="monthRemsList"></div>
+    </div>
     <!-- DAILY PRIORITIES -->
     <div class="prio-section">
       <div class="prio-section-hdr">
@@ -674,6 +717,8 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
   // ── STATE ────────────────────────────────────────────────────
   var projects=[], categories=[], standaloneTasks=[], calendarEvents=[];
   var calCategories=[], dailyPriorities={}, weekPlans={};
+  var monthGoals={}, monthReminders={};
+  var _mgInputOpen=false, _mrInputOpen=false;
   var _pass={};
   var _wpWeek=null; var _wpSelDay=null;
   var today=new Date(); today.setHours(0,0,0,0);
@@ -726,7 +771,7 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
 
   // ── SAVE ────────────────────────────────────────────────────
   function saveData(){
-    var p=Object.assign({},_pass,{calendarEvents:calendarEvents,calCategories:calCategories,dailyPriorities:dailyPriorities});
+    var p=Object.assign({},_pass,{calendarEvents:calendarEvents,calCategories:calCategories,dailyPriorities:dailyPriorities,monthGoals:monthGoals,monthReminders:monthReminders});
     DOC.set(p).catch(function(e){console.warn('Save error:',e);});
   }
   function saveData2(){saveData();}
@@ -1370,6 +1415,8 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
     else renderDay();
     renderSidebarCats();
     renderPriorities(_prioDate||selectedDate||fmt(today));
+    renderMonthGoals();
+    renderMonthReminders();
   }
 
   // ── EVENT MODAL ───────────────────────────────────────────────
@@ -2362,6 +2409,111 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
     }
   }
 
+  // ── MONTH GOALS & REMINDERS ───────────────────────────────────
+  function _monthKey(){return curYear+'-'+String(curMonth+1).padStart(2,'0');}
+
+  function _sidebarCelebrate(container){
+    var cols=['#E8A020','#1A6FD4','#27AE72','#8B5CF6','#D4537E'];
+    for(var i=0;i<14;i++){(function(ci){
+      setTimeout(function(){
+        var dot=document.createElement('div');dot.className='cal-month-dot';
+        dot.style.cssText='left:'+(5+Math.random()*90)+'%;top:4px;background:'+cols[ci%cols.length]+';animation-delay:0ms;';
+        container.appendChild(dot);setTimeout(function(){dot.remove();},800);
+      },ci*35);
+    })(i);}
+  }
+
+  function renderMonthGoals(){
+    var wrap=document.getElementById('monthGoalsList');if(!wrap)return;
+    wrap.innerHTML='';
+    var mk=_monthKey();
+    var goals=monthGoals[mk]||[];
+    goals.forEach(function(g,i){
+      var item=document.createElement('div');item.className='cal-month-item';
+      var chk=document.createElement('div');chk.className='cal-month-chk'+(g.done?' done':'');
+      if(g.done)chk.innerHTML='<svg width="8" height="8" viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round"/></svg>';
+      chk.onclick=(function(ii){return function(){
+        var arr=monthGoals[mk]||[];if(!arr[ii])return;
+        arr[ii]=Object.assign({},arr[ii],{done:!arr[ii].done});
+        saveData();renderMonthGoals();
+      };})(i);
+      var txt=document.createElement('div');txt.className='cal-month-text'+(g.done?' done':'');txt.textContent=g.text;
+      var del=document.createElement('button');del.className='cal-month-del';del.textContent='×';
+      del.onclick=(function(ii){return function(){
+        var arr=(monthGoals[mk]||[]).slice();arr.splice(ii,1);
+        monthGoals[mk]=arr;saveData();renderMonthGoals();
+      };})(i);
+      item.appendChild(chk);item.appendChild(txt);item.appendChild(del);
+      wrap.appendChild(item);
+    });
+    if(goals.length&&goals.every(function(g){return g.done;})){
+      var done=document.createElement('div');done.className='cal-month-all-done';done.textContent='¡Mes cumplido! 🎉';wrap.appendChild(done);
+      var sec=document.getElementById('monthGoalsList').closest('.cal-month-sec');
+      if(sec)_sidebarCelebrate(sec);
+    }
+    if(_mgInputOpen){
+      var iw=document.createElement('div');iw.className='cal-month-inp-wrap';
+      var inp=document.createElement('input');inp.className='cal-month-inp';inp.placeholder='Nuevo objetivo…';
+      var ok=document.createElement('button');ok.className='cal-month-inp-ok';ok.textContent='↵';
+      var doAdd=function(){
+        var v=inp.value.trim();if(!v)return;
+        if(!monthGoals[mk])monthGoals[mk]=[];
+        monthGoals[mk].push({id:Date.now(),text:v,done:false});
+        _mgInputOpen=false;saveData();renderMonthGoals();
+      };
+      inp.onkeydown=function(e){if(e.key==='Enter')doAdd();if(e.key==='Escape'){_mgInputOpen=false;renderMonthGoals();}};
+      ok.onclick=doAdd;iw.appendChild(inp);iw.appendChild(ok);wrap.appendChild(iw);
+      setTimeout(function(){inp.focus();},30);
+    }
+    var addBtn=document.getElementById('btnAddMonthGoal');
+    if(addBtn)addBtn.style.display=_mgInputOpen?'none':'';
+  }
+
+  function renderMonthReminders(){
+    var wrap=document.getElementById('monthRemsList');if(!wrap)return;
+    wrap.innerHTML='';
+    var mk=_monthKey();
+    var rems=monthReminders[mk]||[];
+    rems.forEach(function(r,i){
+      var item=document.createElement('div');item.className='cal-month-item';
+      var chk=document.createElement('div');chk.className='cal-month-chk'+(r.done?' done':'');
+      if(r.done)chk.innerHTML='<svg width="8" height="8" viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round"/></svg>';
+      chk.onclick=(function(ii){return function(){
+        var arr=monthReminders[mk]||[];if(!arr[ii])return;
+        arr[ii]=Object.assign({},arr[ii],{done:!arr[ii].done});
+        saveData();renderMonthReminders();
+      };})(i);
+      var txt=document.createElement('div');txt.className='cal-month-text'+(r.done?' done':'');txt.textContent=r.text;
+      var del=document.createElement('button');del.className='cal-month-del';del.textContent='×';
+      del.onclick=(function(ii){return function(){
+        var arr=(monthReminders[mk]||[]).slice();arr.splice(ii,1);
+        monthReminders[mk]=arr;saveData();renderMonthReminders();
+      };})(i);
+      item.appendChild(chk);item.appendChild(txt);item.appendChild(del);
+      wrap.appendChild(item);
+    });
+    if(_mrInputOpen){
+      var iw=document.createElement('div');iw.className='cal-month-inp-wrap';
+      var inp=document.createElement('input');inp.className='cal-month-inp';inp.placeholder='Nuevo recordatorio…';
+      var ok=document.createElement('button');ok.className='cal-month-inp-ok';ok.textContent='↵';
+      var doAdd=function(){
+        var v=inp.value.trim();if(!v)return;
+        var mk2=_monthKey();
+        if(!monthReminders[mk2])monthReminders[mk2]=[];
+        monthReminders[mk2].push({id:Date.now(),text:v,done:false});
+        _mrInputOpen=false;saveData();renderMonthReminders();
+      };
+      inp.onkeydown=function(e){if(e.key==='Enter')doAdd();if(e.key==='Escape'){_mrInputOpen=false;renderMonthReminders();}};
+      ok.onclick=doAdd;iw.appendChild(inp);iw.appendChild(ok);wrap.appendChild(iw);
+      setTimeout(function(){inp.focus();},30);
+    }
+    var addBtn=document.getElementById('btnAddMonthRem');
+    if(addBtn)addBtn.style.display=_mrInputOpen?'none':'';
+  }
+
+  window.openMonthGoalInput=function(){_mgInputOpen=true;renderMonthGoals();};
+  window.openMonthRemInput=function(){_mrInputOpen=true;renderMonthReminders();};
+
   // ── INIT ──────────────────────────────────────────────────────
   DOC.onSnapshot(function(snap){
     if(snap.exists){
@@ -2373,6 +2525,8 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
       if(d.calendarEvents) calendarEvents=d.calendarEvents;
       if(d.calCategories&&d.calCategories.length) calCategories=d.calCategories;
       if(d.dailyPriorities) dailyPriorities=d.dailyPriorities;
+      if(d.monthGoals) monthGoals=d.monthGoals;
+      if(d.monthReminders) monthReminders=d.monthReminders;
       // Don't overwrite weekPlans while the planner is open — doing so breaks
       // the object references held by the exercise/class input closures, causing
       // typed times to be lost before Apply is clicked.
