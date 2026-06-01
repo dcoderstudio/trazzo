@@ -17,7 +17,7 @@
 *{box-sizing:border-box;margin:0;padding:0;}
 html{height:-webkit-fill-available;}
 body{height:100%;min-height:-webkit-fill-available;background:#0c0c0c;color:#fff;font-family:'Inter',sans-serif;overflow:hidden;}
-.topbar{display:flex;align-items:center;justify-content:space-between;padding:0 28px;height:52px;border-bottom:0.5px solid rgba(255,255,255,0.06);flex-shrink:0;}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:0 28px;height:52px;border-bottom:0.5px solid rgba(255,255,255,0.06);flex-shrink:0;position:relative;z-index:1000;}
 .logo{display:flex;align-items:center;gap:10px;}
 .logo-pill{background:#fff;color:#0c0c0c;font-size:11px;font-weight:800;padding:5px 10px;border-radius:8px;}
 .logo-name{font-size:14px;font-weight:700;letter-spacing:.04em;}
@@ -278,7 +278,7 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
 .wpg-apply-btn{background:linear-gradient(135deg,rgba(26,111,212,.38),rgba(139,92,246,.28));border:0.5px solid rgba(100,150,255,.3);color:#fff;font-size:12px;font-weight:700;padding:11px 20px;border-radius:12px;cursor:pointer;font-family:Inter,sans-serif;transition:all .18s;width:100%;}
 .wpg-apply-btn:hover{filter:brightness(1.15);}
 /* ── WEEKLY TIME GRID OVERLAY ─────────────────────────────────── */
-.wko-ov{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(6,7,8,.97);z-index:900;display:flex;flex-direction:column;opacity:0;pointer-events:none;transition:opacity .18s;}
+.wko-ov{position:fixed;top:52px;left:0;right:0;bottom:0;background:rgba(6,7,8,.97);z-index:900;display:flex;flex-direction:column;opacity:0;pointer-events:none;transition:opacity .18s;}
 .wko-ov.open{opacity:1;pointer-events:all;}
 .wko-hdr{display:flex;align-items:center;gap:8px;padding:12px 20px;border-bottom:0.5px solid rgba(255,255,255,.08);flex-shrink:0;}
 .wko-title{font-size:15px;font-weight:800;letter-spacing:-.02em;flex:1;}
