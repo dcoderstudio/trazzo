@@ -737,7 +737,15 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
       });
     });
     standaloneTasks.forEach(function(t){
-      if(t.deadline&&!t.done) evs.push({id:'st_'+t.id,date:t.deadline,title:t.text,sub:'Tarea libre',color:'#E8A020',type:'task',icon:'✓',taskId:t.id,isStandalone:true,resp:t.resp||''});
+      if(t.deadline&&!t.done){
+        var isDel=!!t.isDelivery;
+        evs.push({id:'st_'+t.id,date:t.deadline,title:t.text,
+          sub:isDel?'Entrega':'Tarea libre',
+          color:isDel?'#1A6FD4':'#E8A020',
+          type:isDel?'delivery':'task',
+          icon:isDel?'📦':'✓',
+          taskId:t.id,isStandalone:true,resp:t.resp||''});
+      }
     });
     return evs;
   }

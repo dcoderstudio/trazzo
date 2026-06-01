@@ -1232,6 +1232,7 @@ input[type=time].mi{color-scheme:dark;cursor:pointer;}
     });
     (standaloneTasks||[]).forEach(function(t){
       if(t.deadline!==ds)return;
+      if(t.isDelivery)return; // shown in Entregas section
       items.push({text:t.text,sub:'Tarea libre',color:'#E8A020',done:t.done,resp:t.resp||'',
         toggle:(function(tid){return function(){
           var nd; standaloneTasks=standaloneTasks.map(function(s){if(s.id!==tid)return s;nd=!s.done;return Object.assign({},s,{done:nd});});
