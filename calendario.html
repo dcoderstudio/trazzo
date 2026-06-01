@@ -2438,6 +2438,19 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
         saveData();renderMonthGoals();
       };})(i);
       var txt=document.createElement('div');txt.className='cal-month-text'+(g.done?' done':'');txt.textContent=g.text;
+      txt.title='Clic para editar';txt.style.cursor='text';
+      txt.onclick=(function(ii,gtext){return function(){
+        var inp=document.createElement('input');inp.className='cal-month-inp';inp.value=gtext;inp.style.cssText='flex:1;margin:0;';
+        txt.replaceWith(inp);inp.focus();inp.select();
+        var save=function(){
+          var v=inp.value.trim();if(!v){inp.replaceWith(txt);return;}
+          var arr=monthGoals[mk]||[];if(!arr[ii])return;
+          arr[ii]=Object.assign({},arr[ii],{text:v});
+          saveData();renderMonthGoals();
+        };
+        inp.onblur=save;
+        inp.onkeydown=function(e){if(e.key==='Enter'){inp.onblur=null;save();}if(e.key==='Escape'){inp.onblur=null;inp.replaceWith(txt);}};
+      };})(i,g.text);
       var del=document.createElement('button');del.className='cal-month-del';del.textContent='×';
       del.onclick=(function(ii){return function(){
         var arr=(monthGoals[mk]||[]).slice();arr.splice(ii,1);
@@ -2484,6 +2497,19 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
         saveData();renderMonthReminders();
       };})(i);
       var txt=document.createElement('div');txt.className='cal-month-text'+(r.done?' done':'');txt.textContent=r.text;
+      txt.title='Clic para editar';txt.style.cursor='text';
+      txt.onclick=(function(ii,rtext){return function(){
+        var inp=document.createElement('input');inp.className='cal-month-inp';inp.value=rtext;inp.style.cssText='flex:1;margin:0;';
+        txt.replaceWith(inp);inp.focus();inp.select();
+        var save=function(){
+          var v=inp.value.trim();if(!v){inp.replaceWith(txt);return;}
+          var arr=monthReminders[mk]||[];if(!arr[ii])return;
+          arr[ii]=Object.assign({},arr[ii],{text:v});
+          saveData();renderMonthReminders();
+        };
+        inp.onblur=save;
+        inp.onkeydown=function(e){if(e.key==='Enter'){inp.onblur=null;save();}if(e.key==='Escape'){inp.onblur=null;inp.replaceWith(txt);}};
+      };})(i,r.text);
       var del=document.createElement('button');del.className='cal-month-del';del.textContent='×';
       del.onclick=(function(ii){return function(){
         var arr=(monthReminders[mk]||[]).slice();arr.splice(ii,1);
