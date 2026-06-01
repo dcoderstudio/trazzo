@@ -2,7 +2,8 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<script>document.documentElement.style.setProperty("--vh",window.innerHeight+"px");</script>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#1A6FD4">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -14,7 +15,7 @@
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,800&display=swap');
 *{box-sizing:border-box;margin:0;padding:0;}
-html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-serif;overflow:hidden;}
+html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-available;background:#0c0c0c;color:#fff;font-family:'Inter',sans-serif;overflow:hidden;}
 .topbar{display:flex;align-items:center;justify-content:space-between;padding:0 28px;height:52px;border-bottom:0.5px solid rgba(255,255,255,0.06);flex-shrink:0;}
 .logo{display:flex;align-items:center;gap:10px;}
 .logo-pill{background:#fff;color:#0c0c0c;font-size:11px;font-weight:800;padding:5px 10px;border-radius:8px;}
@@ -30,7 +31,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 .person-pill-av{width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:700;color:#fff;flex-shrink:0;}
 .count-pill{font-size:11px;color:rgba(255,255,255,0.22);background:rgba(255,255,255,0.05);padding:4px 10px;border-radius:20px;white-space:nowrap;margin-left:auto;flex-shrink:0;}
 /* KANBAN */
-.board-wrap{display:flex;gap:14px;padding:20px 28px 24px;height:calc(100vh - 52px - 48px);overflow-x:auto;user-select:none;-webkit-user-select:none;}
+.board-wrap{display:flex;gap:14px;padding:20px 28px 24px;height:calc(100dvh - 52px - 48px);height:calc(var(--vh,100vh) - 52px - 48px);overflow-x:auto;user-select:none;-webkit-user-select:none;}
 .board-wrap::-webkit-scrollbar{height:4px;}
 .board-wrap::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:2px;}
 .tk-col{flex:1;min-width:300px;max-width:420px;display:flex;flex-direction:column;gap:0;border-radius:18px;padding:14px 12px 12px;}
@@ -261,7 +262,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
   <div style="width:120px;"></div>
 </div>
 
-<div style="display:flex;flex-direction:column;height:calc(100vh - 52px);">
+<div style="display:flex;flex-direction:column;height:calc(100dvh - 52px);height:calc(var(--vh,100vh) - 52px);">
   <div class="subbar">
     <div id="personPillsWrap" style="display:flex;align-items:center;gap:6px;flex:1;overflow:hidden;min-width:0;"></div>
     <span class="count-pill" id="countPill" style="flex-shrink:0;">— tareas</span>
@@ -490,7 +491,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     appId: "1:106264633340:web:4b2560a57e75321c709c79"
   });
   var db = firebase.firestore();
-  db.enablePersistence({synchronizeTabs:true}).catch(function(){});
+  db.enablePersistence().catch(function(){});
   var DOC = db.collection('workspace').doc('proyectos');
 
   var projects = [], categories = [], standaloneTasks = [];
@@ -1841,6 +1842,14 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
     renderBoard();
   }, function(e){ console.warn('Error:', e); renderBoard(); });
 
+})();
+</script>
+<script>
+(function(){
+  function _setVh(){document.documentElement.style.setProperty('--vh',window.innerHeight+'px');}
+  var _rvt=null;
+  window.addEventListener('resize',function(){_setVh();clearTimeout(_rvt);_rvt=setTimeout(function(){if(typeof renderBoard==='function')renderBoard();},120);});
+  window.addEventListener('load',function(){_setVh();setTimeout(function(){if(typeof renderBoard==='function')renderBoard();},80);});
 })();
 </script>
 
