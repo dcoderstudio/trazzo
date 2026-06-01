@@ -434,6 +434,24 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
 .wko-rp-day-empty{font-size:9px;color:rgba(255,255,255,.1);padding:7px 6px;border:0.5px dashed rgba(255,255,255,.07);border-radius:8px;text-align:center;margin:2px 0 4px;transition:all .15s;}
 .wko-rp-day-empty.drop-hi,.wko-rp-day.drop-hi{background:rgba(91,159,255,.12) !important;outline:1.5px dashed rgba(91,159,255,.45) !important;border-radius:6px;color:rgba(91,159,255,.8) !important;}
 .wko-rp-ghost{position:fixed;pointer-events:none;z-index:2000;border-radius:10px;padding:5px 10px;font-size:10px;font-weight:700;color:rgba(255,255,255,.9);white-space:nowrap;max-width:180px;overflow:hidden;text-overflow:ellipsis;}
+/* Entregas section */
+.wko-entrega-row{display:flex;align-items:center;gap:7px;padding:5px 4px;border-radius:8px;transition:background .1s;}
+.wko-entrega-row:hover{background:rgba(255,255,255,.03);}
+.wko-entrega-chk{width:16px;height:16px;border-radius:4px;border:1.5px solid rgba(26,111,212,.45);flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;}
+.wko-entrega-chk:hover{border-color:#1A6FD4;}
+.wko-entrega-chk.done{background:#1A6FD4;border-color:#1A6FD4;}
+.wko-entrega-text{font-size:11px;font-weight:600;color:rgba(255,255,255,.8);flex:1;line-height:1.3;}
+.wko-entrega-row.done-row .wko-entrega-text{text-decoration:line-through;opacity:.3;}
+.wko-entrega-from{font-size:8px;color:rgba(26,111,212,.6);font-weight:700;text-transform:uppercase;letter-spacing:.04em;flex-shrink:0;}
+.wko-entrega-del{background:none;border:none;color:rgba(255,255,255,.1);font-size:12px;cursor:pointer;padding:0 2px;flex-shrink:0;transition:color .15s;}
+.wko-entrega-del:hover{color:rgba(226,75,74,.7);}
+.wko-entrega-add-wrap{display:flex;gap:5px;margin-top:6px;}
+.wko-entrega-inp{flex:1;background:rgba(255,255,255,.05);border:0.5px solid rgba(26,111,212,.2);border-radius:8px;padding:5px 8px;font-size:11px;color:#fff;font-family:Inter,sans-serif;outline:none;}
+.wko-entrega-inp:focus{border-color:rgba(26,111,212,.5);}
+.wko-entrega-inp::placeholder{color:rgba(255,255,255,.15);}
+.wko-entrega-day-sel{background:rgba(255,255,255,.05);border:0.5px solid rgba(26,111,212,.18);border-radius:8px;padding:4px 6px;font-size:10px;color:rgba(255,255,255,.65);font-family:Inter,sans-serif;outline:none;flex-shrink:0;}
+.wko-entrega-ok{background:rgba(26,111,212,.18);border:none;color:#5AB4E8;font-size:12px;border-radius:8px;padding:0 10px;cursor:pointer;font-family:Inter,sans-serif;transition:all .15s;flex-shrink:0;}
+.wko-entrega-ok:hover{background:rgba(26,111,212,.35);color:#fff;}
 </style>
 </head>
 <body>
@@ -1910,6 +1928,65 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
       row.appendChild(lbl);row.appendChild(btns);row.appendChild(noteInp);
       sc.appendChild(row);
     });
+
+    // ── SECTION: Entregas de la semana ──
+    var sepEnt=document.createElement('div');sepEnt.className='wko-rp-sep';sc.appendChild(sepEnt);
+    var shEnt=document.createElement('div');shEnt.className='wko-rp-sec-hdr';shEnt.style.marginTop='10px';
+    var slEnt=document.createElement('div');slEnt.className='wko-rp-sec';slEnt.textContent='📦 Entregas de la semana';
+    shEnt.appendChild(slEnt);sc.appendChild(shEnt);
+    var entDays=_wkoGetDays();
+    var entHasAny=false;
+    entDays.forEach(function(d){
+      var ds=fmt(d);
+      var items=[];
+      // From calendar events (projects with delivery date)
+      getEventsForDate(ds).forEach(function(ev){
+        if(ev.type==='delivery')items.push({id:'cal_'+ev.id,text:ev.title,done:false,fromCal:true,sub:ev.sub||''});
+      });
+      // From standalone tasks with isDelivery flag
+      (standaloneTasks||[]).forEach(function(t){
+        if(t.isDelivery&&t.deadline===ds)items.push({id:t.id,text:t.text,done:t.done,fromTask:true,
+          onCheck:(function(tid){return function(){for(var j=0;j<standaloneTasks.length;j++){if(standaloneTasks[j].id===tid){standaloneTasks[j].done=!standaloneTasks[j].done;_pass.standaloneTasks=standaloneTasks;saveData2();_wkoRenderRpanel();return;}}};})(t.id),
+          onDel:(function(tid){return function(){standaloneTasks=standaloneTasks.filter(function(x){return x.id!==tid;});_pass.standaloneTasks=standaloneTasks;saveData2();_wkoRenderRpanel();};})(t.id)
+        });
+      });
+      if(!items.length)return;
+      entHasAny=true;
+      var dl=document.createElement('div');dl.className='wko-rp-day';dl.textContent=_wkoFmtDl(ds).toUpperCase();sc.appendChild(dl);
+      items.forEach(function(item){
+        var row=document.createElement('div');row.className='wko-entrega-row'+(item.done?' done-row':'');
+        var chk=document.createElement('div');chk.className='wko-entrega-chk'+(item.done?' done':'');
+        if(item.done)chk.innerHTML='<svg width="9" height="9" viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round"/></svg>';
+        if(item.onCheck){chk.addEventListener('pointerdown',function(e){e.stopPropagation();});chk.onclick=item.onCheck;}
+        var txt=document.createElement('div');txt.className='wko-entrega-text';txt.textContent=item.text;
+        row.appendChild(chk);row.appendChild(txt);
+        if(item.fromCal){var fr=document.createElement('div');fr.className='wko-entrega-from';fr.textContent='Proyecto';row.appendChild(fr);}
+        if(item.onDel){var del=document.createElement('button');del.className='wko-entrega-del';del.textContent='×';del.onclick=item.onDel;row.appendChild(del);}
+        sc.appendChild(row);
+      });
+    });
+    if(!entHasAny){var entEmpty=document.createElement('div');entEmpty.className='wko-rp-empty';entEmpty.textContent='Sin entregas esta semana';sc.appendChild(entEmpty);}
+    // Add form
+    var entAddWrap=document.createElement('div');entAddWrap.className='wko-entrega-add-wrap';
+    var entInp=document.createElement('input');entInp.className='wko-entrega-inp';entInp.placeholder='Agregar entrega…';
+    var entSel=document.createElement('select');entSel.className='wko-entrega-day-sel';
+    _wkoGetDays().forEach(function(d){
+      var opt=document.createElement('option');opt.value=fmt(d);
+      opt.textContent=DNAMES_S[d.getDay()]+' '+d.getDate();
+      if(fmt(d)===fmt(today))opt.selected=true;
+      entSel.appendChild(opt);
+    });
+    var entOk=document.createElement('button');entOk.className='wko-entrega-ok';entOk.textContent='↵';
+    var doAddEnt=function(){
+      var v=entInp.value.trim();if(!v)return;
+      var ds=entSel.value;
+      standaloneTasks.push({id:Date.now(),text:v,done:false,deadline:ds,resp:'',priority:false,notes:'',isDelivery:true});
+      _pass.standaloneTasks=standaloneTasks;saveData2();entInp.value='';_wkoRenderRpanel();
+    };
+    entInp.onkeydown=function(e){if(e.key==='Enter')doAddEnt();};
+    entOk.onclick=doAddEnt;
+    entAddWrap.appendChild(entInp);entAddWrap.appendChild(entSel);entAddWrap.appendChild(entOk);
+    sc.appendChild(entAddWrap);
 
     // ── SECTION 3: Vencen esta semana ──
     var sep1=document.createElement('div');sep1.className='wko-rp-sep';sc.appendChild(sep1);

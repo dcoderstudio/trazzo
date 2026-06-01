@@ -205,6 +205,31 @@ body{height:100%;min-height:-webkit-fill-available;background:#0c0c0c;color:#fff
 .dh-od-btn.done:hover{background:rgba(39,174,114,.3);color:#fff;}
 .dh-od-date-inp{position:absolute;opacity:0;pointer-events:none;width:1px;height:1px;}
 .dh-od-empty{text-align:center;font-size:11px;color:rgba(212,83,126,.22);padding:16px 0;}
+/* ENTREGAS CARD */
+.dh-entregas{flex-shrink:0;border-radius:12px;overflow:hidden;border:0.5px solid rgba(26,111,212,.22);border-left:4px solid #1A6FD4;background:linear-gradient(160deg,rgba(10,30,70,.5) 0%,rgba(12,12,20,.9) 100%);}
+.dh-ent-hdr{display:flex;align-items:center;gap:10px;padding:11px 16px 10px;background:rgba(26,111,212,.06);border-bottom:0.5px solid rgba(26,111,212,.12);}
+.dh-ent-hdr-info{flex:1;}
+.dh-ent-title{font-size:12px;font-weight:700;color:#5AB4E8;letter-spacing:.01em;}
+.dh-ent-sub{font-size:9px;color:rgba(90,180,232,.35);margin-top:2px;}
+.dh-ent-add-btn{background:rgba(26,111,212,.15);border:1px solid rgba(26,111,212,.3);color:#5AB4E8;font-size:11px;font-weight:600;padding:4px 10px;border-radius:8px;cursor:pointer;font-family:Inter,sans-serif;transition:all .15s;}
+.dh-ent-add-btn:hover{background:rgba(26,111,212,.3);color:#fff;}
+.dh-ent-list{padding:8px 10px 10px;display:flex;flex-direction:column;gap:5px;}
+.dh-ent-row{display:flex;align-items:center;gap:8px;padding:5px 4px;border-radius:8px;transition:background .1s;}
+.dh-ent-row:hover{background:rgba(255,255,255,.03);}
+.dh-ent-chk{width:16px;height:16px;border-radius:4px;border:1.5px solid rgba(26,111,212,.45);flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;}
+.dh-ent-chk.done{background:#1A6FD4;border-color:#1A6FD4;}
+.dh-ent-text{font-size:11px;font-weight:600;color:rgba(255,255,255,.85);flex:1;}
+.dh-ent-row.done-row .dh-ent-text{text-decoration:line-through;opacity:.3;}
+.dh-ent-badge{font-size:8px;font-weight:700;padding:1px 6px;border-radius:10px;background:rgba(26,111,212,.2);color:#5AB4E8;flex-shrink:0;}
+.dh-ent-del{background:none;border:none;color:rgba(255,255,255,.12);font-size:13px;cursor:pointer;padding:0 2px;flex-shrink:0;transition:color .15s;}
+.dh-ent-del:hover{color:rgba(226,75,74,.7);}
+.dh-ent-empty{text-align:center;font-size:11px;color:rgba(26,111,212,.2);padding:14px 0;}
+.dh-ent-inp-wrap{display:flex;gap:6px;padding:6px 10px 10px;}
+.dh-ent-inp{flex:1;background:rgba(255,255,255,.06);border:1px solid rgba(26,111,212,.22);border-radius:8px;padding:6px 10px;font-size:12px;color:#fff;font-family:Inter,sans-serif;outline:none;}
+.dh-ent-inp:focus{border-color:rgba(26,111,212,.5);}
+.dh-ent-inp::placeholder{color:rgba(90,180,232,.2);}
+.dh-ent-inp-ok{background:rgba(26,111,212,.2);border:none;color:#5AB4E8;font-size:12px;border-radius:8px;padding:0 12px;cursor:pointer;font-family:Inter,sans-serif;transition:all .15s;}
+.dh-ent-inp-ok:hover{background:rgba(26,111,212,.38);color:#fff;}
 .dh-dv-hdr{flex-shrink:0;display:flex;align-items:center;gap:10px;padding:11px 16px 10px;background:rgba(39,174,114,0.06);border-bottom:0.5px solid rgba(39,174,114,0.12);}
 .dh-dv-hdr-info{flex:1;}
 .dh-dv-title{font-size:12px;font-weight:700;color:#27AE72;letter-spacing:.01em;}
@@ -320,6 +345,8 @@ input[type=time].mi{color-scheme:dark;cursor:pointer;}
     <div class="dh-right">
       <!-- MEAL PLAN -->
       <div class="dh-meal" id="dhMeal"></div>
+      <!-- ENTREGAS -->
+      <div class="dh-entregas" id="dhEntregas"></div>
       <!-- DAY TASKS -->
       <div class="dh-daytasks">
         <div class="dh-dt-hdr">
@@ -1566,11 +1593,75 @@ input[type=time].mi{color-scheme:dark;cursor:pointer;}
     el.appendChild(list);
   }
 
+  var _entInputOpen=false;
+  function renderEntregas(){
+    var el=document.getElementById('dhEntregas');if(!el)return;
+    el.innerHTML='';
+    var ds=fmt(curDate);
+    var items=[];
+    // From calendar events (project deliveries)
+    (calendarEvents||[]).forEach(function(ev){
+      if(ev.date===ds&&ev.type==='delivery')items.push({id:'cal_'+ev.id,text:ev.title,done:false,badge:'Proyecto'});
+    });
+    // Project deadlines
+    projects.forEach(function(p){if(p.deadline===ds&&p.catId!=='cotizaciones')items.push({id:'proj_'+p.id,text:p.name,done:false,badge:'Proyecto'});});
+    // Standalone tasks with isDelivery
+    (standaloneTasks||[]).forEach(function(t){
+      if(t.isDelivery&&t.deadline===ds)items.push({id:t.id,text:t.text,done:t.done,badge:'Manual',
+        onCheck:(function(tid){return function(){standaloneTasks=standaloneTasks.map(function(s){return s.id===tid?Object.assign({},s,{done:!s.done}):s;});_pass.standaloneTasks=standaloneTasks;saveData();renderEntregas();renderHeader();};})(t.id),
+        onDel:(function(tid){return function(){standaloneTasks=standaloneTasks.filter(function(s){return s.id!==tid;});_pass.standaloneTasks=standaloneTasks;saveData();renderEntregas();renderHeader();};})(t.id)
+      });
+    });
+    // Header
+    var hdr=document.createElement('div');hdr.className='dh-ent-hdr';
+    var hdrInfo=document.createElement('div');hdrInfo.className='dh-ent-hdr-info';
+    var hdrTitle=document.createElement('div');hdrTitle.className='dh-ent-title';hdrTitle.textContent='📦 Entregas de hoy';
+    var hdrSub=document.createElement('div');hdrSub.className='dh-ent-sub';hdrSub.textContent=items.length?items.length+(items.length===1?' entrega':' entregas'):'Sin entregas programadas';
+    hdrInfo.appendChild(hdrTitle);hdrInfo.appendChild(hdrSub);
+    var addBtn=document.createElement('button');addBtn.className='dh-ent-add-btn';addBtn.id='dhEntAddBtn';addBtn.textContent='+ Agregar';
+    addBtn.onclick=function(){_entInputOpen=true;renderEntregas();};
+    if(_entInputOpen)addBtn.style.display='none';
+    hdr.appendChild(hdrInfo);hdr.appendChild(addBtn);
+    el.appendChild(hdr);
+    // List
+    var list=document.createElement('div');list.className='dh-ent-list';
+    if(!items.length&&!_entInputOpen){var em=document.createElement('div');em.className='dh-ent-empty';em.textContent='Sin entregas para hoy';list.appendChild(em);}
+    items.forEach(function(item){
+      var row=document.createElement('div');row.className='dh-ent-row'+(item.done?' done-row':'');
+      var chk=document.createElement('div');chk.className='dh-ent-chk'+(item.done?' done':'');
+      if(item.done)chk.innerHTML='<svg width="9" height="9" viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round"/></svg>';
+      if(item.onCheck)chk.onclick=item.onCheck;
+      var txt=document.createElement('div');txt.className='dh-ent-text';txt.textContent=item.text;
+      var badge=document.createElement('div');badge.className='dh-ent-badge';badge.textContent=item.badge;
+      row.appendChild(chk);row.appendChild(txt);row.appendChild(badge);
+      if(item.onDel){var del=document.createElement('button');del.className='dh-ent-del';del.textContent='×';del.onclick=item.onDel;row.appendChild(del);}
+      list.appendChild(row);
+    });
+    el.appendChild(list);
+    // Add input
+    if(_entInputOpen){
+      var wrap=document.createElement('div');wrap.className='dh-ent-inp-wrap';
+      var inp=document.createElement('input');inp.className='dh-ent-inp';inp.placeholder='Qué se entrega hoy…';
+      var ok=document.createElement('button');ok.className='dh-ent-inp-ok';ok.textContent='↵';
+      var doAdd=function(){
+        var v=inp.value.trim();if(!v)return;
+        standaloneTasks.push({id:Date.now(),text:v,done:false,deadline:ds,resp:'',priority:false,notes:'',isDelivery:true});
+        _pass.standaloneTasks=standaloneTasks;_entInputOpen=false;saveData();renderEntregas();renderHeader();
+      };
+      inp.onkeydown=function(e){if(e.key==='Enter')doAdd();if(e.key==='Escape'){_entInputOpen=false;renderEntregas();}};
+      ok.onclick=doAdd;
+      wrap.appendChild(inp);wrap.appendChild(ok);
+      el.appendChild(wrap);
+      setTimeout(function(){inp.focus();},30);
+    }
+  }
+
   function renderAll(){
     renderHeader();
     renderMemberBar();
     renderTimeGrid();
     renderMealCard();
+    renderEntregas();
     renderDayTasks();
     renderReminders();
     renderDeliveries();
