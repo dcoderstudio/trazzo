@@ -179,6 +179,30 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 .dh-rem-input-ok:hover{background:rgba(44,197,210,0.32);}
 /* ENTREGAS Y TAREAS DEL DÍA — green card */
 .dh-deliveries{flex-shrink:0;display:flex;flex-direction:column;border-radius:12px;overflow:hidden;background:linear-gradient(160deg,rgba(18,55,35,0.55) 0%,rgba(14,40,25,0.35) 40%,rgba(12,12,20,0.92) 100%);border:0.5px solid rgba(39,174,114,0.2);border-left:4px solid #27AE72;}
+/* OVERDUE TASKS */
+.dh-overdue{flex-shrink:0;border-radius:12px;overflow:hidden;border:0.5px solid rgba(212,83,126,.22);border-left:4px solid #D4537E;background:linear-gradient(160deg,rgba(55,15,30,.45) 0%,rgba(12,12,20,.9) 100%);}
+.dh-od-hdr{display:flex;align-items:center;gap:10px;padding:11px 16px 10px;background:rgba(212,83,126,.06);border-bottom:0.5px solid rgba(212,83,126,.12);}
+.dh-od-hdr-info{flex:1;}
+.dh-od-title{font-size:12px;font-weight:700;color:#D4537E;letter-spacing:.01em;}
+.dh-od-sub{font-size:9px;color:rgba(212,83,126,.4);margin-top:2px;}
+.dh-od-count{font-size:10px;font-weight:800;background:rgba(212,83,126,.2);color:#D4537E;border-radius:20px;padding:2px 8px;flex-shrink:0;}
+.dh-od-list{display:flex;flex-direction:column;gap:6px;padding:8px 8px 10px;}
+.dh-od-card{border-radius:10px;padding:9px 10px 9px 12px;display:flex;align-items:center;gap:8px;background:rgba(212,83,126,.1);border:0.5px solid rgba(212,83,126,.2);border-left:3px solid #D4537E;position:relative;}
+.dh-od-body{flex:1;min-width:0;}
+.dh-od-text{font-size:11px;font-weight:700;color:rgba(255,255,255,.85);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.dh-od-meta{display:flex;align-items:center;gap:6px;margin-top:3px;}
+.dh-od-src{font-size:9px;color:rgba(255,255,255,.3);font-weight:600;}
+.dh-od-age{font-size:9px;font-weight:700;color:#D4537E;background:rgba(212,83,126,.15);border-radius:4px;padding:1px 5px;}
+.dh-od-actions{display:flex;gap:4px;flex-shrink:0;}
+.dh-od-btn{font-size:9px;font-weight:700;padding:4px 7px;border-radius:7px;border:none;cursor:pointer;font-family:Inter,sans-serif;transition:all .15s;white-space:nowrap;}
+.dh-od-btn.today{background:rgba(26,111,212,.2);color:#5B9FFF;border:0.5px solid rgba(26,111,212,.35);}
+.dh-od-btn.today:hover{background:rgba(26,111,212,.38);color:#fff;}
+.dh-od-btn.date{background:rgba(255,255,255,.06);color:rgba(255,255,255,.45);border:0.5px solid rgba(255,255,255,.1);}
+.dh-od-btn.date:hover{background:rgba(255,255,255,.12);color:#fff;}
+.dh-od-btn.done{background:rgba(39,174,114,.15);color:#27AE72;border:0.5px solid rgba(39,174,114,.28);}
+.dh-od-btn.done:hover{background:rgba(39,174,114,.3);color:#fff;}
+.dh-od-date-inp{position:absolute;opacity:0;pointer-events:none;width:1px;height:1px;}
+.dh-od-empty{text-align:center;font-size:11px;color:rgba(212,83,126,.22);padding:16px 0;}
 .dh-dv-hdr{flex-shrink:0;display:flex;align-items:center;gap:10px;padding:11px 16px 10px;background:rgba(39,174,114,0.06);border-bottom:0.5px solid rgba(39,174,114,0.12);}
 .dh-dv-hdr-info{flex:1;}
 .dh-dv-title{font-size:12px;font-weight:700;color:#27AE72;letter-spacing:.01em;}
@@ -326,6 +350,8 @@ input[type=time].mi{color-scheme:dark;cursor:pointer;}
         </div>
         <div class="dh-dv-list" id="dhDvList"></div>
       </div>
+      <!-- TAREAS VENCIDAS -->
+      <div class="dh-overdue" id="dhOverdue"></div>
     </div>
   </div>
 </div>
@@ -1443,6 +1469,87 @@ input[type=time].mi{color-scheme:dark;cursor:pointer;}
     el.appendChild(body);
   }
 
+  function renderOverdue(){
+    var el=document.getElementById('dhOverdue');if(!el)return;
+    el.innerHTML='';
+    var todayStr=fmt(todayD);
+    // Collect overdue incomplete tasks (deadline < today, not done)
+    var items=[];
+    (standaloneTasks||[]).forEach(function(t){
+      if(!t.deadline||t.done||t.deadline>=todayStr)return;
+      items.push({id:t.id,text:t.text,deadline:t.deadline,source:'Tarea libre',type:'standalone',
+        markDone:function(id){return function(){
+          standaloneTasks=standaloneTasks.map(function(s){return s.id===id?Object.assign({},s,{done:true}):s;});
+          _pass.standaloneTasks=standaloneTasks;saveData();renderOverdue();renderDeliveries();renderHeader();
+        };}(t.id),
+        changeDeadline:function(id){return function(newDs){
+          standaloneTasks=standaloneTasks.map(function(s){return s.id===id?Object.assign({},s,{deadline:newDs}):s;});
+          _pass.standaloneTasks=standaloneTasks;saveData();renderOverdue();renderDeliveries();renderHeader();
+        };}(t.id)
+      });
+    });
+    projects.forEach(function(p){
+      if(p.catId==='cotizaciones')return;
+      var stage=p.stage||'';
+      ((p.stageTasks&&p.stageTasks[stage])||[]).forEach(function(t){
+        if(!t.deadline||t.done||t.deadline>=todayStr)return;
+        items.push({id:t.id,text:t.text,deadline:t.deadline,source:p.name,type:'project',pid:p.id,stage:stage,
+          markDone:(function(pid,stg,tid){return function(){
+            for(var i=0;i<projects.length;i++){if(projects[i].id===pid){var arr=projects[i].stageTasks[stg]||[];projects[i].stageTasks[stg]=arr.map(function(x){return x.id===tid?Object.assign({},x,{done:true}):x;});break;}}
+            saveData();renderOverdue();renderDeliveries();renderHeader();
+          };})(p.id,stage,t.id),
+          changeDeadline:(function(pid,stg,tid){return function(newDs){
+            for(var i=0;i<projects.length;i++){if(projects[i].id===pid){var arr=projects[i].stageTasks[stg]||[];projects[i].stageTasks[stg]=arr.map(function(x){return x.id===tid?Object.assign({},x,{deadline:newDs}):x;});break;}}
+            saveData();renderOverdue();renderDeliveries();renderHeader();
+          };})(p.id,stage,t.id)
+        });
+      });
+    });
+    if(!items.length){el.style.display='none';return;}
+    el.style.display='';
+    items.sort(function(a,b){return a.deadline<b.deadline?-1:1;});
+    // Header
+    var hdr=document.createElement('div');hdr.className='dh-od-hdr';
+    var hdrInfo=document.createElement('div');hdrInfo.className='dh-od-hdr-info';
+    var hdrTitle=document.createElement('div');hdrTitle.className='dh-od-title';hdrTitle.textContent='⚠️ Tareas vencidas';
+    var hdrSub=document.createElement('div');hdrSub.className='dh-od-sub';hdrSub.textContent='Sin completar de días anteriores';
+    hdrInfo.appendChild(hdrTitle);hdrInfo.appendChild(hdrSub);
+    var cnt=document.createElement('div');cnt.className='dh-od-count';cnt.textContent=items.length;
+    hdr.appendChild(hdrInfo);hdr.appendChild(cnt);
+    el.appendChild(hdr);
+    var list=document.createElement('div');list.className='dh-od-list';
+    items.forEach(function(item){
+      var daysAgo=Math.round((new Date(todayStr+'T00:00:00')-new Date(item.deadline+'T00:00:00'))/(86400000));
+      var card=document.createElement('div');card.className='dh-od-card';
+      // Body
+      var body=document.createElement('div');body.className='dh-od-body';
+      var txt=document.createElement('div');txt.className='dh-od-text';txt.textContent=item.text;
+      var meta=document.createElement('div');meta.className='dh-od-meta';
+      var src=document.createElement('div');src.className='dh-od-src';src.textContent=item.source;
+      var age=document.createElement('div');age.className='dh-od-age';
+      age.textContent=daysAgo===1?'ayer':('hace '+daysAgo+' días');
+      meta.appendChild(src);meta.appendChild(age);
+      body.appendChild(txt);body.appendChild(meta);
+      // Actions
+      var actions=document.createElement('div');actions.className='dh-od-actions';
+      // Move to today
+      var btnToday=document.createElement('button');btnToday.className='dh-od-btn today';btnToday.textContent='→ Hoy';
+      btnToday.onclick=(function(fn){return function(){fn(todayStr);};})(item.changeDeadline);
+      // Pick date
+      var btnDate=document.createElement('button');btnDate.className='dh-od-btn date';btnDate.textContent='📅';btnDate.title='Cambiar fecha';
+      var dateInp=document.createElement('input');dateInp.type='date';dateInp.className='dh-od-date-inp';dateInp.value=item.deadline;dateInp.min=todayStr;
+      dateInp.onchange=(function(fn){return function(){if(dateInp.value)fn(dateInp.value);};})(item.changeDeadline);
+      btnDate.onclick=function(){dateInp.showPicker?dateInp.showPicker():dateInp.click();};
+      // Mark done
+      var btnDone=document.createElement('button');btnDone.className='dh-od-btn done';btnDone.textContent='✓';btnDone.title='Marcar como completada';
+      btnDone.onclick=item.markDone;
+      actions.appendChild(btnToday);actions.appendChild(btnDate);actions.appendChild(btnDone);
+      card.appendChild(body);card.appendChild(actions);card.appendChild(dateInp);
+      list.appendChild(card);
+    });
+    el.appendChild(list);
+  }
+
   function renderAll(){
     renderHeader();
     renderMemberBar();
@@ -1451,6 +1558,7 @@ input[type=time].mi{color-scheme:dark;cursor:pointer;}
     renderDayTasks();
     renderReminders();
     renderDeliveries();
+    renderOverdue();
     renderGcBtn();
   }
 
