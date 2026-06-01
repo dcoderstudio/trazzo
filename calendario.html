@@ -1430,6 +1430,17 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
   var WKO_GC_CLIENT_ID='106264633340-2golmdmit2b5sddsjirbb1hjlri2r6lu.apps.googleusercontent.com';
   var WKO_GC_SCOPES='https://www.googleapis.com/auth/calendar.readonly';
   var _wkoBmDs=null,_wkoBmId=null,_wkoBmColor='#1A6FD4';
+  var _wkoGcRefreshTimer=null;
+  function _wkoGcScheduleRefresh(expiresAt){
+    if(_wkoGcRefreshTimer)clearTimeout(_wkoGcRefreshTimer);
+    var delay=expiresAt-Date.now()-5*60*1000;
+    if(delay<10000)delay=10000;
+    _wkoGcRefreshTimer=setTimeout(function(){
+      if(_wkoTokenClient&&localStorage.getItem('gc_was_connected')){
+        _wkoTokenClient.requestAccessToken({prompt:''});
+      }
+    },delay);
+  }
   var _wkoLastWeekTasks=[];
   function _wkoWK(){return _wkoW?fmt(_wkoW):null;}
   var WKO_COLS=[{c:'#1A6FD4',l:'Trabajo'},{c:'#27AE72',l:'Foco'},{c:'#8B5CF6',l:'Reunión'},{c:'#E8A020',l:'Urgente'},{c:'#D4537E',l:'Personal'},{c:'#2CC5D2',l:'Otro'}];
@@ -1651,19 +1662,21 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
         localStorage.setItem('gc_token',JSON.stringify(tok));
         localStorage.setItem('gc_was_connected','1');
         gapi.client.setToken({access_token:r.access_token});
+        _wkoGcScheduleRefresh(tok.expires_at);
         _wkoRenderGcBtn();
         if(_wkoW)_wkoGetDays().forEach(function(d){_wkoFetchGc(fmt(d));});
       }
     });
     try{
       var s=JSON.parse(localStorage.getItem('gc_token')||'null');
-      if(s&&s.expires_at>Date.now()){_wkoGcTok=s.access_token;gapi.client.setToken({access_token:s.access_token});_wkoRenderGcBtn();if(_wkoW)_wkoGetDays().forEach(function(d){_wkoFetchGc(fmt(d));});}
-      else if(localStorage.getItem('gc_was_connected')){_wkoTokenClient.requestAccessToken({prompt:''});}
+      if(s&&s.expires_at>Date.now()){_wkoGcTok=s.access_token;gapi.client.setToken({access_token:s.access_token});_wkoGcScheduleRefresh(s.expires_at);_wkoRenderGcBtn();if(_wkoW)_wkoGetDays().forEach(function(d){_wkoFetchGc(fmt(d));});}
+      else if(localStorage.getItem('gc_was_connected')){_wkoTokenClient.requestAccessToken({prompt:''.toString()});}
       else{_wkoRenderGcBtn();}
     }catch(e){_wkoRenderGcBtn();}
   }
   function _wkoGcConnect(){if(_wkoTokenClient)_wkoTokenClient.requestAccessToken({prompt:_wkoGcTok?'':'consent'});}
   function _wkoGcDisconnect(){
+    if(_wkoGcRefreshTimer){clearTimeout(_wkoGcRefreshTimer);_wkoGcRefreshTimer=null;}
     if(_wkoGcTok)try{google.accounts.oauth2.revoke(_wkoGcTok,function(){});}catch(e){}
     _wkoGcTok=null;localStorage.removeItem('gc_token');localStorage.removeItem('gc_was_connected');
     _wkoGcEvs={};_wkoRenderGcBtn();_wkoRenderGrid();
