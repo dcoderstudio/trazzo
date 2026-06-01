@@ -623,8 +623,8 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
     messagingSenderId:"106264633340",
     appId:"1:106264633340:web:4b2560a57e75321c709c79"
   });
-  var db = firebase.firestore();
-  db.enablePersistence().catch(function(){});
+  var db=firebase.firestore();db.settings({experimentalForceLongPolling:true,merge:true});
+
   var DOC = db.collection('workspace').doc('proyectos');
 
   // ── STATE ────────────────────────────────────────────────────
