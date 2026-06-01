@@ -349,7 +349,12 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
 .wko-rp-sec{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.22);margin:16px 0 7px;display:flex;align-items:center;gap:5px;}
 .wko-rp-sec:first-child{margin-top:0;}
 .wko-rp-sep{border-top:0.5px solid rgba(255,255,255,.06);margin:16px 0 0;}
-.wko-rp-day{font-size:8px;font-weight:700;color:rgba(255,255,255,.3);margin:9px 0 4px;text-transform:uppercase;letter-spacing:.06em;}
+.wko-rp-day{display:flex;align-items:center;gap:8px;margin:14px 0 5px;cursor:default;}
+.wko-rp-day-badge{font-size:9px;font-weight:800;color:rgba(255,255,255,.55);text-transform:uppercase;letter-spacing:.07em;padding:4px 9px;background:rgba(255,255,255,.06);border-radius:6px;border-left:2.5px solid rgba(255,255,255,.2);flex-shrink:0;line-height:1.4;}
+.wko-rp-day-line{flex:1;height:0.5px;background:rgba(255,255,255,.07);}
+.wko-rp-day.today-day .wko-rp-day-badge{color:#5B9FFF;background:rgba(91,159,255,.13);border-left-color:#5B9FFF;}
+.wko-rp-day.today-day .wko-rp-day-line{background:rgba(91,159,255,.2);}
+.wko-rp-day.drop-hi .wko-rp-day-badge{background:rgba(91,159,255,.2) !important;color:#5B9FFF !important;border-left-color:#5B9FFF !important;}
 .wko-rp-empty{font-size:9px;color:rgba(255,255,255,.14);padding:6px 2px;}
 .wko-rp-sec-hdr{display:flex;align-items:center;margin:16px 0 7px;}
 .wko-rp-sec-hdr:first-child{margin-top:0;}
@@ -1858,6 +1863,17 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
     })(i);}
   }
 
+  function _wkoDayHdr(ds){
+    var el=document.createElement('div');
+    el.className='wko-rp-day'+(ds===fmt(today)?' today-day':'');
+    el.dataset.dday=ds;
+    var badge=document.createElement('div');badge.className='wko-rp-day-badge';
+    badge.textContent=_wkoFmtDl(ds).toUpperCase();
+    var line=document.createElement('div');line.className='wko-rp-day-line';
+    el.appendChild(badge);el.appendChild(line);
+    return el;
+  }
+
   function _wkoRenderRpanel(){
     var rp=document.getElementById('wkoRp');if(!rp)return;
     var _prevScroll=0;var _prevSc=rp.querySelector('.wko-rp-scroll');if(_prevSc)_prevScroll=_prevSc.scrollTop;
@@ -1960,7 +1976,7 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
       });
       if(!items.length)return;
       entHasAny=true;
-      var dl=document.createElement('div');dl.className='wko-rp-day';dl.textContent=_wkoFmtDl(ds).toUpperCase();sc.appendChild(dl);
+      sc.appendChild(_wkoDayHdr(ds));
       items.forEach(function(item){
         var row=document.createElement('div');row.className='wko-entrega-row'+(item.done?' done-row':'');
         var chk=document.createElement('div');chk.className='wko-entrega-chk'+(item.done?' done':'');
@@ -2038,8 +2054,7 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
     var colorIdx=0;
     days.forEach(function(d){
       var ds=fmt(d);
-      var dl=document.createElement('div');dl.className='wko-rp-day';dl.dataset.dday=ds;
-      dl.textContent=_wkoFmtDl(ds).toUpperCase();
+      var dl=_wkoDayHdr(ds);
       sc.appendChild(dl);
       var dayUndone=weekTasks.filter(function(t){return t.deadline===ds&&!t.done;});
       var dayDone=weekTasks.filter(function(t){return t.deadline===ds&&t.done;});
@@ -2072,7 +2087,7 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
     var hasRem=false;
     _wkoGetDays().forEach(function(d){
       var ds=fmt(d);var rems=((_pass.reminders||{})[ds]||[]);if(!rems.length)return;hasRem=true;
-      var dl=document.createElement('div');dl.className='wko-rp-day';dl.textContent=DNAMES_S[d.getDay()]+' '+d.getDate();sc.appendChild(dl);
+      sc.appendChild(_wkoDayHdr(ds));
       rems.forEach(function(r,i){
         sc.appendChild(_wkoRpCard(r.text,r.done,'#27AE72',i,DNAMES_S[d.getDay()],null,
           (function(rds,rid){return function(){
