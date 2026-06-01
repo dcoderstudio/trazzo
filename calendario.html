@@ -431,6 +431,13 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
 .wko-rem-day-sel option{background:#141420;color:#fff;}
 .wko-rem-add-row{display:flex;gap:5px;}
 .wko-rem-add-ok{flex:1;background:rgba(39,174,114,.14);border:0.5px solid rgba(39,174,114,.3);color:#27AE72;font-size:11px;font-weight:600;border-radius:8px;padding:5px;cursor:pointer;font-family:Inter,sans-serif;}
+/* Plan add buttons */
+.wko-plan-add-row{display:flex;gap:5px;margin-bottom:8px;}
+.wko-plan-add-type{flex:1;font-size:10px;font-weight:700;padding:5px 8px;border-radius:8px;border:0.5px solid transparent;cursor:pointer;font-family:Inter,sans-serif;transition:all .15s;text-align:center;}
+.wko-plan-add-type.rem{background:rgba(39,174,114,.1);border-color:rgba(39,174,114,.25);color:#27AE72;}
+.wko-plan-add-type.rem:hover,.wko-plan-add-type.rem.active{background:rgba(39,174,114,.25);border-color:rgba(39,174,114,.5);color:#fff;}
+.wko-plan-add-type.task{background:rgba(26,111,212,.1);border-color:rgba(26,111,212,.22);color:#5B9FFF;}
+.wko-plan-add-type.task:hover,.wko-plan-add-type.task.active{background:rgba(26,111,212,.22);border-color:rgba(26,111,212,.5);color:#fff;}
 .wko-rem-add-ok:hover{background:rgba(39,174,114,.26);}
 .wko-rem-add-cancel{background:rgba(255,255,255,.05);border:0.5px solid rgba(255,255,255,.08);color:rgba(255,255,255,.35);font-size:11px;border-radius:8px;padding:5px 8px;cursor:pointer;font-family:Inter,sans-serif;}
 .wko-slot.drop-hi{background:rgba(91,159,255,.18) !important;outline:1.5px dashed rgba(91,159,255,.5);}
@@ -1755,6 +1762,7 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
   // ── RIGHT PANEL ───────────────────────────────────────────────
   var DNAMES_S=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
   var _wkoDoneCollapsed={};
+  var _wkoAddMode=null; // null | 'reminder' | 'task'
   var MNAMES_S=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
   var WKO_CARD_COLORS=['#1A6FD4','#8B5CF6','#E8A020','#27AE72','#D4537E'];
   function _wkoHexRgb(h){return parseInt(h.slice(1,3),16)+','+parseInt(h.slice(3,5),16)+','+parseInt(h.slice(5,7),16);}
@@ -2012,11 +2020,75 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
     entAddWrap.appendChild(entInp);entAddWrap.appendChild(entSel);entAddWrap.appendChild(entOk);
     sc.appendChild(entAddWrap);
 
-    // ── SECTION 3: Vencen esta semana ──
+    // ── SECTION: Plan de la semana (recordatorios + tareas por día) ──
     var sep1=document.createElement('div');sep1.className='wko-rp-sep';sc.appendChild(sep1);
     var sh2=document.createElement('div');sh2.className='wko-rp-sec-hdr';sh2.style.marginTop='10px';
-    var sl2=document.createElement('div');sl2.className='wko-rp-sec';sl2.textContent='Vencen esta semana';
+    var sl2=document.createElement('div');sl2.className='wko-rp-sec';sl2.textContent='Plan de la semana';
     sh2.appendChild(sl2);sc.appendChild(sh2);
+
+    // ── Add form (top) ──
+    var planAddRow=document.createElement('div');planAddRow.className='wko-plan-add-row';
+    var btnRem=document.createElement('button');btnRem.className='wko-plan-add-type rem'+(_wkoAddMode==='reminder'?' active':'');
+    btnRem.textContent='🔔 + Recordatorio';
+    var btnTask=document.createElement('button');btnTask.className='wko-plan-add-type task'+(_wkoAddMode==='task'?' active':'');
+    btnTask.textContent='✓ + Tarea';
+    btnRem.onclick=function(){_wkoAddMode=(_wkoAddMode==='reminder'?null:'reminder');_wkoRenderRpanel();};
+    btnTask.onclick=function(){_wkoAddMode=(_wkoAddMode==='task'?null:'task');_wkoRenderRpanel();};
+    planAddRow.appendChild(btnRem);planAddRow.appendChild(btnTask);sc.appendChild(planAddRow);
+
+    // Shared day selector builder
+    function _buildDaySel(cls){
+      var sel=document.createElement('select');sel.className=cls;
+      _wkoGetDays().forEach(function(d){
+        var opt=document.createElement('option');opt.value=fmt(d);
+        opt.textContent=DNAMES_S[d.getDay()]+' '+d.getDate();
+        if(fmt(d)===fmt(today))opt.selected=true;
+        sel.appendChild(opt);
+      });
+      return sel;
+    }
+
+    if(_wkoAddMode==='reminder'){
+      var remAddForm=document.createElement('div');remAddForm.className='wko-rem-add-form';remAddForm.style.marginBottom='8px';
+      var remInp=document.createElement('input');remInp.className='wko-rem-add-inp';remInp.placeholder='Nuevo recordatorio…';
+      var remDaySel=_buildDaySel('wko-rem-day-sel');
+      var remRow=document.createElement('div');remRow.className='wko-rem-add-row';
+      var remOk=document.createElement('button');remOk.className='wko-rem-add-ok';remOk.textContent='Guardar';
+      var doAddRem=function(){
+        var v=remInp.value.trim();if(!v)return;
+        var ds=remDaySel.value;
+        if(!_pass.reminders)_pass.reminders={};
+        if(!_pass.reminders[ds])_pass.reminders[ds]=[];
+        _pass.reminders[ds].push({id:Date.now(),text:v,done:false});
+        saveData2();remInp.value='';_wkoRenderRpanel();
+      };
+      remInp.onkeydown=function(e){if(e.key==='Enter')doAddRem();if(e.key==='Escape'){_wkoAddMode=null;_wkoRenderRpanel();}};
+      remOk.onclick=doAddRem;
+      remRow.appendChild(remOk);
+      remAddForm.appendChild(remInp);remAddForm.appendChild(remDaySel);remAddForm.appendChild(remRow);
+      sc.appendChild(remAddForm);
+      setTimeout(function(){remInp.focus();},30);
+    }
+    if(_wkoAddMode==='task'){
+      var taskAddForm=document.createElement('div');taskAddForm.className='wko-rem-add-form';taskAddForm.style.marginBottom='8px';
+      var taskInp=document.createElement('input');taskInp.className='wko-rem-add-inp';taskInp.style.borderColor='rgba(26,111,212,.3)';taskInp.placeholder='Nueva tarea…';
+      var taskDaySel=_buildDaySel('wko-rem-day-sel');
+      var taskRow=document.createElement('div');taskRow.className='wko-rem-add-row';
+      var taskOk=document.createElement('button');taskOk.className='wko-rem-add-ok';taskOk.style.cssText='background:rgba(26,111,212,.14);border-color:rgba(26,111,212,.3);color:#5B9FFF;';taskOk.textContent='Guardar';
+      var doAddTask=function(){
+        var v=taskInp.value.trim();if(!v)return;
+        var ds=taskDaySel.value;
+        standaloneTasks.push({id:Date.now(),text:v,done:false,deadline:ds,resp:'',priority:false,notes:''});
+        _pass.standaloneTasks=standaloneTasks;saveData2();taskInp.value='';_wkoRenderRpanel();
+      };
+      taskInp.onkeydown=function(e){if(e.key==='Enter')doAddTask();if(e.key==='Escape'){_wkoAddMode=null;_wkoRenderRpanel();}};
+      taskOk.onclick=doAddTask;
+      taskRow.appendChild(taskOk);
+      taskAddForm.appendChild(taskInp);taskAddForm.appendChild(taskDaySel);taskAddForm.appendChild(taskRow);
+      sc.appendChild(taskAddForm);
+      setTimeout(function(){taskInp.focus();},30);
+    }
+
     var days=_wkoGetDays();
     var wkS=fmt(days[0]),wkE=fmt(days[days.length-1]);
     var wkOrder=_wkoTaskOrder[_wkoWK()]||[];
@@ -2050,23 +2122,29 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
       if(ai!==-1)return -1;if(bi!==-1)return 1;return 0;
     });
     _wkoLastWeekTasks=weekTasks;
-    // Group by day — always show all 7 days
+    // Group by day — always show all 7 days, reminders first then tasks
     var colorIdx=0;
     days.forEach(function(d){
       var ds=fmt(d);
-      var dl=_wkoDayHdr(ds);
-      sc.appendChild(dl);
+      var rems=((_pass.reminders||{})[ds]||[]);
       var dayUndone=weekTasks.filter(function(t){return t.deadline===ds&&!t.done;});
       var dayDone=weekTasks.filter(function(t){return t.deadline===ds&&t.done;});
-      if(!dayUndone.length&&!dayDone.length){
-        var empty=document.createElement('div');empty.className='wko-rp-day-empty';
-        empty.dataset.dday=ds;empty.textContent='Suelta una tarea aquí para asignarla';
-        sc.appendChild(empty);
-      }
+      sc.appendChild(_wkoDayHdr(ds));
+      // Reminders first
+      rems.forEach(function(r,i){
+        sc.appendChild(_wkoRpCard(r.text,r.done,'#27AE72',i,null,null,
+          (function(rds,rid){return function(){
+            var arr=((_pass.reminders||{})[rds]||[]);
+            for(var j=0;j<arr.length;j++){if(arr[j].id===rid){arr[j].done=!arr[j].done;saveData2();_wkoRenderRpanel();return;}}
+          };})(ds,r.id)
+        ));
+      });
+      // Then tasks
       dayUndone.forEach(function(t){
         var c=WKO_CARD_COLORS[colorIdx%WKO_CARD_COLORS.length];colorIdx++;
         sc.appendChild(_wkoRpCard(t.text,false,c,colorIdx-1,t.sub,{sec:'deadline',ds:t.deadline,taskid:String(t.id),dataIdx:colorIdx-1},t.onCheck,{type:'deadline',updateFn:t.updateFn}));
       });
+      // Completed tasks (collapsible)
       if(dayDone.length){
         var isCol=!!_wkoDoneCollapsed[ds];
         var tog=document.createElement('button');tog.className='wko-rp-done-toggle';
@@ -2077,52 +2155,13 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
           sc.appendChild(_wkoRpCard(t.text,true,'#888',colorIdx+i,t.sub,{sec:'deadline',ds:t.deadline,taskid:String(t.id),dataIdx:colorIdx+i},t.onCheck,{type:'deadline',updateFn:t.updateFn}));
         });
       }
+      // Empty drop zone
+      if(!rems.length&&!dayUndone.length&&!dayDone.length){
+        var empty=document.createElement('div');empty.className='wko-rp-day-empty';
+        empty.dataset.dday=ds;empty.textContent='Suelta aquí o usa los botones de arriba';
+        sc.appendChild(empty);
+      }
     });
-
-    // ── SECTION 3: Recordatorios ──
-    var sep2=document.createElement('div');sep2.className='wko-rp-sep';sc.appendChild(sep2);
-    var sh3=document.createElement('div');sh3.className='wko-rp-sec-hdr';sh3.style.marginTop='10px';
-    var sl3=document.createElement('div');sl3.className='wko-rp-sec';sl3.textContent='Recordatorios';
-    sh3.appendChild(sl3);sc.appendChild(sh3);
-    var hasRem=false;
-    _wkoGetDays().forEach(function(d){
-      var ds=fmt(d);var rems=((_pass.reminders||{})[ds]||[]);if(!rems.length)return;hasRem=true;
-      sc.appendChild(_wkoDayHdr(ds));
-      rems.forEach(function(r,i){
-        sc.appendChild(_wkoRpCard(r.text,r.done,'#27AE72',i,DNAMES_S[d.getDay()],null,
-          (function(rds,rid){return function(){
-            var arr=((_pass.reminders||{})[rds]||[]);
-            for(var j=0;j<arr.length;j++){if(arr[j].id===rid){arr[j].done=!arr[j].done;saveData2();_wkoRenderRpanel();return;}}
-          };})(ds,r.id)
-        ));
-      });
-    });
-    if(!hasRem){var e2=document.createElement('div');e2.className='wko-rp-empty';e2.textContent='Sin recordatorios';sc.appendChild(e2);}
-    // Always-visible reminder add form
-    var remAddForm=document.createElement('div');remAddForm.className='wko-rem-add-form';remAddForm.style.marginTop='8px';
-    var remInp=document.createElement('input');remInp.className='wko-rem-add-inp';remInp.placeholder='Agregar recordatorio…';
-    var remDaySel=document.createElement('select');remDaySel.className='wko-rem-day-sel';
-    _wkoGetDays().forEach(function(d){
-      var opt=document.createElement('option');opt.value=fmt(d);
-      opt.textContent=DNAMES_S[d.getDay()]+' '+d.getDate()+' '+MNAMES_S[d.getMonth()];
-      if(fmt(d)===fmt(today))opt.selected=true;
-      remDaySel.appendChild(opt);
-    });
-    var remRow=document.createElement('div');remRow.className='wko-rem-add-row';
-    var remOk=document.createElement('button');remOk.className='wko-rem-add-ok';remOk.textContent='Guardar';
-    var doAddRem=function(){
-      var v=remInp.value.trim();if(!v)return;
-      var ds=remDaySel.value;
-      if(!_pass.reminders)_pass.reminders={};
-      if(!_pass.reminders[ds])_pass.reminders[ds]=[];
-      _pass.reminders[ds].push({id:Date.now(),text:v,done:false});
-      saveData2();remInp.value='';_wkoRenderRpanel();
-    };
-    remInp.onkeydown=function(e){if(e.key==='Enter')doAddRem();};
-    remOk.onclick=doAddRem;
-    remRow.appendChild(remOk);
-    remAddForm.appendChild(remInp);remAddForm.appendChild(remDaySel);remAddForm.appendChild(remRow);
-    sc.appendChild(remAddForm);
 
     // ── SECTION 4: Tareas pendientes ──
     var sep3=document.createElement('div');sep3.className='wko-rp-sep';sc.appendChild(sep3);
