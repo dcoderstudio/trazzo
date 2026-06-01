@@ -1600,12 +1600,11 @@ input[type=time].mi{color-scheme:dark;cursor:pointer;}
     el.innerHTML='';
     var ds=fmt(curDate);
     var items=[];
-    // From calendar events (project deliveries)
-    (calendarEvents||[]).forEach(function(ev){
-      if(ev.date===ds&&ev.type==='delivery')items.push({id:'cal_'+ev.id,text:ev.title,done:false,badge:'Proyecto'});
+    // Project deadlines matching today
+    (projects||[]).forEach(function(p){
+      if(!p||p.catId==='cotizaciones')return;
+      if(p.deadline===ds)items.push({id:'proj_'+p.id,text:p.name,done:false,badge:'Proyecto'});
     });
-    // Project deadlines
-    projects.forEach(function(p){if(p.deadline===ds&&p.catId!=='cotizaciones')items.push({id:'proj_'+p.id,text:p.name,done:false,badge:'Proyecto'});});
     // Standalone tasks with isDelivery
     (standaloneTasks||[]).forEach(function(t){
       if(t.isDelivery&&t.deadline===ds)items.push({id:t.id,text:t.text,done:t.done,badge:'Manual',
