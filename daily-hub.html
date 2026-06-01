@@ -177,6 +177,16 @@ body{height:100%;min-height:-webkit-fill-available;background:#0c0c0c;color:#fff
 .dh-meal.home .dh-meal-reminder{color:rgba(39,174,114,.65);}
 .dh-meal.out .dh-meal-reminder{color:rgba(232,160,32,.65);}
 .dh-meal-note{font-size:10px;color:rgba(255,255,255,.4);margin-top:5px;font-style:italic;}
+.dh-meal-chk{width:26px;height:26px;border-radius:50%;border:1.5px solid rgba(255,255,255,.18);flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;margin-top:2px;transition:all .2s;position:relative;}
+.dh-meal-chk:hover{border-color:rgba(255,255,255,.45);}
+.dh-meal.home .dh-meal-chk{border-color:rgba(39,174,114,.4);}
+.dh-meal.out .dh-meal-chk{border-color:rgba(232,160,32,.4);}
+.dh-meal-chk.done{background:#27AE72;border-color:#27AE72 !important;}
+.dh-meal.checked-meal{opacity:.72;}
+.dh-meal.checked-meal .dh-meal-reminder{text-decoration:line-through;opacity:.45;}
+@keyframes dh-meal-pop{0%{transform:scale(0);opacity:1;}60%{transform:scale(1.3);}100%{transform:scale(1);opacity:1;}}
+@keyframes dh-meal-burst{0%{transform:scale(1) translateY(0);opacity:1;}100%{transform:scale(0) translateY(-24px);opacity:0;}}
+.dh-meal-confetti{position:absolute;width:6px;height:6px;border-radius:50%;pointer-events:none;animation:dh-meal-burst .6s ease-out forwards;}
 .dh-rem-input-ok{background:rgba(44,197,210,0.18);border:none;color:#2CC5D2;font-size:12px;border-radius:8px;padding:0 10px;height:32px;cursor:pointer;font-family:Inter,sans-serif;}
 .dh-rem-input-ok:hover{background:rgba(44,197,210,0.32);}
 /* ENTREGAS Y TAREAS DEL DÍA — green card */
@@ -1486,12 +1496,28 @@ input[type=time].mi{color-scheme:dark;cursor:pointer;}
   window.navDay=function(n){curDate=addDays(curDate,n);renderAll();};
   window.goTodayDH=function(){curDate=new Date(todayD);renderAll();};
 
+  function _mealBurst(chkEl){
+    var cols=['#27AE72','#1A6FD4','#E8A020','#8B5CF6','#D4537E'];
+    for(var i=0;i<7;i++){(function(ci){
+      var dot=document.createElement('div');dot.className='dh-meal-confetti';
+      var angle=(ci/7)*360;var r=18+Math.random()*10;
+      dot.style.cssText='background:'+cols[ci%cols.length]+';left:50%;top:50%;margin-left:-3px;margin-top:-3px;transform-origin:center;'
+        +'animation-delay:'+(ci*40)+'ms;'
+        +'left:'+(50+Math.cos(angle*Math.PI/180)*r)+'%;'
+        +'top:'+(50+Math.sin(angle*Math.PI/180)*r)+'%;';
+      chkEl.appendChild(dot);
+      setTimeout(function(){dot.remove();},700);
+    })(i);}
+  }
+
   function renderMealCard(){
     var el=document.getElementById('dhMeal');if(!el)return;
     var ds=fmt(curDate);
     var plan=(_pass.mealPlan||{})[ds]||{type:null,note:''};
-    el.className='dh-meal '+(plan.type||'');
+    var isChecked=!!plan.checked;
+    el.className='dh-meal '+(plan.type||'')+(isChecked?' checked-meal':'');
     el.innerHTML='';
+    if(!plan.type)return; // no plan set — hide card entirely
     var body=document.createElement('div');body.className='dh-meal-body';
     var icon=document.createElement('div');icon.className='dh-meal-icon';
     var info=document.createElement('div');info.className='dh-meal-info';
@@ -1500,16 +1526,24 @@ input[type=time].mi{color-scheme:dark;cursor:pointer;}
     if(plan.type==='home'){
       icon.textContent='🏠';typeEl.textContent='Comes en casa hoy';
       remEl.textContent='Recuerda descongelar / sacar algo esta mañana';
-    } else if(plan.type==='out'){
+    } else {
       icon.textContent='🚗';typeEl.textContent='Comes fuera hoy';
       remEl.textContent='Recuerda cocinar algo esta mañana';
-    } else {
-      icon.textContent='🍽️';typeEl.textContent='Sin plan de comida para hoy';
-      remEl.textContent='Planea desde el organizador semanal';
     }
     info.appendChild(typeEl);info.appendChild(remEl);
     if(plan.note){var noteEl=document.createElement('div');noteEl.className='dh-meal-note';noteEl.textContent=plan.note;info.appendChild(noteEl);}
-    body.appendChild(icon);body.appendChild(info);
+    // Checkmark button
+    var chk=document.createElement('div');chk.className='dh-meal-chk'+(isChecked?' done':'');
+    if(isChecked)chk.innerHTML='<svg width="12" height="12" viewBox="0 0 14 14"><polyline points="2,7 6,11 12,3" stroke="#fff" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    chk.onclick=function(){
+      if(!_pass.mealPlan)_pass.mealPlan={};
+      if(!_pass.mealPlan[ds])_pass.mealPlan[ds]={type:null,note:''};
+      _pass.mealPlan[ds].checked=!_pass.mealPlan[ds].checked;
+      if(_pass.mealPlan[ds].checked)_mealBurst(chk);
+      DOC.update({mealPlan:_pass.mealPlan}).catch(function(){});
+      renderMealCard();
+    };
+    body.appendChild(icon);body.appendChild(info);body.appendChild(chk);
     el.appendChild(body);
   }
 
