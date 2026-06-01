@@ -396,6 +396,23 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
 .wko-dc-src{font-size:8px;font-weight:600;opacity:.38;margin-top:1px;}
 .wko-dc-check{width:19px;height:19px;border-radius:50%;border:1.5px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;transition:all .15s;}
 .wko-dc-check:hover{border-color:rgba(255,255,255,.5);}
+/* Meal planner */
+.wko-meal-row{display:flex;align-items:center;gap:6px;padding:5px 3px;border-radius:8px;transition:background .1s;}
+.wko-meal-row:hover{background:rgba(255,255,255,.03);}
+.wko-meal-row.today-meal{background:rgba(255,255,255,.05);outline:0.5px solid rgba(255,255,255,.08);}
+.wko-meal-lbl{font-size:10px;font-weight:700;color:rgba(255,255,255,.35);min-width:46px;flex-shrink:0;line-height:1.3;}
+.wko-meal-row.today-meal .wko-meal-lbl{color:rgba(255,255,255,.85);}
+.wko-meal-btns{display:flex;gap:3px;flex-shrink:0;}
+.wko-meal-btn{font-size:9px;font-weight:700;padding:3px 8px;border-radius:6px;border:0.5px solid transparent;cursor:pointer;font-family:Inter,sans-serif;transition:all .15s;opacity:.45;}
+.wko-meal-btn:hover{opacity:1;}
+.wko-meal-btn.home{background:rgba(39,174,114,.1);color:#27AE72;border-color:rgba(39,174,114,.2);}
+.wko-meal-btn.home.active{background:rgba(39,174,114,.3);border-color:rgba(39,174,114,.55);color:#fff;opacity:1;}
+.wko-meal-btn.out{background:rgba(232,160,32,.1);color:#E8A020;border-color:rgba(232,160,32,.2);}
+.wko-meal-btn.out.active{background:rgba(232,160,32,.28);border-color:rgba(232,160,32,.5);color:#fff;opacity:1;}
+.wko-meal-note-inp{flex:1;background:none;border:none;border-bottom:0.5px solid rgba(255,255,255,.07);color:rgba(255,255,255,.42);font-size:9px;font-family:Inter,sans-serif;outline:none;padding:2px 4px;min-width:0;}
+.wko-meal-note-inp:focus{border-bottom-color:rgba(255,255,255,.2);color:rgba(255,255,255,.85);}
+.wko-meal-note-inp::placeholder{color:rgba(255,255,255,.09);}
+.wko-meal-note-inp.filled{color:rgba(255,255,255,.55);}
 /* Reminder add */
 .wko-rem-add-btn{display:flex;align-items:center;gap:5px;font-size:9px;color:rgba(255,255,255,.2);cursor:pointer;padding:5px 2px;transition:color .15s;border:none;background:none;font-family:Inter,sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.06em;width:100%;}
 .wko-rem-add-btn:hover{color:rgba(255,255,255,.5);}
@@ -1406,7 +1423,7 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
   }
   // ── NEW WEEKLY TIME GRID IMPLEMENTATION ───────────────────────
   var HPXW=40,HSW=7,HEW=22;
-  var _wkoW=null,_wkoDB={},_wkoDT={},_wkoGoals={},_wkoTaskOrder={},_wkoGcEvs={},_wkoGcTok=null,_wkoGapiRdy=false,_wkoGsiReady=false,_wkoTokenClient=null;
+  var _wkoW=null,_wkoDB={},_wkoDT={},_wkoGoals={},_wkoTaskOrder={},_wkoMealPlan={},_wkoGcEvs={},_wkoGcTok=null,_wkoGapiRdy=false,_wkoGsiReady=false,_wkoTokenClient=null;
   var WKO_GC_CLIENT_ID='106264633340-2golmdmit2b5sddsjirbb1hjlri2r6lu.apps.googleusercontent.com';
   var WKO_GC_SCOPES='https://www.googleapis.com/auth/calendar.readonly';
   var _wkoBmDs=null,_wkoBmId=null,_wkoBmColor='#1A6FD4';
@@ -1418,8 +1435,8 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
   function _wkoPT(t){var p=(t||'00:00').split(':');return{h:parseInt(p[0]),m:parseInt(p[1]||0)};}
   function _wkoFT(h,m){return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0');}
   function _wkoSave(){
-    var p=Object.assign({},_pass,{dailyBlocks:_wkoDB,dayTasks:_wkoDT,weekGoals:_wkoGoals,weekTaskOrder:_wkoTaskOrder});
-    DOC.set(p).then(function(){_pass=Object.assign({},_pass,{dailyBlocks:_wkoDB,dayTasks:_wkoDT,weekGoals:_wkoGoals,weekTaskOrder:_wkoTaskOrder});}).catch(function(e){console.warn(e);});
+    var p=Object.assign({},_pass,{dailyBlocks:_wkoDB,dayTasks:_wkoDT,weekGoals:_wkoGoals,weekTaskOrder:_wkoTaskOrder,mealPlan:_wkoMealPlan});
+    DOC.set(p).then(function(){_pass=Object.assign({},_pass,{dailyBlocks:_wkoDB,dayTasks:_wkoDT,weekGoals:_wkoGoals,weekTaskOrder:_wkoTaskOrder,mealPlan:_wkoMealPlan});}).catch(function(e){console.warn(e);});
   }
 
   window.openWeekPlanner=function(){
@@ -1428,6 +1445,7 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
     _wkoDT=JSON.parse(JSON.stringify(_pass.dayTasks||{}));
     _wkoGoals=JSON.parse(JSON.stringify(_pass.weekGoals||{}));
     _wkoTaskOrder=JSON.parse(JSON.stringify(_pass.weekTaskOrder||{}));
+    _wkoMealPlan=JSON.parse(JSON.stringify(_pass.mealPlan||{}));
     _wkoGcEvs={};
     if(_wkoGcTok){if(_wkoW)_wkoGetDays().forEach(function(d){_wkoFetchGc(fmt(d));});}
     document.getElementById('wkoOv').classList.add('open');
@@ -1821,7 +1839,52 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
     goalAddRow.appendChild(goalInp);goalAddRow.appendChild(goalOk);
     sc.appendChild(goalAddRow);
 
-    // ── SECTION 2: Vencen esta semana ──
+    // ── SECTION 2: Comidas de la semana ──
+    var sepM=document.createElement('div');sepM.className='wko-rp-sep';sc.appendChild(sepM);
+    var shM=document.createElement('div');shM.className='wko-rp-sec-hdr';shM.style.marginTop='10px';
+    var slM=document.createElement('div');slM.className='wko-rp-sec';slM.textContent='Comidas de la semana';
+    shM.appendChild(slM);sc.appendChild(shM);
+    var mealDays=_wkoGetDays();
+    var todayDs=fmt(today);
+    var DNAMES_MEAL=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+    mealDays.forEach(function(d){
+      var ds=fmt(d);
+      var plan=_wkoMealPlan[ds]||{type:null,note:''};
+      var isToday=(ds===todayDs);
+      var row=document.createElement('div');row.className='wko-meal-row'+(isToday?' today-meal':'');
+      // Day label
+      var lbl=document.createElement('div');lbl.className='wko-meal-lbl';
+      lbl.textContent=DNAMES_MEAL[d.getDay()]+' '+d.getDate();
+      // Toggle buttons
+      var btns=document.createElement('div');btns.className='wko-meal-btns';
+      var btnH=document.createElement('button');btnH.className='wko-meal-btn home'+(plan.type==='home'?' active':'');btnH.textContent='🏠 Casa';
+      var btnO=document.createElement('button');btnO.className='wko-meal-btn out'+(plan.type==='out'?' active':'');btnO.textContent='🚗 Fuera';
+      btnH.onclick=(function(dsi){return function(){
+        if(!_wkoMealPlan[dsi])_wkoMealPlan[dsi]={type:null,note:''};
+        _wkoMealPlan[dsi].type=(_wkoMealPlan[dsi].type==='home'?null:'home');
+        _wkoSave();_wkoRenderRpanel();
+      };})(ds);
+      btnO.onclick=(function(dsi){return function(){
+        if(!_wkoMealPlan[dsi])_wkoMealPlan[dsi]={type:null,note:''};
+        _wkoMealPlan[dsi].type=(_wkoMealPlan[dsi].type==='out'?null:'out');
+        _wkoSave();_wkoRenderRpanel();
+      };})(ds);
+      btns.appendChild(btnH);btns.appendChild(btnO);
+      // Note input
+      var noteInp=document.createElement('input');noteInp.className='wko-meal-note-inp'+(plan.note?' filled':'');
+      noteInp.placeholder='Notas…';noteInp.value=plan.note||'';
+      noteInp.addEventListener('pointerdown',function(e){e.stopPropagation();});
+      noteInp.onblur=(function(dsi){return function(){
+        if(!_wkoMealPlan[dsi])_wkoMealPlan[dsi]={type:null,note:''};
+        _wkoMealPlan[dsi].note=noteInp.value.trim();
+        _wkoSave();
+      };})(ds);
+      noteInp.onkeydown=function(e){if(e.key==='Enter')noteInp.blur();};
+      row.appendChild(lbl);row.appendChild(btns);row.appendChild(noteInp);
+      sc.appendChild(row);
+    });
+
+    // ── SECTION 3: Vencen esta semana ──
     var sep1=document.createElement('div');sep1.className='wko-rp-sep';sc.appendChild(sep1);
     var sh2=document.createElement('div');sh2.className='wko-rp-sec-hdr';sh2.style.marginTop='10px';
     var sl2=document.createElement('div');sl2.className='wko-rp-sec';sl2.textContent='Vencen esta semana';
@@ -2095,6 +2158,7 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
       if(d.dayTasks && _wkoW){_wkoDT=JSON.parse(JSON.stringify(d.dayTasks||{}));}
       if(d.weekGoals){_wkoGoals=JSON.parse(JSON.stringify(d.weekGoals));}
       if(d.weekTaskOrder){_wkoTaskOrder=JSON.parse(JSON.stringify(d.weekTaskOrder));}
+      if(d.mealPlan){_wkoMealPlan=JSON.parse(JSON.stringify(d.mealPlan));}
       if(_wkoW){_wkoRenderRpanel && _wkoRenderRpanel();}
     }
     render();

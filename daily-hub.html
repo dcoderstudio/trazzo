@@ -161,6 +161,20 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 .dh-rem-input::placeholder{color:rgba(44,197,210,0.2);}
 .dh-rem-time-input{background:rgba(255,255,255,0.06);border:1px solid rgba(44,197,210,0.18);border-radius:8px;padding:6px 8px;font-size:11px;color:rgba(255,255,255,0.6);font-family:Inter,sans-serif;outline:none;width:86px;color-scheme:dark;}
 .dh-rem-time-input:focus{border-color:rgba(44,197,210,0.4);}
+/* MEAL PLAN CARD */
+.dh-meal{flex-shrink:0;border-radius:12px;overflow:hidden;border:0.5px solid rgba(255,255,255,.06);border-left:4px solid rgba(255,255,255,.1);background:rgba(255,255,255,.02);}
+.dh-meal.home{background:linear-gradient(135deg,rgba(18,55,35,.55) 0%,rgba(12,12,20,.88) 100%);border:0.5px solid rgba(39,174,114,.18);border-left:4px solid #27AE72;}
+.dh-meal.out{background:linear-gradient(135deg,rgba(55,38,8,.55) 0%,rgba(12,12,20,.88) 100%);border:0.5px solid rgba(232,160,32,.18);border-left:4px solid #E8A020;}
+.dh-meal-body{padding:11px 14px 12px;display:flex;align-items:flex-start;gap:10px;}
+.dh-meal-icon{font-size:20px;flex-shrink:0;line-height:1;margin-top:1px;}
+.dh-meal-info{flex:1;}
+.dh-meal-type{font-size:12px;font-weight:700;color:rgba(255,255,255,.35);}
+.dh-meal.home .dh-meal-type{color:#27AE72;}
+.dh-meal.out .dh-meal-type{color:#E8A020;}
+.dh-meal-reminder{font-size:9px;color:rgba(255,255,255,.38);margin-top:3px;line-height:1.4;}
+.dh-meal.home .dh-meal-reminder{color:rgba(39,174,114,.65);}
+.dh-meal.out .dh-meal-reminder{color:rgba(232,160,32,.65);}
+.dh-meal-note{font-size:10px;color:rgba(255,255,255,.4);margin-top:5px;font-style:italic;}
 .dh-rem-input-ok{background:rgba(44,197,210,0.18);border:none;color:#2CC5D2;font-size:12px;border-radius:8px;padding:0 10px;height:32px;cursor:pointer;font-family:Inter,sans-serif;}
 .dh-rem-input-ok:hover{background:rgba(44,197,210,0.32);}
 /* ENTREGAS Y TAREAS DEL DÍA — green card */
@@ -277,6 +291,8 @@ input[type=time].mi{color-scheme:dark;cursor:pointer;}
 
     <!-- RIGHT: day tasks + task bank -->
     <div class="dh-right">
+      <!-- MEAL PLAN -->
+      <div class="dh-meal" id="dhMeal"></div>
       <!-- DAY TASKS -->
       <div class="dh-daytasks">
         <div class="dh-dt-hdr">
@@ -1400,10 +1416,38 @@ input[type=time].mi{color-scheme:dark;cursor:pointer;}
   window.navDay=function(n){curDate=addDays(curDate,n);renderAll();};
   window.goTodayDH=function(){curDate=new Date(todayD);renderAll();};
 
+  function renderMealCard(){
+    var el=document.getElementById('dhMeal');if(!el)return;
+    var ds=fmt(curDate);
+    var plan=(_pass.mealPlan||{})[ds]||{type:null,note:''};
+    el.className='dh-meal '+(plan.type||'');
+    el.innerHTML='';
+    var body=document.createElement('div');body.className='dh-meal-body';
+    var icon=document.createElement('div');icon.className='dh-meal-icon';
+    var info=document.createElement('div');info.className='dh-meal-info';
+    var typeEl=document.createElement('div');typeEl.className='dh-meal-type';
+    var remEl=document.createElement('div');remEl.className='dh-meal-reminder';
+    if(plan.type==='home'){
+      icon.textContent='🏠';typeEl.textContent='Comes en casa hoy';
+      remEl.textContent='Recuerda descongelar / sacar algo esta mañana';
+    } else if(plan.type==='out'){
+      icon.textContent='🚗';typeEl.textContent='Comes fuera hoy';
+      remEl.textContent='Recuerda cocinar algo esta mañana';
+    } else {
+      icon.textContent='🍽️';typeEl.textContent='Sin plan de comida para hoy';
+      remEl.textContent='Planea desde el organizador semanal';
+    }
+    info.appendChild(typeEl);info.appendChild(remEl);
+    if(plan.note){var noteEl=document.createElement('div');noteEl.className='dh-meal-note';noteEl.textContent=plan.note;info.appendChild(noteEl);}
+    body.appendChild(icon);body.appendChild(info);
+    el.appendChild(body);
+  }
+
   function renderAll(){
     renderHeader();
     renderMemberBar();
     renderTimeGrid();
+    renderMealCard();
     renderDayTasks();
     renderReminders();
     renderDeliveries();
