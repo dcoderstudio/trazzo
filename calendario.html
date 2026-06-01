@@ -442,6 +442,16 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
 .wko-rem-add-cancel{background:rgba(255,255,255,.05);border:0.5px solid rgba(255,255,255,.08);color:rgba(255,255,255,.35);font-size:11px;border-radius:8px;padding:5px 8px;cursor:pointer;font-family:Inter,sans-serif;}
 .wko-slot.drop-hi{background:rgba(91,159,255,.18) !important;outline:1.5px dashed rgba(91,159,255,.5);}
 .wko-rp-done-toggle{background:none;border:none;color:rgba(255,255,255,.25);font-size:9px;font-weight:700;cursor:pointer;padding:3px 2px 6px;font-family:Inter,sans-serif;text-transform:uppercase;letter-spacing:.04em;transition:color .15s;width:100%;text-align:left;}
+/* Reminder rows — compact, dashed border, no card weight */
+.wko-rem-row{display:flex;align-items:center;gap:7px;padding:5px 8px 5px 10px;border-radius:8px;margin-bottom:4px;background:rgba(39,174,114,.07);border:0.5px solid rgba(39,174,114,.12);border-left:2px dashed rgba(39,174,114,.45);transition:background .12s;}
+.wko-rem-row:hover{background:rgba(39,174,114,.13);}
+.wko-rem-row.done-rem{opacity:.38;}
+.wko-rem-row-icon{font-size:11px;flex-shrink:0;opacity:.7;}
+.wko-rem-row-text{flex:1;font-size:10px;font-weight:600;color:rgba(255,255,255,.78);line-height:1.3;word-break:break-word;}
+.wko-rem-row.done-rem .wko-rem-row-text{text-decoration:line-through;}
+.wko-rem-row-chk{width:17px;height:17px;border-radius:50%;border:1.5px solid rgba(39,174,114,.4);flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;}
+.wko-rem-row-chk:hover{border-color:#27AE72;}
+.wko-rem-row-chk.done{background:#27AE72;border-color:#27AE72;}
 .wko-rp-done-toggle:hover{color:rgba(255,255,255,.55);}
 .wko-rp-day-empty{font-size:9px;color:rgba(255,255,255,.1);padding:7px 6px;border:0.5px dashed rgba(255,255,255,.07);border-radius:8px;text-align:center;margin:2px 0 4px;transition:all .15s;}
 .wko-rp-day-empty.drop-hi,.wko-rp-day.drop-hi{background:rgba(91,159,255,.12) !important;outline:1.5px dashed rgba(91,159,255,.45) !important;border-radius:6px;color:rgba(91,159,255,.8) !important;}
@@ -1871,6 +1881,19 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
     })(i);}
   }
 
+  // Compact reminder row — visually distinct from task cards
+  function _wkoRemRow(text, done, onCheck){
+    var row=document.createElement('div');row.className='wko-rem-row'+(done?' done-rem':'');
+    var icon=document.createElement('div');icon.className='wko-rem-row-icon';icon.textContent='🔔';
+    var txt=document.createElement('div');txt.className='wko-rem-row-text';txt.textContent=text;
+    var chk=document.createElement('div');chk.className='wko-rem-row-chk'+(done?' done':'');
+    if(done)chk.innerHTML='<svg width="8" height="8" viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3" stroke="#fff" stroke-width="2.5" fill="none" stroke-linecap="round"/></svg>';
+    chk.addEventListener('pointerdown',function(e){e.stopPropagation();});
+    if(onCheck)chk.onclick=function(e){e.stopPropagation();onCheck();};
+    row.appendChild(icon);row.appendChild(txt);row.appendChild(chk);
+    return row;
+  }
+
   function _wkoDayHdr(ds){
     var el=document.createElement('div');
     el.className='wko-rp-day'+(ds===fmt(today)?' today-day':'');
@@ -2130,9 +2153,9 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
       var dayUndone=weekTasks.filter(function(t){return t.deadline===ds&&!t.done;});
       var dayDone=weekTasks.filter(function(t){return t.deadline===ds&&t.done;});
       sc.appendChild(_wkoDayHdr(ds));
-      // Reminders first
-      rems.forEach(function(r,i){
-        sc.appendChild(_wkoRpCard(r.text,r.done,'#27AE72',i,null,null,
+      // Reminders first — compact row style
+      rems.forEach(function(r){
+        sc.appendChild(_wkoRemRow(r.text,r.done,
           (function(rds,rid){return function(){
             var arr=((_pass.reminders||{})[rds]||[]);
             for(var j=0;j<arr.length;j++){if(arr[j].id===rid){arr[j].done=!arr[j].done;saveData2();_wkoRenderRpanel();return;}}
