@@ -1,12 +1,27 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <rect width="512" height="512" rx="112" fill="#1A6FD4"/>
-  <rect x="60" y="60" width="392" height="392" rx="72" fill="url(#g)"/>
+  <rect width="512" height="512" fill="#000"/>
   <defs>
-    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#2580E8"/>
-      <stop offset="100%" stop-color="#1255A8"/>
-    </linearGradient>
+    <clipPath id="cl"><rect x="0" y="0" width="256" height="512"/></clipPath>
+    <clipPath id="cr"><rect x="256" y="0" width="256" height="512"/></clipPath>
   </defs>
-  <text x="256" y="340" font-family="'Inter','Arial Black',sans-serif" font-weight="900" font-size="280" text-anchor="middle" fill="#ffffff" letter-spacing="-8">T</text>
-  <rect x="140" y="380" width="232" height="18" rx="9" fill="rgba(255,255,255,0.25)"/>
+
+  <!-- Left side: thick ring arc (C shape) -->
+  <circle cx="256" cy="256" r="206" fill="none" stroke="white" stroke-width="46" clip-path="url(#cl)"/>
+
+  <!-- Right side: solid white semicircle -->
+  <circle cx="256" cy="256" r="206" fill="white" clip-path="url(#cr)"/>
+
+  <!-- Small hollow ring (left half) -->
+  <circle cx="164" cy="256" r="50" fill="none" stroke="white" stroke-width="13"/>
+
+  <!-- Black solid disk (right half — the "hole") -->
+  <circle cx="328" cy="256" r="60" fill="#000"/>
+
+  <!-- Dashes — right side, 4 marks radiating outward -->
+  <g transform="translate(256,256)">
+    <rect x="220" y="-10" width="36" height="17" rx="4" fill="white" transform="rotate(-52)"/>
+    <rect x="222" y="-10" width="32" height="17" rx="4" fill="white" transform="rotate(-22)"/>
+    <rect x="222" y="-10" width="32" height="17" rx="4" fill="white" transform="rotate(15)"/>
+    <rect x="218" y="-10" width="36" height="17" rx="4" fill="white" transform="rotate(47)"/>
+  </g>
 </svg>
