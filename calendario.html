@@ -2181,11 +2181,8 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
         var dayIdx=dcols.indexOf(dcol);
         var days=_wkoGetDays();
         if(dayIdx>=0&&dayIdx<days.length){
-          if(drag.type==='deadline'&&drag.updateFn){
-            // Change deadline to this day
-            drag.updateFn(fmt(days[dayIdx]));
-          }else{
-            // Create time block (default)
+          {
+            // Always create time block when dropping on a time slot
             var hgrid=slot.parentElement;
             var slots=Array.from(hgrid.querySelectorAll('.wko-slot'));
             var slotIdx=slots.indexOf(slot);
@@ -2194,6 +2191,8 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
             if(!_wkoDB[ds])_wkoDB[ds]=[];
             _wkoDB[ds].push({id:Date.now(),title:drag.text,start:_wkoFT(hour,0),end:_wkoFT(Math.min(hour+1,HEW),0),color:drag.color||'#1A6FD4',sub:''});
             _wkoDB[ds].sort(function(a,b){return(a.start||'')<(b.start||'')?-1:1;});
+            // If the dragged card has a deadline updateFn, also move its deadline to this day
+            if(drag.updateFn)drag.updateFn(ds);
             _wkoSave();_wkoRenderGrid();
           }
         }
