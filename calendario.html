@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#1A6FD4">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -14,7 +14,8 @@
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,800&display=swap');
 *{box-sizing:border-box;margin:0;padding:0;}
-html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-serif;overflow:hidden;}
+html{height:-webkit-fill-available;}
+body{height:100%;min-height:-webkit-fill-available;background:#0c0c0c;color:#fff;font-family:'Inter',sans-serif;overflow:hidden;}
 .topbar{display:flex;align-items:center;justify-content:space-between;padding:0 28px;height:52px;border-bottom:0.5px solid rgba(255,255,255,0.06);flex-shrink:0;}
 .logo{display:flex;align-items:center;gap:10px;}
 .logo-pill{background:#fff;color:#0c0c0c;font-size:11px;font-weight:800;padding:5px 10px;border-radius:8px;}
@@ -22,7 +23,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 .nav-btn{background:none;border:none;color:rgba(255,255,255,0.32);font-size:12px;font-weight:500;padding:6px 14px;border-radius:20px;cursor:pointer;font-family:'Inter',sans-serif;transition:background .15s,color .15s;}
 .nav-btn:hover{background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.78);}
 .nav-btn.active{background:rgba(255,255,255,0.11);color:#fff;font-weight:600;}
-.cal-wrap{display:flex;height:calc(100vh - 52px);overflow:hidden;}
+.cal-wrap{display:flex;height:calc(100dvh - 52px);height:calc(var(--vh,100vh) - 52px);overflow:hidden;}
 /* SIDEBAR */
 .cal-sidebar{width:220px;flex-shrink:0;border-right:0.5px solid rgba(255,255,255,0.06);display:flex;flex-direction:column;gap:0;overflow-y:auto;padding:20px 16px 16px;}
 .cal-sidebar::-webkit-scrollbar{width:3px;}
@@ -276,7 +277,7 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
 .wpg-apply-btn{background:linear-gradient(135deg,rgba(26,111,212,.38),rgba(139,92,246,.28));border:0.5px solid rgba(100,150,255,.3);color:#fff;font-size:12px;font-weight:700;padding:11px 20px;border-radius:12px;cursor:pointer;font-family:Inter,sans-serif;transition:all .18s;width:100%;}
 .wpg-apply-btn:hover{filter:brightness(1.15);}
 /* ── WEEKLY TIME GRID OVERLAY ─────────────────────────────────── */
-.wko-ov{position:fixed;inset:0;background:rgba(6,7,8,.97);z-index:900;display:flex;flex-direction:column;opacity:0;pointer-events:none;transition:opacity .18s;}
+.wko-ov{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(6,7,8,.97);z-index:900;display:flex;flex-direction:column;opacity:0;pointer-events:none;transition:opacity .18s;}
 .wko-ov.open{opacity:1;pointer-events:all;}
 .wko-hdr{display:flex;align-items:center;gap:8px;padding:12px 20px;border-bottom:0.5px solid rgba(255,255,255,.08);flex-shrink:0;}
 .wko-title{font-size:15px;font-weight:800;letter-spacing:-.02em;flex:1;}
@@ -2173,6 +2174,21 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
     if(!_wkoW&&window.location.search.indexOf('week=1')>-1){history.replaceState(null,'',location.pathname);openWeekPlanner();}
   },function(e){console.warn('Error:',e);render();});
 
+})();
+</script>
+<script>
+// Fix iOS Safari 100vh — set --vh to actual inner height, re-render on change
+(function(){
+  function _setVh(){document.documentElement.style.setProperty('--vh',window.innerHeight+'px');}
+  _setVh();
+  var _rvt=null;
+  window.addEventListener('resize',function(){
+    _setVh();
+    clearTimeout(_rvt);
+    _rvt=setTimeout(function(){if(typeof render==='function')render();},120);
+  });
+  // Also re-render once the page is fully painted (handles Safari initial layout delay)
+  window.addEventListener('load',function(){_setVh();setTimeout(function(){if(typeof render==='function')render();},80);});
 })();
 </script>
 
