@@ -521,6 +521,7 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
     <button class="wko-nav" onclick="navWeekPlan(1)">&#8250;</button>
     <button class="wko-today-btn" onclick="wkoGoToday()">Hoy</button>
     <div id="wkoGcBtn"></div>
+    <button class="wko-today-btn" style="border-color:rgba(232,160,32,.3);color:#E8A020;" onclick="location.href='daily-hub.html'">⚡ Daily Hub</button>
     <button class="wko-close" onclick="closeWeekPlanner()">&#215;</button>
   </div>
   <div class="wko-body">
@@ -2163,6 +2164,7 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
     }
     render();
     if(selectedDate&&curView!=='day') renderDayEvents(selectedDate);
+    if(!_wkoW&&window.location.search.indexOf('week=1')>-1){history.replaceState(null,'',location.pathname);openWeekPlanner();}
   },function(e){console.warn('Error:',e);render();});
 
 })();
