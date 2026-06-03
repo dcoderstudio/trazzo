@@ -211,6 +211,12 @@ firebase.initializeApp({
   appId: "1:106264633340:web:4b2560a57e75321c709c79"
 });
 var db = firebase.firestore();
+  // ── AUTH GUARD ──────────────────────────────────────────────
+  firebase.auth().onAuthStateChanged(function(u){
+    if(u&&u.email==='dcoderstudio@gmail.com')return;
+    location.replace('/login.html');
+  });
+  // ── END AUTH GUARD ──────────────────────────────────────────
 db.enablePersistence({synchronizeTabs:true}).catch(function(){});
 var DOC = db.collection('workspace').doc('proyectos');
 

@@ -446,12 +446,6 @@ input[type=time].mi{color-scheme:dark;cursor:pointer;}
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <script>
 (function(){
-  // ── AUTH GUARD ──────────────────────────────────────────────
-  firebase.auth().onAuthStateChanged(function(u){
-    if(u&&u.email==='dcoderstudio@gmail.com')return;
-    location.replace('/login.html');
-  });
-  // ── END AUTH GUARD ──────────────────────────────────────────
   firebase.initializeApp({
     apiKey:"AIzaSyC3LG6e_7YAbYQhdPe6IC_Mq3SFop0XPsk",
     authDomain:"trazzo-c9eaf.firebaseapp.com",
@@ -461,6 +455,12 @@ input[type=time].mi{color-scheme:dark;cursor:pointer;}
     appId:"1:106264633340:web:4b2560a57e75321c709c79"
   });
   var db=firebase.firestore();
+  // ── AUTH GUARD ──────────────────────────────────────────────
+  firebase.auth().onAuthStateChanged(function(u){
+    if(u&&u.email==='dcoderstudio@gmail.com')return;
+    location.replace('/login.html');
+  });
+  // ── END AUTH GUARD ──────────────────────────────────────────
 
   var DOC=db.collection('workspace').doc('proyectos');
 
