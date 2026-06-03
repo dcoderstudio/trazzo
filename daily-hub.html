@@ -287,6 +287,29 @@ input[type=time].mi{color-scheme:dark;cursor:pointer;}
 .block-color-row{display:flex;gap:7px;flex-wrap:wrap;}
 .block-color-sw{width:24px;height:24px;border-radius:7px;border:2.5px solid transparent;cursor:pointer;transition:border .12s;display:flex;align-items:center;justify-content:center;}
 .block-color-sw.sel{border-color:#fff;}
+
+/* ── MOBILE (phones only ≤480px) ── */
+.dh-mobile-tabs{display:none;}
+@media screen and (max-width:480px){
+  /* Tab bar */
+  .dh-mobile-tabs{display:flex;flex-shrink:0;background:rgba(8,8,16,.95);border-bottom:0.5px solid rgba(255,255,255,.08);}
+  .dh-mtab{flex:1;padding:11px 6px;font-size:12px;font-weight:700;border:none;background:none;color:rgba(255,255,255,.32);cursor:pointer;border-bottom:2px solid transparent;font-family:Inter,sans-serif;transition:color .15s,border-color .15s;}
+  .dh-mtab.active{color:#5B9FFF;border-bottom-color:#5B9FFF;}
+  /* Body: stack columns */
+  .dh-body{flex-direction:column;}
+  /* Default tab = Plan: show right, hide left */
+  .dh-left{width:100%;border-right:none;display:none;}
+  .dh-right{width:100%;flex:1;}
+  /* Horario tab: show left, hide right */
+  .dh-body.mob-horario .dh-left{display:flex;}
+  .dh-body.mob-horario .dh-right{display:none;}
+  /* Header: compact */
+  .dh-header{padding:8px 12px;gap:8px;}
+  .dh-greet-title{font-size:14px;}
+  .dh-greet-sub{display:none;}
+  .dh-stats{display:none;}
+  .dh-date-lbl{min-width:80px;font-size:11px;}
+}
 </style>
 </head>
 <body>
@@ -327,7 +350,13 @@ input[type=time].mi{color-scheme:dark;cursor:pointer;}
     </div>
   </div>
 
-  <div class="dh-body">
+  <!-- Tab bar — only visible on phones (CSS shows/hides) -->
+  <div class="dh-mobile-tabs">
+    <button class="dh-mtab active" id="dhTabPlan" onclick="setDhTab('plan')">📋 Plan del día</button>
+    <button class="dh-mtab" id="dhTabHorario" onclick="setDhTab('horario')">⏱ Horario</button>
+  </div>
+
+  <div class="dh-body" id="dhBody">
     <!-- LEFT: member bar + time grid + deliverables strip -->
     <div class="dh-left">
       <div class="dh-member-bar" id="dhMemberBar"></div>
@@ -1499,6 +1528,16 @@ input[type=time].mi{color-scheme:dark;cursor:pointer;}
   // ── NAV ───────────────────────────────────────────────────────
   window.navDay=function(n){curDate=addDays(curDate,n);renderAll();};
   window.goTodayDH=function(){curDate=new Date(todayD);renderAll();};
+  window.setDhTab=function(tab){
+    var body=document.getElementById('dhBody');
+    if(!body)return;
+    if(tab==='horario'){body.classList.add('mob-horario');}
+    else{body.classList.remove('mob-horario');}
+    var p=document.getElementById('dhTabPlan');
+    var h=document.getElementById('dhTabHorario');
+    if(p)p.classList.toggle('active',tab==='plan');
+    if(h)h.classList.toggle('active',tab==='horario');
+  };
 
   function _mealBurst(chkEl){
     var cols=['#27AE72','#1A6FD4','#E8A020','#8B5CF6','#D4537E'];
