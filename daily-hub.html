@@ -2,6 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
+<script>document.documentElement.style.setProperty("--vh",window.innerHeight+"px");</script>
 <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#1A6FD4">
@@ -286,35 +287,7 @@ input[type=time].mi{color-scheme:dark;cursor:pointer;}
 .block-color-row{display:flex;gap:7px;flex-wrap:wrap;}
 .block-color-sw{width:24px;height:24px;border-radius:7px;border:2.5px solid transparent;cursor:pointer;transition:border .12s;display:flex;align-items:center;justify-content:center;}
 .block-color-sw.sel{border-color:#fff;}
-/* ── MOBILE RESPONSIVE ──────────────────────────────────────── */
-.dh-mobile-tabs{display:none;}
-@media screen and (max-width:768px){
-  /* Topbar */
-  .topbar{padding:0 10px;}
-  .nav-btn{font-size:10px;padding:5px 8px;}
-  .logo-name{display:none;}
-
-  /* Hub header: compact, single row */
-  .dh-header{padding:8px 12px;gap:8px;}
-  .dh-greet-title{font-size:14px;}
-  .dh-greet-sub{display:none;}
-  .dh-stats{display:none;}
-  .dh-date-lbl{min-width:90px;font-size:11px;}
-
-  /* Tab bar */
-  .dh-mobile-tabs{display:flex;flex-shrink:0;background:#080810;border-bottom:0.5px solid rgba(255,255,255,.07);}
-  .dh-mtab{flex:1;padding:10px 6px;font-size:12px;font-weight:700;border:none;background:none;color:rgba(255,255,255,.32);cursor:pointer;border-bottom:2px solid transparent;font-family:Inter,sans-serif;transition:all .15s;}
-  .dh-mtab.active{color:#5B9FFF;border-bottom-color:#5B9FFF;}
-
-  /* Body: switch to single-column */
-  .dh-body{flex-direction:column;}
-  .dh-left{width:100%;border-right:none;flex:1;display:none;}
-  .dh-right{width:100%;flex:1;padding:8px 10px;gap:8px;}
-
-  /* Schedule tab active */
-  .dh-body.show-schedule .dh-left{display:flex;}
-  .dh-body.show-schedule .dh-right{display:none;}
-}
+</style>
 </head>
 <body>
 <div class="topbar">
@@ -354,13 +327,7 @@ input[type=time].mi{color-scheme:dark;cursor:pointer;}
     </div>
   </div>
 
-  <!-- MOBILE TABS -->
-  <div class="dh-mobile-tabs" id="dhMobileTabs">
-    <button class="dh-mtab active" onclick="setMobileTab('plan')">📋 Plan del día</button>
-    <button class="dh-mtab" onclick="setMobileTab('horario')">⏱ Horario</button>
-  </div>
-
-  <div class="dh-body" id="dhBody">
+  <div class="dh-body">
     <!-- LEFT: member bar + time grid + deliverables strip -->
     <div class="dh-left">
       <div class="dh-member-bar" id="dhMemberBar"></div>
@@ -1532,15 +1499,6 @@ input[type=time].mi{color-scheme:dark;cursor:pointer;}
   // ── NAV ───────────────────────────────────────────────────────
   window.navDay=function(n){curDate=addDays(curDate,n);renderAll();};
   window.goTodayDH=function(){curDate=new Date(todayD);renderAll();};
-  window.setMobileTab=function(tab){
-    var body=document.getElementById('dhBody');if(!body)return;
-    body.classList.toggle('show-schedule',tab==='horario');
-    document.querySelectorAll('.dh-mtab').forEach(function(b){b.classList.remove('active');});
-    var idx=tab==='plan'?0:1;
-    var tabs=document.querySelectorAll('.dh-mtab');
-    if(tabs[idx])tabs[idx].classList.add('active');
-    if(tab==='horario'){var to=document.getElementById('dhTimeOuter');if(to)setTimeout(function(){to.scrollTop=Math.max(0,(7-7)*56);},80);}
-  };
 
   function _mealBurst(chkEl){
     var cols=['#27AE72','#1A6FD4','#E8A020','#8B5CF6','#D4537E'];
