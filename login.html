@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
+<link rel="manifest" href="/manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<link rel="stylesheet" href="theme.css">
+<title>Trazzo — Acceso</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;font-family:'Inter',sans-serif;color:#fff;display:flex;align-items:center;justify-content:center;}
+.login-card{display:flex;flex-direction:column;align-items:center;gap:28px;padding:48px 40px;background:rgba(10,10,24,.82);border:0.5px solid rgba(255,255,255,.1);border-radius:24px;backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);max-width:340px;width:90%;text-align:center;}
+.login-logo{display:flex;align-items:center;gap:10px;}
+.login-logo-pill{background:#fff;color:#0c0c0c;font-size:12px;font-weight:800;padding:6px 12px;border-radius:9px;}
+.login-logo-name{font-size:16px;font-weight:700;letter-spacing:.04em;}
+.login-title{font-size:22px;font-weight:800;letter-spacing:-.02em;}
+.login-sub{font-size:12px;color:rgba(255,255,255,.38);line-height:1.5;}
+.login-btn{display:flex;align-items:center;gap:10px;background:#fff;color:#1a1a1a;border:none;border-radius:12px;padding:12px 22px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s;width:100%;justify-content:center;}
+.login-btn:hover{background:#f0f0f0;transform:translateY(-1px);box-shadow:0 4px 16px rgba(0,0,0,.4);}
+.login-btn svg{flex-shrink:0;}
+.login-error{font-size:11px;color:#D4537E;background:rgba(212,83,126,.12);border:0.5px solid rgba(212,83,126,.3);border-radius:8px;padding:8px 14px;display:none;}
+.login-error.visible{display:block;}
+</style>
+</head>
+<body>
+<div class="login-card">
+  <div class="login-logo">
+    <div class="login-logo-pill">D/</div>
+    <span class="login-logo-name">Dcoder Studio</span>
+  </div>
+  <div>
+    <div class="login-title">Trazzo</div>
+    <div class="login-sub" style="margin-top:6px;">Acceso privado — solo para el equipo autorizado</div>
+  </div>
+  <button class="login-btn" onclick="signInWithGoogle()">
+    <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.36-8.16 2.36-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/><path fill="none" d="M0 0h48v48H0z"/></svg>
+    Continuar con Google
+  </button>
+  <div class="login-error" id="loginError"></div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script>
+firebase.initializeApp({
+  apiKey:"AIzaSyC3LG6e_7YAbYQhdPe6IC_Mq3SFop0XPsk",
+  authDomain:"trazzo-c9eaf.firebaseapp.com",
+  projectId:"trazzo-c9eaf",
+  storageBucket:"trazzo-c9eaf.firebasestorage.app",
+  messagingSenderId:"106264633340",
+  appId:"1:106264633340:web:4b2560a57e75321c709c79"
+});
+
+var ALLOWED='dcoderstudio@gmail.com';
+
+// If already signed in with correct account → go to app
+firebase.auth().onAuthStateChanged(function(u){
+  if(u&&u.email===ALLOWED) location.replace('/daily-hub.html');
+});
+
+// Handle redirect result (after Google auth)
+firebase.auth().getRedirectResult().then(function(r){
+  if(r&&r.user){
+    if(r.user.email!==ALLOWED){
+      firebase.auth().signOut();
+      showError('Esta cuenta ('+r.user.email+') no tiene acceso.');
+    }
+  }
+}).catch(function(e){showError('Error al iniciar sesión. Intenta de nuevo.');});
+
+function signInWithGoogle(){
+  var provider=new firebase.auth.GoogleAuthProvider();
+  provider.setCustomParameters({login_hint:ALLOWED});
+  firebase.auth().signInWithRedirect(provider);
+}
+
+function showError(msg){
+  var el=document.getElementById('loginError');
+  el.textContent=msg;el.classList.add('visible');
+}
+
+// Show error param in URL
+if(location.search.indexOf('e=1')>-1) showError('No tienes acceso con esa cuenta.');
+</script>
+</body>
+</html>

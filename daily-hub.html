@@ -443,8 +443,15 @@ input[type=time].mi{color-scheme:dark;cursor:pointer;}
 
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <script>
 (function(){
+  // ── AUTH GUARD ──────────────────────────────────────────────
+  firebase.auth().onAuthStateChanged(function(u){
+    if(u&&u.email==='dcoderstudio@gmail.com')return;
+    location.replace('/login.html');
+  });
+  // ── END AUTH GUARD ──────────────────────────────────────────
   firebase.initializeApp({
     apiKey:"AIzaSyC3LG6e_7YAbYQhdPe6IC_Mq3SFop0XPsk",
     authDomain:"trazzo-c9eaf.firebaseapp.com",
