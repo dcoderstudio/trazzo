@@ -483,6 +483,8 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
 .wko-rp-day-empty{font-size:9px;color:rgba(255,255,255,.1);padding:7px 6px;border:0.5px dashed rgba(255,255,255,.07);border-radius:8px;text-align:center;margin:2px 0 4px;transition:all .15s;}
 .wko-rp-day-empty.drop-hi,.wko-rp-day.drop-hi{background:rgba(91,159,255,.12) !important;outline:1.5px dashed rgba(91,159,255,.45) !important;border-radius:6px;color:rgba(91,159,255,.8) !important;}
 .wko-rp-ghost{position:fixed;pointer-events:none;z-index:2000;border-radius:10px;padding:5px 10px;font-size:10px;font-weight:700;color:rgba(255,255,255,.9);white-space:nowrap;max-width:180px;overflow:hidden;text-overflow:ellipsis;}
+@keyframes wko-drag-ready{0%{transform:scale(1);}60%{transform:scale(1.04);box-shadow:0 6px 22px rgba(0,0,0,.7);}100%{transform:scale(1.02);}}
+.wko-dc.drag-ready{animation:wko-drag-ready .35s ease forwards;}
 /* Entregas section */
 .wko-entrega-row{display:flex;align-items:center;gap:7px;padding:5px 4px;border-radius:8px;transition:background .1s;}
 .wko-entrega-row:hover{background:rgba(255,255,255,.03);}
@@ -1852,7 +1854,7 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
     chk.addEventListener('pointerdown',function(e){e.stopPropagation();});
     if(onCheck)chk.onclick=function(e){e.stopPropagation();onCheck();};
     card.appendChild(handle);card.appendChild(num);card.appendChild(body);card.appendChild(chk);
-    card.addEventListener('pointerdown',function(e){_wkoRpDragStart(e,text,color,card,dragCfg);},{passive:false});
+    _wkoLongPressDrag(card,text,color,dragCfg);
     return card;
   }
 
@@ -1869,7 +1871,7 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
     var chk=document.createElement('div');chk.className='wko-dc-check';
     chk.addEventListener('pointerdown',function(e){e.stopPropagation();});
     card.appendChild(handle);card.appendChild(num);card.appendChild(body);card.appendChild(chk);
-    card.addEventListener('pointerdown',function(e){_wkoRpDragStart(e,text,'#888',card,dragCfg||null);},{passive:false});
+    _wkoLongPressDrag(card,text,'#888',dragCfg||null);
     return card;
   }
 
@@ -2254,6 +2256,41 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
     }
     rp.appendChild(sc);
     sc.scrollTop=_prevScroll;
+  }
+
+  // ── LONG-PRESS DRAG (mobile-friendly) ────────────────────────
+  // Starts drag only after holding ~420ms without moving — allows normal scroll
+  function _wkoLongPressDrag(el, text, color, dragCfg){
+    var _t=null, _sx=0, _sy=0, _cx=0, _cy=0;
+    el.addEventListener('pointerdown',function(e){
+      if(e.button&&e.button!==0)return;
+      _sx=e.clientX;_sy=e.clientY;_cx=e.clientX;_cy=e.clientY;
+      _t=setTimeout(function(){
+        _t=null;
+        el.classList.add('drag-ready');
+        setTimeout(function(){el.classList.remove('drag-ready');},300);
+        _wkoRpDragStartXY(_cx,_cy,text,color,el,dragCfg);
+      },420);
+    },{passive:true});
+    el.addEventListener('pointermove',function(e){
+      _cx=e.clientX;_cy=e.clientY;
+      if(_t){var dx=e.clientX-_sx,dy=e.clientY-_sy;if(dx*dx+dy*dy>100){clearTimeout(_t);_t=null;}}
+    },{passive:true});
+    function _cancel(){if(_t){clearTimeout(_t);_t=null;}}
+    el.addEventListener('pointerup',_cancel);
+    el.addEventListener('pointercancel',_cancel);
+  }
+  function _wkoRpDragStartXY(cx,cy,text,color,srcCard,dragCfg){
+    if(srcCard)srcCard.classList.add('dragging');
+    var ghost=document.createElement('div');ghost.className='wko-rp-ghost';
+    ghost.style.cssText='background:rgba('+_wkoHexRgb(color)+',.25);border:0.5px solid '+color+';border-left:3px solid '+color+';';
+    ghost.textContent=text;
+    document.body.appendChild(ghost);
+    _wkoRpDrag={text:text,color:color,ghost:ghost,hoverSlot:null,hoverDc:null,hoverDayEl:null,srcCard:srcCard||null,
+      insertBefore:true,type:(dragCfg&&dragCfg.type)||'block',updateFn:(dragCfg&&dragCfg.updateFn)||null};
+    ghost.style.left=(cx+14)+'px';ghost.style.top=(cy-18)+'px';
+    document.addEventListener('pointermove',_wkoRpOnMove,{passive:false});
+    document.addEventListener('pointerup',_wkoRpOnUp);
   }
 
   // ── DRAG FROM RIGHT PANEL ─────────────────────────────────────
