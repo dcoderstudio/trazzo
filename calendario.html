@@ -720,6 +720,7 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
   var projects=[], categories=[], standaloneTasks=[], calendarEvents=[];
   var calCategories=[], dailyPriorities={}, weekPlans={};
   var monthGoals={}, monthReminders={};
+  var _calGcEvs={}, _calGcFetched={}; // Google Cal events for main calendar view
   var _mgInputOpen=false, _mrInputOpen=false;
   var _pass={};
   var _wpWeek=null; var _wpSelDay=null;
@@ -787,6 +788,61 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
   function addDays(d,n){var r=new Date(d);r.setDate(r.getDate()+n);return r;}
 
   // ── EVENT COLLECTION ──────────────────────────────────────────
+  // Fetch Google Calendar events for a date range and cache in _calGcEvs
+  function _calFetchGc(rangeKey, tMin, tMax){
+    if(_calGcFetched[rangeKey])return;
+    if(!_wkoGcTok||!_wkoGapiRdy)return;
+    _calGcFetched[rangeKey]=true;
+    gapi.client.calendar.calendarList.list({minAccessRole:'reader'}).then(function(cl){
+      var cals=(cl.result.items||[]).map(function(c){return{id:c.id,color:c.backgroundColor};});
+      if(!cals.length)cals=[{id:'primary',color:null}];
+      var all=[],done=0;
+      cals.forEach(function(cal){
+        gapi.client.calendar.events.list({calendarId:cal.id,timeMin:tMin,timeMax:tMax,singleEvents:true,orderBy:'startTime',maxResults:100}).then(function(r){
+          (r.result.items||[]).forEach(function(ev){
+            if(!ev.start)return;
+            var isAllDay=!!ev.start.date;
+            var startDt=new Date(isAllDay?ev.start.date+'T00:00:00':ev.start.dateTime);
+            var endDt=new Date(isAllDay?ev.end.date+'T00:00:00':ev.end.dateTime||ev.start.dateTime||ev.start.date+'T01:00:00');
+            var cur=new Date(startDt);cur.setHours(0,0,0,0);
+            var endDay=new Date(endDt);endDay.setHours(0,0,0,0);
+            // Add entry for each day the event spans
+            while(cur<=endDay){
+              var ds=fmt(cur);
+              if(!_calGcEvs[ds])_calGcEvs[ds]=[];
+              var exists=_calGcEvs[ds].some(function(x){return x.id==='gc_'+ev.id;});
+              if(!exists){
+                var t='';if(!isAllDay&&ev.start.dateTime){var d2=new Date(ev.start.dateTime);t=String(d2.getHours()).padStart(2,'0')+':'+String(d2.getMinutes()).padStart(2,'0');}
+                _calGcEvs[ds].push({id:'gc_'+ev.id,date:ds,title:ev.summary||'(sin título)',sub:'Google Cal',
+                  color:cal.color||'#4285F4',type:'event',icon:'📅',time:t,isGC:true});
+              }
+              cur.setDate(cur.getDate()+1);
+            }
+          });
+          if(++done===cals.length)render();
+        }).catch(function(){++done;});
+      });
+    }).catch(function(e){if(e.status===401){_wkoGcTok=null;_wkoRenderGcBtn();}});
+  }
+
+  // Trigger GC fetch for current view range
+  function _calFetchGcForView(){
+    if(!_wkoGcTok||!_wkoGapiRdy)return;
+    if(curView==='month'){
+      var key=curYear+'-'+curMonth;
+      var first=new Date(curYear,curMonth,1);
+      var last=new Date(curYear,curMonth+1,0);
+      _calFetchGc(key,addDays(first,-7).toISOString(),addDays(last,7).toISOString());
+    }else if(curView==='week'){
+      var key2='w_'+fmt(curWeekStart);
+      _calFetchGc(key2,curWeekStart.toISOString(),addDays(curWeekStart,7).toISOString());
+    }else{
+      var key3='d_'+fmt(curDayDate);
+      var d2=new Date(curDayDate);
+      _calFetchGc(key3,d2.toISOString(),addDays(d2,1).toISOString());
+    }
+  }
+
   function getAllEvents(){
     var evs=[];
     projects.forEach(function(p){
@@ -850,7 +906,8 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
       if(e.id&&e.id.indexOf('st_')===0&&calTaskKeys[e.title+'|'+e.date]) return false;
       return true;
     });
-    var evs=base.concat(calEvs);
+    var gcEvs=(_calGcEvs[dateStr]||[]);
+    var evs=base.concat(calEvs).concat(gcEvs);
     evs.sort(function(a,b){return(a.time||'99:99')<(b.time||'99:99')?-1:1;});
     return evs;
   }
@@ -1420,6 +1477,7 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
     renderPriorities(_prioDate||selectedDate||fmt(today));
     renderMonthGoals();
     renderMonthReminders();
+    _calFetchGcForView();
   }
 
   // ── EVENT MODAL ───────────────────────────────────────────────
@@ -1759,7 +1817,7 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
       client_id:WKO_GC_CLIENT_ID,scope:WKO_GC_SCOPES,
       callback:function(r){
         if(r.error){console.warn('WKO GC auth:',r.error);localStorage.removeItem('gc_was_connected');_wkoRenderGcBtn();return;}
-        _wkoGcTok=r.access_token;
+        _wkoGcTok=r.access_token;_calGcFetched={};_calGcEvs={};
         var tok={access_token:r.access_token,expires_at:Date.now()+(r.expires_in-60)*1000};
         localStorage.setItem('gc_token',JSON.stringify(tok));
         localStorage.setItem('gc_was_connected','1');
