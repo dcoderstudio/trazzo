@@ -10,7 +10,6 @@
 
 html,body{
   background:var(--t-grad) !important;
-  background-attachment:fixed !important;
 }
 
 /* ── TOPBAR & SUBBARS ──────────────────────────────────── */
