@@ -903,6 +903,7 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
       });
       if(dayEvs.length>3){var more=document.createElement('div');more.className='ev-more';more.textContent='+'+(dayEvs.length-3)+' más';more.onclick=(function(d2){return function(e){e.stopPropagation();openDayPanel(d2);};})(ds);cell.appendChild(more);}
       cell.onclick=(function(d2){return function(){openDayPanel(d2);};})(ds);
+      cell.ondblclick=(function(d2){return function(e){e.stopPropagation();location.href='daily-hub.html?date='+d2;};})(ds);
       mg.appendChild(cell);
       cur=addDays(cur,1);
     }
