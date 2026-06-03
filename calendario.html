@@ -2130,7 +2130,8 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
         if(!_pass.reminders)_pass.reminders={};
         if(!_pass.reminders[ds])_pass.reminders[ds]=[];
         _pass.reminders[ds].push({id:Date.now(),text:v,done:false});
-        saveData2();remInp.value='';_wkoRenderRpanel();
+        DOC.update({reminders:_pass.reminders}).catch(function(){saveData2();});
+        remInp.value='';_wkoRenderRpanel();
       };
       remInp.onkeydown=function(e){if(e.key==='Enter')doAddRem();if(e.key==='Escape'){_wkoAddMode=null;_wkoRenderRpanel();}};
       remOk.onclick=doAddRem;
@@ -2205,7 +2206,7 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
         sc.appendChild(_wkoRemRow(r.text,r.done,
           (function(rds,rid){return function(){
             var arr=((_pass.reminders||{})[rds]||[]);
-            for(var j=0;j<arr.length;j++){if(arr[j].id===rid){arr[j].done=!arr[j].done;saveData2();_wkoRenderRpanel();return;}}
+            for(var j=0;j<arr.length;j++){if(arr[j].id===rid){arr[j].done=!arr[j].done;DOC.update({reminders:_pass.reminders}).catch(function(){saveData2();});_wkoRenderRpanel();return;}}
           };})(ds,r.id)
         ));
       });

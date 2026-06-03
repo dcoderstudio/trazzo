@@ -1428,19 +1428,23 @@ input[type=time].mi{color-scheme:dark;cursor:pointer;}
     }
   }
   window.openRemInput=function(){_remInputOpen=true;renderReminders();};
+  function _saveReminders(){
+    _pass.reminders=reminders;
+    DOC.update({reminders:reminders}).catch(function(){saveData();});
+  }
   function addReminder(text,time,ds){
     if(!reminders[ds])reminders[ds]=[];
     reminders[ds].push({id:Date.now(),text:text,time:time||'',done:false});
     _remInputOpen=false;
-    saveData(); renderReminders();
+    _saveReminders(); renderReminders();
   }
   function toggleReminder(ds,id){
     reminders[ds]=(reminders[ds]||[]).map(function(r){return r.id===id?Object.assign({},r,{done:!r.done}):r;});
-    saveData(); renderReminders();
+    _saveReminders(); renderReminders();
   }
   function removeReminder(ds,id){
     reminders[ds]=(reminders[ds]||[]).filter(function(r){return r.id!==id;});
-    saveData(); renderReminders();
+    _saveReminders(); renderReminders();
   }
 
   // ── BLOCK MODAL ───────────────────────────────────────────────
