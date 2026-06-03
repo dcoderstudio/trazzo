@@ -1825,11 +1825,12 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
         _wkoGcScheduleRefresh(tok.expires_at);
         _wkoRenderGcBtn();
         if(_wkoW)_wkoGetDays().forEach(function(d){_wkoFetchGc(fmt(d));});
+        _calFetchGcForView();render();
       }
     });
     try{
       var s=JSON.parse(localStorage.getItem('gc_token')||'null');
-      if(s&&s.expires_at>Date.now()){_wkoGcTok=s.access_token;gapi.client.setToken({access_token:s.access_token});_wkoGcScheduleRefresh(s.expires_at);_wkoRenderGcBtn();if(_wkoW)_wkoGetDays().forEach(function(d){_wkoFetchGc(fmt(d));});}
+      if(s&&s.expires_at>Date.now()){_wkoGcTok=s.access_token;gapi.client.setToken({access_token:s.access_token});_wkoGcScheduleRefresh(s.expires_at);_wkoRenderGcBtn();if(_wkoW)_wkoGetDays().forEach(function(d){_wkoFetchGc(fmt(d));});_calGcFetched={};_calGcEvs={};_calFetchGcForView();render();}
       else if(localStorage.getItem('gc_was_connected')){_wkoTokenClient.requestAccessToken({prompt:''.toString()});}
       else{_wkoRenderGcBtn();}
     }catch(e){_wkoRenderGcBtn();}
