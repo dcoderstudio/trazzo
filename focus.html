@@ -325,7 +325,11 @@ function markFocusTaskDone(task) {
   }
   allFbTasks = getAllTasks(); rebuildDisplayTasks();
   focusSaveData();
-  renderTaskList();
+  // Remove only this row — avoid full re-render that can cause blank screen
+  var row = document.querySelector('.task-item[data-taskid="' + String(task.id) + '"]');
+  if (row) row.remove();
+  var cnt = document.getElementById('taskCounter');
+  if (cnt) cnt.textContent = displayTasks.length + ' pendiente' + (displayTasks.length !== 1 ? 's' : '');
 }
 
 function markFocusDayTaskDone(dtTask) {
@@ -339,13 +343,17 @@ function markFocusDayTaskDone(dtTask) {
   });
   allFbTasks = getAllTasks(); rebuildDisplayTasks();
   focusSaveData();
-  renderTaskList();
+  var row2 = document.querySelector('.task-item[data-taskid="dt_' + dtTask.id + '"]');
+  if (row2) row2.remove();
+  var cnt2 = document.getElementById('taskCounter');
+  if (cnt2) cnt2.textContent = displayTasks.length + ' pendiente' + (displayTasks.length !== 1 ? 's' : '');
 }
 
 function toggleFocusReminder(id) {
   reminders[todayStr] = (reminders[todayStr]||[]).map(function(r){ return r.id===id?Object.assign({},r,{done:!r.done}):r; });
   focusSaveData();
-  renderTaskList();
+  var remRow = document.querySelector('.fp-rem-row[data-remid="' + id + '"]');
+  if (remRow) remRow.remove();
 }
 
 // ── PERSON FILTER ─────────────────────────────────────────────────────────────
