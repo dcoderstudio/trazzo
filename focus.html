@@ -325,7 +325,7 @@ function markFocusTaskDone(task) {
   }
   allFbTasks = getAllTasks(); rebuildDisplayTasks();
   focusSaveData();
-  _removeTaskRow('.task-item[data-taskid="' + String(task.id) + '"]');
+  renderTaskList();
 }
 
 function markFocusDayTaskDone(dtTask) {
@@ -339,13 +339,13 @@ function markFocusDayTaskDone(dtTask) {
   });
   allFbTasks = getAllTasks(); rebuildDisplayTasks();
   focusSaveData();
-  _removeTaskRow('.task-item[data-taskid="dt_' + dtTask.id + '"]');
+  renderTaskList();
 }
 
 function toggleFocusReminder(id) {
   reminders[todayStr] = (reminders[todayStr]||[]).map(function(r){ return r.id===id?Object.assign({},r,{done:!r.done}):r; });
   focusSaveData();
-  _removeTaskRow('.fp-rem-row[data-remid="' + id + '"]');
+  renderTaskList();
 }
 
 // ── PERSON FILTER ─────────────────────────────────────────────────────────────
@@ -715,10 +715,13 @@ DOC.onSnapshot(function(snap) {
   rebuildDisplayTasks();
   renderPersonFilter();
   if (_firstLoad) { _firstLoad = false; restoreSess(); }
-  else { renderTaskList(); }
+  else if (_focusLocalSave) { _focusLocalSave = false; } // local save — DOM already updated in-place
+  else { renderTaskList(); } // external change — full re-render
 });
 
+var _focusLocalSave = false;
 function focusSaveData(){
+  _focusLocalSave = true;
   var p=Object.assign({},_focusPass,{projects:projects,standaloneTasks:standaloneTasks,dayTasks:dayTasks,reminders:reminders});
   DOC.set(p).catch(function(e){console.warn(e);});
 }
