@@ -195,6 +195,9 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
   </div>
 </div>
 
+<!-- Alarm audio — preloaded for iOS compatibility -->
+<audio id="focusAlarm" src="/sounds/alarm.wav" preload="auto"></audio>
+
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
@@ -735,23 +738,50 @@ function focusSaveData(){
 }
 
 // ── ALARM ─────────────────────────────────────────────────────────────────────
-// Persistent AudioContext — created/resumed on user interaction (toggleTimer)
+// Audio unlock — call on user gesture (play button) to unblock iOS audio
 var _audioCtx = null;
-function _getAudioCtx() {
+var _audioUnlocked = false;
+
+function _unlockAudio() {
+  // Unlock <audio> element for iOS (must be triggered by user gesture)
+  var el = document.getElementById('focusAlarm');
+  if (el && !_audioUnlocked) {
+    var p = el.play();
+    if (p && p.then) {
+      p.then(function() { el.pause(); el.currentTime = 0; _audioUnlocked = true; }).catch(function(){});
+    } else {
+      el.pause(); el.currentTime = 0; _audioUnlocked = true;
+    }
+  }
+  // Also unlock Web Audio API
   if (!_audioCtx) {
     try { _audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {}
   }
   if (_audioCtx && _audioCtx.state === 'suspended') {
     _audioCtx.resume().catch(function(){});
   }
-  return _audioCtx;
 }
 
 function playAlarm() {
+  // Primary: use <audio> element (reliable on iOS)
+  var el = document.getElementById('focusAlarm');
+  if (el) {
+    el.currentTime = 0;
+    var p = el.play();
+    if (p && p.catch) p.catch(function(){
+      // Fallback to Web Audio API if <audio> fails
+      _playWebAudioAlarm();
+    });
+    return;
+  }
+  _playWebAudioAlarm();
+}
+
+function _playWebAudioAlarm() {
   try {
-    var ctx = _getAudioCtx();
+    var ctx = _audioCtx;
     if (!ctx) return;
-    // Three beeps at increasing pitch
+    if (ctx.state === 'suspended') { ctx.resume(); return; }
     [[0, 880], [0.35, 988], [0.7, 1047]].forEach(function(pair) {
       var offset = pair[0], freq = pair[1];
       var osc = ctx.createOscillator(), gain = ctx.createGain();
@@ -795,7 +825,7 @@ function toggleTimer() {
   }
   running = !running;
   if (running) {
-    _getAudioCtx(); // unlock AudioContext on user gesture
+    _unlockAudio(); // unlock audio on user gesture (required by iOS)
     interval = setInterval(tick, 1000);
     document.getElementById('focusPanel').classList.add('running');
     document.getElementById('timerStatus').textContent = 'concentración';
