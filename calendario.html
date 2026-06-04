@@ -2555,7 +2555,12 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
     })(i);}
   }
 
-  function renderMonthGoals(){
+  function _saveMonthData(){
+    _pass.monthGoals=monthGoals;_pass.monthReminders=monthReminders;
+    DOC.update({monthGoals:monthGoals,monthReminders:monthReminders}).catch(function(){saveData();});
+  }
+
+    function renderMonthGoals(){
     var wrap=document.getElementById('monthGoalsList');if(!wrap)return;
     wrap.innerHTML='';
     var mk=_monthKey();
@@ -2567,7 +2572,7 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
       chk.onclick=(function(ii){return function(){
         var arr=monthGoals[mk]||[];if(!arr[ii])return;
         arr[ii]=Object.assign({},arr[ii],{done:!arr[ii].done});
-        saveData();renderMonthGoals();
+        _saveMonthData();renderMonthGoals();
       };})(i);
       var txt=document.createElement('div');txt.className='cal-month-text'+(g.done?' done':'');txt.textContent=g.text;
       txt.title='Clic para editar';txt.style.cursor='text';
@@ -2578,7 +2583,7 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
           var v=inp.value.trim();if(!v){inp.replaceWith(txt);return;}
           var arr=monthGoals[mk]||[];if(!arr[ii])return;
           arr[ii]=Object.assign({},arr[ii],{text:v});
-          saveData();renderMonthGoals();
+          _saveMonthData();renderMonthGoals();
         };
         inp.onblur=save;
         inp.onkeydown=function(e){if(e.key==='Enter'){inp.onblur=null;save();}if(e.key==='Escape'){inp.onblur=null;inp.replaceWith(txt);}};
@@ -2586,7 +2591,7 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
       var del=document.createElement('button');del.className='cal-month-del';del.textContent='×';
       del.onclick=(function(ii){return function(){
         var arr=(monthGoals[mk]||[]).slice();arr.splice(ii,1);
-        monthGoals[mk]=arr;saveData();renderMonthGoals();
+        monthGoals[mk]=arr;_saveMonthData();renderMonthGoals();
       };})(i);
       item.appendChild(chk);item.appendChild(txt);item.appendChild(del);
       wrap.appendChild(item);
@@ -2604,7 +2609,7 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
         var v=inp.value.trim();if(!v)return;
         if(!monthGoals[mk])monthGoals[mk]=[];
         monthGoals[mk].push({id:Date.now(),text:v,done:false});
-        _mgInputOpen=false;saveData();renderMonthGoals();
+        _mgInputOpen=false;_saveMonthData();renderMonthGoals();
       };
       inp.onkeydown=function(e){if(e.key==='Enter')doAdd();if(e.key==='Escape'){_mgInputOpen=false;renderMonthGoals();}};
       ok.onclick=doAdd;iw.appendChild(inp);iw.appendChild(ok);wrap.appendChild(iw);
@@ -2626,7 +2631,7 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
       chk.onclick=(function(ii){return function(){
         var arr=monthReminders[mk]||[];if(!arr[ii])return;
         arr[ii]=Object.assign({},arr[ii],{done:!arr[ii].done});
-        saveData();renderMonthReminders();
+        _saveMonthData();renderMonthReminders();
       };})(i);
       var txt=document.createElement('div');txt.className='cal-month-text'+(r.done?' done':'');txt.textContent=r.text;
       txt.title='Clic para editar';txt.style.cursor='text';
@@ -2637,7 +2642,7 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
           var v=inp.value.trim();if(!v){inp.replaceWith(txt);return;}
           var arr=monthReminders[mk]||[];if(!arr[ii])return;
           arr[ii]=Object.assign({},arr[ii],{text:v});
-          saveData();renderMonthReminders();
+          _saveMonthData();renderMonthReminders();
         };
         inp.onblur=save;
         inp.onkeydown=function(e){if(e.key==='Enter'){inp.onblur=null;save();}if(e.key==='Escape'){inp.onblur=null;inp.replaceWith(txt);}};
@@ -2645,7 +2650,7 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
       var del=document.createElement('button');del.className='cal-month-del';del.textContent='×';
       del.onclick=(function(ii){return function(){
         var arr=(monthReminders[mk]||[]).slice();arr.splice(ii,1);
-        monthReminders[mk]=arr;saveData();renderMonthReminders();
+        monthReminders[mk]=arr;_saveMonthData();renderMonthReminders();
       };})(i);
       item.appendChild(chk);item.appendChild(txt);item.appendChild(del);
       wrap.appendChild(item);
@@ -2659,7 +2664,7 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
         var mk2=_monthKey();
         if(!monthReminders[mk2])monthReminders[mk2]=[];
         monthReminders[mk2].push({id:Date.now(),text:v,done:false});
-        _mrInputOpen=false;saveData();renderMonthReminders();
+        _mrInputOpen=false;_saveMonthData();renderMonthReminders();
       };
       inp.onkeydown=function(e){if(e.key==='Enter')doAdd();if(e.key==='Escape'){_mrInputOpen=false;renderMonthReminders();}};
       ok.onclick=doAdd;iw.appendChild(inp);iw.appendChild(ok);wrap.appendChild(iw);
