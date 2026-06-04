@@ -468,7 +468,17 @@ function renderTaskList() {
     });
   }
 
-  // ── 2. RECORDATORIOS (reminders today) ──────────────────────
+  // ── 2. TAREAS DEL DÍA (deadline=today, not already in prio) ─
+  var prioSourceIds = dtItems.map(function(t){ return t.sourceId; }).filter(Boolean);
+  var todayTasks = displayTasks.filter(function(t){
+    return t.deadline === todayStr && prioSourceIds.indexOf(t.id) === -1;
+  });
+  if (todayTasks.length) {
+    list.appendChild(makeSectionHdr('📋', 'Tareas del día', '#27AE72'));
+    todayTasks.forEach(function(t) { list.appendChild(buildTaskRow(t)); });
+  }
+
+  // ── 3. RECORDATORIOS (reminders today) ──────────────────────
   var remItems = (reminders[todayStr] || []).filter(function(r){ return !r.done; });
   if (remItems.length) {
     list.appendChild(makeSectionHdr('🔔', 'Recordatorios', '#2CC5D2'));
@@ -487,16 +497,6 @@ function renderTaskList() {
       row.appendChild(cb);
       list.appendChild(row);
     });
-  }
-
-  // ── 3. TAREAS DEL DÍA (deadline=today, not already in prio) ─
-  var prioSourceIds = dtItems.map(function(t){ return t.sourceId; }).filter(Boolean);
-  var todayTasks = displayTasks.filter(function(t){
-    return t.deadline === todayStr && prioSourceIds.indexOf(t.id) === -1;
-  });
-  if (todayTasks.length) {
-    list.appendChild(makeSectionHdr('📋', 'Tareas del día', '#27AE72'));
-    todayTasks.forEach(function(t) { list.appendChild(buildTaskRow(t)); });
   }
 
   // ── 4. RESTO DE TAREAS ───────────────────────────────────────
