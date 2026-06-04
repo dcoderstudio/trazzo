@@ -217,7 +217,6 @@ var db = firebase.firestore();
     location.replace('/login.html');
   });
   // ── END AUTH GUARD ──────────────────────────────────────────
-db.enablePersistence({synchronizeTabs:true}).catch(function(){});
 var DOC = db.collection('workspace').doc('proyectos');
 
 // ── STATE ─────────────────────────────────────────────────────────────────────
