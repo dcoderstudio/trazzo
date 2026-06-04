@@ -724,19 +724,34 @@ function focusSaveData(){
 }
 
 // ── ALARM ─────────────────────────────────────────────────────────────────────
+// Persistent AudioContext — created/resumed on user interaction (toggleTimer)
+var _audioCtx = null;
+function _getAudioCtx() {
+  if (!_audioCtx) {
+    try { _audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {}
+  }
+  if (_audioCtx && _audioCtx.state === 'suspended') {
+    _audioCtx.resume().catch(function(){});
+  }
+  return _audioCtx;
+}
+
 function playAlarm() {
   try {
-    var ctx = new (window.AudioContext || window.webkitAudioContext)();
-    [0, 0.35, 0.7].forEach(function(offset) {
+    var ctx = _getAudioCtx();
+    if (!ctx) return;
+    // Three beeps at increasing pitch
+    [[0, 880], [0.35, 988], [0.7, 1047]].forEach(function(pair) {
+      var offset = pair[0], freq = pair[1];
       var osc = ctx.createOscillator(), gain = ctx.createGain();
       osc.connect(gain); gain.connect(ctx.destination);
       osc.type = 'sine';
-      osc.frequency.setValueAtTime(880, ctx.currentTime + offset);
+      osc.frequency.setValueAtTime(freq, ctx.currentTime + offset);
       gain.gain.setValueAtTime(0, ctx.currentTime + offset);
-      gain.gain.linearRampToValueAtTime(0.4, ctx.currentTime + offset + 0.05);
-      gain.gain.linearRampToValueAtTime(0, ctx.currentTime + offset + 0.28);
+      gain.gain.linearRampToValueAtTime(0.45, ctx.currentTime + offset + 0.04);
+      gain.gain.linearRampToValueAtTime(0, ctx.currentTime + offset + 0.32);
       osc.start(ctx.currentTime + offset);
-      osc.stop(ctx.currentTime + offset + 0.3);
+      osc.stop(ctx.currentTime + offset + 0.35);
     });
   } catch(e) {}
 }
@@ -769,6 +784,7 @@ function toggleTimer() {
   }
   running = !running;
   if (running) {
+    _getAudioCtx(); // unlock AudioContext on user gesture
     interval = setInterval(tick, 1000);
     document.getElementById('focusPanel').classList.add('running');
     document.getElementById('timerStatus').textContent = 'concentración';
