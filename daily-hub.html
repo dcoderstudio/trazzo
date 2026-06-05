@@ -254,7 +254,22 @@ body{height:100%;min-height:-webkit-fill-available;background:#0c0c0c;color:#fff
 .dh-dv-rs-btn.tomorrow:hover{background:rgba(91,159,255,.3);color:#fff;}
 .dh-dv-rs-btn.pick{background:rgba(255,255,255,.07);color:rgba(255,255,255,.4);}
 .dh-dv-rs-btn.pick:hover{background:rgba(255,255,255,.14);color:#fff;}
-.dh-dv-rs-date{position:absolute;opacity:0;pointer-events:none;width:1px;height:1px;}
+.dh-dv-rs-date{position:absolute;opacity:0;pointer-events:none;width:1px;height:1px;color-scheme:dark;}
+/* Mini date picker popup */
+.dh-datepick{position:fixed;z-index:9999;background:#141420;border:0.5px solid rgba(255,255,255,.15);border-radius:14px;padding:14px;box-shadow:0 8px 32px rgba(0,0,0,.7);min-width:240px;}
+.dh-datepick-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.dh-datepick-lbl{font-size:12px;font-weight:700;color:#fff;}
+.dh-datepick-nav{background:rgba(255,255,255,.06);border:none;color:rgba(255,255,255,.5);width:24px;height:24px;border-radius:6px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;}
+.dh-datepick-nav:hover{background:rgba(255,255,255,.12);color:#fff;}
+.dh-datepick-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;}
+.dh-datepick-wday{font-size:8px;font-weight:700;color:rgba(255,255,255,.25);text-align:center;padding:3px 0;text-transform:uppercase;}
+.dh-datepick-day{font-size:11px;text-align:center;padding:5px 2px;border-radius:6px;cursor:pointer;color:rgba(255,255,255,.55);transition:all .12s;}
+.dh-datepick-day:hover{background:rgba(91,159,255,.2);color:#fff;}
+.dh-datepick-day.today{color:#5B9FFF;font-weight:700;}
+.dh-datepick-day.selected{background:#1A6FD4;color:#fff;font-weight:700;}
+.dh-datepick-day.other{color:rgba(255,255,255,.18);}
+.dh-datepick-day.past{color:rgba(255,255,255,.15);cursor:default;}
+.dh-datepick-day.past:hover{background:none;color:rgba(255,255,255,.15);}
 .dh-dv-add-btn{background:rgba(39,174,114,0.12);border:1px solid rgba(39,174,114,0.26);color:#27AE72;font-size:11px;font-weight:600;padding:4px 10px;border-radius:8px;cursor:pointer;font-family:Inter,sans-serif;transition:all .15s;}
 .dh-dv-add-btn:hover{background:rgba(39,174,114,0.24);color:#fff;}
 .dh-dv-input-wrap{display:flex;gap:6px;margin:4px 8px 6px;}
@@ -1346,12 +1361,11 @@ input[type=time].mi{color-scheme:dark;cursor:pointer;}
         };})(item.reschedule,ds);
         var btnPick=document.createElement('button');btnPick.className='dh-dv-rs-btn pick';
         btnPick.textContent='📅';btnPick.title='Elegir otra fecha';
-        var dateInp=document.createElement('input');dateInp.type='date';dateInp.className='dh-dv-rs-date';
-        dateInp.value=ds;
-        dateInp.onchange=(function(fn){return function(){if(dateInp.value)fn(dateInp.value);};})(item.reschedule);
         btnPick.addEventListener('pointerdown',function(e){e.stopPropagation();});
-        btnPick.onclick=function(e){e.stopPropagation();if(dateInp.showPicker)dateInp.showPicker();else dateInp.click();};
-        rsWrap.appendChild(btnTomorrow);rsWrap.appendChild(btnPick);rsWrap.appendChild(dateInp);
+        btnPick.onclick=(function(fn,anchor,currentDs){return function(e){
+          e.stopPropagation();openDatePicker(anchor,currentDs,fn);
+        };})(item.reschedule,btnPick,ds);
+        rsWrap.appendChild(btnTomorrow);rsWrap.appendChild(btnPick);
         card.appendChild(rsWrap);
       }
       card.appendChild(chk);
@@ -1571,6 +1585,58 @@ input[type=time].mi{color-scheme:dark;cursor:pointer;}
   }
 
   // ── NAV ───────────────────────────────────────────────────────
+  // ── MINI DATE PICKER ─────────────────────────────────────────
+  var _dpEl=null;
+  function openDatePicker(anchorEl, currentDs, onPick){
+    closeDatePicker();
+    var MNS=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+    var DAYS=['L','M','X','J','V','S','D'];
+    var todayStr=fmt(todayD);
+    var cur=currentDs?new Date(currentDs+'T00:00:00'):new Date(todayD);
+    var viewY=cur.getFullYear(),viewM=cur.getMonth();
+
+    function build(){
+      if(_dpEl){_dpEl.remove();}
+      _dpEl=document.createElement('div');_dpEl.className='dh-datepick';
+      // Header
+      var hdr=document.createElement('div');hdr.className='dh-datepick-hdr';
+      var prevBtn=document.createElement('button');prevBtn.className='dh-datepick-nav';prevBtn.textContent='‹';
+      prevBtn.onclick=function(){if(viewM===0){viewM=11;viewY--;}else viewM--;build();};
+      var lbl=document.createElement('div');lbl.className='dh-datepick-lbl';lbl.textContent=MNS[viewM]+' '+viewY;
+      var nextBtn=document.createElement('button');nextBtn.className='dh-datepick-nav';nextBtn.textContent='›';
+      nextBtn.onclick=function(){if(viewM===11){viewM=0;viewY++;}else viewM++;build();};
+      hdr.appendChild(prevBtn);hdr.appendChild(lbl);hdr.appendChild(nextBtn);
+      // Grid
+      var grid=document.createElement('div');grid.className='dh-datepick-grid';
+      DAYS.forEach(function(d){var c=document.createElement('div');c.className='dh-datepick-wday';c.textContent=d;grid.appendChild(c);});
+      var first=new Date(viewY,viewM,1);
+      var startDow=first.getDay();var off=(startDow===0?6:startDow-1);
+      var daysInMonth=new Date(viewY,viewM+1,0).getDate();
+      var prevDays=new Date(viewY,viewM,0).getDate();
+      for(var i=0;i<off;i++){var c=document.createElement('div');c.className='dh-datepick-day other';c.textContent=prevDays-off+1+i;grid.appendChild(c);}
+      for(var d=1;d<=daysInMonth;d++){
+        var ds=viewY+'-'+String(viewM+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+        var c=document.createElement('div');c.className='dh-datepick-day';c.textContent=d;
+        if(ds===todayStr)c.classList.add('today');
+        if(ds===currentDs)c.classList.add('selected');
+        (function(dsi){c.onclick=function(){onPick(dsi);closeDatePicker();};})(ds);
+        grid.appendChild(c);
+      }
+      var total=off+daysInMonth;var rem=7-total%7;if(rem<7)for(var i=1;i<=rem;i++){var c=document.createElement('div');c.className='dh-datepick-day other';c.textContent=i;grid.appendChild(c);}
+      _dpEl.appendChild(hdr);_dpEl.appendChild(grid);
+      document.body.appendChild(_dpEl);
+      // Position near anchor
+      var rect=anchorEl.getBoundingClientRect();
+      var top=rect.bottom+6;var left=rect.left;
+      if(left+250>window.innerWidth)left=window.innerWidth-256;
+      if(top+280>window.innerHeight)top=rect.top-286;
+      _dpEl.style.top=top+'px';_dpEl.style.left=left+'px';
+    }
+    build();
+    setTimeout(function(){document.addEventListener('pointerdown',function handler(e){if(_dpEl&&!_dpEl.contains(e.target)){closeDatePicker();document.removeEventListener('pointerdown',handler);}});},10);
+  }
+  function closeDatePicker(){if(_dpEl){_dpEl.remove();_dpEl=null;}}
+
   window.navDay=function(n){curDate=addDays(curDate,n);renderAll();};
   window.goTodayDH=function(){curDate=new Date(todayD);renderAll();};
   window.setDhTab=function(tab){
