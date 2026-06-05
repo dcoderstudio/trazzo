@@ -248,6 +248,13 @@ body{height:100%;min-height:-webkit-fill-available;background:#0c0c0c;color:#fff
 .dh-dv-list::-webkit-scrollbar{width:3px;}
 .dh-dv-list::-webkit-scrollbar-thumb{background:rgba(39,174,114,0.14);}
 .dh-dv-empty{text-align:center;font-size:11px;color:rgba(39,174,114,0.22);padding:18px 0;}
+.dh-dv-reschedule{display:flex;gap:3px;flex-shrink:0;margin-left:2px;}
+.dh-dv-rs-btn{font-size:9px;font-weight:700;padding:3px 6px;border-radius:6px;border:none;cursor:pointer;font-family:Inter,sans-serif;transition:all .15s;white-space:nowrap;}
+.dh-dv-rs-btn.tomorrow{background:rgba(91,159,255,.15);color:#5B9FFF;}
+.dh-dv-rs-btn.tomorrow:hover{background:rgba(91,159,255,.3);color:#fff;}
+.dh-dv-rs-btn.pick{background:rgba(255,255,255,.07);color:rgba(255,255,255,.4);}
+.dh-dv-rs-btn.pick:hover{background:rgba(255,255,255,.14);color:#fff;}
+.dh-dv-rs-date{position:absolute;opacity:0;pointer-events:none;width:1px;height:1px;}
 .dh-dv-add-btn{background:rgba(39,174,114,0.12);border:1px solid rgba(39,174,114,0.26);color:#27AE72;font-size:11px;font-weight:600;padding:4px 10px;border-radius:8px;cursor:pointer;font-family:Inter,sans-serif;transition:all .15s;}
 .dh-dv-add-btn:hover{background:rgba(39,174,114,0.24);color:#fff;}
 .dh-dv-input-wrap{display:flex;gap:6px;margin:4px 8px 6px;}
@@ -1274,6 +1281,10 @@ input[type=time].mi{color-scheme:dark;cursor:pointer;}
             for(var i=0;i<projects.length;i++){if(projects[i].id===pid){var arr=(projects[i].stageTasks&&projects[i].stageTasks[stg])||[];var found=arr.filter(function(x){return x.id===tid;})[0];nd=found?!found.done:true;projects[i].stageTasks[stg]=arr.map(function(x){return x.id===tid?Object.assign({},x,{done:nd}):x;});break;}}
             syncDayTaskDone('project',tid,nd);
             saveData();renderDeliveries();renderDayTasks();renderHeader();
+          };})(t.id,p.id,stage),
+          reschedule:(function(tid,pid,stg){return function(newDs){
+            for(var i=0;i<projects.length;i++){if(projects[i].id===pid){var arr=(projects[i].stageTasks&&projects[i].stageTasks[stg])||[];projects[i].stageTasks[stg]=arr.map(function(x){return x.id===tid?Object.assign({},x,{deadline:newDs}):x;});break;}}
+            saveData();renderDeliveries();renderHeader();
           };})(t.id,p.id,stage)
         });
       });
@@ -1286,6 +1297,11 @@ input[type=time].mi{color-scheme:dark;cursor:pointer;}
           var nd; standaloneTasks=standaloneTasks.map(function(s){if(s.id!==tid)return s;nd=!s.done;return Object.assign({},s,{done:nd});});
           syncDayTaskDone('standalone',tid,nd);
           saveData();renderDeliveries();renderDayTasks();renderHeader();
+        };})(t.id),
+        reschedule:(function(tid){return function(newDs){
+          standaloneTasks=standaloneTasks.map(function(s){return s.id===tid?Object.assign({},s,{deadline:newDs}):s;});
+          _pass.standaloneTasks=standaloneTasks;
+          saveData();renderDeliveries();renderHeader();
         };})(t.id)
       });
     });
@@ -1318,7 +1334,27 @@ input[type=time].mi{color-scheme:dark;cursor:pointer;}
       if(item.done){chk.style.background=c;chk.innerHTML='<svg width="10" height="10" viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3" stroke="#fff" stroke-width="2.5" fill="none" stroke-linecap="round"/></svg>';}
       chk.addEventListener('pointerdown',function(e){e.stopPropagation();});
       chk.onclick=(function(toggle){return function(e){e.stopPropagation();toggle();};})(item.toggle);
-      card.appendChild(handle); card.appendChild(dot); card.appendChild(body); card.appendChild(chk);
+      card.appendChild(handle); card.appendChild(dot); card.appendChild(body);
+      // Reschedule actions (only for non-done tasks)
+      if(!item.done && item.reschedule){
+        var rsWrap=document.createElement('div');rsWrap.className='dh-dv-reschedule';
+        var btnTomorrow=document.createElement('button');btnTomorrow.className='dh-dv-rs-btn tomorrow';
+        btnTomorrow.textContent='→';btnTomorrow.title='Mover a mañana';
+        btnTomorrow.addEventListener('pointerdown',function(e){e.stopPropagation();});
+        btnTomorrow.onclick=(function(fn,currentDs){return function(e){e.stopPropagation();
+          var d=new Date(currentDs+'T00:00:00');d.setDate(d.getDate()+1);fn(fmt(d));
+        };})(item.reschedule,ds);
+        var btnPick=document.createElement('button');btnPick.className='dh-dv-rs-btn pick';
+        btnPick.textContent='📅';btnPick.title='Elegir otra fecha';
+        var dateInp=document.createElement('input');dateInp.type='date';dateInp.className='dh-dv-rs-date';
+        dateInp.value=ds;
+        dateInp.onchange=(function(fn){return function(){if(dateInp.value)fn(dateInp.value);};})(item.reschedule);
+        btnPick.addEventListener('pointerdown',function(e){e.stopPropagation();});
+        btnPick.onclick=function(e){e.stopPropagation();if(dateInp.showPicker)dateInp.showPicker();else dateInp.click();};
+        rsWrap.appendChild(btnTomorrow);rsWrap.appendChild(btnPick);rsWrap.appendChild(dateInp);
+        card.appendChild(rsWrap);
+      }
+      card.appendChild(chk);
       // Drag
       card.addEventListener('pointerdown',(function(it,cardEl){return function(e){if(e.button&&e.button!==0)return;_dvDragStart(e,it,cardEl);};})(item,card));
       wrap.appendChild(card);
