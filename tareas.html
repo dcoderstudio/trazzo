@@ -1837,10 +1837,10 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
       if (d.categories && d.categories.length) categories = d.categories;
       if (d.nextId) nextId = d.nextId;
       if (d.catIdCounter) catIdCounter = d.catIdCounter;
-      if (d.standaloneTasks) standaloneTasks = d.standaloneTasks;
+      if (d.standaloneTasks && d.standaloneTasks.length) standaloneTasks = d.standaloneTasks;
       if (d.taskColumns && d.taskColumns.length) taskColumns = d.taskColumns;
       if (d.teamMembers && d.teamMembers.length) teamMembers = d.teamMembers;
-      if (d.taskGroups) taskGroups = d.taskGroups;
+      if (d.taskGroups && d.taskGroups.length) taskGroups = d.taskGroups;
     }
     if (!taskColumns) taskColumns = JSON.parse(JSON.stringify(DEFAULT_TASK_COLS));
     teamMembers.forEach(function(m){ AV_COLORS[m.id]=m.color; AV_NAMES[m.id]=m.name; });

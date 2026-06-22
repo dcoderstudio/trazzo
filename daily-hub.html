@@ -101,7 +101,8 @@ body{height:100%;min-height:-webkit-fill-available;background:#0c0c0c;color:#fff
 .dh-right::-webkit-scrollbar{width:3px;}
 .dh-right::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.07);border-radius:2px;}
 /* TAREAS PRIORITARIAS — amber card */
-.dh-daytasks{flex-shrink:0;display:flex;flex-direction:column;border-radius:12px;overflow:hidden;background:linear-gradient(160deg,rgba(80,45,160,0.28) 0%,rgba(40,20,80,0.18) 40%,rgba(12,12,20,0.92) 100%);border:0.5px solid rgba(139,92,246,0.22);border-left:4px solid #E8A020;}
+.dh-daytasks{flex-shrink:0;display:flex;flex-direction:column;border-radius:12px;overflow:hidden;background:linear-gradient(160deg,rgba(80,45,160,0.28) 0%,rgba(40,20,80,0.18) 40%,rgba(12,12,20,0.92) 100%);border:0.5px solid rgba(139,92,246,0.22);border-left:4px solid #E8A020;transition:border-color .15s,box-shadow .15s;}
+.dh-daytasks.dt-promote-over{border-color:rgba(232,160,32,0.7)!important;box-shadow:0 0 0 2px rgba(232,160,32,0.18),inset 0 0 28px rgba(232,160,32,0.08);}
 .dh-dt-hdr{flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:11px 16px 10px;background:rgba(100,60,200,0.07);border-bottom:0.5px solid rgba(139,92,246,0.12);}
 .dh-dt-title{font-size:12px;font-weight:700;color:#E8A020;letter-spacing:.01em;}
 .dh-dt-sub{font-size:9px;color:rgba(232,160,32,0.38);margin-top:2px;}
@@ -436,7 +437,7 @@ input[type=time].mi{color-scheme:dark;cursor:pointer;}
         <div class="dh-dv-hdr">
           <div class="dh-dv-hdr-info">
             <div class="dh-dv-title">📋 Tareas del día</div>
-            <div class="dh-dv-sub">Tareas con vencimiento hoy</div>
+            <div class="dh-dv-sub">Tareas con vencimiento hoy · arrastra a ⭐ para hacer principal</div>
           </div>
           <button class="dh-dv-add-btn" id="dhDvAddBtn" onclick="openDvInput()">+ Agregar</button>
         </div>
@@ -1188,6 +1189,19 @@ input[type=time].mi{color-scheme:dark;cursor:pointer;}
     dayTasks[ds].push({id:Date.now(),text:task.text,done:task.done||false,sourceId:task.id,sourceType:task.isStandalone?'standalone':(task.projId?'project':null),projId:task.projId||null,stage:task.stage||null,source:task.source||''});
     saveData(); renderDayTasks(); renderHeader();
   }
+  function promoteTaskToStandalone(task,ds){
+    if(!standaloneTasks)standaloneTasks=[];
+    var stId;
+    var existing=standaloneTasks.find(function(s){return s.text===task.text;});
+    if(existing){
+      stId=existing.id;
+    }else{
+      stId=Date.now();
+      standaloneTasks.push({id:stId,text:task.text,done:false,deadline:ds,resp:task.resp||'',priority:true,notes:''});
+    }
+    addToDayTasks({id:stId,text:task.text,done:task.done||false,isStandalone:true,source:'Tarea libre'},ds);
+    renderDeliveries();
+  }
   function addDayTaskDirectly(text,ds){
     if(!dayTasks[ds])dayTasks[ds]=[];
     var stId=Date.now(); var dtId=stId+1;
@@ -1425,6 +1439,16 @@ input[type=time].mi{color-scheme:dark;cursor:pointer;}
       }
     }
     _dvClearGridHighlight();
+    var dtPanel=document.querySelector('.dh-daytasks');
+    if(dtPanel){
+      var dtr=dtPanel.getBoundingClientRect();
+      if(e.clientX>=dtr.left&&e.clientX<=dtr.right&&e.clientY>=dtr.top&&e.clientY<=dtr.bottom){
+        dtPanel.classList.add('dt-promote-over');
+        if(_dvPDrag.ph&&_dvPDrag.ph.parentNode)_dvPDrag.ph.parentNode.removeChild(_dvPDrag.ph);
+        return;
+      }
+      dtPanel.classList.remove('dt-promote-over');
+    }
     var list=document.getElementById('dhDvList'); if(!list)return;
     var cards=list.querySelectorAll('.dh-dt-card[data-dvid]:not(.dt-dragging)');
     var insertBefore=null;
@@ -1456,6 +1480,8 @@ input[type=time].mi{color-scheme:dark;cursor:pointer;}
     if(drag.ghost)drag.ghost.remove();
     drag.rowEl.classList.remove('dt-dragging');
     _dvClearGridHighlight();
+    var dtPanel=document.querySelector('.dh-daytasks');
+    if(dtPanel)dtPanel.classList.remove('dt-promote-over');
     if(!drag.started)return;
     _dvWasDrag=true; setTimeout(function(){_dvWasDrag=false;},150);
     var outer=document.getElementById('dhTimeOuter');
@@ -1467,6 +1493,14 @@ input[type=time].mi{color-scheme:dark;cursor:pointer;}
         var relY=e.clientY-grid.getBoundingClientRect().top;
         var hour=Math.max(HOUR_START,Math.min(HOUR_END-1,Math.floor(relY/HOUR_PX)+HOUR_START));
         _createBlockDirect(fmt(curDate),fmtTime(hour,0),addOneHour(fmtTime(hour,0)),drag.item.text,drag.item.color||'#27AE72');
+        return;
+      }
+    }
+    if(dtPanel){
+      var dtr=dtPanel.getBoundingClientRect();
+      if(e.clientX>=dtr.left&&e.clientX<=dtr.right&&e.clientY>=dtr.top&&e.clientY<=dtr.bottom){
+        if(drag.ph&&drag.ph.parentNode)drag.ph.parentNode.removeChild(drag.ph);
+        promoteTaskToStandalone(drag.item,fmt(curDate));
         return;
       }
     }

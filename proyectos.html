@@ -750,17 +750,23 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
   var DOC = db.collection('workspace').doc('proyectos');
 
   var _ignoreSnap = false;
+  var _pass = {};
   var standaloneTasks = [], taskColumns = null, _wsTeamMembers = null, _wsTaskGroups = null;
   function saveData() {
     _ignoreSnap = true;
-    var payload = {projects:projects, categories:categories, nextId:nextId, catIdCounter:catIdCounter, standaloneTasks:standaloneTasks};
-    if (taskColumns) payload.taskColumns = taskColumns;
-    if (_wsTeamMembers) payload.teamMembers = _wsTeamMembers;
-    if (_wsTaskGroups) payload.taskGroups = _wsTaskGroups;
-    payload.statusColumns = getStatusCols();
-    payload.cobranzaCards = cobranzaCards;
-    payload.docTypes = getDocTypes();
-    payload.projectFields = getProjectFields();
+    var own = {
+      projects:projects, categories:categories, nextId:nextId, catIdCounter:catIdCounter,
+      standaloneTasks:standaloneTasks,
+      taskGroups:_wsTaskGroups||[],
+      statusColumns:getStatusCols(),
+      cobranzaCards:cobranzaCards,
+      docTypes:getDocTypes(),
+      projectFields:getProjectFields()
+    };
+    if (taskColumns) own.taskColumns = taskColumns;
+    if (_wsTeamMembers) own.teamMembers = _wsTeamMembers;
+    var payload = Object.assign({}, _pass, own);
+    _pass = payload;
     DOC.set(payload)
       .catch(function(e){ console.warn('Error al guardar:', e); });
   }
@@ -3640,6 +3646,7 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
     if (_ignoreSnap) { _ignoreSnap = false; return; }
     if (snap.exists) {
       var d = snap.data();
+      _pass = Object.assign({}, d);
       if (d.projects && d.projects.length) projects = d.projects;
       if (d.categories && d.categories.length) categories = d.categories;
       if (d.nextId) nextId = d.nextId;
