@@ -240,6 +240,7 @@ var duration = 25 * 60;
 var remaining = duration;
 var running = false;
 var interval = null;
+var _endTime = null; // absolute timestamp when timer will reach 0
 
 // ── DRAG STATE ────────────────────────────────────────────────────────────────
 var _fdrag = null;
@@ -668,7 +669,7 @@ function saveSess() {
     taskText:  activeTask ? activeTask.text      : '',
     taskId:    activeTask ? activeTask.id        : null,
     projectId: activeTask ? activeTask.projectId : null,
-    remaining: remaining, duration: duration, running: running, ts: Date.now()
+    remaining: remaining, duration: duration, running: running, ts: Date.now(), endTime: _endTime
   }));
 }
 
@@ -692,6 +693,7 @@ function restoreSess() {
   duration  = sess.duration || 25 * 60;
   var elapsed = sess.ts ? Math.floor((Date.now() - sess.ts) / 1000) : 0;
   remaining = Math.max(0, sess.remaining - (sess.running ? elapsed : 0));
+  _endTime = sess.running ? (sess.endTime || (Date.now() + remaining * 1000)) : null;
 
   activeTask = matchTask;
   updateFocusLabel();
@@ -709,6 +711,13 @@ function restoreSess() {
 }
 
 window.addEventListener('beforeunload', function() { saveSess(); });
+
+document.addEventListener('visibilitychange', function() {
+  if (document.hidden || !running || !_endTime) return;
+  remaining = Math.max(0, Math.round((_endTime - Date.now()) / 1000));
+  updateDisplay();
+  if (remaining <= 0) { _fireCompletion(); }
+});
 
 // ── FIREBASE LOAD ─────────────────────────────────────────────────────────────
 DOC.onSnapshot(function(snap) {
@@ -807,7 +816,7 @@ function setDuration(min, btn) {
 }
 
 function resetTimer(min) {
-  clearInterval(interval); running = false;
+  clearInterval(interval); running = false; _endTime = null;
   if (min) duration = min * 60;
   remaining = duration;
   updateDisplay();
@@ -826,11 +835,16 @@ function toggleTimer() {
   running = !running;
   if (running) {
     _unlockAudio(); // unlock audio on user gesture (required by iOS)
+    _endTime = Date.now() + remaining * 1000;
     interval = setInterval(tick, 1000);
     document.getElementById('focusPanel').classList.add('running');
     document.getElementById('timerStatus').textContent = 'concentración';
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
   } else {
     clearInterval(interval);
+    _endTime = null;
     document.getElementById('focusPanel').classList.remove('running');
     document.getElementById('timerStatus').textContent = 'pausa';
   }
@@ -839,25 +853,40 @@ function toggleTimer() {
 }
 
 function tick() {
-  remaining--;
+  remaining = _endTime ? Math.max(0, Math.round((_endTime - Date.now()) / 1000)) : Math.max(0, remaining - 1);
   updateDisplay();
   saveSess();
   if (remaining <= 0) {
-    clearInterval(interval); running = false;
-    setPlayIcon(false);
-    document.getElementById('focusPanel').classList.remove('running');
-    document.getElementById('timerStatus').textContent = '¡completado!';
-    document.getElementById('ringProgress').style.stroke = '#27AE72';
-    playAlarm();
-    if (activeTask) {
-      var mins = Math.round(duration / 60);
-      var time = new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'});
-      sessionLog.push({taskId: activeTask.id, taskName: activeTask.text, mins: mins, time: time});
-      renderSessionLog();
-    }
-    saveSess();
-    setTimeout(function() { document.getElementById('ringProgress').style.stroke = '#E8A020'; skipTask(); }, 2500);
+    _fireCompletion();
   }
+}
+
+function _fireCompletion() {
+  if (!running) return;
+  clearInterval(interval); running = false; _endTime = null;
+  setPlayIcon(false);
+  document.getElementById('focusPanel').classList.remove('running');
+  document.getElementById('timerStatus').textContent = '¡completado!';
+  document.getElementById('ringProgress').style.stroke = '#27AE72';
+  playAlarm();
+  if ('Notification' in window && Notification.permission === 'granted') {
+    var taskName = activeTask ? activeTask.text : 'Sesión de focus';
+    try {
+      new Notification('¡Focus completado! ⭐', {
+        body: taskName + ' · ' + Math.round(duration / 60) + ' minutos de concentración',
+        icon: '/icons/apple-touch-icon.png',
+        tag: 'focus-complete'
+      });
+    } catch(e) {}
+  }
+  if (activeTask) {
+    var mins = Math.round(duration / 60);
+    var time = new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'});
+    sessionLog.push({taskId: activeTask.id, taskName: activeTask.text, mins: mins, time: time});
+    renderSessionLog();
+  }
+  saveSess();
+  setTimeout(function() { document.getElementById('ringProgress').style.stroke = '#E8A020'; skipTask(); }, 2500);
 }
 
 function updateDisplay() {
