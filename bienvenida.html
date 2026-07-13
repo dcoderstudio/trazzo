@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bienvenido a Dcoder Studio</title>
+  <style>
+    :root {
+      --bg:      #FFFFFF;
+      --sf:      #F5F5F5;
+      --sf2:     #EDEDED;
+      --ink:     #000000;
+      --mid:     #555555;
+      --faint:   #AAAAAA;
+      --br:      #DEDEDE;
+      --inv-bg:  #000000;
+      --inv-ink: #FFFFFF;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg:      #000000;
+        --sf:      #0E0E0E;
+        --sf2:     #181818;
+        --ink:     #FFFFFF;
+        --mid:     #999999;
+        --faint:   #444444;
+        --br:      #222222;
+        --inv-bg:  #FFFFFF;
+        --inv-ink: #000000;
+      }
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 16px; }
+    body {
+      background: var(--bg);
+      color: var(--ink);
+      font-family: system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif;
+      font-size: 14px;
+      line-height: 1.6;
+      padding: 0 24px 100px;
+    }
+    .wrap { max-width: 820px; margin: 0 auto; }
+    .mono { font-family: 'SF Mono', 'Consolas', 'Menlo', monospace; }
+
+    /* ── MASTHEAD ─────────────────────────────────────────────── */
+    .masthead {
+      padding: 72px 0 56px;
+      border-bottom: 1px solid var(--br);
+      margin-bottom: 60px;
+    }
+    .mast-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: var(--faint);
+      font-family: 'SF Mono', 'Consolas', 'Menlo', monospace;
+      margin-bottom: 36px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .mast-label::after {
+      content: '';
+      display: block;
+      flex: 1;
+      height: 1px;
+      background: var(--br);
+      max-width: 280px;
+    }
+    .headline {
+      font-size: clamp(36px, 6vw, 62px);
+      font-weight: 900;
+      letter-spacing: -.04em;
+      line-height: 1.0;
+      text-wrap: balance;
+      max-width: 640px;
+      margin-bottom: 28px;
+    }
+    .headline em {
+      font-style: normal;
+      opacity: .35;
+    }
+    .sub {
+      font-size: 15px;
+      color: var(--mid);
+      max-width: 560px;
+      line-height: 1.75;
+      border-left: 2px solid var(--ink);
+      padding-left: 18px;
+      margin-left: 1px;
+    }
+
+    /* ── SECTION ──────────────────────────────────────────────── */
+    .section { margin-bottom: 60px; }
+    .s-head {
+      display: flex;
+      align-items: baseline;
+      gap: 16px;
+      margin-bottom: 24px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--br);
+    }
+    .s-label {
+      font-size: 9.5px;
+      font-weight: 700;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: var(--faint);
+      font-family: 'SF Mono', 'Consolas', 'Menlo', monospace;
+      white-space: nowrap;
+    }
+    .s-title {
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: -.03em;
+    }
+    .s-body {
+      font-size: 14px;
+      color: var(--mid);
+      line-height: 1.75;
+      max-width: 680px;
+    }
+    .s-body + .s-body { margin-top: 10px; }
+    .s-body strong { color: var(--ink); font-weight: 700; }
+
+    /* ── MANIFESTO ────────────────────────────────────────────── */
+    .manifesto {
+      background: var(--inv-bg);
+      color: var(--inv-ink);
+      padding: 32px 34px;
+      margin-top: 26px;
+    }
+    .manifesto-text {
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: -.025em;
+      line-height: 1.5;
+      max-width: 560px;
+      text-wrap: balance;
+    }
+    .manifesto-text em {
+      font-style: italic;
+      font-weight: 400;
+      opacity: .55;
+    }
+    .manifesto-sub {
+      margin-top: 18px;
+      font-size: 9.5px;
+      font-weight: 700;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      opacity: .3;
+      font-family: 'SF Mono', 'Consolas', 'Menlo', monospace;
+    }
+
+    /* ── METODOLOGÍA ──────────────────────────────────────────── */
+    .method-track {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      margin-top: 28px;
+      border: 1px solid var(--br);
+    }
+    .method-step {
+      padding: 24px 22px 22px;
+      border-right: 1px solid var(--br);
+    }
+    .method-step:last-child { border-right: none; }
+    .m-num {
+      font-size: 9.5px;
+      font-weight: 700;
+      letter-spacing: .14em;
+      color: var(--faint);
+      font-family: 'SF Mono', 'Consolas', 'Menlo', monospace;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .m-num::after {
+      content: '';
+      display: block;
+      height: 1px;
+      flex: 1;
+      background: var(--br);
+    }
+    .m-title {
+      font-size: 16px;
+      font-weight: 900;
+      letter-spacing: -.025em;
+      margin-bottom: 8px;
+    }
+    .m-desc {
+      font-size: 11.5px;
+      color: var(--mid);
+      line-height: 1.6;
+    }
+
+    /* ── SOLICITUDES ──────────────────────────────────────────── */
+    .sol-wrap {
+      border: 1px solid var(--br);
+      padding: 20px 24px;
+      margin-top: 22px;
+    }
+    .sol-label {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      color: var(--faint);
+      font-family: 'SF Mono', 'Consolas', 'Menlo', monospace;
+      margin-bottom: 14px;
+    }
+    .sol-stages { display: flex; flex-wrap: wrap; align-items: center; gap: 0; }
+    .sol-pill {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 5px 13px;
+      border: 1px solid var(--br);
+      white-space: nowrap;
+      background: var(--sf);
+    }
+    .sol-pill.last {
+      background: var(--ink);
+      color: var(--bg);
+      border-color: var(--ink);
+    }
+    .sol-arr { color: var(--faint); font-size: 10px; padding: 0 4px; font-family: 'SF Mono', 'Consolas', monospace; }
+
+    /* ── SERVICE CARD ─────────────────────────────────────────── */
+    .services { display: flex; flex-direction: column; gap: 0; margin-top: 28px; border: 1px solid var(--br); }
+    .svc { border-bottom: 1px solid var(--br); }
+    .svc:last-child { border-bottom: none; }
+    .svc-head {
+      display: flex;
+      align-items: flex-start;
+      gap: 20px;
+      padding: 20px 22px 18px;
+      border-bottom: 1px solid var(--br);
+      background: var(--sf);
+    }
+    .svc-n {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .1em;
+      color: var(--faint);
+      font-family: 'SF Mono', 'Consolas', 'Menlo', monospace;
+      white-space: nowrap;
+      margin-top: 2px;
+      min-width: 32px;
+    }
+    .svc-hbody { flex: 1; }
+    .svc-name { font-size: 14px; font-weight: 800; letter-spacing: -.015em; margin-bottom: 4px; }
+    .svc-desc { font-size: 12px; color: var(--mid); line-height: 1.55; }
+    .svc-stages { display: grid; grid-template-columns: repeat(3, 1fr); }
+    .stage-cell {
+      padding: 14px 18px;
+      border-right: 1px solid var(--br);
+      border-bottom: 1px solid var(--br);
+    }
+    .stage-cell:nth-child(3n) { border-right: none; }
+    .stage-cell.last-row { border-bottom: none; }
+    .stage-tag {
+      font-size: 8.5px;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--faint);
+      font-family: 'SF Mono', 'Consolas', 'Menlo', monospace;
+      margin-bottom: 8px;
+    }
+    .stage-tasks { list-style: none; display: flex; flex-direction: column; gap: 3px; }
+    .stage-tasks li {
+      font-size: 11.5px;
+      color: var(--mid);
+      line-height: 1.45;
+      padding-left: 10px;
+      position: relative;
+    }
+    .stage-tasks li::before { content: '–'; position: absolute; left: 0; color: var(--faint); font-size: 10px; }
+
+    /* ── TOOLS ────────────────────────────────────────────────── */
+    .tools-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0;
+      border: 1px solid var(--br);
+      margin-top: 22px;
+    }
+    .tool {
+      padding: 16px 18px;
+      border-right: 1px solid var(--br);
+      border-bottom: 1px solid var(--br);
+    }
+    .tool:nth-child(4n) { border-right: none; }
+    .tool:nth-last-child(-n+4) { border-bottom: none; }
+    .tool-name { font-size: 12px; font-weight: 800; margin-bottom: 3px; letter-spacing: -.01em; }
+    .tool-desc { font-size: 11px; color: var(--mid); line-height: 1.45; }
+
+    /* ── STEPS ────────────────────────────────────────────────── */
+    .steps { border: 1px solid var(--br); margin-top: 22px; }
+    .step {
+      display: flex;
+      align-items: flex-start;
+      gap: 20px;
+      padding: 18px 22px;
+      border-bottom: 1px solid var(--br);
+    }
+    .step:last-child { border-bottom: none; }
+    .step-n {
+      font-size: 9.5px;
+      font-weight: 700;
+      letter-spacing: .1em;
+      color: var(--faint);
+      font-family: 'SF Mono', 'Consolas', 'Menlo', monospace;
+      margin-top: 2px;
+      min-width: 22px;
+      flex-shrink: 0;
+    }
+    .step-title { font-size: 13px; font-weight: 800; margin-bottom: 3px; letter-spacing: -.01em; }
+    .step-desc { font-size: 12px; color: var(--mid); line-height: 1.55; }
+    .step-desc strong { color: var(--ink); }
+
+    /* ── FOOTER ───────────────────────────────────────────────── */
+    .footer {
+      padding-top: 28px;
+      border-top: 1px solid var(--br);
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 60px;
+    }
+    .footer span {
+      font-size: 10px;
+      color: var(--faint);
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      font-family: 'SF Mono', 'Consolas', 'Menlo', monospace;
+    }
+
+    /* ── RESPONSIVE ───────────────────────────────────────────── */
+    @media (max-width: 700px) {
+      .method-track { grid-template-columns: repeat(2, 1fr); }
+      .method-step:nth-child(2) { border-right: none; }
+      .method-step:nth-child(1),
+      .method-step:nth-child(2) { border-bottom: 1px solid var(--br); }
+      .tools-grid { grid-template-columns: repeat(2, 1fr); }
+      .tool:nth-child(4n) { border-right: 1px solid var(--br); }
+      .tool:nth-child(2n) { border-right: none; }
+      .tool:nth-last-child(-n+4) { border-bottom: 1px solid var(--br); }
+      .tool:nth-last-child(-n+2) { border-bottom: none; }
+    }
+    @media (max-width: 520px) {
+      .svc-stages { grid-template-columns: repeat(2, 1fr); }
+      .svc-stages .stage-cell:nth-child(3n) { border-right: 1px solid var(--br); }
+      .svc-stages .stage-cell:nth-child(2n) { border-right: none; }
+    }
+    @media (max-width: 380px) {
+      .method-track { grid-template-columns: 1fr; }
+      .method-step { border-right: none !important; border-bottom: 1px solid var(--br); }
+      .method-step:last-child { border-bottom: none; }
+      .svc-stages { grid-template-columns: 1fr; }
+      .svc-stages .stage-cell { border-right: none !important; }
+      .tools-grid { grid-template-columns: 1fr; }
+      .tool { border-right: none !important; border-bottom: 1px solid var(--br) !important; }
+      .tool:last-child { border-bottom: none !important; }
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+      .section { animation: up .35s ease both; }
+      .section:nth-child(2){animation-delay:.04s}
+      .section:nth-child(3){animation-delay:.08s}
+      .section:nth-child(4){animation-delay:.12s}
+      .section:nth-child(5){animation-delay:.16s}
+      .section:nth-child(6){animation-delay:.20s}
+      @keyframes up { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
+    }
+  </style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- MASTHEAD -->
+  <header class="masthead">
+    <div class="mast-label mono">DCODER STUDIO · DOCUMENTO DE BIENVENIDA</div>
+    <h1 class="headline">No diseñamos primero.<br><em>Primero decodificamos.</em></h1>
+    <p class="sub">Dcoder Studio es una consultoría de diseño que nace de la idea de decodificar. Antes de diseñar, entendemos. Analizamos el contexto, desciframos las necesidades de cada proyecto y transformamos esa información en soluciones estratégicas, funcionales y ejecutables.</p>
+  </header>
+
+  <!-- QUIÉNES SOMOS -->
+  <div class="section">
+    <div class="s-head">
+      <span class="s-label mono">01</span>
+      <span class="s-title">¿Qué es Dcoder Studio?</span>
+    </div>
+    <p class="s-body">Dcoder Studio es una consultoría de diseño, estrategia y fabricación que transforma ideas complejas en soluciones reales. Nuestro nombre proviene de la palabra <strong>decode</strong> — decodificar — porque creemos que todo gran proyecto comienza por entender su esencia antes de proponer cualquier solución.</p>
+    <p class="s-body">Decodificamos ideas, marcas, espacios, productos y desafíos. Los comprendemos a profundidad, reformulamos sus posibilidades y los convertimos en soluciones estratégicas, funcionales y tangibles. Combinamos pensamiento, diseño y ejecución para desarrollar proyectos que conectan la creatividad con la realidad.</p>
+    <p class="s-body">No importa si hoy diseñamos un producto, desarrollamos una identidad visual, fabricamos una instalación, señalizamos un espacio o transformamos materiales en mobiliario: todo responde al mismo proceso. Eso es lo que nos define.</p>
+    <div class="manifesto">
+      <div class="manifesto-text">
+        En Dcoder Studio creemos que todo puede entenderse, replantearse y transformarse. Decodificamos problemas para descubrir oportunidades, entendemos los sistemas que los conforman, reformulamos las posibilidades y construimos soluciones que existen en el mundo real. <em>Diseñamos con estrategia, desarrollamos con precisión y fabricamos con la convicción de que las mejores ideas son aquellas que pueden hacerse realidad.</em>
+      </div>
+      <div class="manifesto-sub mono">MANIFIESTO DCODER STUDIO</div>
+    </div>
+  </div>
+
+  <!-- METODOLOGÍA -->
+  <div class="section">
+    <div class="s-head">
+      <span class="s-label mono">02</span>
+      <span class="s-title">Metodología — D → E → R → C</span>
+    </div>
+    <p class="s-body">Esta no es una frase de marketing. Es la forma en que Dcoder aborda cualquier proyecto, sin importar la disciplina. Cuando entiendas este proceso, entenderás cómo trabaja el estudio.</p>
+    <div class="method-track">
+      <div class="method-step">
+        <div class="m-num mono">01</div>
+        <div class="m-title">Decodificar</div>
+        <div class="m-desc">El contexto, las personas y el problema. Entender qué hay detrás de la solicitud antes de proponer cualquier cosa.</div>
+      </div>
+      <div class="method-step">
+        <div class="m-num mono">02</div>
+        <div class="m-title">Entender</div>
+        <div class="m-desc">Las relaciones, restricciones y oportunidades. Mapear el sistema completo antes de intervenir en alguna parte.</div>
+      </div>
+      <div class="method-step">
+        <div class="m-num mono">03</div>
+        <div class="m-title">Reformular</div>
+        <div class="m-desc">El problema desde una perspectiva diferente. Las mejores soluciones parten de preguntas mejores, no de respuestas rápidas.</div>
+      </div>
+      <div class="method-step">
+        <div class="m-num mono">04</div>
+        <div class="m-title">Construir</div>
+        <div class="m-desc">Una respuesta real mediante diseño, ingeniería, fabricación e implementación. El resultado que existe en el mundo, no solo en pantalla.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SOLICITUDES -->
+  <div class="section">
+    <div class="s-head">
+      <span class="s-label mono">03</span>
+      <span class="s-title">Cómo entra un cliente</span>
+    </div>
+    <p class="s-body">Todo proyecto comienza como una <strong>solicitud</strong>. Evaluamos si el alcance es viable, elaboramos la propuesta y esperamos confirmación. Solo cuando el cliente acepta, el proyecto se convierte en activo dentro del sistema.</p>
+    <div class="sol-wrap">
+      <div class="sol-label mono">CICLO DE SOLICITUD</div>
+      <div class="sol-stages">
+        <span class="sol-pill">Solicitud recibida</span>
+        <span class="sol-arr">──→</span>
+        <span class="sol-pill">En proceso</span>
+        <span class="sol-arr">──→</span>
+        <span class="sol-pill">Enviado</span>
+        <span class="sol-arr">──→</span>
+        <span class="sol-pill last">Aceptado</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- SERVICIOS -->
+  <div class="section">
+    <div class="s-head">
+      <span class="s-label mono">04</span>
+      <span class="s-title">Servicios — etapas y tareas</span>
+    </div>
+    <p class="s-body">Cada servicio tiene su propio flujo de trabajo con etapas y tareas específicas. Conocerlas es entender qué está pasando en cualquier proyecto con solo ver en qué etapa está.</p>
+
+    <div class="services">
+
+      <div class="svc">
+        <div class="svc-head">
+          <div class="svc-n mono">SV 01</div>
+          <div class="svc-hbody">
+            <div class="svc-name">Interiorismo</div>
+            <div class="svc-desc">Diseño de espacios interiores: desde el levantamiento del sitio hasta la entrega del espacio ejecutado. Concepto, renders, archivos técnicos, coordinación de fabricación e instalación.</div>
+          </div>
+        </div>
+        <div class="svc-stages">
+          <div class="stage-cell"><div class="stage-tag mono">Primer acercamiento</div><ul class="stage-tasks"><li>Reunión inicial con el cliente</li><li>Identificar necesidades y alcance</li><li>Confirmar viabilidad del proyecto</li></ul></div>
+          <div class="stage-cell"><div class="stage-tag mono">Levantamiento en sitio</div><ul class="stage-tasks"><li>Medición y registro fotográfico</li><li>Generar plano base</li></ul></div>
+          <div class="stage-cell"><div class="stage-tag mono">Def. de requerimientos</div><ul class="stage-tasks"><li>Definir necesidades y estilo</li><li>Confirmar presupuesto y alcance</li><li>Aprobar brief</li></ul></div>
+          <div class="stage-cell"><div class="stage-tag mono">Propuesta conceptual</div><ul class="stage-tasks"><li>Desarrollo de concepto</li><li>Moodboard y distribución</li><li>Aprobación conceptual</li></ul></div>
+          <div class="stage-cell"><div class="stage-tag mono">Renders</div><ul class="stage-tasks"><li>Elaboración de renders</li><li>Selección de acabados y mobiliario</li><li>Aprobación visual</li></ul></div>
+          <div class="stage-cell"><div class="stage-tag mono">Plan de trabajo</div><ul class="stage-tasks"><li>Definir cronograma</li><li>Confirmar proveedores y materiales</li></ul></div>
+          <div class="stage-cell"><div class="stage-tag mono">Archivos técnicos</div><ul class="stage-tasks"><li>Elaboración de planos y especificaciones</li><li>Revisión final</li></ul></div>
+          <div class="stage-cell"><div class="stage-tag mono">Fabricación y compras</div><ul class="stage-tasks"><li>Compra de materiales</li><li>Seguimiento de fabricación</li></ul></div>
+          <div class="stage-cell"><div class="stage-tag mono">Ejecución e instalación</div><ul class="stage-tasks"><li>Supervisión e instalación</li><li>Revisión de avances</li></ul></div>
+          <div class="stage-cell last-row"><div class="stage-tag mono">Entrega final</div><ul class="stage-tasks"><li>Recorrido final</li><li>Ajustes finales</li><li>Acta de entrega</li></ul></div>
+        </div>
+      </div>
+
+      <div class="svc">
+        <div class="svc-head">
+          <div class="svc-n mono">SV 02</div>
+          <div class="svc-hbody">
+            <div class="svc-name">Diseño de producto</div>
+            <div class="svc-desc">Desarrollo de productos físicos desde la conceptualización hasta la producción. Modelado, visualización, archivos técnicos, prototipo y seguimiento de manufactura.</div>
+          </div>
+        </div>
+        <div class="svc-stages">
+          <div class="stage-cell"><div class="stage-tag mono">Briefing y referencias</div><ul class="stage-tasks"><li>Reunión inicial</li><li>Recolección de referencias</li><li>Definición de contexto del producto</li></ul></div>
+          <div class="stage-cell"><div class="stage-tag mono">Def. de requerimientos</div><ul class="stage-tasks"><li>Definir funcionalidad, materiales y restricciones</li><li>Confirmar alcance</li></ul></div>
+          <div class="stage-cell"><div class="stage-tag mono">Conceptualización</div><ul class="stage-tasks"><li>Desarrollo de conceptos</li><li>Selección de propuesta</li><li>Aprobación conceptual</li></ul></div>
+          <div class="stage-cell"><div class="stage-tag mono">Renders</div><ul class="stage-tasks"><li>Modelado y renders</li><li>Aprobación visual</li></ul></div>
+          <div class="stage-cell"><div class="stage-tag mono">Propuesta económica</div><ul class="stage-tasks"><li>Cotización de producción</li><li>Presentación y aprobación</li></ul></div>
+          <div class="stage-cell"><div class="stage-tag mono">Archivos técnicos</div><ul class="stage-tasks"><li>Planos y archivos de producción</li><li>Revisión final</li></ul></div>
+          <div class="stage-cell"><div class="stage-tag mono">Muestra y ajustes</div><ul class="stage-tasks"><li>Fabricación de prototipo</li><li>Validación y ajustes</li></ul></div>
+          <div class="stage-cell"><div class="stage-tag mono">Producción</div><ul class="stage-tasks"><li>Seguimiento de fabricación</li><li>Control de calidad</li></ul></div>
+          <div class="stage-cell last-row"><div class="stage-tag mono">Entrega del producto</div><ul class="stage-tasks"><li>Logística y entrega</li><li>Acta de entrega</li></ul></div>
+        </div>
+      </div>
+
+      <div class="svc">
+        <div class="svc-head">
+          <div class="svc-n mono">SV 03</div>
+          <div class="svc-hbody">
+            <div class="svc-name">Señalética</div>
+            <div class="svc-desc">Sistemas de orientación e identidad para espacios físicos. Visita de sitio, desarrollo del sistema visual, fabricación e instalación.</div>
+          </div>
+        </div>
+        <div class="svc-stages">
+          <div class="stage-cell"><div class="stage-tag mono">Briefing y referencias</div><ul class="stage-tasks"><li>Reunión inicial</li><li>Recopilar identidad visual</li><li>Definir objetivos del sistema</li></ul></div>
+          <div class="stage-cell"><div class="stage-tag mono">Levantamiento en sitio</div><ul class="stage-tasks"><li>Visita y medición</li><li>Registro fotográfico</li></ul></div>
+          <div class="stage-cell"><div class="stage-tag mono">Def. de requerimientos</div><ul class="stage-tasks"><li>Definir tipos de señales</li><li>Confirmar materiales y alcance</li></ul></div>
+          <div class="stage-cell"><div class="stage-tag mono">Sistema de señalética</div><ul class="stage-tasks"><li>Desarrollo del sistema visual</li><li>Aprobación conceptual</li></ul></div>
+          <div class="stage-cell"><div class="stage-tag mono">Renders</div><ul class="stage-tasks"><li>Mockups o renders en sitio</li><li>Aprobación visual</li></ul></div>
+          <div class="stage-cell"><div class="stage-tag mono">Archivos de producción</div><ul class="stage-tasks"><li>Artes finales</li><li>Planos de ubicación</li><li>Especificaciones técnicas</li></ul></div>
+          <div class="stage-cell"><div class="stage-tag mono">Fabricación de piezas</div><ul class="stage-tasks"><li>Producción</li><li>Control de calidad</li></ul></div>
+          <div class="stage-cell"><div class="stage-tag mono">Instalación en sitio</div><ul class="stage-tasks"><li>Instalación</li><li>Ajustes finales</li></ul></div>
+          <div class="stage-cell last-row"><div class="stage-tag mono">Entrega final</div><ul class="stage-tasks"><li>Verificación final</li><li>Acta de entrega</li></ul></div>
+        </div>
+      </div>
+
+      <div class="svc">
+        <div class="svc-head">
+          <div class="svc-n mono">SV 04</div>
+          <div class="svc-hbody">
+            <div class="svc-name">Servicios de producción e instalación</div>
+            <div class="svc-desc">Ejecución de proyectos con dirección visual ya definida. Coordinamos proveedores, fabricación, ensamblado e instalación física.</div>
+          </div>
+        </div>
+        <div class="svc-stages">
+          <div class="stage-cell"><div class="stage-tag mono">Primer acercamiento</div><ul class="stage-tasks"><li>Recepción de información</li><li>Definición de alcance</li><li>Cotización</li></ul></div>
+          <div class="stage-cell"><div class="stage-tag mono">Visualización</div><ul class="stage-tasks"><li>Validación de propuesta visual</li><li>Confirmación de materiales</li></ul></div>
+          <div class="stage-cell"><div class="stage-tag mono">Archivos de producción</div><ul class="stage-tasks"><li>Preparación de archivos</li><li>Liberación a producción</li></ul></div>
+          <div class="stage-cell"><div class="stage-tag mono">Fabricación</div><ul class="stage-tasks"><li>Producción</li><li>Seguimiento de fabricación</li></ul></div>
+          <div class="stage-cell"><div class="stage-tag mono">Revisión de calidad</div><ul class="stage-tasks"><li>Recepción de materiales</li><li>Control de calidad</li></ul></div>
+          <div class="stage-cell"><div class="stage-tag mono">Armado y ensamblado</div><ul class="stage-tasks"><li>Ensamble</li><li>Revisión de calidad</li></ul></div>
+          <div class="stage-cell last-row"><div class="stage-tag mono">Instalación y entrega</div><ul class="stage-tasks"><li>Instalación</li><li>Ajustes finales</li><li>Acta de entrega</li></ul></div>
+        </div>
+      </div>
+
+      <div class="svc">
+        <div class="svc-head">
+          <div class="svc-n mono">SV 05</div>
+          <div class="svc-hbody">
+            <div class="svc-name">Proyecto Íntegro de Diseño</div>
+            <div class="svc-desc">El servicio de mayor alcance. Combina investigación estratégica, diseño, desarrollo técnico, producción e implementación. Aquí la metodología D→E→R→C se despliega en su forma más completa.</div>
+          </div>
+        </div>
+        <div class="svc-stages">
+          <div class="stage-cell"><div class="stage-tag mono">Clasificación del cliente</div><ul class="stage-tasks"><li>Evaluación de viabilidad</li><li>Definición de recursos requeridos</li></ul></div>
+          <div class="stage-cell"><div class="stage-tag mono">Primer acercamiento</div><ul class="stage-tasks"><li>Reunión inicial</li><li>Definición de objetivos</li></ul></div>
+          <div class="stage-cell"><div class="stage-tag mono">Visita técnica</div><ul class="stage-tasks"><li>Levantamiento y documentación</li></ul></div>
+          <div class="stage-cell"><div class="stage-tag mono">Código fuente</div><ul class="stage-tasks"><li>Entrevista estratégica</li><li>Documentación de visión y objetivos</li></ul></div>
+          <div class="stage-cell"><div class="stage-tag mono">Presentación de ventas</div><ul class="stage-tasks"><li>Presentación de metodología y alcance</li><li>Aprobación para avanzar</li></ul></div>
+          <div class="stage-cell"><div class="stage-tag mono">Investigación conceptual</div><ul class="stage-tasks"><li>Investigación y definición conceptual</li></ul></div>
+          <div class="stage-cell"><div class="stage-tag mono">Presentación conceptual</div><ul class="stage-tasks"><li>Desarrollo de narrativa y moodboard</li><li>Aprobación conceptual</li></ul></div>
+          <div class="stage-cell"><div class="stage-tag mono">Desarrollo de diseño</div><ul class="stage-tasks"><li>Renders y visualización</li><li>Ajustes y aprobación</li></ul></div>
+          <div class="stage-cell"><div class="stage-tag mono">Desarrollo técnico</div><ul class="stage-tasks"><li>Planos y especificaciones</li><li>Preparación para producción</li></ul></div>
+          <div class="stage-cell"><div class="stage-tag mono">Presentación final</div><ul class="stage-tasks"><li>Presentación integral</li><li>Aprobación final</li></ul></div>
+          <div class="stage-cell"><div class="stage-tag mono">Producción y orquestación</div><ul class="stage-tasks"><li>Coordinación de producción</li><li>Control de calidad</li></ul></div>
+          <div class="stage-cell"><div class="stage-tag mono">Implementación</div><ul class="stage-tasks"><li>Instalación e implementación</li><li>Ajustes finales</li></ul></div>
+          <div class="stage-cell last-row"><div class="stage-tag mono">Entrega de entregables</div><ul class="stage-tasks"><li>Entrega documental</li><li>Acta de entrega</li></ul></div>
+          <div class="stage-cell last-row"><div class="stage-tag mono">Postocupación</div><ul class="stage-tasks"><li>Seguimiento post-entrega</li><li>Solicitud de retroalimentación</li></ul></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- HERRAMIENTAS -->
+  <div class="section">
+    <div class="s-head">
+      <span class="s-label mono">05</span>
+      <span class="s-title">Trazzo — el OS de la consultoría</span>
+    </div>
+    <p class="s-body">Trazzo es la plataforma propia de Dcoder Studio para gestionar todo el trabajo. Cada módulo corresponde a una parte del flujo operativo del estudio.</p>
+    <div class="tools-grid">
+      <div class="tool"><div class="tool-name">Proyectos</div><div class="tool-desc">Tablero kanban por servicio y etapa. Estado en tiempo real.</div></div>
+      <div class="tool"><div class="tool-name">Tareas</div><div class="tool-desc">Gestión de tareas por proyecto o independientes, con responsables y fechas.</div></div>
+      <div class="tool"><div class="tool-name">Daily Hub</div><div class="tool-desc">Planeación horaria del día, tareas prioritarias y recordatorios del equipo.</div></div>
+      <div class="tool"><div class="tool-name">Clientes</div><div class="tool-desc">Directorio de empresas y contactos con historial de proyectos.</div></div>
+      <div class="tool"><div class="tool-name">Cotizaciones</div><div class="tool-desc">Flujo de solicitudes: del primer contacto a la aceptación o cierre.</div></div>
+      <div class="tool"><div class="tool-name">Calendario</div><div class="tool-desc">Eventos, entregas y metas del mes en una vista compartida.</div></div>
+      <div class="tool"><div class="tool-name">Finanzas</div><div class="tool-desc">Ingresos, gastos y cobranza por proyecto.</div></div>
+      <div class="tool"><div class="tool-name">Focus</div><div class="tool-desc">Temporizador para bloques de trabajo profundo.</div></div>
+    </div>
+  </div>
+
+  <!-- PRIMEROS PASOS -->
+  <div class="section">
+    <div class="s-head">
+      <span class="s-label mono">06</span>
+      <span class="s-title">Tu primera semana</span>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <div class="step-n mono">01</div>
+        <div><div class="step-title">Accede a Trazzo</div><div class="step-desc">Pide acceso al equipo. Entra a <strong>trazzo-one.vercel.app</strong> y explora el tablero de Proyectos para ver el estado actual del estudio.</div></div>
+      </div>
+      <div class="step">
+        <div class="step-n mono">02</div>
+        <div><div class="step-title">Lee la metodología D→E→R→C</div><div class="step-desc">Entiende el proceso antes de ver cualquier proyecto. Cuando sepas en qué fase metodológica está el estudio con un cliente, todo lo demás tiene más sentido.</div></div>
+      </div>
+      <div class="step">
+        <div class="step-n mono">03</div>
+        <div><div class="step-title">Identifica los proyectos activos y sus etapas</div><div class="step-desc">Filtra por servicio en el tablero de Proyectos. Ubica quién es responsable de cada proyecto y qué tareas están pendientes en la etapa actual.</div></div>
+      </div>
+      <div class="step">
+        <div class="step-n mono">04</div>
+        <div><div class="step-title">Usa el Daily Hub cada mañana</div><div class="step-desc">Revisa las tareas asignadas, planea tu horario y marca prioridades. Es el punto de partida diario de todo el equipo.</div></div>
+      </div>
+      <div class="step">
+        <div class="step-n mono">05</div>
+        <div><div class="step-title">Decodifica antes de proponer</div><div class="step-desc">Antes de avanzar en cualquier tarea, asegúrate de entender el contexto: ¿qué aprobó el cliente? ¿en qué etapa estamos? ¿cuál es la restricción real? Esa es la forma de pensar de Dcoder.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <span class="mono">Dcoder Studio · Documento interno de bienvenida</span>
+    <span class="mono">2025</span>
+  </div>
+
+</div>
+</body>
+</html>
