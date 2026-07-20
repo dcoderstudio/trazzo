@@ -626,7 +626,7 @@ tick();setInterval(tick,1000);
   var db = firebase.firestore()
   // ── AUTH GUARD ──────────────────────────────────────────────
   firebase.auth().onAuthStateChanged(function(u){
-    if(u&&u.email==='dcoderstudio@gmail.com')return;
+    if(u&&['dcoderstudio@gmail.com','proyectos@dcoderstudio.com'].indexOf(u.email)>-1)return;
     location.replace('/login.html');
   });
   // ── END AUTH GUARD ──────────────────────────────────────────;
