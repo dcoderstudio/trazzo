@@ -1060,6 +1060,21 @@ input[type=time].mi{color-scheme:dark;cursor:pointer;}
       var ok=document.createElement('button'); ok.className='dh-dt-input-ok'; ok.textContent='↵';
       var doAdd=function(){var v=inp.value.trim();if(!v)return;addDayTaskDirectly(v,ds);};
       inp.onkeydown=function(e){if(e.key==='Enter')doAdd();if(e.key==='Escape'){_dtInputOpen=false;renderDayTasks();}};
+      inp.addEventListener('paste',function(e){
+        var text=(e.clipboardData||window.clipboardData).getData('text');
+        var lines=text.split(/[\n\r]+/).map(function(l){return l.trim();}).filter(Boolean);
+        if(lines.length<2)return;
+        e.preventDefault();
+        if(!dayTasks[ds])dayTasks[ds]=[];
+        var remaining=MAX-(dayTasks[ds].length);
+        lines.slice(0,remaining).forEach(function(line,i){
+          var stId=Date.now()+i*2;
+          standaloneTasks.push({id:stId,text:line,done:false,deadline:ds,resp:'',priority:false,notes:''});
+          dayTasks[ds].push({id:stId+1,text:line,done:false,sourceId:stId,sourceType:'standalone',source:'Manual'});
+        });
+        _dtInputOpen=false;
+        saveData();renderDayTasks();renderDeliveries();renderHeader();
+      });
       ok.onclick=doAdd;
       wrap.appendChild(inp); wrap.appendChild(ok); list.appendChild(wrap);
       setTimeout(function(){inp.focus();},40);
@@ -1394,6 +1409,19 @@ input[type=time].mi{color-scheme:dark;cursor:pointer;}
       var iOk=document.createElement('button');iOk.className='dh-dv-input-ok';iOk.textContent='↵';
       var doAdd=function(){var v=iInp.value.trim();if(!v)return;addDeliveryTask(v,ds);};
       iInp.onkeydown=function(e){if(e.key==='Enter')doAdd();if(e.key==='Escape'){_dvInputOpen=false;renderDeliveries();}};
+      iInp.addEventListener('paste',function(e){
+        var text=(e.clipboardData||window.clipboardData).getData('text');
+        var lines=text.split(/[\n\r]+/).map(function(l){return l.trim();}).filter(Boolean);
+        if(lines.length<2)return;
+        e.preventDefault();
+        if(!standaloneTasks)standaloneTasks=[];
+        lines.forEach(function(line,i){
+          standaloneTasks.push({id:Date.now()+i,text:line,done:false,deadline:ds,resp:'',priority:false,notes:''});
+        });
+        _pass.standaloneTasks=standaloneTasks;
+        _dvInputOpen=false;
+        saveData();renderDeliveries();renderHeader();
+      });
       iOk.onclick=doAdd;
       iWrap.appendChild(iInp);iWrap.appendChild(iOk);
       wrap.appendChild(iWrap);
