@@ -311,6 +311,35 @@ input[type=time].mi{color-scheme:dark;cursor:pointer;}
 .block-color-sw{width:24px;height:24px;border-radius:7px;border:2.5px solid transparent;cursor:pointer;transition:border .12s;display:flex;align-items:center;justify-content:center;}
 .block-color-sw.sel{border-color:#fff;}
 
+/* ── LEFT PANEL TOGGLE ────────────────────────────────────── */
+.dh-left-tabs{display:flex;align-items:center;gap:3px;}
+.dh-ltab{background:none;border:1px solid transparent;color:rgba(90,180,232,.32);font-size:11px;font-weight:700;padding:4px 12px;border-radius:8px;cursor:pointer;font-family:Inter,sans-serif;transition:all .15s;white-space:nowrap;}
+.dh-ltab:hover{color:rgba(90,180,232,.7);background:rgba(26,111,212,.1);}
+.dh-ltab.active{background:rgba(26,111,212,.22);border-color:rgba(26,111,212,.38);color:#5AB4E8;}
+/* TASKS PANEL */
+.dh-tasks-panel{flex:1;min-height:0;display:none;flex-direction:column;overflow:hidden;background:#0b0e18;}
+.dh-tp-search-wrap{flex-shrink:0;padding:9px 12px;border-bottom:1px solid rgba(26,111,212,.12);}
+.dh-tp-search{width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(26,111,212,.15);border-radius:8px;padding:6px 10px;font-size:12px;color:#fff;font-family:Inter,sans-serif;outline:none;}
+.dh-tp-search:focus{border-color:rgba(26,111,212,.38);}
+.dh-tp-search::placeholder{color:rgba(255,255,255,.18);}
+.dh-tp-list{flex:1;overflow-y:auto;padding:4px 0;}
+.dh-tp-list::-webkit-scrollbar{width:3px;}
+.dh-tp-list::-webkit-scrollbar-thumb{background:rgba(255,255,255,.07);}
+.dh-tp-section{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:rgba(90,180,232,.28);padding:9px 14px 3px;}
+.dh-tp-row{display:flex;align-items:center;gap:9px;padding:7px 14px;border-bottom:.5px solid rgba(255,255,255,.03);transition:background .1s;}
+.dh-tp-row:hover{background:rgba(26,111,212,.06);}
+.dh-tp-row.in-day{opacity:.38;}
+.dh-tp-body{flex:1;min-width:0;}
+.dh-tp-text{font-size:12px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.dh-tp-meta{font-size:9px;color:rgba(255,255,255,.25);margin-top:2px;}
+.dh-tp-acts{display:flex;gap:4px;flex-shrink:0;}
+.dh-tp-btn{font-size:9px;font-weight:700;padding:3px 8px;border-radius:6px;cursor:pointer;font-family:Inter,sans-serif;transition:all .15s;white-space:nowrap;border:1px solid rgba(26,111,212,.25);background:rgba(26,111,212,.1);color:rgba(90,180,232,.55);}
+.dh-tp-btn:hover{background:rgba(26,111,212,.28);color:#5AB4E8;}
+.dh-tp-btn.tp-star{border-color:rgba(232,160,32,.22);background:rgba(232,160,32,.08);color:rgba(232,160,32,.45);}
+.dh-tp-btn.tp-star:hover{background:rgba(232,160,32,.25);color:#E8A020;}
+.dh-tp-btn.tp-in{border-color:rgba(39,174,114,.2);background:rgba(39,174,114,.07);color:rgba(39,174,114,.4);cursor:default;}
+.dh-tp-empty{text-align:center;padding:40px 20px;font-size:11px;color:rgba(255,255,255,.14);}
+
 /* ── MOBILE (phones only ≤480px) ── */
 .dh-mobile-tabs{display:none;}
 @media screen and (max-width:480px){
@@ -386,11 +415,11 @@ input[type=time].mi{color-scheme:dark;cursor:pointer;}
       <div class="dh-member-bar" id="dhMemberBar"></div>
       <div class="dh-time-card">
         <div class="dh-time-hdr">
-          <div>
-            <div class="dh-time-title">⏱ Planeación del día</div>
-            <div class="dh-time-sub">Click en hora para agregar · Arrastra tareas desde la derecha</div>
+          <div class="dh-left-tabs">
+            <button class="dh-ltab active" id="dhTabHorario" onclick="setLeftView('horario')">⏱ Horario</button>
+            <button class="dh-ltab" id="dhTabTareas" onclick="setLeftView('tareas')">📋 Tareas</button>
           </div>
-          <div style="display:flex;align-items:center;gap:7px;">
+          <div id="dhTimeHdrActions" style="display:flex;align-items:center;gap:7px;">
             <div id="dhGcBtn"></div>
             <button class="dh-add-block-btn" onclick="openBlockModal(null,null,null)">
               <svg width="9" height="9" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="6" y1="1" x2="6" y2="11"/><line x1="1" y1="6" x2="11" y2="6"/></svg>
@@ -401,6 +430,7 @@ input[type=time].mi{color-scheme:dark;cursor:pointer;}
         <div class="dh-time-outer" id="dhTimeOuter">
           <div class="dh-hour-grid" id="dhHourGrid"></div>
         </div>
+        <div class="dh-tasks-panel" id="dhTasksPanel"></div>
       </div>
     </div>
 
@@ -1306,6 +1336,109 @@ input[type=time].mi{color-scheme:dark;cursor:pointer;}
       });
     });
     return tasks;
+  }
+
+  // ── LEFT PANEL TOGGLE ─────────────────────────────────────────
+  var _leftView='horario', _tpSearch='';
+
+  window.setLeftView=function(v){
+    _leftView=v;
+    var to=document.getElementById('dhTimeOuter');
+    var tp=document.getElementById('dhTasksPanel');
+    var ha=document.getElementById('dhTimeHdrActions');
+    document.getElementById('dhTabHorario').classList.toggle('active',v==='horario');
+    document.getElementById('dhTabTareas').classList.toggle('active',v==='tareas');
+    to.style.display=v==='horario'?'':'none';
+    tp.style.display=v==='tareas'?'flex':'none';
+    if(ha)ha.style.display=v==='horario'?'':'none';
+    if(v==='tareas')renderTasksPanel();
+  };
+
+  function renderTasksPanel(){
+    var panel=document.getElementById('dhTasksPanel'); if(!panel)return;
+    var ds=fmt(curDate);
+    var daySet={};
+    (dayTasks[ds]||[]).forEach(function(t){if(t.sourceId)daySet[t.sourceId]=true;daySet['t:'+t.text]=true;});
+    (standaloneTasks||[]).forEach(function(t){if(t.deadline===ds)daySet[t.id]=true;});
+    var all=getAllBankTasks().filter(function(t){return !t.done;});
+    var q=_tpSearch.toLowerCase().trim();
+    if(q)all=all.filter(function(t){return t.text.toLowerCase().indexOf(q)>-1||(t.source||'').toLowerCase().indexOf(q)>-1;});
+    var pending=all.filter(function(t){return !daySet[t.id]&&!daySet['t:'+t.text];});
+    var inDay=all.filter(function(t){return daySet[t.id]||daySet['t:'+t.text];});
+    panel.innerHTML='';
+    var sw=document.createElement('div');sw.className='dh-tp-search-wrap';
+    var si=document.createElement('input');si.className='dh-tp-search';si.placeholder='Buscar tarea…';si.value=_tpSearch;
+    si.oninput=function(){_tpSearch=this.value;renderTasksPanel();};
+    sw.appendChild(si);panel.appendChild(sw);
+    var list=document.createElement('div');list.className='dh-tp-list';panel.appendChild(list);
+    if(!all.length){
+      var emp=document.createElement('div');emp.className='dh-tp-empty';
+      emp.textContent=q?'Sin resultados para "'+q+'"':'No hay tareas pendientes';
+      list.appendChild(emp);return;
+    }
+    function makeRow(task,inD){
+      var row=document.createElement('div');row.className='dh-tp-row'+(inD?' in-day':'');
+      var body=document.createElement('div');body.className='dh-tp-body';
+      var txt=document.createElement('div');txt.className='dh-tp-text';txt.textContent=task.text;
+      var meta=document.createElement('div');meta.className='dh-tp-meta';
+      var parts=[];
+      if(task.source&&task.source!=='Tarea libre')parts.push(task.source);
+      if(task.deadline&&task.deadline!==ds){try{var d=new Date(task.deadline+'T12:00:00');parts.push('Vence '+d.toLocaleDateString('es-MX',{day:'numeric',month:'short'}));}catch(e){}}
+      meta.textContent=parts.join(' · ')||'Sin fecha';
+      body.appendChild(txt);body.appendChild(meta);row.appendChild(body);
+      var acts=document.createElement('div');acts.className='dh-tp-acts';
+      if(inD){
+        var inBtn=document.createElement('span');inBtn.className='dh-tp-btn tp-in';inBtn.textContent='✓ En día';
+        acts.appendChild(inBtn);
+      } else {
+        var bHoy=document.createElement('button');bHoy.className='dh-tp-btn';bHoy.textContent='+ Hoy';
+        bHoy.title='Agregar a Tareas del día';
+        bHoy.onclick=(function(t){return function(){assignFromPanel(t,ds,false);};})(task);
+        var bStar=document.createElement('button');bStar.className='dh-tp-btn tp-star';bStar.textContent='⭐';
+        bStar.title='Agregar como Tarea prioritaria del día';
+        bStar.onclick=(function(t){return function(){assignFromPanel(t,ds,true);};})(task);
+        acts.appendChild(bHoy);acts.appendChild(bStar);
+      }
+      row.appendChild(acts);return row;
+    }
+    if(pending.length){
+      var lp=document.createElement('div');lp.className='dh-tp-section';lp.textContent='PENDIENTES — '+pending.length;
+      list.appendChild(lp);
+      pending.forEach(function(t){list.appendChild(makeRow(t,false));});
+    }
+    if(inDay.length){
+      var li=document.createElement('div');li.className='dh-tp-section';li.textContent='YA EN EL DÍA — '+inDay.length;
+      list.appendChild(li);
+      inDay.forEach(function(t){list.appendChild(makeRow(t,true));});
+    }
+  }
+
+  function assignFromPanel(task,ds,priority){
+    if(priority){
+      var MAX_DT=5;
+      if(!dayTasks[ds])dayTasks[ds]=[];
+      if(dayTasks[ds].length>=MAX_DT)return;
+      if(task.isStandalone){
+        standaloneTasks=standaloneTasks.map(function(s){return s.id===task.id?Object.assign({},s,{deadline:ds,priority:true}):s;});
+        dayTasks[ds].push({id:Date.now(),text:task.text,done:false,sourceId:task.id,sourceType:'standalone',source:'Tarea libre'});
+      } else {
+        dayTasks[ds].push({id:Date.now(),text:task.text,done:false,sourceId:task.id,sourceType:'project',projId:task.projId,stage:task.stage,source:task.source});
+      }
+    } else {
+      if(task.isStandalone){
+        standaloneTasks=standaloneTasks.map(function(s){return s.id===task.id?Object.assign({},s,{deadline:ds}):s;});
+      } else {
+        for(var i=0;i<projects.length;i++){
+          if(projects[i].id===task.projId){
+            var stg=task.stage;
+            projects[i].stageTasks=projects[i].stageTasks||{};
+            projects[i].stageTasks[stg]=(projects[i].stageTasks[stg]||[]).map(function(t){return t.id===task.id?Object.assign({},t,{deadline:ds}):t;});
+            break;
+          }
+        }
+      }
+    }
+    saveData();renderTasksPanel();renderDayTasks();renderDeliveries();renderHeader();
   }
 
   // ── TAREAS DEL DÍA ────────────────────────────────────────────
