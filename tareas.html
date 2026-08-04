@@ -586,7 +586,7 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
 
   function saveData() {
     _ignoreSnap = true;
-    DOC.set({projects:projects, categories:categories, nextId:nextId, catIdCounter:catIdCounter, standaloneTasks:standaloneTasks, taskColumns:taskColumns, teamMembers:teamMembers, taskGroups:taskGroups})
+    DOC.set({projects:projects, categories:categories, nextId:nextId, catIdCounter:catIdCounter, standaloneTasks:standaloneTasks, taskColumns:taskColumns, teamMembers:teamMembers, taskGroups:taskGroups}, {merge:true})
       .catch(function(e){ console.warn('Error al guardar:', e); });
   }
 
