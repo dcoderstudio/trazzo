@@ -53,6 +53,53 @@ html,body{height:100%;overflow:hidden;background:#080b16;font-family:'Inter',sys
 .eq-mrow:hover .eq-mdel{opacity:1;}
 .eq-mdel:hover{background:rgba(212,83,126,.28);color:#D4537E;}
 
+/* ── VIEW TOGGLE ────────── */
+.eq-view-toggle{display:flex;gap:2px;padding:3px;background:rgba(255,255,255,.05);border-radius:10px;margin:0 13px 10px;flex-shrink:0;}
+.eq-vt-btn{flex:1;border:none;background:none;color:rgba(255,255,255,.3);font-size:10.5px;font-weight:700;padding:5px 4px;border-radius:8px;cursor:pointer;font-family:inherit;transition:all .15s;}
+.eq-vt-btn:hover{color:rgba(255,255,255,.6);}
+.eq-vt-btn.active{background:rgba(255,255,255,.13);color:#fff;}
+
+/* ── AREA LIST (left panel) */
+.eq-arow{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:10px;cursor:pointer;transition:background .12s;margin-bottom:3px;border:.5px solid transparent;}
+.eq-arow:hover{background:rgba(255,255,255,.05);}
+.eq-arow.sel{background:rgba(26,111,212,.14);border-color:rgba(26,111,212,.26);}
+.eq-a-icon{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;}
+.eq-a-info{flex:1;min-width:0;}
+.eq-a-name{font-size:12px;font-weight:700;color:rgba(255,255,255,.85);margin-bottom:2px;}
+.eq-a-sub{font-size:9px;color:rgba(255,255,255,.28);}
+.eq-a-cnt{font-size:9px;font-weight:700;background:rgba(255,255,255,.07);color:rgba(255,255,255,.35);padding:2px 8px;border-radius:8px;white-space:nowrap;flex-shrink:0;}
+
+/* ── AREA MAIN VIEW ─────── */
+.eq-area-hdr{flex-shrink:0;padding:18px 24px 15px;border-bottom:.5px solid rgba(255,255,255,.07);display:flex;align-items:center;gap:14px;}
+.eq-area-icon-lg{width:50px;height:50px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;}
+.eq-area-ttl{font-size:20px;font-weight:800;color:#fff;}
+.eq-area-sub{font-size:11px;color:rgba(255,255,255,.36);margin-top:3px;}
+.eq-area-stats-row{margin-left:auto;display:flex;gap:6px;flex-shrink:0;}
+.eq-area-stat{text-align:center;padding:8px 14px;border-radius:10px;background:rgba(255,255,255,.04);border:.5px solid rgba(255,255,255,.07);}
+.eq-area-sn{font-size:19px;font-weight:800;color:#fff;line-height:1;}
+.eq-area-sl{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:rgba(255,255,255,.28);margin-top:3px;}
+.eq-area-body{flex:1;overflow-y:auto;padding:18px 22px 22px;}
+.eq-area-body::-webkit-scrollbar{width:4px;}
+.eq-area-body::-webkit-scrollbar-thumb{background:rgba(255,255,255,.08);}
+.eq-area-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(195px,1fr));gap:9px;}
+.eq-am-card{background:#111828;border:.5px solid rgba(255,255,255,.08);border-radius:12px;overflow:hidden;cursor:pointer;transition:border-color .15s,background .15s;display:flex;flex-direction:column;}
+.eq-am-card:hover{border-color:rgba(255,255,255,.18);background:#141d32;}
+.eq-am-hdr{position:relative;height:84px;overflow:hidden;flex-shrink:0;}
+.eq-am-hdr .av-img{width:100%;height:100%;object-fit:cover;object-position:center 15%;display:block;}
+.eq-am-hdr .av-init{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800;color:rgba(255,255,255,.9);}
+.eq-am-hdr-fade{position:absolute;inset:0;background:linear-gradient(to bottom,transparent 35%,rgba(17,24,40,.96) 100%);pointer-events:none;}
+.eq-am-hdr-name{position:absolute;bottom:7px;left:10px;right:10px;}
+.eq-am-hdr-name .nm{font-size:12px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.eq-am-body{padding:8px 10px 11px;flex:1;}
+.eq-am-stats{display:flex;gap:4px;margin-bottom:7px;}
+.eq-am-stat{flex:1;text-align:center;background:rgba(255,255,255,.04);border-radius:6px;padding:4px 2px;}
+.eq-am-sn{font-size:14px;font-weight:800;line-height:1;}
+.eq-am-sl{font-size:7px;color:rgba(255,255,255,.25);text-transform:uppercase;letter-spacing:.03em;margin-top:2px;}
+.eq-am-task-row{display:flex;align-items:center;gap:4px;padding:2px 0;}
+.eq-am-task-dot{width:4px;height:4px;border-radius:50%;flex-shrink:0;}
+.eq-am-task-txt{font-size:9.5px;color:rgba(255,255,255,.45);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.eq-am-free{font-size:9.5px;color:rgba(39,174,114,.5);}
+
 /* Add member form */
 .eq-add-btn{display:flex;align-items:center;justify-content:center;gap:6px;margin:6px 10px 10px;padding:7px;border-radius:10px;border:1px dashed rgba(255,255,255,.12);background:none;color:rgba(255,255,255,.3);font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s;width:calc(100% - 20px);}
 .eq-add-btn:hover{border-color:rgba(255,255,255,.28);color:rgba(255,255,255,.7);background:rgba(255,255,255,.04);}
@@ -258,9 +305,13 @@ html,body{height:100%;overflow:hidden;background:#080b16;font-family:'Inter',sys
           <div class="eq-stat cr"><div class="eq-stat-lbl"><div class="eq-stat-dot" style="background:#D4537E"></div>Vencidas</div><div class="eq-stat-n" id="sVenc">—</div></div>
         </div>
       </div>
+      <div class="eq-view-toggle">
+        <button class="eq-vt-btn active" id="vtEquipo" onclick="setViewMode('equipo')">👤 Equipo</button>
+        <button class="eq-vt-btn" id="vtArea" onclick="setViewMode('area')">🏢 Por área</button>
+      </div>
       <div class="eq-team-hdr">
-        <span class="eq-team-hdr-lbl">Equipo · <span id="eqCount">0</span></span>
-        <button class="eq-vg-btn" onclick="showVistaGeneral()">Vista general</button>
+        <span class="eq-team-hdr-lbl" id="eqListLabel">Equipo · <span id="eqCount">0</span></span>
+        <button class="eq-vg-btn" id="eqVgBtn" onclick="showVistaGeneral()">Vista general</button>
       </div>
       <div class="eq-team-list" id="eqTeamList"></div>
       <button class="eq-add-btn" id="eqAddBtn" onclick="toggleAddForm()">＋ Agregar miembro</button>
@@ -324,6 +375,7 @@ var _pass={},projects=[],standaloneTasks=[],dayTasks={},teamMembers=[];
 var memberGoals={},memberAvatars={};
 var _mid=null,_tab='hoy',_ignSnap=false;
 var _kDrag=null,_avatarFor=null;
+var _viewMode='equipo',_selArea=null;
 
 var DEFAULT_TEAM=[
   {id:'AR',name:'Ana Ramírez',color:'#1A6FD4',area:'Diseño'},
@@ -419,9 +471,178 @@ function getMemberStats(mid){
 
 // ── RENDER ALL ─────────────────────────────────────────────────────
 function renderAll(){
-  renderTeamList();
+  renderLeft();
   if(_mid){renderStats(_mid);renderMain(_mid);renderGoals(_mid);}
+  else if(_viewMode==='area'&&_selArea){renderAreaMain(_selArea);}
   else{resetStats();}
+}
+
+function renderLeft(){
+  if(_viewMode==='equipo'){
+    renderTeamList();
+    document.getElementById('eqListLabel').innerHTML='Equipo · <span id="eqCount">'+teamMembers.length+'</span>';
+    document.getElementById('eqVgBtn').style.display='';
+    document.getElementById('eqAddBtn').style.display='';
+  } else {
+    renderAreaList();
+    var areas=getUniqueAreas();
+    document.getElementById('eqListLabel').innerHTML='Áreas · <span id="eqCount">'+areas.length+'</span>';
+    document.getElementById('eqVgBtn').style.display='none';
+    document.getElementById('eqAddBtn').style.display='none';
+  }
+}
+
+// ── VIEW MODE TOGGLE ───────────────────────────────────────────────
+function setViewMode(mode){
+  _viewMode=mode;_mid=null;_selArea=null;
+  document.getElementById('vtEquipo').className='eq-vt-btn'+(mode==='equipo'?' active':'');
+  document.getElementById('vtArea').className='eq-vt-btn'+(mode==='area'?' active':'');
+  document.getElementById('btnWk').disabled=true;
+  document.getElementById('btnMo').disabled=true;
+  document.getElementById('glWeek').innerHTML='<div class="eq-glock">Selecciona un miembro</div>';
+  document.getElementById('glMonth').innerHTML='<div class="eq-glock">Selecciona un miembro</div>';
+  resetStats();
+  renderLeft();
+  var main=document.getElementById('eqMain');
+  var placeholder=mode==='area'?'Selecciona un área':'Selecciona un miembro del equipo';
+  var icon=mode==='area'?'🏢':'👥';
+  main.innerHTML='<div class="eq-no-sel"><div class="eq-no-sel-icon">'+icon+'</div><div class="eq-no-sel-txt">'+placeholder+'</div></div>';
+}
+
+// ── UNIQUE AREAS ────────────────────────────────────────────────────
+var AREA_ICONS={'diseño':'🎨','producción':'⚙️','gestión':'📊','marketing':'📣','ventas':'💼','desarrollo':'💻','finanzas':'💰','operaciones':'🔧','rrhh':'👥','logística':'🚚','legal':'⚖️','calidad':'✅'};
+function areaIcon(name){return AREA_ICONS[(name||'').toLowerCase()]||'🏢';}
+
+function getUniqueAreas(){
+  var map={};
+  teamMembers.forEach(function(m){
+    var a=m.area||'Sin área';
+    if(!map[a])map[a]={name:a,members:[],color:m.color||'#1A6FD4'};
+    map[a].members.push(m);
+  });
+  return Object.values(map).sort(function(a,b){return a.name.localeCompare(b.name);});
+}
+
+function getAreaStats(members){
+  var asig=0,sem=0,prog=0,venc=0;
+  members.forEach(function(m){var s=getMemberStats(m.id);asig+=s.asig;sem+=s.sem;prog+=s.prog;venc+=s.venc;});
+  return{asig:asig,sem:sem,prog:prog,venc:venc};
+}
+
+// ── AREA LIST (left panel) ─────────────────────────────────────────
+function renderAreaList(){
+  var list=document.getElementById('eqTeamList');if(!list)return;
+  list.innerHTML='';
+  var areas=getUniqueAreas();
+  areas.forEach(function(ar){
+    var s=getAreaStats(ar.members);
+    var row=document.createElement('div');
+    row.className='eq-arow'+(ar.name===_selArea?' sel':'');
+    row.onclick=(function(aname){return function(){selectArea(aname);};})(ar.name);
+    var icon=document.createElement('div');icon.className='eq-a-icon';
+    icon.style.background='linear-gradient(135deg,'+ar.color+'33,'+ar.color+'18)';
+    icon.style.border='.5px solid '+ar.color+'44';
+    icon.textContent=areaIcon(ar.name);
+    var info=document.createElement('div');info.className='eq-a-info';
+    info.innerHTML='<div class="eq-a-name">'+ar.name+'</div>'+'<div class="eq-a-sub">'+ar.members.length+' persona'+(ar.members.length!==1?'s':'')+' · '+s.asig+' tareas'+(s.venc?' · <span style="color:rgba(212,83,126,.7)">'+s.venc+' venc.</span>':'')+'</div>';
+    var cnt=document.createElement('span');cnt.className='eq-a-cnt';cnt.textContent=ar.members.length;
+    row.appendChild(icon);row.appendChild(info);row.appendChild(cnt);
+    list.appendChild(row);
+  });
+}
+
+// ── SELECT AREA ────────────────────────────────────────────────────
+function selectArea(areaName){
+  _selArea=areaName;_mid=null;
+  renderAreaList();
+  renderAreaMain(areaName);
+  resetStats();
+  document.getElementById('btnWk').disabled=true;
+  document.getElementById('btnMo').disabled=true;
+  document.getElementById('glWeek').innerHTML='<div class="eq-glock">Selecciona un miembro</div>';
+  document.getElementById('glMonth').innerHTML='<div class="eq-glock">Selecciona un miembro</div>';
+}
+
+// ── AREA MAIN VIEW ─────────────────────────────────────────────────
+function renderAreaMain(areaName){
+  var main=document.getElementById('eqMain');main.innerHTML='';
+  var areas=getUniqueAreas();
+  var ar=null;for(var i=0;i<areas.length;i++){if(areas[i].name===areaName){ar=areas[i];break;}}
+  if(!ar)return;
+  var s=getAreaStats(ar.members);
+
+  // Header
+  var hdr=document.createElement('div');hdr.className='eq-area-hdr';
+  var iconEl=document.createElement('div');iconEl.className='eq-area-icon-lg';
+  iconEl.style.background='linear-gradient(135deg,'+ar.color+'44,'+ar.color+'1a)';
+  iconEl.style.border='.5px solid '+ar.color+'55';
+  iconEl.textContent=areaIcon(ar.name);
+  var info=document.createElement('div');
+  var ttl=document.createElement('div');ttl.className='eq-area-ttl';ttl.textContent=ar.name;
+  var sub=document.createElement('div');sub.className='eq-area-sub';sub.textContent=ar.members.length+' persona'+(ar.members.length!==1?'s':'');
+  info.appendChild(ttl);info.appendChild(sub);
+  var stRow=document.createElement('div');stRow.className='eq-area-stats-row';
+  [{n:s.asig,l:'Tareas'},{n:s.sem,l:'Semana'},{n:s.venc,l:'Vencidas'}].forEach(function(x){
+    var el=document.createElement('div');el.className='eq-area-stat';
+    el.innerHTML='<div class="eq-area-sn">'+x.n+'</div><div class="eq-area-sl">'+x.l+'</div>';
+    stRow.appendChild(el);
+  });
+  hdr.appendChild(iconEl);hdr.appendChild(info);hdr.appendChild(stRow);main.appendChild(hdr);
+
+  // Grid of member cards
+  var body=document.createElement('div');body.className='eq-area-body';
+  var grid=document.createElement('div');grid.className='eq-area-grid';
+  var ds=today();
+  ar.members.forEach(function(m){
+    var ms=getMemberStats(m.id);
+    var all=getMemberTasks(m.id);
+    var todayTks=all.filter(function(t){return!t.done&&t.deadline===ds;});
+    var card=document.createElement('div');card.className='eq-am-card';
+    card.onclick=(function(mbid){return function(){openMemberFromArea(mbid);};})(m.id);
+
+    // Card header with avatar
+    var ch=document.createElement('div');ch.className='eq-am-hdr';ch.style.background=m.color||'#1A6FD4';
+    var avData=memberAvatars[m.id];
+    if(avData){var ai=document.createElement('img');ai.className='av-img';ai.src=avData;ch.appendChild(ai);}
+    else{var an=document.createElement('div');an.className='av-init';an.textContent=m.id;ch.appendChild(an);}
+    var fade=document.createElement('div');fade.className='eq-am-hdr-fade';ch.appendChild(fade);
+    var nm=document.createElement('div');nm.className='eq-am-hdr-name';nm.innerHTML='<div class="nm">'+m.name+'</div>';
+    ch.appendChild(nm);card.appendChild(ch);
+
+    // Card body
+    var cb=document.createElement('div');cb.className='eq-am-body';
+    var stEl=document.createElement('div');stEl.className='eq-am-stats';
+    [{n:ms.asig,l:'Total',c:'rgba(90,180,232,.7)'},{n:ms.sem,l:'Semana',c:'rgba(232,160,32,.7)'},{n:ms.venc,l:'Venc.',c:'rgba(212,83,126,.7)'}].forEach(function(x){
+      var s2=document.createElement('div');s2.className='eq-am-stat';
+      var sn=document.createElement('div');sn.className='eq-am-sn';sn.style.color=x.c;sn.textContent=x.n;
+      var sl=document.createElement('div');sl.className='eq-am-sl';sl.textContent=x.l;
+      s2.appendChild(sn);s2.appendChild(sl);stEl.appendChild(s2);
+    });
+    cb.appendChild(stEl);
+    if(todayTks.length){
+      todayTks.slice(0,2).forEach(function(t){
+        var tr=document.createElement('div');tr.className='eq-am-task-row';
+        var dot=document.createElement('div');dot.className='eq-am-task-dot';dot.style.background=t.color||'#5AB4E8';
+        var tx=document.createElement('div');tx.className='eq-am-task-txt';tx.textContent=t.text;
+        tr.appendChild(dot);tr.appendChild(tx);cb.appendChild(tr);
+      });
+      if(todayTks.length>2){var more=document.createElement('div');more.style.cssText='font-size:9px;color:rgba(255,255,255,.2);margin-top:2px;';more.textContent='+'+(todayTks.length-2)+' más hoy';cb.appendChild(more);}
+    } else {
+      var fr=document.createElement('div');fr.className='eq-am-free';fr.textContent='✓ Libre hoy';cb.appendChild(fr);
+    }
+    card.appendChild(cb);grid.appendChild(card);
+  });
+  body.appendChild(grid);main.appendChild(body);
+}
+
+function openMemberFromArea(mid){
+  _mid=mid;
+  // Update left list highlight if in area mode
+  if(_viewMode==='area')renderAreaList();
+  else renderTeamList();
+  renderStats(mid);renderMain(mid);renderGoals(mid);
+  document.getElementById('btnWk').disabled=false;
+  document.getElementById('btnMo').disabled=false;
 }
 
 function resetStats(){['sAsig','sSem','sProg','sVenc'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent='—';});}
@@ -527,15 +748,15 @@ function deleteMember(mid){
 
 // ── SELECT MEMBER ──────────────────────────────────────────────────
 function selectMember(mid){
-  _mid=mid;
-  renderTeamList();renderStats(mid);renderMain(mid);renderGoals(mid);
+  _mid=mid;_selArea=null;
+  renderLeft();renderStats(mid);renderMain(mid);renderGoals(mid);
   document.getElementById('btnWk').disabled=false;
   document.getElementById('btnMo').disabled=false;
 }
 
 // ── VISTA GENERAL ──────────────────────────────────────────────────
 function showVistaGeneral(){
-  _mid=null;resetStats();renderTeamList();
+  _mid=null;_selArea=null;resetStats();renderLeft();
   document.getElementById('btnWk').disabled=true;
   document.getElementById('btnMo').disabled=true;
   document.getElementById('glWeek').innerHTML='<div class="eq-glock">Selecciona un miembro</div>';
