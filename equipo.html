@@ -379,9 +379,9 @@ var _viewMode='equipo',_selArea=null;
 
 var DEFAULT_TEAM=[
   {id:'AR',name:'Ana Ramírez',color:'#1A6FD4',area:'Diseño'},
-  {id:'LM',name:'Luis Mora',color:'#7B6FD0',area:'Producción'},
-  {id:'SV',name:'Sofía Vega',color:'#D4537E',area:'Diseño'},
-  {id:'RG',name:'Rodrigo Gil',color:'#E8A020',area:'Gestión'}
+  {id:'LM',name:'Luis Mora',color:'#7B6FD0',area:'Logística'},
+  {id:'SV',name:'Sofía Vega',color:'#D4537E',area:'Campo'},
+  {id:'RG',name:'Rodrigo Gil',color:'#E8A020',area:'Dirección'}
 ];
 
 function initApp(){
@@ -510,7 +510,13 @@ function setViewMode(mode){
 }
 
 // ── UNIQUE AREAS ────────────────────────────────────────────────────
-var AREA_ICONS={'diseño':'🎨','producción':'⚙️','gestión':'📊','marketing':'📣','ventas':'💼','desarrollo':'💻','finanzas':'💰','operaciones':'🔧','rrhh':'👥','logística':'🚚','legal':'⚖️','calidad':'✅'};
+var AREA_ICONS={
+  'campo':'🌿','logística':'🚚','diseño':'🎨','dirección':'🧭','administración':'🗂️',
+  'logistica':'🚚','direccion':'🧭','administracion':'🗂️',
+  'producción':'⚙️','produccion':'⚙️','gestión':'📊','gestion':'📊',
+  'marketing':'📣','ventas':'💼','desarrollo':'💻','finanzas':'💰',
+  'operaciones':'🔧','rrhh':'👥','legal':'⚖️','calidad':'✅'
+};
 function areaIcon(name){return AREA_ICONS[(name||'').toLowerCase()]||'🏢';}
 
 function getUniqueAreas(){
