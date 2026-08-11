@@ -49,6 +49,28 @@ html,body{height:100%;overflow:hidden;background:#080b16;font-family:'Inter',sys
 .eq-mbadge.ok{background:rgba(39,174,114,.12);color:rgba(39,174,114,.6);}
 .eq-mbadge.busy{background:rgba(26,111,212,.18);color:#5AB4E8;}
 .eq-mbadge.venc{background:rgba(212,83,126,.2);color:#D4537E;}
+.eq-mdel{width:22px;height:22px;border-radius:6px;background:rgba(212,83,126,.14);border:.5px solid rgba(212,83,126,.22);color:rgba(212,83,126,.6);font-size:13px;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;opacity:0;transition:opacity .12s,background .12s;flex-shrink:0;}
+.eq-mrow:hover .eq-mdel{opacity:1;}
+.eq-mdel:hover{background:rgba(212,83,126,.28);color:#D4537E;}
+
+/* Add member form */
+.eq-add-btn{display:flex;align-items:center;justify-content:center;gap:6px;margin:6px 10px 10px;padding:7px;border-radius:10px;border:1px dashed rgba(255,255,255,.12);background:none;color:rgba(255,255,255,.3);font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s;width:calc(100% - 20px);}
+.eq-add-btn:hover{border-color:rgba(255,255,255,.28);color:rgba(255,255,255,.7);background:rgba(255,255,255,.04);}
+.eq-add-form{flex-shrink:0;padding:12px 12px 14px;border-top:.5px solid rgba(255,255,255,.07);background:#0a0d1b;}
+.eq-add-form-hdr{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:rgba(255,255,255,.28);margin-bottom:10px;}
+.eq-add-inp{width:100%;background:rgba(255,255,255,.07);border:.5px solid rgba(255,255,255,.11);border-radius:8px;padding:8px 10px;font-size:11.5px;color:#fff;font-family:inherit;outline:none;margin-bottom:7px;transition:border-color .15s,background .15s;}
+.eq-add-inp:focus{border-color:rgba(90,180,232,.4);background:rgba(255,255,255,.1);}
+.eq-add-inp::placeholder{color:rgba(255,255,255,.2);}
+.eq-add-clr-lbl{font-size:9px;color:rgba(255,255,255,.22);font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;}
+.eq-add-colors{display:flex;gap:7px;margin-bottom:12px;flex-wrap:wrap;}
+.eq-add-color{width:22px;height:22px;border-radius:50%;cursor:pointer;border:2px solid transparent;flex-shrink:0;transition:transform .12s,border-color .12s;}
+.eq-add-color:hover{transform:scale(1.18);}
+.eq-add-color.sel{border-color:#fff;transform:scale(1.1);}
+.eq-add-btns{display:flex;gap:6px;}
+.eq-add-save{flex:1;background:#1A6FD4;border:none;border-radius:8px;padding:8px;font-size:11.5px;font-weight:700;color:#fff;cursor:pointer;font-family:inherit;transition:background .15s;}
+.eq-add-save:hover{background:#1e7fe8;}
+.eq-add-cancel{background:rgba(255,255,255,.06);border:.5px solid rgba(255,255,255,.1);border-radius:8px;padding:8px 12px;font-size:11px;font-weight:600;color:rgba(255,255,255,.4);cursor:pointer;font-family:inherit;transition:all .15s;}
+.eq-add-cancel:hover{background:rgba(255,255,255,.1);color:rgba(255,255,255,.7);}
 
 /* ── MAIN ───────────────── */
 .eq-main{flex:1;display:flex;flex-direction:column;overflow:hidden;background:#0d1020;}
@@ -241,6 +263,18 @@ html,body{height:100%;overflow:hidden;background:#080b16;font-family:'Inter',sys
         <button class="eq-vg-btn" onclick="showVistaGeneral()">Vista general</button>
       </div>
       <div class="eq-team-list" id="eqTeamList"></div>
+      <button class="eq-add-btn" id="eqAddBtn" onclick="toggleAddForm()">＋ Agregar miembro</button>
+      <div class="eq-add-form" id="eqAddForm" style="display:none">
+        <div class="eq-add-form-hdr">Nuevo miembro</div>
+        <input class="eq-add-inp" id="newMName" placeholder="Nombre completo" maxlength="40">
+        <input class="eq-add-inp" id="newMArea" placeholder="Área o puesto (ej: Diseño)" maxlength="40">
+        <div class="eq-add-clr-lbl">Color</div>
+        <div class="eq-add-colors" id="colorSwatches"></div>
+        <div class="eq-add-btns">
+          <button class="eq-add-cancel" onclick="toggleAddForm()">Cancelar</button>
+          <button class="eq-add-save" onclick="saveNewMember()">Agregar</button>
+        </div>
+      </div>
     </aside>
 
     <!-- MAIN -->
@@ -319,10 +353,8 @@ function initApp(){
 // ── SAVES ──────────────────────────────────────────────────────────
 function saveGoals(){_ignSnap=true;DOC.set({memberGoals:memberGoals},{merge:true}).catch(function(e){console.warn(e);});}
 function saveAvatars(){_ignSnap=true;DOC.set({memberAvatars:memberAvatars},{merge:true}).catch(function(e){console.warn(e);});}
-function saveTaskChange(){
-  _ignSnap=true;
-  DOC.set({projects:projects,standaloneTasks:standaloneTasks},{merge:true}).catch(function(e){console.warn(e);});
-}
+function saveTaskChange(){_ignSnap=true;DOC.set({projects:projects,standaloneTasks:standaloneTasks},{merge:true}).catch(function(e){console.warn(e);});}
+function saveTeamMembers(){_ignSnap=true;DOC.set({teamMembers:teamMembers},{merge:true}).catch(function(e){console.warn(e);});}
 
 // ── HELPERS ────────────────────────────────────────────────────────
 var MN=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
@@ -410,7 +442,7 @@ function renderTeamList(){
     var s=getMemberStats(m.id);
     var row=document.createElement('div');
     row.className='eq-mrow'+(m.id===_mid?' sel':'');
-    row.onclick=(function(id){return function(){selectMember(id);};})(m.id);
+    row.onclick=(function(id){return function(e){if(!e.target.closest('.eq-mdel'))selectMember(id);};})(m.id);
     var av=buildAv(m,34);av.style.flexShrink='0';
     var info=document.createElement('div');info.className='eq-minfo';
     info.innerHTML='<div class="eq-mname">'+m.name+'</div><div class="eq-marea">'+(m.area||'Dcoder Studio')+'</div>';
@@ -418,9 +450,79 @@ function renderTeamList(){
     if(s.venc>0){badge.className='eq-mbadge venc';badge.textContent=s.venc+' venc.';}
     else if(s.asig>0){badge.className='eq-mbadge busy';badge.textContent=s.asig+' tar.';}
     else{badge.className='eq-mbadge ok';badge.textContent='✓ libre';}
-    row.appendChild(av);row.appendChild(info);row.appendChild(badge);
+    var del=document.createElement('div');del.className='eq-mdel';del.title='Eliminar miembro';del.textContent='×';
+    del.onclick=(function(id){return function(e){e.stopPropagation();deleteMember(id);};})(m.id);
+    row.appendChild(av);row.appendChild(info);row.appendChild(badge);row.appendChild(del);
     list.appendChild(row);
   });
+}
+
+// ── ADD / DELETE MEMBERS ───────────────────────────────────────────
+var MEMBER_COLORS=['#1A6FD4','#7B6FD0','#D4537E','#E8A020','#27AE72','#E85D20','#20C8E8','#9B59B6'];
+var _newMColor=MEMBER_COLORS[0];
+
+function toggleAddForm(){
+  var form=document.getElementById('eqAddForm');
+  var btn=document.getElementById('eqAddBtn');
+  var open=form.style.display!=='none';
+  form.style.display=open?'none':'';
+  btn.style.display=open?'':'none';
+  if(!open){
+    document.getElementById('newMName').value='';
+    document.getElementById('newMArea').value='';
+    _newMColor=MEMBER_COLORS[0];
+    buildSwatches();
+    document.getElementById('newMName').focus();
+  }
+}
+
+function buildSwatches(){
+  var wrap=document.getElementById('colorSwatches');if(!wrap)return;
+  wrap.innerHTML='';
+  MEMBER_COLORS.forEach(function(c){
+    var sw=document.createElement('div');sw.className='eq-add-color'+(c===_newMColor?' sel':'');
+    sw.style.background=c;
+    sw.onclick=(function(col){return function(){_newMColor=col;buildSwatches();};})(c);
+    wrap.appendChild(sw);
+  });
+}
+
+function genMemberId(name){
+  var parts=name.trim().split(/\s+/);
+  var id=parts.map(function(p){return p.charAt(0).toUpperCase();}).join('').slice(0,3);
+  // Ensure uniqueness
+  var existing=teamMembers.map(function(m){return m.id;});
+  if(existing.indexOf(id)===-1)return id;
+  for(var i=2;i<99;i++){var try2=id+i;if(existing.indexOf(try2)===-1)return try2;}
+  return id+Date.now().toString().slice(-3);
+}
+
+function saveNewMember(){
+  var name=document.getElementById('newMName').value.trim();
+  var area=document.getElementById('newMArea').value.trim();
+  if(!name){document.getElementById('newMName').focus();return;}
+  var member={id:genMemberId(name),name:name,color:_newMColor,area:area||'Dcoder Studio'};
+  teamMembers.push(member);
+  saveTeamMembers();
+  toggleAddForm();
+  renderTeamList();
+  selectMember(member.id);
+}
+
+function deleteMember(mid){
+  if(!confirm('¿Eliminar a '+getMember(mid).name+' del equipo?'))return;
+  teamMembers=teamMembers.filter(function(m){return m.id!==mid;});
+  saveTeamMembers();
+  if(_mid===mid){
+    _mid=null;
+    document.getElementById('eqMain').innerHTML='<div class="eq-no-sel"><div class="eq-no-sel-icon">👥</div><div class="eq-no-sel-txt">Selecciona un miembro del equipo</div></div>';
+    document.getElementById('glWeek').innerHTML='<div class="eq-glock">Selecciona un miembro</div>';
+    document.getElementById('glMonth').innerHTML='<div class="eq-glock">Selecciona un miembro</div>';
+    document.getElementById('btnWk').disabled=true;
+    document.getElementById('btnMo').disabled=true;
+    resetStats();
+  }
+  renderTeamList();
 }
 
 // ── SELECT MEMBER ──────────────────────────────────────────────────
@@ -874,6 +976,10 @@ function setupGBtn(btnId,wrapId,inpId,type){
 }
 setupGBtn('btnWk','wkWrap','wkInp','week');
 setupGBtn('btnMo','moWrap','moInp','month');
+
+// Enter key on add-member inputs
+document.getElementById('newMName').addEventListener('keydown',function(e){if(e.key==='Enter')document.getElementById('newMArea').focus();if(e.key==='Escape')toggleAddForm();});
+document.getElementById('newMArea').addEventListener('keydown',function(e){if(e.key==='Enter')saveNewMember();if(e.key==='Escape')toggleAddForm();});
 </script>
 </body>
 </html>
