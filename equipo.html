@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Equipo — Trazzo</title>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;overflow:hidden;background:#080b16;font-family:'Inter',system-ui,sans-serif;color:#fff;}
+
+/* ── NAV BAR ─────────────────────────────── */
+.nav-bar{background:#080b16;border-bottom:0.5px solid rgba(255,255,255,.06);padding:9px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.nav-btn{background:none;border:none;color:rgba(255,255,255,.32);font-size:12px;font-weight:500;padding:6px 14px;border-radius:20px;cursor:pointer;font-family:'Inter',sans-serif;transition:background .15s,color .15s;}
+.nav-btn:hover{background:rgba(255,255,255,.07);color:rgba(255,255,255,.78);}
+.nav-btn.active{background:rgba(255,255,255,.11);color:#fff;font-weight:600;}
+.nav-logo{font-size:15px;font-weight:900;color:#5AB4E8;letter-spacing:-.01em;text-decoration:none;}
+
+/* ── LAYOUT ──────────────────────────────── */
+.eq-root{display:flex;flex-direction:column;height:100vh;overflow:hidden;}
+.eq-body{display:flex;flex:1;overflow:hidden;}
+
+/* ── LEFT PANEL ──────────────────────────── */
+.eq-left{width:262px;background:#0b0e1c;border-right:0.5px solid rgba(255,255,255,.06);display:flex;flex-direction:column;overflow:hidden;flex-shrink:0;}
+.eq-left-pad{padding:16px 14px 0;flex-shrink:0;}
+.eq-section-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.22);margin-bottom:11px;}
+
+/* Stats 2×2 */
+.eq-stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:14px;}
+.eq-stat{background:#111628;border:0.5px solid rgba(255,255,255,.07);border-radius:11px;padding:10px 11px;cursor:default;}
+.eq-stat.c-blue{border-top:1.5px solid rgba(90,180,232,.4);}
+.eq-stat.c-amber{border-top:1.5px solid rgba(232,160,32,.4);}
+.eq-stat.c-green{border-top:1.5px solid rgba(39,174,114,.4);}
+.eq-stat.c-red{border-top:1.5px solid rgba(212,83,126,.4);}
+.eq-stat-lbl{font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:rgba(255,255,255,.28);margin-bottom:6px;display:flex;align-items:center;gap:5px;}
+.eq-stat-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0;}
+.eq-stat-n{font-size:24px;font-weight:800;color:#fff;line-height:1;letter-spacing:-.02em;}
+
+/* Team list */
+.eq-team-hdr{padding:2px 14px 8px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.eq-team-hdr-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.22);}
+.eq-team-count{font-size:9px;font-weight:700;color:rgba(255,255,255,.22);background:rgba(255,255,255,.07);padding:1px 7px;border-radius:8px;}
+.eq-team-list{flex:1;overflow-y:auto;padding:0 9px 14px;}
+.eq-team-list::-webkit-scrollbar{width:3px;}
+.eq-team-list::-webkit-scrollbar-thumb{background:rgba(255,255,255,.07);}
+
+.eq-member-row{display:flex;align-items:center;gap:10px;padding:8px 9px;border-radius:11px;cursor:pointer;transition:background .12s;margin-bottom:3px;border:0.5px solid transparent;}
+.eq-member-row:hover{background:rgba(255,255,255,.05);}
+.eq-member-row.sel{background:rgba(26,111,212,.16);border-color:rgba(26,111,212,.3);}
+.eq-member-av{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;flex-shrink:0;}
+.eq-member-info{flex:1;min-width:0;}
+.eq-member-name{font-size:13px;font-weight:600;color:rgba(255,255,255,.88);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.eq-member-area{font-size:10px;color:rgba(255,255,255,.28);margin-top:1px;}
+.eq-member-badge{font-size:9px;font-weight:700;padding:2px 7px;border-radius:8px;flex-shrink:0;white-space:nowrap;}
+.eq-member-badge.ok{background:rgba(39,174,114,.12);color:rgba(39,174,114,.6);}
+.eq-member-badge.busy{background:rgba(26,111,212,.18);color:#5AB4E8;}
+.eq-member-badge.venc{background:rgba(212,83,126,.2);color:#D4537E;}
+
+/* ── MAIN CONTENT ────────────────────────── */
+.eq-main{flex:1;display:flex;flex-direction:column;overflow:hidden;background:#0d1020;}
+
+/* Empty state (no member selected) */
+.eq-no-sel{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:rgba(255,255,255,.16);gap:12px;}
+.eq-no-sel-icon{font-size:48px;}
+.eq-no-sel-txt{font-size:13px;font-weight:600;}
+
+/* Profile header */
+.eq-profile-hdr{flex-shrink:0;padding:18px 24px 14px;border-bottom:0.5px solid rgba(255,255,255,.07);display:flex;align-items:center;gap:16px;}
+.eq-profile-av-wrap{position:relative;flex-shrink:0;}
+.eq-profile-av{width:54px;height:54px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:#fff;}
+.eq-profile-name{font-size:20px;font-weight:800;color:#fff;letter-spacing:-.01em;}
+.eq-profile-sub{font-size:12px;color:rgba(255,255,255,.38);margin-top:2px;}
+.eq-profile-tags{display:flex;gap:5px;margin-top:6px;flex-wrap:wrap;}
+.eq-profile-tag{font-size:10px;font-weight:600;padding:3px 9px;border-radius:20px;border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.45);}
+.eq-profile-stats{display:flex;gap:8px;margin-left:auto;align-items:center;}
+.eq-pstat{text-align:center;padding:8px 14px;border-radius:10px;background:rgba(255,255,255,.04);border:0.5px solid rgba(255,255,255,.07);}
+.eq-pstat-n{font-size:20px;font-weight:800;color:#fff;line-height:1;}
+.eq-pstat-l{font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:rgba(255,255,255,.28);margin-top:3px;}
+
+/* Tabs */
+.eq-tab-bar{flex-shrink:0;display:flex;align-items:center;gap:0;padding:10px 24px 0;border-bottom:0.5px solid rgba(255,255,255,.07);}
+.eq-tab{font-size:12px;font-weight:700;padding:7px 16px 9px;background:none;border:none;cursor:pointer;color:rgba(255,255,255,.3);font-family:inherit;border-bottom:2px solid transparent;margin-bottom:-1px;transition:color .15s,border-color .15s;}
+.eq-tab:hover{color:rgba(255,255,255,.6);}
+.eq-tab.active{color:#5AB4E8;border-bottom-color:#5AB4E8;}
+
+/* Tab content */
+.eq-tab-content{flex:1;overflow-y:auto;padding:18px 24px 24px;}
+.eq-tab-content::-webkit-scrollbar{width:4px;}
+.eq-tab-content::-webkit-scrollbar-thumb{background:rgba(255,255,255,.08);border-radius:2px;}
+
+/* Task cards */
+.eq-section-hdr{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.28);margin-bottom:8px;margin-top:18px;}
+.eq-section-hdr:first-child{margin-top:0;}
+.eq-section-hdr.red{color:rgba(212,83,126,.5);}
+.eq-section-hdr.blue{color:rgba(90,180,232,.5);}
+.eq-task-card{background:#111828;border:0.5px solid rgba(255,255,255,.08);border-radius:10px;padding:10px 13px 9px 15px;position:relative;overflow:hidden;display:flex;align-items:center;gap:10px;margin-bottom:6px;transition:border-color .12s,background .12s;}
+.eq-task-card:hover{border-color:rgba(255,255,255,.14);background:#141c30;}
+.eq-task-bar{position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:3px 0 0 3px;}
+.eq-task-body{flex:1;min-width:0;}
+.eq-task-text{font-size:13px;font-weight:600;color:rgba(255,255,255,.88);margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.eq-task-meta{font-size:10px;color:rgba(255,255,255,.28);}
+.eq-task-dl{font-size:9px;font-weight:700;padding:2px 8px;border-radius:8px;flex-shrink:0;white-space:nowrap;}
+.eq-task-dl.today{background:rgba(232,160,32,.18);color:#E8A020;}
+.eq-task-dl.overdue{background:rgba(212,83,126,.18);color:#D4537E;}
+.eq-task-dl.soon{background:rgba(39,174,114,.12);color:rgba(39,174,114,.8);}
+.eq-task-dl.ok{background:rgba(255,255,255,.06);color:rgba(255,255,255,.35);}
+
+/* Week group headers */
+.eq-week-day{margin-bottom:18px;}
+.eq-week-day-hdr{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.eq-week-day-name{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:rgba(255,255,255,.4);}
+.eq-week-day-name.today{color:#5AB4E8;}
+.eq-week-line{flex:1;height:0.5px;background:rgba(255,255,255,.07);}
+.eq-week-count{font-size:9px;font-weight:700;background:rgba(255,255,255,.06);color:rgba(255,255,255,.28);padding:1px 7px;border-radius:8px;}
+
+/* Empty */
+.eq-empty{text-align:center;padding:40px 20px;color:rgba(255,255,255,.18);}
+.eq-empty-icon{font-size:36px;margin-bottom:10px;}
+.eq-empty-txt{font-size:13px;font-weight:600;}
+
+/* ── RIGHT PANEL — GOALS ─────────────────── */
+.eq-right{width:218px;background:#08090f;border-left:0.5px solid rgba(255,255,255,.06);flex-shrink:0;display:flex;flex-direction:column;overflow:hidden;padding:14px 11px;gap:11px;}
+.eq-goals-card{border-radius:14px;padding:13px 12px;display:flex;flex-direction:column;flex:1;overflow:hidden;min-height:0;}
+.eq-goals-card.week{background:linear-gradient(145deg,rgba(100,82,210,.38) 0%,rgba(70,45,170,.2) 100%);border:0.5px solid rgba(100,82,210,.42);}
+.eq-goals-card.month{background:linear-gradient(145deg,rgba(32,160,100,.28) 0%,rgba(20,110,60,.16) 100%);border:0.5px solid rgba(39,174,114,.35);}
+.eq-goals-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px;flex-shrink:0;}
+.eq-goals-title{font-size:11px;font-weight:800;color:rgba(255,255,255,.9);}
+.eq-goals-period{font-size:8.5px;color:rgba(255,255,255,.3);margin-top:1px;}
+.eq-goals-add-btn{width:22px;height:22px;border-radius:6px;background:rgba(255,255,255,.12);border:none;color:rgba(255,255,255,.65);font-size:18px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s;font-family:inherit;flex-shrink:0;}
+.eq-goals-add-btn:hover{background:rgba(255,255,255,.24);color:#fff;}
+.eq-goals-add-btn:disabled{opacity:.35;cursor:not-allowed;}
+.eq-goals-list{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:3px;min-height:0;}
+.eq-goals-list::-webkit-scrollbar{width:2px;}
+.eq-goals-list::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);}
+.eq-goal-item{display:flex;align-items:flex-start;gap:7px;padding:4px 0;}
+.eq-goal-chk{width:15px;height:15px;border-radius:4px;border:1.5px solid rgba(255,255,255,.32);flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;margin-top:1px;}
+.eq-goal-chk.done{background:rgba(255,255,255,.85);border-color:rgba(255,255,255,.85);}
+.eq-goal-chk.done::after{content:'✓';font-size:9px;color:#222;font-weight:900;}
+.eq-goal-txt{font-size:11px;font-weight:500;color:rgba(255,255,255,.82);line-height:1.4;flex:1;}
+.eq-goal-txt.done{text-decoration:line-through;color:rgba(255,255,255,.3);}
+.eq-goal-del{font-size:13px;color:rgba(255,255,255,.15);background:none;border:none;cursor:pointer;padding:0 1px;line-height:1;opacity:0;transition:opacity .12s;flex-shrink:0;}
+.eq-goal-item:hover .eq-goal-del{opacity:1;}
+.eq-goal-del:hover{color:rgba(255,255,255,.55);}
+.eq-goals-empty{font-size:10px;color:rgba(255,255,255,.22);text-align:center;padding:8px 0;}
+.eq-goals-inp-wrap{margin-top:5px;flex-shrink:0;}
+.eq-goals-inp{width:100%;background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.18);border-radius:7px;padding:6px 9px;font-size:11px;color:#fff;font-family:inherit;outline:none;}
+.eq-goals-inp:focus{border-color:rgba(255,255,255,.38);}
+.eq-goals-inp::placeholder{color:rgba(255,255,255,.22);}
+.eq-right-lock{font-size:10px;color:rgba(255,255,255,.18);text-align:center;padding:8px 0;}
+
+/* Bonus section in goals */
+.eq-bonus-row{display:flex;align-items:center;gap:7px;padding:7px 0 0;border-top:0.5px solid rgba(255,255,255,.08);margin-top:6px;flex-shrink:0;}
+.eq-bonus-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:rgba(255,255,255,.28);flex:1;}
+.eq-bonus-val{font-size:12px;font-weight:800;color:#E8A020;}
+</style>
+</head>
+<body>
+
+<div id="eqRoot" class="eq-root" style="display:none">
+
+  <!-- Top nav -->
+  <div class="nav-bar">
+    <div style="display:flex;align-items:center;gap:2px;">
+      <button class="nav-btn" onclick="location.href='index.html'">Inicio</button>
+      <button class="nav-btn" onclick="location.href='proyectos.html'">Proyectos</button>
+      <button class="nav-btn" onclick="location.href='tareas.html'">Tareas</button>
+      <button class="nav-btn" onclick="location.href='calendario.html'">Calendario</button>
+      <button class="nav-btn" onclick="location.href='daily-hub.html'">Daily Hub</button>
+      <button class="nav-btn active">Equipo</button>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <button class="nav-btn" onclick="location.href='focus.html'">⚡ Focus</button>
+      <button class="nav-btn" onclick="firebase.auth().signOut().then(function(){location.href='login.html';})" style="color:rgba(255,255,255,.2);">Salir</button>
+    </div>
+  </div>
+
+  <!-- 3-column body -->
+  <div class="eq-body">
+
+    <!-- ── LEFT PANEL ───────────────────── -->
+    <aside class="eq-left">
+      <div class="eq-left-pad">
+        <div class="eq-section-label">Resumen del equipo</div>
+        <!-- Stats 2×2 -->
+        <div class="eq-stats-grid">
+          <div class="eq-stat c-blue">
+            <div class="eq-stat-lbl"><div class="eq-stat-dot" style="background:#5AB4E8"></div>Asignadas</div>
+            <div class="eq-stat-n" id="statAsig">—</div>
+          </div>
+          <div class="eq-stat c-amber">
+            <div class="eq-stat-lbl"><div class="eq-stat-dot" style="background:#E8A020"></div>Esta semana</div>
+            <div class="eq-stat-n" id="statSemana">—</div>
+          </div>
+          <div class="eq-stat c-green">
+            <div class="eq-stat-lbl"><div class="eq-stat-dot" style="background:#27AE72"></div>En progreso</div>
+            <div class="eq-stat-n" id="statProgreso">—</div>
+          </div>
+          <div class="eq-stat c-red">
+            <div class="eq-stat-lbl"><div class="eq-stat-dot" style="background:#D4537E"></div>Vencidas</div>
+            <div class="eq-stat-n" id="statVencidas">—</div>
+          </div>
+        </div>
+      </div>
+      <!-- Team list -->
+      <div class="eq-team-hdr">
+        <span class="eq-team-hdr-lbl">Equipo</span>
+        <span class="eq-team-count" id="eqTeamCount">0</span>
+      </div>
+      <div class="eq-team-list" id="eqTeamList"></div>
+    </aside>
+
+    <!-- ── MAIN CONTENT ─────────────────── -->
+    <main class="eq-main" id="eqMain">
+      <div class="eq-no-sel">
+        <div class="eq-no-sel-icon">👥</div>
+        <div class="eq-no-sel-txt">Selecciona un miembro del equipo</div>
+      </div>
+    </main>
+
+    <!-- ── RIGHT PANEL — GOALS ──────────── -->
+    <aside class="eq-right">
+      <!-- Weekly goals -->
+      <div class="eq-goals-card week">
+        <div class="eq-goals-hdr">
+          <div>
+            <div class="eq-goals-title">Metas · Semana</div>
+          </div>
+          <button class="eq-goals-add-btn" id="btnAddWeekGoal" title="Agregar meta" disabled>+</button>
+        </div>
+        <div class="eq-goals-list" id="eqGoalsWeek">
+          <div class="eq-right-lock">Selecciona un miembro</div>
+        </div>
+        <div class="eq-goals-inp-wrap" id="weekGoalWrap" style="display:none">
+          <input class="eq-goals-inp" id="weekGoalInp" placeholder="Nueva meta… (Enter)">
+        </div>
+      </div>
+      <!-- Monthly goals -->
+      <div class="eq-goals-card month">
+        <div class="eq-goals-hdr">
+          <div>
+            <div class="eq-goals-title">Metas · Mes</div>
+          </div>
+          <button class="eq-goals-add-btn" id="btnAddMonthGoal" title="Agregar meta" disabled>+</button>
+        </div>
+        <div class="eq-goals-list" id="eqGoalsMonth">
+          <div class="eq-right-lock">Selecciona un miembro</div>
+        </div>
+        <div class="eq-goals-inp-wrap" id="monthGoalWrap" style="display:none">
+          <input class="eq-goals-inp" id="monthGoalInp" placeholder="Nueva meta… (Enter)">
+        </div>
+      </div>
+    </aside>
+
+  </div><!-- /.eq-body -->
+</div><!-- /#eqRoot -->
+
+<script>
+  // ── FIREBASE ────────────────────────────────────────────────────
+  firebase.initializeApp({
+    apiKey:"AIzaSyC3LG6e_7YAbYQhdPe6IC_Mq3SFop0XPsk",
+    authDomain:"trazzo-c9eaf.firebaseapp.com",
+    projectId:"trazzo-c9eaf",
+    storageBucket:"trazzo-c9eaf.firebasestorage.app",
+    messagingSenderId:"106264633340",
+    appId:"1:106264633340:web:4b2560a57e75321c709c79"
+  });
+  var db=firebase.firestore();
+  var DOC=db.collection('workspace').doc('proyectos');
+
+  // ── AUTH ────────────────────────────────────────────────────────
+  var ALLOWED=['dcoderstudio@gmail.com','proyectos@dcoderstudio.com'];
+  function isAllowed(e){return ALLOWED.indexOf(e)>-1;}
+
+  firebase.auth().onAuthStateChanged(function(u){
+    if(u&&isAllowed(u.email)){
+      document.getElementById('eqRoot').style.display='';
+      initApp();
+    } else {
+      window.location.href='login.html';
+    }
+  });
+
+  // ── STATE ───────────────────────────────────────────────────────
+  var _pass={}, projects=[], standaloneTasks=[], dayTasks={}, teamMembers=[];
+  var memberGoals={};
+  var _curMid=null, _curTab='hoy';
+  var _ignoreSnap=false;
+
+  var DEFAULT_TEAM=[
+    {id:'AR',name:'Ana Ramírez',color:'#1A6FD4',area:'Diseño'},
+    {id:'LM',name:'Luis Mora',color:'#7B6FD0',area:'Producción'},
+    {id:'SV',name:'Sofía Vega',color:'#D4537E',area:'Diseño'},
+    {id:'RG',name:'Rodrigo Gil',color:'#E8A020',area:'Gestión'}
+  ];
+
+  function initApp(){
+    DOC.onSnapshot(function(snap){
+      if(_ignoreSnap){_ignoreSnap=false;return;}
+      if(snap.exists){
+        var d=snap.data();
+        _pass=Object.assign({},d);
+        if(d.projects&&d.projects.length)projects=d.projects;
+        if(d.standaloneTasks)standaloneTasks=d.standaloneTasks;
+        if(d.dayTasks)dayTasks=d.dayTasks;
+        if(d.teamMembers&&d.teamMembers.length)teamMembers=d.teamMembers;
+        else teamMembers=DEFAULT_TEAM.slice();
+        if(d.memberGoals)memberGoals=d.memberGoals;
+        renderAll();
+      }
+    });
+  }
+
+  function saveGoals(){
+    _ignoreSnap=true;
+    DOC.set({memberGoals:memberGoals},{merge:true}).catch(function(e){console.warn(e);});
+  }
+
+  // ── HELPERS ─────────────────────────────────────────────────────
+  var DAYS_ES=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+  var MONTHS_ES=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+
+  function fmt(d){
+    var y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),dd=String(d.getDate()).padStart(2,'0');
+    return y+'-'+m+'-'+dd;
+  }
+  function todayStr(){return fmt(new Date());}
+
+  function getWeekDates(){
+    var today=new Date();today.setHours(0,0,0,0);
+    var days=[];
+    for(var i=0;i<7;i++){var d=new Date(today);d.setDate(today.getDate()+i);days.push(d);}
+    return days;
+  }
+
+  function fmtDayLabel(dateObj){
+    return DAYS_ES[dateObj.getDay()]+' '+dateObj.getDate()+' '+MONTHS_ES[dateObj.getMonth()];
+  }
+
+  function getDlCls(dl){
+    if(!dl)return'';
+    var today=new Date();today.setHours(0,0,0,0);
+    var d=new Date(dl+'T00:00:00');
+    var diff=Math.floor((d-today)/(1000*60*60*24));
+    if(diff<0)return'overdue';
+    if(diff===0)return'today';
+    if(diff<=3)return'soon';
+    return'ok';
+  }
+
+  function getMember(mid){
+    for(var i=0;i<teamMembers.length;i++){if(teamMembers[i].id===mid)return teamMembers[i];}
+    return null;
+  }
+
+  // All active tasks for a member (standalone + project stage tasks)
+  function getMemberTasks(mid){
+    var tasks=[];
+    (standaloneTasks||[]).forEach(function(t){
+      if(!t.done&&(t.resp||'')=== mid){
+        tasks.push(Object.assign({},t,{
+          type:'standalone',source:'Tarea libre',
+          color:'rgba(255,255,255,.3)'
+        }));
+      }
+    });
+    (projects||[]).forEach(function(p){
+      if(p.catId==='cotizaciones'||!p.stageTasks)return;
+      Object.keys(p.stageTasks).forEach(function(stage){
+        (p.stageTasks[stage]||[]).forEach(function(t){
+          if(!t.done&&(t.resp||'')=== mid){
+            tasks.push(Object.assign({},t,{
+              type:'project',source:p.name,stage:stage,
+              color:p.catColor||'#1A6FD4'
+            }));
+          }
+        });
+      });
+    });
+    return tasks;
+  }
+
+  function getMemberStats(mid){
+    var all=getMemberTasks(mid);
+    var today=new Date();today.setHours(0,0,0,0);
+    var weekEnd=new Date(today);weekEnd.setDate(weekEnd.getDate()+7);
+    return {
+      asig: all.length,
+      semana: all.filter(function(t){
+        if(!t.deadline)return false;
+        var d=new Date(t.deadline+'T00:00:00');
+        return d>=today&&d<=weekEnd;
+      }).length,
+      progreso: all.filter(function(t){return t.colStatus==='inprogress';}).length,
+      vencidas: all.filter(function(t){
+        if(!t.deadline)return false;
+        return new Date(t.deadline+'T00:00:00')<today;
+      }).length
+    };
+  }
+
+  // ── RENDER ALL ──────────────────────────────────────────────────
+  function renderAll(){
+    renderTeamList();
+    if(_curMid){
+      renderStats(_curMid);
+      renderMain(_curMid);
+      renderGoals(_curMid);
+    } else {
+      resetStats();
+    }
+  }
+
+  function resetStats(){
+    ['Asig','Semana','Progreso','Vencidas'].forEach(function(k){
+      var el=document.getElementById('stat'+k);
+      if(el)el.textContent='—';
+    });
+  }
+
+  // ── TEAM LIST ───────────────────────────────────────────────────
+  function renderTeamList(){
+    var list=document.getElementById('eqTeamList');if(!list)return;
+    document.getElementById('eqTeamCount').textContent=teamMembers.length;
+    list.innerHTML='';
+    teamMembers.forEach(function(m){
+      var stats=getMemberStats(m.id);
+      var row=document.createElement('div');
+      row.className='eq-member-row'+(m.id===_curMid?' sel':'');
+      row.onclick=(function(mid){return function(){selectMember(mid);};})(m.id);
+
+      var av=document.createElement('div');
+      av.className='eq-member-av';
+      av.style.background=m.color||'#1A6FD4';
+      av.textContent=m.id;
+
+      var info=document.createElement('div');info.className='eq-member-info';
+      var nm=document.createElement('div');nm.className='eq-member-name';nm.textContent=m.name;
+      var area=document.createElement('div');area.className='eq-member-area';area.textContent=m.area||'Dcoder Studio';
+      info.appendChild(nm);info.appendChild(area);
+
+      var badge=document.createElement('span');
+      if(stats.vencidas>0){
+        badge.className='eq-member-badge venc';
+        badge.textContent=stats.vencidas+' venc.';
+      } else if(stats.asig>0){
+        badge.className='eq-member-badge busy';
+        badge.textContent=stats.asig+' tar.';
+      } else {
+        badge.className='eq-member-badge ok';
+        badge.textContent='✓ libre';
+      }
+
+      row.appendChild(av);row.appendChild(info);row.appendChild(badge);
+      list.appendChild(row);
+    });
+  }
+
+  // ── STATS ───────────────────────────────────────────────────────
+  function renderStats(mid){
+    var s=getMemberStats(mid);
+    document.getElementById('statAsig').textContent=s.asig;
+    document.getElementById('statSemana').textContent=s.semana;
+    document.getElementById('statProgreso').textContent=s.progreso;
+    document.getElementById('statVencidas').textContent=s.vencidas;
+  }
+
+  // ── SELECT MEMBER ────────────────────────────────────────────────
+  function selectMember(mid){
+    _curMid=mid;
+    renderTeamList();
+    renderStats(mid);
+    renderMain(mid);
+    renderGoals(mid);
+    // Unlock goal buttons
+    document.getElementById('btnAddWeekGoal').disabled=false;
+    document.getElementById('btnAddMonthGoal').disabled=false;
+  }
+
+  // ── MAIN: PROFILE + TABS + CONTENT ──────────────────────────────
+  function renderMain(mid){
+    var main=document.getElementById('eqMain');
+    main.innerHTML='';
+
+    var m=getMember(mid);
+    if(!m)return;
+    var s=getMemberStats(mid);
+    var all=getMemberTasks(mid);
+
+    // Profile header
+    var hdr=document.createElement('div');hdr.className='eq-profile-hdr';
+
+    var avWrap=document.createElement('div');avWrap.className='eq-profile-av-wrap';
+    var av=document.createElement('div');av.className='eq-profile-av';
+    av.style.background=m.color||'#1A6FD4';av.textContent=m.id;
+    avWrap.appendChild(av);
+
+    var info=document.createElement('div');
+    var nm=document.createElement('div');nm.className='eq-profile-name';nm.textContent=m.name;
+    var sub=document.createElement('div');sub.className='eq-profile-sub';
+    sub.textContent=(m.area||'Equipo')+' · Dcoder Studio';
+    var tags=document.createElement('div');tags.className='eq-profile-tags';
+    [
+      {l:s.asig+' asignadas', c:'rgba(90,180,232,.3)'},
+      s.vencidas>0?{l:s.vencidas+' vencidas',c:'rgba(212,83,126,.35)'}:{l:'Al día',c:'rgba(39,174,114,.3)'}
+    ].forEach(function(td){
+      var tg=document.createElement('span');tg.className='eq-profile-tag';
+      tg.style.borderColor=td.c;tg.textContent=td.l;tags.appendChild(tg);
+    });
+    info.appendChild(nm);info.appendChild(sub);info.appendChild(tags);
+
+    // Right mini stats
+    var ps=document.createElement('div');ps.className='eq-profile-stats';
+    [{n:s.asig,l:'Asignadas'},{n:s.semana,l:'Semana'},{n:s.vencidas,l:'Vencidas'}].forEach(function(x){
+      var el=document.createElement('div');el.className='eq-pstat';
+      var en=document.createElement('div');en.className='eq-pstat-n';en.textContent=x.n;
+      var el2=document.createElement('div');el2.className='eq-pstat-l';el2.textContent=x.l;
+      el.appendChild(en);el.appendChild(el2);ps.appendChild(el);
+    });
+
+    hdr.appendChild(avWrap);hdr.appendChild(info);hdr.appendChild(ps);
+    main.appendChild(hdr);
+
+    // Tab bar
+    var tabBar=document.createElement('div');tabBar.className='eq-tab-bar';
+    [{id:'hoy',label:'Hoy'},{id:'semana',label:'Esta semana'},{id:'tareas',label:'Todas las tareas'}].forEach(function(tab){
+      var btn=document.createElement('button');
+      btn.className='eq-tab'+(tab.id===_curTab?' active':'');
+      btn.textContent=tab.label;
+      btn.onclick=(function(tid,mbid){return function(){_curTab=tid;renderMain(mbid);};})(tab.id,mid);
+      tabBar.appendChild(btn);
+    });
+    main.appendChild(tabBar);
+
+    // Content area
+    var content=document.createElement('div');content.className='eq-tab-content';
+    main.appendChild(content);
+
+    if(_curTab==='hoy') renderTabHoy(mid,content,all);
+    else if(_curTab==='semana') renderTabSemana(mid,content,all);
+    else renderTabTareas(mid,content,all);
+  }
+
+  // ── TAB: HOY ────────────────────────────────────────────────────
+  function renderTabHoy(mid,container,all){
+    var ds=todayStr();
+    var today=new Date();today.setHours(0,0,0,0);
+
+    var todayTasks=all.filter(function(t){return t.deadline===ds;});
+    var overdue=all.filter(function(t){
+      if(!t.deadline)return false;
+      return new Date(t.deadline+'T00:00:00')<today;
+    });
+    var upcoming=all.filter(function(t){
+      if(!t.deadline)return false;
+      var d=new Date(t.deadline+'T00:00:00');
+      var diff=Math.floor((d-today)/(1000*60*60*24));
+      return diff>0&&diff<=3;
+    });
+
+    if(!todayTasks.length&&!overdue.length&&!upcoming.length){
+      var emp=document.createElement('div');emp.className='eq-empty';
+      emp.innerHTML='<div class="eq-empty-icon">✅</div><div class="eq-empty-txt">Sin tareas para hoy</div>';
+      container.appendChild(emp);return;
+    }
+
+    if(overdue.length){
+      var sh=makeSecHdr('Vencidas — '+overdue.length,'red');
+      container.appendChild(sh);
+      overdue.forEach(function(t){container.appendChild(buildTaskCard(t));});
+    }
+    if(todayTasks.length){
+      var sh2=makeSecHdr('Tareas de hoy — '+todayTasks.length,'blue');
+      container.appendChild(sh2);
+      todayTasks.forEach(function(t){container.appendChild(buildTaskCard(t));});
+    }
+    if(upcoming.length){
+      var sh3=makeSecHdr('Próximos 3 días — '+upcoming.length,'');
+      container.appendChild(sh3);
+      upcoming.forEach(function(t){container.appendChild(buildTaskCard(t));});
+    }
+  }
+
+  // ── TAB: SEMANA ──────────────────────────────────────────────────
+  function renderTabSemana(mid,container,all){
+    var weekDays=getWeekDates();
+    var ds=todayStr();
+    var hasAny=false;
+
+    weekDays.forEach(function(dayDate){
+      var dayDs=fmt(dayDate);
+      var dayTks=all.filter(function(t){return t.deadline===dayDs;});
+      if(!dayTks.length)return;
+      hasAny=true;
+
+      var sec=document.createElement('div');sec.className='eq-week-day';
+      var dayHdr=document.createElement('div');dayHdr.className='eq-week-day-hdr';
+      var dayName=document.createElement('span');
+      dayName.className='eq-week-day-name'+(dayDs===ds?' today':'');
+      dayName.textContent=(dayDs===ds?'HOY — ':'')+fmtDayLabel(dayDate).toUpperCase();
+      var line=document.createElement('div');line.className='eq-week-line';
+      var cnt=document.createElement('span');cnt.className='eq-week-count';cnt.textContent=dayTks.length;
+      dayHdr.appendChild(dayName);dayHdr.appendChild(line);dayHdr.appendChild(cnt);
+      sec.appendChild(dayHdr);
+      dayTks.forEach(function(t){sec.appendChild(buildTaskCard(t));});
+      container.appendChild(sec);
+    });
+
+    if(!hasAny){
+      var emp=document.createElement('div');emp.className='eq-empty';
+      emp.innerHTML='<div class="eq-empty-icon">📅</div><div class="eq-empty-txt">Sin entregables esta semana</div>';
+      container.appendChild(emp);
+    }
+  }
+
+  // ── TAB: TODAS LAS TAREAS ─────────────────────────────────────
+  function renderTabTareas(mid,container,all){
+    if(!all.length){
+      var emp=document.createElement('div');emp.className='eq-empty';
+      emp.innerHTML='<div class="eq-empty-icon">📋</div><div class="eq-empty-txt">Sin tareas asignadas</div>';
+      container.appendChild(emp);return;
+    }
+    // Group by source
+    var bySource={};var order=[];
+    all.forEach(function(t){
+      var src=t.source||'Sin proyecto';
+      if(!bySource[src]){bySource[src]=[];order.push(src);}
+      bySource[src].push(t);
+    });
+    order.forEach(function(src){
+      var tasks=bySource[src];
+      var sh=makeSecHdr(src.toUpperCase()+' — '+tasks.length,'');
+      container.appendChild(sh);
+      tasks.forEach(function(t){container.appendChild(buildTaskCard(t));});
+    });
+  }
+
+  // ── BUILD TASK CARD ──────────────────────────────────────────────
+  function makeSecHdr(text,cls){
+    var el=document.createElement('div');
+    el.className='eq-section-hdr'+(cls?' '+cls:'');
+    el.textContent=text;return el;
+  }
+
+  function buildTaskCard(task){
+    var card=document.createElement('div');card.className='eq-task-card';
+    var bar=document.createElement('div');bar.className='eq-task-bar';
+    bar.style.background=task.color||'#5AB4E8';card.appendChild(bar);
+    var body=document.createElement('div');body.className='eq-task-body';
+    var txt=document.createElement('div');txt.className='eq-task-text';txt.textContent=task.text;
+    var meta=document.createElement('div');meta.className='eq-task-meta';
+    var parts=[];
+    if(task.source&&task.source!=='Tarea libre')parts.push(task.source);
+    if(task.stage)parts.push(task.stage);
+    meta.textContent=parts.join(' · ')||'Tarea libre';
+    body.appendChild(txt);body.appendChild(meta);card.appendChild(body);
+    if(task.deadline){
+      var dlCls=getDlCls(task.deadline);
+      var dl=document.createElement('span');dl.className='eq-task-dl'+(dlCls?' '+dlCls:'');
+      try{var dd=new Date(task.deadline+'T12:00:00');dl.textContent=dd.toLocaleDateString('es-MX',{day:'numeric',month:'short'});}catch(e){dl.textContent=task.deadline;}
+      card.appendChild(dl);
+    }
+    return card;
+  }
+
+  // ── GOALS ────────────────────────────────────────────────────────
+  function renderGoals(mid){
+    renderGoalsList('week',mid);
+    renderGoalsList('month',mid);
+  }
+
+  function renderGoalsList(type,mid){
+    var elId=type==='week'?'eqGoalsWeek':'eqGoalsMonth';
+    var listEl=document.getElementById(elId);if(!listEl)return;
+    listEl.innerHTML='';
+    var key=type==='week'?'weekGoals':'monthGoals';
+    var goals=((memberGoals[mid]||{})[key])||[];
+    if(!goals.length){
+      var emp=document.createElement('div');emp.className='eq-goals-empty';
+      emp.textContent='Sin metas — agrega con +';listEl.appendChild(emp);return;
+    }
+    goals.forEach(function(g){
+      var item=document.createElement('div');item.className='eq-goal-item';
+      var chk=document.createElement('div');chk.className='eq-goal-chk'+(g.done?' done':'');
+      chk.onclick=(function(gid,tp,mbid){return function(){toggleGoal(mbid,tp,gid);};})(g.id,type,mid);
+      var gtxt=document.createElement('span');gtxt.className='eq-goal-txt'+(g.done?' done':'');gtxt.textContent=g.text;
+      var del=document.createElement('button');del.className='eq-goal-del';del.textContent='×';
+      del.onclick=(function(gid,tp,mbid){return function(){deleteGoal(mbid,tp,gid);};})(g.id,type,mid);
+      item.appendChild(chk);item.appendChild(gtxt);item.appendChild(del);
+      listEl.appendChild(item);
+    });
+    // Show completion rate as subtle bonus hint
+    var done=goals.filter(function(g){return g.done;}).length;
+    if(goals.length>0&&done===goals.length){
+      var bonus=document.createElement('div');
+      bonus.className='eq-bonus-row';
+      bonus.innerHTML='<span class="eq-bonus-label">🏆 ¡Metas cumplidas!</span>';
+      listEl.appendChild(bonus);
+    }
+  }
+
+  function toggleGoal(mid,type,goalId){
+    if(!memberGoals[mid])return;
+    var key=type==='week'?'weekGoals':'monthGoals';
+    memberGoals[mid][key]=(memberGoals[mid][key]||[]).map(function(g){
+      return g.id===goalId?Object.assign({},g,{done:!g.done}):g;
+    });
+    saveGoals();renderGoals(mid);
+  }
+
+  function deleteGoal(mid,type,goalId){
+    if(!memberGoals[mid])return;
+    var key=type==='week'?'weekGoals':'monthGoals';
+    memberGoals[mid][key]=(memberGoals[mid][key]||[]).filter(function(g){return g.id!==goalId;});
+    saveGoals();renderGoals(mid);
+  }
+
+  function addGoal(type,mid){
+    var text=(type==='week'?
+      document.getElementById('weekGoalInp'):
+      document.getElementById('monthGoalInp')).value.trim();
+    if(!text||!mid)return;
+    if(!memberGoals[mid])memberGoals[mid]={};
+    var key=type==='week'?'weekGoals':'monthGoals';
+    if(!memberGoals[mid][key])memberGoals[mid][key]=[];
+    memberGoals[mid][key].push({id:Date.now(),text:text,done:false});
+    var inpEl=document.getElementById(type==='week'?'weekGoalInp':'monthGoalInp');
+    inpEl.value='';
+    document.getElementById(type==='week'?'weekGoalWrap':'monthGoalWrap').style.display='none';
+    saveGoals();renderGoals(mid);
+  }
+
+  // Goal add button toggling
+  document.getElementById('btnAddWeekGoal').onclick=function(){
+    if(!_curMid)return;
+    var wrap=document.getElementById('weekGoalWrap');
+    var isOpen=wrap.style.display!=='none';
+    wrap.style.display=isOpen?'none':'';
+    if(!isOpen)document.getElementById('weekGoalInp').focus();
+  };
+  document.getElementById('btnAddMonthGoal').onclick=function(){
+    if(!_curMid)return;
+    var wrap=document.getElementById('monthGoalWrap');
+    var isOpen=wrap.style.display!=='none';
+    wrap.style.display=isOpen?'none':'';
+    if(!isOpen)document.getElementById('monthGoalInp').focus();
+  };
+
+  // Goal input keyboard handling
+  function setupGoalInput(inputId,type){
+    document.getElementById(inputId).addEventListener('keydown',function(e){
+      if(e.key==='Enter'){addGoal(type,_curMid);}
+      if(e.key==='Escape'){
+        this.value='';
+        document.getElementById(type==='week'?'weekGoalWrap':'monthGoalWrap').style.display='none';
+      }
+    });
+  }
+  setupGoalInput('weekGoalInp','week');
+  setupGoalInput('monthGoalInp','month');
+</script>
+</body>
+</html>
