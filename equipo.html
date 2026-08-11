@@ -56,20 +56,22 @@ html,body{height:100%;overflow:hidden;background:#080b16;font-family:'Inter',sys
 .eq-no-sel-icon{font-size:44px;}
 .eq-no-sel-txt{font-size:13px;font-weight:600;}
 
-/* Profile header */
-.eq-phdr{flex-shrink:0;padding:16px 22px 13px;border-bottom:.5px solid rgba(255,255,255,.07);display:flex;align-items:center;gap:14px;}
-.eq-pav-wrap{position:relative;flex-shrink:0;cursor:pointer;}
-.eq-pav{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;color:#fff;overflow:hidden;}
-.eq-pav img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
-.eq-pav-overlay{position:absolute;inset:0;border-radius:50%;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .15s;font-size:16px;}
-.eq-pav-wrap:hover .eq-pav-overlay{opacity:1;}
-.eq-pname{font-size:19px;font-weight:800;color:#fff;letter-spacing:-.01em;}
-.eq-psub{font-size:11.5px;color:rgba(255,255,255,.36);margin-top:2px;}
-.eq-ptags{display:flex;gap:5px;margin-top:5px;flex-wrap:wrap;}
+/* Profile header — integrated large avatar */
+.eq-phdr{flex-shrink:0;height:120px;border-bottom:.5px solid rgba(255,255,255,.07);display:flex;align-items:stretch;background:linear-gradient(to right,#0e1224 0%,#0d1020 100%);overflow:hidden;}
+.eq-phdr-av{width:96px;flex-shrink:0;position:relative;cursor:pointer;overflow:hidden;}
+.eq-phdr-av .av-img{width:100%;height:100%;object-fit:cover;object-position:top center;display:block;}
+.eq-phdr-av .av-init{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:800;color:rgba(255,255,255,.9);letter-spacing:.02em;}
+.eq-phdr-av-fade{position:absolute;inset:0;background:linear-gradient(to right,rgba(14,18,36,0) 30%,rgba(13,16,32,.92) 100%);pointer-events:none;}
+.eq-phdr-cam{position:absolute;bottom:9px;right:9px;font-size:12px;opacity:0;transition:opacity .15s;background:rgba(0,0,0,.72);border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,.22);z-index:2;}
+.eq-phdr-av:hover .eq-phdr-cam{opacity:1;}
+.eq-phdr-body{flex:1;padding:18px 20px 16px;display:flex;flex-direction:column;justify-content:center;min-width:0;}
+.eq-pname{font-size:20px;font-weight:800;color:#fff;letter-spacing:-.01em;}
+.eq-psub{font-size:11px;color:rgba(255,255,255,.36);margin-top:3px;}
+.eq-ptags{display:flex;gap:5px;margin-top:7px;flex-wrap:wrap;}
 .eq-ptag{font-size:9.5px;font-weight:600;padding:2px 9px;border-radius:20px;border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.42);}
-.eq-pstats{display:flex;gap:7px;margin-left:auto;align-items:center;}
-.eq-pstat{text-align:center;padding:7px 13px;border-radius:10px;background:rgba(255,255,255,.04);border:.5px solid rgba(255,255,255,.07);}
-.eq-pstat-n{font-size:18px;font-weight:800;color:#fff;line-height:1;}
+.eq-pstats{display:flex;gap:7px;align-items:center;padding:0 22px 0 0;flex-shrink:0;}
+.eq-pstat{text-align:center;padding:8px 14px;border-radius:10px;background:rgba(255,255,255,.04);border:.5px solid rgba(255,255,255,.07);}
+.eq-pstat-n{font-size:19px;font-weight:800;color:#fff;line-height:1;}
 .eq-pstat-l{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:rgba(255,255,255,.28);margin-top:3px;}
 
 /* Tabs */
@@ -153,12 +155,17 @@ html,body{height:100%;overflow:hidden;background:#080b16;font-family:'Inter',sys
 .eq-vg::-webkit-scrollbar-thumb{background:rgba(255,255,255,.08);}
 .eq-vg-title{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.25);margin-bottom:12px;}
 .eq-vg-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px;}
-.eq-ov-card{background:#111828;border:.5px solid rgba(255,255,255,.08);border-radius:12px;padding:13px;cursor:pointer;transition:border-color .15s,background .15s;}
+.eq-ov-card{background:#111828;border:.5px solid rgba(255,255,255,.08);border-radius:12px;overflow:hidden;cursor:pointer;transition:border-color .15s,background .15s;display:flex;flex-direction:column;}
 .eq-ov-card:hover{border-color:rgba(255,255,255,.18);background:#141d32;}
-.eq-ov-top{display:flex;align-items:center;gap:9px;margin-bottom:11px;}
-.eq-ov-info .nm{font-size:13px;font-weight:700;color:#fff;}
-.eq-ov-info .ar{font-size:9.5px;color:rgba(255,255,255,.3);margin-top:1px;}
-.eq-ov-stats{display:flex;gap:5px;margin-bottom:9px;}
+.eq-ov-card-hdr{position:relative;height:70px;overflow:hidden;flex-shrink:0;}
+.eq-ov-card-hdr .av-img{width:100%;height:100%;object-fit:cover;object-position:top center;display:block;}
+.eq-ov-card-hdr .av-init{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:rgba(255,255,255,.9);}
+.eq-ov-card-hdr-fade{position:absolute;inset:0;background:linear-gradient(to bottom,transparent 40%,rgba(17,24,40,.95) 100%);pointer-events:none;}
+.eq-ov-card-hdr-name{position:absolute;bottom:7px;left:10px;right:10px;}
+.eq-ov-card-hdr-name .nm{font-size:12.5px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.eq-ov-card-hdr-name .ar{font-size:9px;color:rgba(255,255,255,.45);margin-top:1px;}
+.eq-ov-card-body{padding:9px 10px 11px;flex:1;}
+.eq-ov-stats{display:flex;gap:5px;margin-bottom:8px;}
 .eq-ov-stat{flex:1;text-align:center;background:rgba(255,255,255,.04);border-radius:7px;padding:5px 2px;}
 .eq-ov-sn{font-size:15px;font-weight:800;line-height:1;}
 .eq-ov-sl{font-size:7.5px;color:rgba(255,255,255,.25);text-transform:uppercase;letter-spacing:.04em;margin-top:2px;}
@@ -444,12 +451,17 @@ function showVistaGeneral(){
     var todayTks=all.filter(function(t){return!t.done&&t.deadline===ds;});
     var card=document.createElement('div');card.className='eq-ov-card';
     card.onclick=(function(id){return function(){selectMember(id);};})(m.id);
-    // Top
-    var top=document.createElement('div');top.className='eq-ov-top';
-    var av=buildAv(m,38);
-    var nfo=document.createElement('div');nfo.className='eq-ov-info';
-    nfo.innerHTML='<div class="nm">'+m.name+'</div><div class="ar">'+(m.area||'Dcoder Studio')+'</div>';
-    top.appendChild(av);top.appendChild(nfo);card.appendChild(top);
+    // Header with large avatar
+    var chdr=document.createElement('div');chdr.className='eq-ov-card-hdr';
+    var avData2=memberAvatars[m.id];
+    if(avData2){var avI2=document.createElement('img');avI2.className='av-img';avI2.src=avData2;chdr.appendChild(avI2);}
+    else{var avN2=document.createElement('div');avN2.className='av-init';avN2.style.background=m.color||'#1A6FD4';avN2.textContent=m.id;chdr.appendChild(avN2);}
+    var cfade=document.createElement('div');cfade.className='eq-ov-card-hdr-fade';chdr.appendChild(cfade);
+    var cnm=document.createElement('div');cnm.className='eq-ov-card-hdr-name';
+    cnm.innerHTML='<div class="nm">'+m.name+'</div><div class="ar">'+(m.area||'Dcoder Studio')+'</div>';
+    chdr.appendChild(cnm);card.appendChild(chdr);
+    // Body
+    var cbody=document.createElement('div');cbody.className='eq-ov-card-body';
     // Stats
     var sr=document.createElement('div');sr.className='eq-ov-stats';
     [{n:s.asig,l:'Total',c:'rgba(90,180,232,.65)'},{n:s.sem,l:'Semana',c:'rgba(232,160,32,.65)'},{n:s.venc,l:'Vencidas',c:'rgba(212,83,126,.65)'}].forEach(function(x){
@@ -458,21 +470,21 @@ function showVistaGeneral(){
       var sl=document.createElement('div');sl.className='eq-ov-sl';sl.textContent=x.l;
       st.appendChild(sn);st.appendChild(sl);sr.appendChild(st);
     });
-    card.appendChild(sr);
+    cbody.appendChild(sr);
     // Today tasks
     if(todayTks.length){
-      var tl=document.createElement('div');tl.className='eq-ov-today-lbl';tl.textContent='Hoy';card.appendChild(tl);
+      var tl=document.createElement('div');tl.className='eq-ov-today-lbl';tl.textContent='Hoy';cbody.appendChild(tl);
       todayTks.slice(0,3).forEach(function(t){
         var tr=document.createElement('div');tr.className='eq-ov-task-row';
         var dot=document.createElement('div');dot.className='eq-ov-task-dot';dot.style.background=t.color||'#5AB4E8';
         var tx=document.createElement('div');tx.className='eq-ov-task-txt';tx.textContent=t.text;
-        tr.appendChild(dot);tr.appendChild(tx);card.appendChild(tr);
+        tr.appendChild(dot);tr.appendChild(tx);cbody.appendChild(tr);
       });
-      if(todayTks.length>3){var m2=document.createElement('div');m2.style.cssText='font-size:9px;color:rgba(255,255,255,.2);margin-top:2px;';m2.textContent='+'+(todayTks.length-3)+' más';card.appendChild(m2);}
+      if(todayTks.length>3){var m2=document.createElement('div');m2.style.cssText='font-size:9px;color:rgba(255,255,255,.2);margin-top:2px;';m2.textContent='+'+(todayTks.length-3)+' más';cbody.appendChild(m2);}
     } else {
-      var fr=document.createElement('div');fr.className='eq-ov-free';fr.textContent='✓ Sin tareas para hoy';card.appendChild(fr);
+      var fr=document.createElement('div');fr.className='eq-ov-free';fr.textContent='✓ Sin tareas para hoy';cbody.appendChild(fr);
     }
-    grid.appendChild(card);
+    card.appendChild(cbody);grid.appendChild(card);
   });
   wrap.appendChild(grid);main.appendChild(wrap);
 }
@@ -483,18 +495,27 @@ function renderMain(mid){
   var m=getMember(mid);if(!m)return;
   var s=getMemberStats(mid);
 
-  // Profile header
+  // Profile header — integrated avatar
   var hdr=document.createElement('div');hdr.className='eq-phdr';
-  var avW=document.createElement('div');avW.className='eq-pav-wrap';
-  avW.title='Cambiar foto';
-  avW.onclick=function(){_avatarFor=mid;document.getElementById('avatarFileInp').click();};
-  var pav=document.createElement('div');pav.className='eq-pav';pav.style.background=m.color||'#1A6FD4';
+
+  // Avatar column (full header height, no circle)
+  var avCol=document.createElement('div');avCol.className='eq-phdr-av';
+  avCol.title='Cambiar foto';
+  avCol.onclick=function(){_avatarFor=mid;document.getElementById('avatarFileInp').click();};
   var avData=memberAvatars[mid];
-  if(avData){var img=document.createElement('img');img.src=avData;pav.appendChild(img);}
-  else pav.textContent=m.id;
-  var ov=document.createElement('div');ov.className='eq-pav-overlay';ov.textContent='📷';
-  avW.appendChild(pav);avW.appendChild(ov);
-  var info=document.createElement('div');
+  if(avData){
+    var avImg=document.createElement('img');avImg.className='av-img';avImg.src=avData;avCol.appendChild(avImg);
+  } else {
+    var avInit=document.createElement('div');avInit.className='av-init';
+    avInit.style.background=m.color||'#1A6FD4';
+    avInit.textContent=m.id;avCol.appendChild(avInit);
+  }
+  var avFade=document.createElement('div');avFade.className='eq-phdr-av-fade';avCol.appendChild(avFade);
+  var avCam=document.createElement('div');avCam.className='eq-phdr-cam';avCam.textContent='📷';avCol.appendChild(avCam);
+  hdr.appendChild(avCol);
+
+  // Info body
+  var body=document.createElement('div');body.className='eq-phdr-body';
   var nm=document.createElement('div');nm.className='eq-pname';nm.textContent=m.name;
   var sub=document.createElement('div');sub.className='eq-psub';sub.textContent=(m.area||'Equipo')+' · Dcoder Studio';
   var tags=document.createElement('div');tags.className='eq-ptags';
@@ -503,14 +524,17 @@ function renderMain(mid){
   if(s.venc>0){t2.style.borderColor='rgba(212,83,126,.35)';t2.textContent=s.venc+' vencidas';}
   else{t2.style.borderColor='rgba(39,174,114,.3)';t2.textContent='Al día';}
   tags.appendChild(t1);tags.appendChild(t2);
-  info.appendChild(nm);info.appendChild(sub);info.appendChild(tags);
+  body.appendChild(nm);body.appendChild(sub);body.appendChild(tags);
+  hdr.appendChild(body);
+
+  // Stats
   var ps=document.createElement('div');ps.className='eq-pstats';
   [{n:s.asig,l:'Asignadas'},{n:s.sem,l:'Semana'},{n:s.venc,l:'Vencidas'}].forEach(function(x){
     var el=document.createElement('div');el.className='eq-pstat';
     el.innerHTML='<div class="eq-pstat-n">'+x.n+'</div><div class="eq-pstat-l">'+x.l+'</div>';
     ps.appendChild(el);
   });
-  hdr.appendChild(avW);hdr.appendChild(info);hdr.appendChild(ps);main.appendChild(hdr);
+  hdr.appendChild(ps);main.appendChild(hdr);
 
   // Tab bar
   var tb=document.createElement('div');tb.className='eq-tab-bar';
