@@ -676,6 +676,12 @@ select.eq-org-new-inp option{background:#1a1f35;}
 .eq-org-chk-sm{width:13px;height:13px;}
 .eq-org-task.org-completing,.eq-org-atask.org-completing{opacity:0;transform:translateX(14px);transition:opacity .22s,transform .22s;}
 .eq-org-task.org-completing .eq-org-task-name,.eq-org-atask.org-completing .eq-org-atask-name{text-decoration:line-through;}
+/* Group-by toggle (Por área / Por persona) atop the right panel */
+.eq-org-groupbar{flex-shrink:0;display:flex;align-items:center;gap:6px;padding:9px 12px 0;}
+.eq-org-groupbar-lbl{font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.2);margin-right:2px;}
+.eq-org-groupbtn{font-size:10.5px;font-weight:700;padding:5px 11px;border-radius:999px;background:rgba(255,255,255,.05);border:.5px solid rgba(255,255,255,.09);color:rgba(255,255,255,.45);cursor:pointer;font-family:inherit;transition:all .15s;}
+.eq-org-groupbtn:hover{color:rgba(255,255,255,.7);border-color:rgba(255,255,255,.18);}
+.eq-org-groupbtn.active{background:rgba(26,111,212,.18);border-color:rgba(26,111,212,.45);color:#5AB4E8;}
 /* Right panel: area drop columns — grid de 3 por fila, sin scroll horizontal */
 .eq-org-right-panel{flex:1;overflow:hidden;display:flex;flex-direction:column;}
 .eq-org-cols-wrap{flex:1;padding:10px 12px 14px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-auto-rows:minmax(0,1fr);gap:9px;overflow-y:auto;}
@@ -1152,7 +1158,7 @@ function renderDashboard(){
 }
 
 // ── TEAM: ORGANIZAR TAREAS ────────────────────────────────────────
-var _orgDragGhost=null,_orgDragTask=null,_orgDragEl=null;
+var _orgDragGhost=null,_orgDragTask=null,_orgDragEl=null,_orgGroupBy='area';
 function renderTeamOrganizar(main,allTasks){
   var wrap=document.createElement('div');wrap.className='eq-org-wrap';main.appendChild(wrap);
 
@@ -1184,14 +1190,18 @@ function renderTeamOrganizar(main,allTasks){
   expInp.addEventListener('keydown',function(e){if(e.key==='Enter')doExpress();});
   expRow.appendChild(expInp);expRow.appendChild(expBtn);expBar.appendChild(expLbl);expBar.appendChild(expRow);lp.appendChild(expBar);
 
-  // ── UNASSIGNED TASK LIST ──
+  // ── UNASSIGNED TASK LIST (su criterio depende del modo: sin área / sin encargado) ──
   var llbl=document.createElement('div');llbl.className='eq-org-left-lbl';
-  var unassignedTasks=(standaloneTasks||[]).filter(function(t){return!t.done&&(!t.area||t.area==='');});
-  llbl.textContent='Sin asignar · '+unassignedTasks.length;
+  var unassignedTasks=_orgGroupBy==='persona'
+    ? (standaloneTasks||[]).filter(function(t){return!t.done&&!t.resp;})
+    : (standaloneTasks||[]).filter(function(t){return!t.done&&(!t.area||t.area==='');});
+  llbl.textContent=(_orgGroupBy==='persona'?'Sin encargado · ':'Sin asignar · ')+unassignedTasks.length;
   lp.appendChild(llbl);
   var ll=document.createElement('div');ll.className='eq-org-left-list';lp.appendChild(ll);
   if(!unassignedTasks.length){
-    var emp=document.createElement('div');emp.className='eq-org-left-empty';emp.textContent='Todas las tareas están asignadas ✓';ll.appendChild(emp);
+    var emp=document.createElement('div');emp.className='eq-org-left-empty';
+    emp.textContent=_orgGroupBy==='persona'?'Todas las tareas tienen encargado ✓':'Todas las tareas están asignadas ✓';
+    ll.appendChild(emp);
   } else {
     unassignedTasks.forEach(function(t){
       var tc=buildOrgTask(t);
@@ -1202,42 +1212,82 @@ function renderTeamOrganizar(main,allTasks){
     ll.setAttribute('data-drop-unassigned','1');
   }
 
-  // ── RIGHT PANEL: AREA COLUMNS ──
+  // ── RIGHT PANEL: GROUP TOGGLE + COLUMNS ──
   var rp=document.createElement('div');rp.className='eq-org-right-panel';wrap.appendChild(rp);
+
+  var groupBar=document.createElement('div');groupBar.className='eq-org-groupbar';
+  var glbl=document.createElement('span');glbl.className='eq-org-groupbar-lbl';glbl.textContent='Ver por';groupBar.appendChild(glbl);
+  [['area','🏢 Por área'],['persona','👤 Por persona']].forEach(function(pair){
+    var gb=document.createElement('button');gb.className='eq-org-groupbtn'+(_orgGroupBy===pair[0]?' active':'');gb.textContent=pair[1];
+    gb.onclick=(function(g){return function(){_orgGroupBy=g;renderDashboard();};})(pair[0]);
+    groupBar.appendChild(gb);
+  });
+  rp.appendChild(groupBar);
+
   var colWrap=document.createElement('div');colWrap.className='eq-org-cols-wrap';rp.appendChild(colWrap);
 
-  // Collect areas to show: workAreas first, then AREAS that aren't in workAreas
-  var areasList=[];
-  (workAreas||[]).forEach(function(wa){areasList.push({name:wa.name,color:wa.color||getTeamAreaColor(wa.name),id:wa.id});});
-  AREAS.forEach(function(a){
-    var found=areasList.some(function(x){return x.name===a;});
-    if(!found)areasList.push({name:a,color:getTeamAreaColor(a),id:'area_'+a});
-  });
+  if(_orgGroupBy==='persona'){
+    // ── COLUMNS PER TEAM MEMBER — vista general de tareas por persona ──
+    teamMembers.forEach(function(m){
+      var mTks=(standaloneTasks||[]).filter(function(t){return!t.done&&t.resp===m.id;});
+      var mcolor=m.color||'#1A6FD4';
+      var col=document.createElement('div');col.className='eq-orgcol';col.dataset.dropField='resp';col.dataset.dropValue=m.id;
+      var chdr=document.createElement('div');chdr.className='eq-orgcol-hdr';
+      chdr.style.cssText='background:linear-gradient(135deg,'+mcolor+'18,'+mcolor+'06);border-bottom:.5px solid '+mcolor+'22;';
+      var av=document.createElement('div');av.style.cssText='width:18px;height:18px;border-radius:50%;flex-shrink:0;background:'+mcolor+';display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:800;color:#fff;overflow:hidden;';
+      var avd=memberAvatars[m.id];
+      if(avd){var img=document.createElement('img');img.src=avd;img.style.cssText='width:100%;height:100%;object-fit:cover;border-radius:50%;';av.appendChild(img);}
+      else av.textContent=(m.id||'?').charAt(0).toUpperCase();
+      var cname=document.createElement('span');cname.className='eq-orgcol-name';cname.textContent=m.name;
+      var ccnt=document.createElement('span');ccnt.className='eq-orgcol-cnt';ccnt.textContent=mTks.length;
+      chdr.appendChild(av);chdr.appendChild(cname);chdr.appendChild(ccnt);col.appendChild(chdr);
+      var cbody=document.createElement('div');cbody.className='eq-orgcol-body';
+      if(!mTks.length){
+        var cemp=document.createElement('div');cemp.className='eq-orgcol-empty';cemp.textContent='Suelta tareas aquí';cbody.appendChild(cemp);
+      } else {
+        mTks.forEach(function(t){
+          var ptCard=buildOrgPersonTask(t);
+          initOrgDrag(ptCard,t,wrap);
+          cbody.appendChild(ptCard);
+        });
+      }
+      col.appendChild(cbody);
+      colWrap.appendChild(col);
+    });
+  } else {
+    // Collect areas to show: workAreas first, then AREAS that aren't in workAreas
+    var areasList=[];
+    (workAreas||[]).forEach(function(wa){areasList.push({name:wa.name,color:wa.color||getTeamAreaColor(wa.name),id:wa.id});});
+    AREAS.forEach(function(a){
+      var found=areasList.some(function(x){return x.name===a;});
+      if(!found)areasList.push({name:a,color:getTeamAreaColor(a),id:'area_'+a});
+    });
 
-  areasList.forEach(function(area){
-    var areaTks=(standaloneTasks||[]).filter(function(t){return!t.done&&t.area===area.name;});
-    var col=document.createElement('div');col.className='eq-orgcol';col.dataset.areaName=area.name;
-    // Header
-    var chdr=document.createElement('div');chdr.className='eq-orgcol-hdr';
-    chdr.style.cssText='background:linear-gradient(135deg,'+area.color+'18,'+area.color+'06);border-bottom:.5px solid '+area.color+'22;';
-    var cdot=document.createElement('div');cdot.className='eq-orgcol-dot';cdot.style.background=area.color;
-    var cname=document.createElement('span');cname.className='eq-orgcol-name';cname.textContent=area.name;
-    var ccnt=document.createElement('span');ccnt.className='eq-orgcol-cnt';ccnt.textContent=areaTks.length;
-    chdr.appendChild(cdot);chdr.appendChild(cname);chdr.appendChild(ccnt);col.appendChild(chdr);
-    // Body
-    var cbody=document.createElement('div');cbody.className='eq-orgcol-body';
-    if(!areaTks.length){
-      var cemp=document.createElement('div');cemp.className='eq-orgcol-empty';cemp.textContent='Suelta tareas aquí';cbody.appendChild(cemp);
-    } else {
-      areaTks.forEach(function(t){
-        var atCard=buildOrgAreaTask(t,area);
-        initOrgDrag(atCard,t,wrap);
-        cbody.appendChild(atCard);
-      });
-    }
-    col.appendChild(cbody);
-    colWrap.appendChild(col);
-  });
+    areasList.forEach(function(area){
+      var areaTks=(standaloneTasks||[]).filter(function(t){return!t.done&&t.area===area.name;});
+      var col=document.createElement('div');col.className='eq-orgcol';col.dataset.dropField='area';col.dataset.dropValue=area.name;
+      // Header
+      var chdr=document.createElement('div');chdr.className='eq-orgcol-hdr';
+      chdr.style.cssText='background:linear-gradient(135deg,'+area.color+'18,'+area.color+'06);border-bottom:.5px solid '+area.color+'22;';
+      var cdot=document.createElement('div');cdot.className='eq-orgcol-dot';cdot.style.background=area.color;
+      var cname=document.createElement('span');cname.className='eq-orgcol-name';cname.textContent=area.name;
+      var ccnt=document.createElement('span');ccnt.className='eq-orgcol-cnt';ccnt.textContent=areaTks.length;
+      chdr.appendChild(cdot);chdr.appendChild(cname);chdr.appendChild(ccnt);col.appendChild(chdr);
+      // Body
+      var cbody=document.createElement('div');cbody.className='eq-orgcol-body';
+      if(!areaTks.length){
+        var cemp=document.createElement('div');cemp.className='eq-orgcol-empty';cemp.textContent='Suelta tareas aquí';cbody.appendChild(cemp);
+      } else {
+        areaTks.forEach(function(t){
+          var atCard=buildOrgAreaTask(t,area);
+          initOrgDrag(atCard,t,wrap);
+          cbody.appendChild(atCard);
+        });
+      }
+      col.appendChild(cbody);
+      colWrap.appendChild(col);
+    });
+  }
 }
 
 // ── COMPLETAR TAREA DESDE LA VISTA GENERAL ────────────────────────
@@ -1293,7 +1343,20 @@ function buildOrgAreaTask(t,area){
   return card;
 }
 
-// ── UNIFIED ORG DRAG — works from left panel AND area columns ──────
+function buildOrgPersonTask(t){
+  var areaColor=t.area?getTeamAreaColor(t.area):'rgba(90,180,232,.55)';
+  var card=document.createElement('div');card.className='eq-org-atask';card.style.cssText='touch-action:none;cursor:grab;';
+  var bar=document.createElement('div');bar.className='eq-org-atask-bar';bar.style.background=areaColor;card.appendChild(bar);
+  card.appendChild(buildOrgChk(t,card,true));
+  var nm=document.createElement('span');nm.className='eq-org-atask-name';nm.textContent=t.text;card.appendChild(nm);
+  if(t.area){
+    var tag=document.createElement('span');tag.style.cssText='font-size:8.5px;font-weight:600;color:rgba(255,255,255,.3);white-space:nowrap;flex-shrink:0;align-self:flex-start;margin-top:2px;';
+    tag.textContent=t.area;card.appendChild(tag);
+  }
+  return card;
+}
+
+// ── UNIFIED ORG DRAG — works from left panel AND area/persona columns ──
 // click (no movement) → edit modal; drag → move between areas / back to unassigned
 function initOrgDrag(cardEl,task,wrap){
   var enriched=Object.assign({},task,{_type:'standalone',_projId:null,_stage:null,source:'Tarea libre',color:'rgba(90,180,232,.55)',member:task.resp?getMember(task.resp):null});
@@ -1336,12 +1399,12 @@ function initOrgDrag(cardEl,task,wrap){
         return;
       }
       cardEl.classList.remove('is-dragging');
-      // Detect drop target
-      var targetArea=null,toUnassigned=false;
+      // Detect drop target — each column carries its own field/value (area name or member id)
+      var targetCol=null,toUnassigned=false;
       wrap.querySelectorAll('.eq-orgcol').forEach(function(col){
         col.classList.remove('drop-over');
         var r=col.getBoundingClientRect();
-        if(e2.clientX>=r.left&&e2.clientX<=r.right&&e2.clientY>=r.top&&e2.clientY<=r.bottom)targetArea=col.dataset.areaName;
+        if(e2.clientX>=r.left&&e2.clientX<=r.right&&e2.clientY>=r.top&&e2.clientY<=r.bottom)targetCol=col;
       });
       var ll=wrap.querySelector('.eq-org-left-list');
       if(ll){
@@ -1350,11 +1413,15 @@ function initOrgDrag(cardEl,task,wrap){
         if(e2.clientX>=r.left&&e2.clientX<=r.right&&e2.clientY>=r.top&&e2.clientY<=r.bottom)toUnassigned=true;
       }
       _orgDragTask=null;_orgDragEl=null;
-      if(targetArea){
-        standaloneTasks=(standaloneTasks||[]).map(function(t){return t.id===task.id?Object.assign({},t,{area:targetArea}):t;});
+      if(targetCol){
+        var field=targetCol.dataset.dropField,value=targetCol.dataset.dropValue;
+        var patch={};patch[field]=value;
+        standaloneTasks=(standaloneTasks||[]).map(function(t){return t.id===task.id?Object.assign({},t,patch):t;});
         saveTaskChange();renderDashboard();
       } else if(toUnassigned){
-        standaloneTasks=(standaloneTasks||[]).map(function(t){return t.id===task.id?Object.assign({},t,{area:''}):t;});
+        var clearField=_orgGroupBy==='persona'?'resp':'area';
+        var patch2={};patch2[clearField]=clearField==='resp'?null:'';
+        standaloneTasks=(standaloneTasks||[]).map(function(t){return t.id===task.id?Object.assign({},t,patch2):t;});
         saveTaskChange();renderDashboard();
       }
     }
