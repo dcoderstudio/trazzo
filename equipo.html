@@ -676,8 +676,9 @@ select.eq-org-new-inp option{background:#1a1f35;}
 .eq-org-chk-sm{width:13px;height:13px;}
 .eq-org-task.org-completing,.eq-org-atask.org-completing{opacity:0;transform:translateX(14px);transition:opacity .22s,transform .22s;}
 .eq-org-task.org-completing .eq-org-task-name,.eq-org-atask.org-completing .eq-org-atask-name{text-decoration:line-through;}
-/* Group-by toggle (Por área / Por persona) atop the right panel */
+/* Group-by toggle (Por área / Por persona) — shared, lives in the dashboard toolbar */
 .eq-org-groupbar{flex-shrink:0;display:flex;align-items:center;gap:6px;padding:9px 12px 0;}
+.eq-dash-groupbar{padding:0 14px 0 0;}
 .eq-org-groupbar-lbl{font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.2);margin-right:2px;}
 .eq-org-groupbtn{font-size:10.5px;font-weight:700;padding:5px 11px;border-radius:999px;background:rgba(255,255,255,.05);border:.5px solid rgba(255,255,255,.09);color:rgba(255,255,255,.45);cursor:pointer;font-family:inherit;transition:all .15s;}
 .eq-org-groupbtn:hover{color:rgba(255,255,255,.7);border-color:rgba(255,255,255,.18);}
@@ -1120,6 +1121,18 @@ function renderTeamHeader(main,allTasks){
   main.appendChild(hdr);
 }
 
+// ── GROUP-BY TOGGLE (Por área / Por persona) — shared across the 4 tabs ──
+function buildGroupToggle(){
+  var groupBar=document.createElement('div');groupBar.className='eq-org-groupbar eq-dash-groupbar';
+  var glbl=document.createElement('span');glbl.className='eq-org-groupbar-lbl';glbl.textContent='Ver por';groupBar.appendChild(glbl);
+  [['area','🏢 Por área'],['persona','👤 Por persona']].forEach(function(pair){
+    var gb=document.createElement('button');gb.className='eq-org-groupbtn'+(_orgGroupBy===pair[0]?' active':'');gb.textContent=pair[1];
+    gb.onclick=(function(g){return function(){_orgGroupBy=g;renderDashboard();};})(pair[0]);
+    groupBar.appendChild(gb);
+  });
+  return groupBar;
+}
+
 // ── DASHBOARD (Todo el equipo) ─────────────────────────────────────
 function renderDashboard(){
   var main=document.getElementById('eqMain');main.innerHTML='';
@@ -1137,6 +1150,7 @@ function renderDashboard(){
     tabBar.appendChild(btn);
   });
   toolbar.appendChild(tabBar);
+  toolbar.appendChild(buildGroupToggle());
   main.appendChild(toolbar);
 
   cleanOldDoneTasks();
@@ -1212,18 +1226,8 @@ function renderTeamOrganizar(main,allTasks){
     ll.setAttribute('data-drop-unassigned','1');
   }
 
-  // ── RIGHT PANEL: GROUP TOGGLE + COLUMNS ──
+  // ── RIGHT PANEL: COLUMNS (el toggle Ver por área/persona vive en el toolbar) ──
   var rp=document.createElement('div');rp.className='eq-org-right-panel';wrap.appendChild(rp);
-
-  var groupBar=document.createElement('div');groupBar.className='eq-org-groupbar';
-  var glbl=document.createElement('span');glbl.className='eq-org-groupbar-lbl';glbl.textContent='Ver por';groupBar.appendChild(glbl);
-  [['area','🏢 Por área'],['persona','👤 Por persona']].forEach(function(pair){
-    var gb=document.createElement('button');gb.className='eq-org-groupbtn'+(_orgGroupBy===pair[0]?' active':'');gb.textContent=pair[1];
-    gb.onclick=(function(g){return function(){_orgGroupBy=g;renderDashboard();};})(pair[0]);
-    groupBar.appendChild(gb);
-  });
-  rp.appendChild(groupBar);
-
   var colWrap=document.createElement('div');colWrap.className='eq-org-cols-wrap';rp.appendChild(colWrap);
 
   if(_orgGroupBy==='persona'){
@@ -1509,11 +1513,11 @@ function renderTeamSemanaAll(cont,allTasks){
     else dc.textContent=dayTks.length;
     dh.appendChild(dn);dh.appendChild(dl);dh.appendChild(dc);sec.appendChild(dh);
     if(dayTks.length){
-      dayTks.forEach(function(t){
+      addTeamAreaGroups(sec,dayTks,function(t){
         var card=buildTeamWeekCard(t);
         card.style.touchAction='none';
-        sec.appendChild(card);
         draggableCards.push({card:card,task:t});
+        return card;
       });
     } else if(!doneTks.length){
       var emp=document.createElement('div');
@@ -1521,7 +1525,7 @@ function renderTeamSemanaAll(cont,allTasks){
       emp.textContent='Sin tareas · suelta aquí para mover';
       sec.appendChild(emp);
     }
-    doneTks.forEach(function(t){sec.appendChild(buildTeamWeekCard(t));});
+    addTeamAreaGroups(sec,doneTks,function(t){return buildTeamWeekCard(t);});
     cont.appendChild(sec);
   });
   draggableCards.forEach(function(cd){
@@ -1550,27 +1554,36 @@ function toggleTeamTaskDone(task){teamTaskUpdate(task,{done:!task.done});}
 function rescheduleTeamTask(task,newDate){teamTaskUpdate(task,{deadline:newDate||''});}
 function toggleTeamTaskPriority(task){teamTaskUpdate(task,{priority:!task.priority});}
 
-// ── TEAM AREA GROUPING — tiny area dividers within sections ───────
+// ── TEAM GROUPING — tiny area/persona dividers within sections ────
+// Groups by area or by encargado depending on the shared _orgGroupBy toggle.
 function addTeamAreaGroups(zone,tasks,buildFn){
   if(!tasks.length)return;
+  var byPerson=_orgGroupBy==='persona';
   var groups={},order=[];
   tasks.forEach(function(t){
-    var a=t.area||(t.member&&t.member.area)||'Sin área';
-    if(!groups[a]){groups[a]=[];order.push(a);}
-    groups[a].push(t);
+    var label,color;
+    if(byPerson){
+      label=t.member?t.member.name:'Sin encargado';
+      color=t.member?(t.member.color||'#5AB4E8'):'rgba(255,255,255,.28)';
+    } else {
+      label=t.area||(t.member&&t.member.area)||'Sin área';
+      color=getTeamAreaColor(label);
+    }
+    if(!groups[label]){groups[label]={color:color,items:[]};order.push(label);}
+    groups[label].items.push(t);
   });
   if(order.length===1){tasks.forEach(function(t){zone.appendChild(buildFn(t));});return;}
-  order.forEach(function(a){
-    var col=getTeamAreaColor(a);
+  order.forEach(function(label){
+    var g=groups[label];
     var asep=document.createElement('div');
     asep.style.cssText='display:flex;align-items:center;gap:6px;margin:7px 0 3px;';
-    var adot=document.createElement('div');adot.style.cssText='width:5px;height:5px;border-radius:50%;background:'+col+';flex-shrink:0;';
-    var albl=document.createElement('span');albl.style.cssText='font-size:8.5px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:'+col+';';
-    albl.textContent=a;
-    var aline=document.createElement('div');aline.style.cssText='flex:1;height:.5px;background:'+col+';opacity:.18;';
+    var adot=document.createElement('div');adot.style.cssText='width:5px;height:5px;border-radius:50%;background:'+g.color+';flex-shrink:0;';
+    var albl=document.createElement('span');albl.style.cssText='font-size:8.5px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:'+g.color+';';
+    albl.textContent=label;
+    var aline=document.createElement('div');aline.style.cssText='flex:1;height:.5px;background:'+g.color+';opacity:.18;';
     asep.appendChild(adot);asep.appendChild(albl);asep.appendChild(aline);
     zone.appendChild(asep);
-    groups[a].forEach(function(t){zone.appendChild(buildFn(t));});
+    g.items.forEach(function(t){zone.appendChild(buildFn(t));});
   });
 }
 
@@ -1976,7 +1989,7 @@ function renderDashKanban(container,tasks){
     khdr.appendChild(kdot);khdr.appendChild(kttl);khdr.appendChild(kcnt);kcol.appendChild(khdr);
     var kbody=document.createElement('div');kbody.className='eq-kcol-body';
     if(!col.tasks.length){var emp=document.createElement('div');emp.className='eq-kcol-empty';emp.textContent='Sin tareas';kbody.appendChild(emp);}
-    else col.tasks.forEach(function(t){kbody.appendChild(buildDashKCard(t));});
+    else addTeamAreaGroups(kbody,col.tasks,function(t){return buildDashKCard(t);});
     kcol.appendChild(kbody);kb.appendChild(kcol);
   });
   wrap.appendChild(kb);container.appendChild(wrap);
