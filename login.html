@@ -53,9 +53,9 @@ html,body{height:100%;font-family:'Inter',sans-serif;color:#fff;display:flex;ali
     Continuar con Google
   </button>
 
-  <div class="login-divider"><span>o continúa con correo</span></div>
+  <div class="login-divider" style="display:none;"><span>o continúa con correo</span></div>
 
-  <div class="login-form">
+  <div class="login-form" style="display:none;">
     <input class="login-input" id="emailInput" type="email" placeholder="Correo electrónico" autocomplete="email">
     <input class="login-input" id="passInput" type="password" placeholder="Contraseña" autocomplete="current-password">
     <button class="login-submit" id="emailBtn" onclick="signInWithEmail()">Iniciar sesión</button>
@@ -80,7 +80,9 @@ firebase.initializeApp({
 // Para agregar más miembros del equipo, añade su correo aquí:
 var ALLOWED = [
   'dcoderstudio@gmail.com',
-  'proyectos@dcoderstudio.com'
+  'proyectos@dcoderstudio.com',
+  'ale@dcoderstudio.com',
+  'gonzalo@dcoderstudio.com'
 ];
 
 function isAllowed(email) {
