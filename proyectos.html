@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -729,6 +729,7 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-storage-compat.js"></script>
+<script src="datastore.js"></script>
 <script>
 (function() {
   firebase.initializeApp({
@@ -742,7 +743,7 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
   var db=firebase.firestore();
   // ── AUTH GUARD ──────────────────────────────────────────────
   firebase.auth().onAuthStateChanged(function(u){
-    if(u&&['dcoderstudio@gmail.com','proyectos@dcoderstudio.com'].indexOf(u.email)>-1)return;
+    if(u&&['dcoderstudio@gmail.com','proyectos@dcoderstudio.com','ale@dcoderstudio.com','gonzalo@dcoderstudio.com'].indexOf(u.email)>-1)return;
     location.replace('/login.html');
   });
   // ── END AUTH GUARD ──────────────────────────────────────────
@@ -752,23 +753,41 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
   var _ignoreSnap = false;
   var _pass = {};
   var standaloneTasks = [], taskColumns = null, _wsTeamMembers = null, _wsTaskGroups = null;
+  // saveData() ya NO reconstruye ni reemplaza el documento completo
+  // desde una copia local (_pass) con DOC.set(payload) sin merge. Los
+  // campos de menor riesgo de edición concurrente (categorías, config
+  // de columnas, etc.) se fusionan con merge:true; projects y
+  // standaloneTasks — los que más se editan desde varias pantallas a
+  // la vez (equipo.html, tareas.html, este archivo) — se reconcilian
+  // dentro de una transacción contra los datos VIGENTES del servidor,
+  // no contra la copia local, para no perder cambios concurrentes.
   function saveData() {
-    _ignoreSnap = true;
-    var own = {
-      projects:projects, categories:categories, nextId:nextId, catIdCounter:catIdCounter,
-      standaloneTasks:standaloneTasks,
+    var basisProjects = _pass.projects || [];
+    var basisTasks = _pass.standaloneTasks || [];
+    var localProjects = projects, localTasks = standaloneTasks;
+    var restPatch = {
+      categories:categories, nextId:nextId, catIdCounter:catIdCounter,
       taskGroups:_wsTaskGroups||[],
       statusColumns:getStatusCols(),
       cobranzaCards:cobranzaCards,
       docTypes:getDocTypes(),
       projectFields:getProjectFields()
     };
-    if (taskColumns) own.taskColumns = taskColumns;
-    if (_wsTeamMembers) own.teamMembers = _wsTeamMembers;
-    var payload = Object.assign({}, _pass, own);
-    _pass = payload;
-    DOC.set(payload)
-      .catch(function(e){ console.warn('Error al guardar:', e); });
+    if (taskColumns) restPatch.taskColumns = taskColumns;
+    if (_wsTeamMembers) restPatch.teamMembers = _wsTeamMembers;
+    return TrazzoStore.withFreshDoc(db, DOC, function(fresh){
+      var freshProjects = TrazzoStore.fieldOrDefault(fresh,'projects',[]);
+      var freshTasks = TrazzoStore.fieldOrDefault(fresh,'standaloneTasks',[]);
+      var recP = TrazzoStore.reconcileArrayField(freshProjects, basisProjects, localProjects, 'id');
+      var recT = TrazzoStore.reconcileArrayField(freshTasks, basisTasks, localTasks, 'id');
+      TrazzoStore.notifyConflict(recP.conflicts, 'proyectos');
+      TrazzoStore.notifyConflict(recT.conflicts, 'tareas');
+      return Object.assign({}, restPatch, {projects:recP.result, standaloneTasks:recT.result});
+    }).then(function(patch){
+      projects = patch.projects; standaloneTasks = patch.standaloneTasks;
+      _pass = Object.assign({}, _pass, patch);
+      renderBoard();
+    }).catch(function(e){ TrazzoStore.notifySaveError('proyectos', e); });
   }
 
   var PALETTE = [
@@ -1980,12 +1999,36 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
   function convertirAProyecto(id) {
     var p = null;
     for (var i = 0; i < projects.length; i++) { if (projects[i].id === id) { p = projects[i]; break; } }
-    if (!p || !p.tipoCat) { alert('Define el tipo de proyecto.'); return; }
+    if (!p) return;
+    // Guardia de idempotencia DENTRO de la función (antes solo la UI
+    // ocultaba el botón tras convertir, así que llamar la función dos
+    // veces — doble clic, o una integración externa repitiendo la
+    // acción — podía crear un segundo proyecto).
+    if (p.converted) {
+      var already = p.convertedProjectId && projects.some(function(x){ return x.id === p.convertedProjectId; });
+      if (!already) alert('Esta solicitud ya se marcó como convertida, pero el proyecto creado ya no existe (¿se borró?). Revísalo manualmente en vez de convertir de nuevo.');
+      return;
+    }
+    if (!p.tipoCat) { alert('Define el tipo de proyecto.'); return; }
     var cat = null;
     for (var j = 0; j < categories.length; j++) { if (categories[j].id === p.tipoCat) { cat = categories[j]; break; } }
     if (!cat) { alert('Categoría no encontrada.'); return; }
+    var newId = nextId++;
     p.converted = true;
-    projects.push({id: nextId++, name: p.name, client: p.client, catId: p.tipoCat, stage: cat.stages[0], deadline: p.deadline || '', team: p.team});
+    p.convertedProjectId = newId; // vínculo cotización -> proyecto creado
+    var newProj = {
+      id: newId, name: p.name, client: p.client, catId: p.tipoCat, stage: cat.stages[0],
+      deadline: p.deadline || '', team: p.team, empresa: p.empresa || null,
+      // Se conservan monto, adjuntos y campos personalizados de la
+      // cotización original, que antes se perdían al convertir.
+      monto: p.monto || '',
+      docs: p.docs ? Object.assign({}, p.docs) : undefined,
+      customFieldValues: p.customFieldValues ? Object.assign({}, p.customFieldValues) : undefined,
+      sourceQuoteId: p.id, // vínculo proyecto -> cotización de origen
+      stageEntryDates: {}
+    };
+    newProj.stageEntryDates[cat.stages[0]] = new Date().toISOString().split('T')[0];
+    projects.push(newProj);
     saveData();
     renderBoard();
   }
@@ -2045,6 +2088,7 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
         categories[i].label = name;
         categories[i].color = selEditColor;
         categories[i].stages = stages;
+        categories[i].customized = true;
         break;
       }
     }
@@ -2057,13 +2101,20 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
   // ── TASK PANEL ───────────────────────────────────────
   function getProjectTasks(p) {
     if (!p.stageTasks) p.stageTasks = {};
+    if (!p.stageTasksSeeded) p.stageTasksSeeded = {};
     var stage = p.stage;
     var existing = p.stageTasks[stage];
+    // Compatibilidad con proyectos de antes de este fix: si la etapa ya
+    // tiene tareas, se marca como sembrada para no perder esa marca.
+    if (existing && existing.length > 0) p.stageTasksSeeded[stage] = true;
     var cat = null;
     for (var i = 0; i < categories.length; i++) { if (categories[i].id === p.catId) { cat = categories[i]; break; } }
     var tpl = cat && cat.templates && cat.templates[stage] ? cat.templates[stage] : [];
-    // Poblar desde template si no hay tareas y el template tiene pasos
-    if ((!existing || existing.length === 0) && tpl.length > 0) {
+    // shouldSeedStageTasks distingue "esta etapa nunca se sembró" de
+    // "se sembró y el usuario borró todo a propósito" (stageTasksSeeded
+    // ya en true). Antes, borrar la última tarea de una etapa hacía que
+    // este mismo render la volviera a crear de inmediato.
+    if (TrazzoStore.shouldSeedStageTasks(p, stage, tpl)) {
       var base = Date.now();
       p.stageTasks[stage] = tpl.map(function(item, i) {
         var text = typeof item === 'string' ? item : (item.text || '');
@@ -2071,6 +2122,7 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
         var resp = typeof item === 'object' ? (item.resp || '') : '';
         return {id: base + i, text: text, done: false, deadline: deadline, resp: resp};
       });
+      p.stageTasksSeeded[stage] = true;
       saveData(); // persist so tareas.html can see them
     } else if (!existing) {
       p.stageTasks[stage] = [];
@@ -2296,17 +2348,20 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
 
   function seedStageTasks(proj, cat, stage) {
     if (!proj.stageTasks) proj.stageTasks = {};
-    if (proj.stageTasks[stage] && proj.stageTasks[stage].length > 0) return;
+    if (!proj.stageTasksSeeded) proj.stageTasksSeeded = {};
+    var existing = proj.stageTasks[stage];
+    if (existing && existing.length > 0) { proj.stageTasksSeeded[stage] = true; return; }
     // Re-fetch cat from categories in case the passed cat is stale
     var freshCat = null;
     for (var ci=0; ci<categories.length; ci++) { if (categories[ci].id === (cat ? cat.id : proj.catId)) { freshCat = categories[ci]; break; } }
     var tpl = freshCat && freshCat.templates && freshCat.templates[stage] ? freshCat.templates[stage] : [];
-    if (!tpl.length) return;
+    if (!TrazzoStore.shouldSeedStageTasks(proj, stage, tpl)) return; // el usuario ya la vació a propósito
     var base = Date.now();
     proj.stageTasks[stage] = tpl.map(function(item, i) {
       var text = typeof item === 'string' ? item : (item.text || '');
       return {id: base + i, text: text, done: false, deadline: '', resp: ''};
     });
+    proj.stageTasksSeeded[stage] = true;
   }
 
   function createProject() {
@@ -2686,10 +2741,13 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
     });
     if (editingCatId) {
       for (var i = 0; i < categories.length; i++) {
-        if (categories[i].id === editingCatId) { categories[i].label = name; categories[i].color = editingCatColor2; categories[i].stages = phases; categories[i].templates = templates; categories[i].stageDays = stageDays; categories[i].payments = payments; break; }
+        // customized:true evita que la migración automática de
+        // plantillas (ver DOC.onSnapshot) revierta esta edición manual
+        // la próxima vez que se abra la página.
+        if (categories[i].id === editingCatId) { categories[i].label = name; categories[i].color = editingCatColor2; categories[i].stages = phases; categories[i].templates = templates; categories[i].stageDays = stageDays; categories[i].payments = payments; categories[i].customized = true; break; }
       }
     } else {
-      categories.push({id: 'cat_' + (++catIdCounter), label: name, color: editingCatColor2, stages: phases, templates: templates, stageDays: stageDays, payments: payments});
+      categories.push({id: 'cat_' + (++catIdCounter), label: name, color: editingCatColor2, stages: phases, templates: templates, stageDays: stageDays, payments: payments, customized: true});
     }
     saveData();
     document.getElementById('phaseOverlay').classList.remove('open');
@@ -3647,8 +3705,13 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
     if (snap.exists) {
       var d = snap.data();
       _pass = Object.assign({}, d);
-      if (d.projects && d.projects.length) projects = d.projects;
-      if (d.categories && d.categories.length) categories = d.categories;
+      // fieldOrDefault distingue "el campo no existe todavía" de "el
+      // campo existe pero se vació" — antes, borrar el último proyecto
+      // o la última categoría hacía que este cliente conservara la
+      // copia vieja en pantalla (el guardado sí vaciaba el documento,
+      // solo esta lectura lo ignoraba).
+      projects = TrazzoStore.fieldOrDefault(d,'projects',[]);
+      categories = TrazzoStore.fieldOrDefault(d,'categories',categories);
       if (d.nextId) nextId = d.nextId;
       if (d.catIdCounter) catIdCounter = d.catIdCounter;
       if (d.standaloneTasks) standaloneTasks = d.standaloneTasks;
@@ -3786,12 +3849,21 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
           }
         }
       ];
+      // shouldSeedCategory decide si (re)escribir cfg sobre la categoría
+      // vigente. Antes: (a) accedía a categories[fi].templates ANTES de
+      // comprobar fi<0, lo que revienta con "Cannot read properties of
+      // undefined" si a alguien le falta esa categoría; y (b) corría en
+      // CADA snapshot (no solo la primera vez), así que si el equipo
+      // personalizaba etapas/plantillas de una de estas categorías,
+      // cualquier apertura de la página (o el eco del propio guardado en
+      // otra pestaña) las revertía a la plantilla de fábrica. Ahora se
+      // respeta cualquier categoría marcada como personalizada.
       cfgs.forEach(function(cfg) {
         var fi=-1;
         for (var i=0;i<categories.length;i++) { if (categories[i].id===cfg.id) { fi=i; break; } }
-        var hasTpl = categories[fi].templates && Object.keys(categories[fi].templates).length > 0;
-        var nu = fi<0 || categories[fi].stages.join('|')!==cfg.stages.join('|') || !hasTpl || (cfg.tplVersion && categories[fi].tplVersion!==cfg.tplVersion);
-        if (nu) {
+        var freshCat = fi>=0 ? categories[fi] : null;
+        var decision = TrazzoStore.shouldSeedCategory(freshCat, cfg);
+        if (decision.seed) {
           if (fi>=0) { categories[fi].label=cfg.label; categories[fi].color=cfg.color; categories[fi].stages=cfg.stages; categories[fi].stageDays=cfg.stageDays; categories[fi].templates=cfg.templates; categories[fi].payments=cfg.payments; if(cfg.tplVersion)categories[fi].tplVersion=cfg.tplVersion; }
           else { categories.push(cfg); }
           migrated=true;
@@ -3867,3 +3939,4 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
 <script src="theme.js"></script>
 </body>
 </html>
+

@@ -7,6 +7,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="datastore.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 html,body{height:100%;overflow:hidden;background:#080b16;font-family:'Inter',system-ui,sans-serif;color:#fff;}
@@ -906,19 +907,22 @@ function initApp(){
     if(snap.exists){
       var d=snap.data();
       _pass=Object.assign({},d);
-      if(d.projects&&d.projects.length)projects=d.projects;
+      // fieldOrDefault distingue "el campo no existe todavía" (usar el
+      // default) de "el campo existe pero quedó vacío" (aceptar el
+      // vacío) — antes, vaciar el último proyecto/miembro/área hacía
+      // que este cliente conservara la copia vieja en pantalla.
+      projects=TrazzoStore.fieldOrDefault(d,'projects',[]);
       if(d.standaloneTasks)standaloneTasks=d.standaloneTasks;
       if(d.dayTasks)dayTasks=d.dayTasks;
-      if(d.teamMembers&&d.teamMembers.length)teamMembers=d.teamMembers;
-      else teamMembers=DEFAULT_TEAM.slice();
+      teamMembers=TrazzoStore.fieldOrDefault(d,'teamMembers',DEFAULT_TEAM.slice());
       if(d.memberGoals)memberGoals=d.memberGoals;
       if(d.memberAvatars)memberAvatars=d.memberAvatars;
       if(d.memberReminders)memberReminders=d.memberReminders;
-      if(d.workAreas&&d.workAreas.length)workAreas=d.workAreas;
-      else workAreas=DEFAULT_WORK_AREAS.slice();
+      workAreas=TrazzoStore.fieldOrDefault(d,'workAreas',DEFAULT_WORK_AREAS.slice());
       if(d.areaTasks)areaTasks=d.areaTasks;
       if(d.memberAreas)memberAreas=d.memberAreas;
       if(d.calendarEvents)calendarEvents=d.calendarEvents;
+      if(d.archivedTasks)archivedTasks=d.archivedTasks;
       renderAll();
     }
   });
@@ -928,7 +932,31 @@ function initApp(){
 function saveGoals(){_ignSnap=true;DOC.set({memberGoals:memberGoals},{merge:true}).catch(function(e){console.warn(e);});}
 function saveReminders(){_ignSnap=true;DOC.set({memberReminders:memberReminders},{merge:true}).catch(function(e){console.warn(e);});}
 function saveAvatars(){_ignSnap=true;DOC.set({memberAvatars:memberAvatars},{merge:true}).catch(function(e){console.warn(e);});}
-function saveTaskChange(){_ignSnap=true;DOC.set({projects:projects,standaloneTasks:standaloneTasks},{merge:true}).catch(function(e){console.warn(e);});}
+// saveTaskChange() ya NO reemplaza projects/standaloneTasks completos
+// desde la copia local. Lee el documento vigente dentro de una
+// transacción y aplica solo la diferencia entre lo último sincronizado
+// (_pass) y lo que este cliente quiere guardar ahora, preservando los
+// registros que otra persona haya cambiado o agregado mientras tanto.
+// Si el MISMO registro fue tocado por ambos lados, se aplica el cambio
+// de este cliente pero se avisa el conflicto (no se resuelve en silencio).
+function saveTaskChange(){
+  var basisProjects=_pass.projects||[];
+  var basisTasks=_pass.standaloneTasks||[];
+  var localProjects=projects, localTasks=standaloneTasks;
+  return TrazzoStore.withFreshDoc(db,DOC,function(fresh){
+    var freshProjects=TrazzoStore.fieldOrDefault(fresh,'projects',[]);
+    var freshTasks=TrazzoStore.fieldOrDefault(fresh,'standaloneTasks',[]);
+    var recP=TrazzoStore.reconcileArrayField(freshProjects,basisProjects,localProjects,'id');
+    var recT=TrazzoStore.reconcileArrayField(freshTasks,basisTasks,localTasks,'id');
+    TrazzoStore.notifyConflict(recP.conflicts,'proyectos');
+    TrazzoStore.notifyConflict(recT.conflicts,'tareas del equipo');
+    return {projects:recP.result,standaloneTasks:recT.result};
+  }).then(function(patch){
+    projects=patch.projects;standaloneTasks=patch.standaloneTasks;
+    _pass=Object.assign({},_pass,patch);
+    if(_viewMode==='equipo')renderDashboard();
+  }).catch(function(e){TrazzoStore.notifySaveError('tareas del equipo',e);});
+}
 function saveTeamMembers(){_ignSnap=true;DOC.set({teamMembers:teamMembers},{merge:true}).catch(function(e){console.warn(e);});}
 function saveWorkAreas(){_ignSnap=true;DOC.set({workAreas:workAreas},{merge:true}).catch(function(e){console.warn(e);});}
 function saveAreaTasks(){_ignSnap=true;DOC.set({areaTasks:areaTasks},{merge:true}).catch(function(e){console.warn(e);});}
@@ -1304,7 +1332,7 @@ function completeOrgTask(task,cardEl){
   }
   setTimeout(function(){
     standaloneTasks=(standaloneTasks||[]).map(function(t){
-      return t.id===task.id?Object.assign({},t,{done:true,colStatus:'done',doneAt:today()}):t;
+      return t.id===task.id?Object.assign({},t,taskDoneChanges(true)):t;
     });
     saveTaskChange();renderDashboard();
   },220);
@@ -1533,6 +1561,16 @@ function renderTeamSemanaAll(cont,allTasks){
   });
 }
 
+// ── done/colStatus/doneAt — un solo lugar que decide los tres campos ──
+// Antes cada vista los fijaba por su cuenta (algunas no tocaban
+// doneAt, otras no tocaban colStatus), dejando combinaciones
+// inconsistentes. colStatusOverride permite conservar la columna de
+// kanban de destino (todo/inprogress/done) en vez del genérico null.
+function taskDoneChanges(isDone,colStatusOverride){
+  if(isDone)return{done:true,colStatus:colStatusOverride!==undefined?colStatusOverride:'done',doneAt:today()};
+  return{done:false,colStatus:colStatusOverride!==undefined?colStatusOverride:null,doneAt:null};
+}
+
 // ── TEAM ACTION WRAPPERS (refresh dashboard, not member view) ─────
 function teamTaskUpdate(task,changes){
   if(task._type==='standalone'||task.type==='standalone'){
@@ -1550,7 +1588,7 @@ function teamTaskUpdate(task,changes){
   if(_viewMode==='area'&&_selArea){renderAreaMain(_selArea);renderRightArea(_selArea);renderAreaList();}
   else{renderDashboard();}
 }
-function toggleTeamTaskDone(task){teamTaskUpdate(task,{done:!task.done});}
+function toggleTeamTaskDone(task){teamTaskUpdate(task,taskDoneChanges(!task.done));}
 function rescheduleTeamTask(task,newDate){teamTaskUpdate(task,{deadline:newDate||''});}
 function toggleTeamTaskPriority(task){teamTaskUpdate(task,{priority:!task.priority});}
 
@@ -1810,15 +1848,37 @@ function initTeamSemanaCardDrag(card,task,allSecs){
   });
 }
 
-// ── AUTO-CLEANUP: remove done standalone tasks older than 7 days ──
+// ── AUTO-ARCHIVE: retira de la vista activa las tareas hechas con más
+// de 7 días de antigüedad, pero ya NO las borra — se mueven a
+// archivedTasks para conservar el historial. Antes se eliminaban con
+// DOC.set({standaloneTasks},{merge:true}), lo que además reemplazaba
+// standaloneTasks completo desde la copia local; ahora usa la misma
+// reconciliación transaccional que saveTaskChange().
+var archivedTasks=[];
 function cleanOldDoneTasks(){
   var cutoff=new Date();cutoff.setDate(cutoff.getDate()-7);
   var cutoffDs=fmt(cutoff);
-  var before=(standaloneTasks||[]).length;
-  standaloneTasks=(standaloneTasks||[]).filter(function(t){
-    return !t.done||!t.deadline||t.deadline>=cutoffDs;
+  var toArchive=(standaloneTasks||[]).filter(function(t){
+    return t.done&&t.deadline&&t.deadline<cutoffDs;
   });
-  if(standaloneTasks.length<before){_ignSnap=true;DOC.set({standaloneTasks:standaloneTasks},{merge:true});}
+  if(!toArchive.length)return;
+  var basisTasks=_pass.standaloneTasks||[];
+  var localTasks=(standaloneTasks||[]).filter(function(t){
+    return !(t.done&&t.deadline&&t.deadline<cutoffDs);
+  });
+  var archived=toArchive.map(function(t){return Object.assign({},t,{archivedAt:today()});});
+  standaloneTasks=localTasks;
+  TrazzoStore.withFreshDoc(db,DOC,function(fresh){
+    var freshTasks=TrazzoStore.fieldOrDefault(fresh,'standaloneTasks',[]);
+    var rec=TrazzoStore.reconcileArrayField(freshTasks,basisTasks,localTasks,'id');
+    TrazzoStore.notifyConflict(rec.conflicts,'tareas del equipo');
+    var freshArchived=TrazzoStore.fieldOrDefault(fresh,'archivedTasks',[]);
+    var recA=TrazzoStore.reconcileArrayField(freshArchived,_pass.archivedTasks||[],(_pass.archivedTasks||[]).concat(archived),'id');
+    return {standaloneTasks:rec.result,archivedTasks:recA.result};
+  }).then(function(patch){
+    standaloneTasks=patch.standaloneTasks;archivedTasks=patch.archivedTasks;
+    _pass=Object.assign({},_pass,patch);
+  }).catch(function(e){TrazzoStore.notifySaveError('archivar tareas',e);});
 }
 
 // ── HELPERS ────────────────────────────────────────────────────────
@@ -2096,14 +2156,15 @@ function onDashKUp(e){
 
 // ── SAVE TASK STATUS / ASSIGNEE FROM DASHBOARD ─────────────────────
 function dashSaveStatus(task,colId){
-  var isDone=(colId==='done');var cs=isDone?'done':colId;
+  var isDone=(colId==='done');
+  var changes=taskDoneChanges(isDone,colId);
   if(task._type==='standalone'){
-    standaloneTasks=(standaloneTasks||[]).map(function(t){return t.id===task.id?Object.assign({},t,{done:isDone,colStatus:cs}):t;});
+    standaloneTasks=(standaloneTasks||[]).map(function(t){return t.id===task.id?Object.assign({},t,changes):t;});
   } else {
     projects=(projects||[]).map(function(p){
       if(p.id!==task._projId)return p;
       var st=Object.assign({},p.stageTasks||{});
-      st[task._stage]=(st[task._stage]||[]).map(function(t){return t.id===task.id?Object.assign({},t,{done:isDone,colStatus:cs}):t;});
+      st[task._stage]=(st[task._stage]||[]).map(function(t){return t.id===task.id?Object.assign({},t,changes):t;});
       return Object.assign({},p,{stageTasks:st});
     });
   }
@@ -2199,10 +2260,30 @@ function initDashListDrag(card,task){
   });
 }
 
+// NOTA: hoy ningún punto vivo de la interfaz llama a esta función (la
+// pestaña Organizar la reemplazó), pero se corrige para no dejar una
+// trampa de datos si se vuelve a conectar. Antes creaba una copia con
+// id nuevo en el mapa areaTasks, sin ningún vínculo de vuelta a la
+// tarea/proyecto de origen — completar esa copia no se reflejaba en
+// ningún otro lado. Ahora reutiliza el mismo mecanismo que ya usa la
+// pestaña Organizar (standaloneTasks[].area): si la tarea ya es una
+// tarea libre, se le asigna el área SIN cambiar su id; si viene de un
+// proyecto, se crea una tarea libre que conserva el vínculo al
+// proyecto/etapa de origen en vez de una copia huérfana.
 function dropTaskOnArea(task,areaId){
-  if(!areaTasks[areaId])areaTasks[areaId]=[];
-  areaTasks[areaId].push({id:'at_'+Date.now(),text:task.text,deadline:task.deadline||'',resp:task.resp||null,done:false});
-  saveAreaTasks();renderDashboard();
+  var area=null;for(var i=0;i<workAreas.length;i++){if(workAreas[i].id===areaId){area=workAreas[i];break;}}
+  var areaName=area?area.name:areaId;
+  if(task._type==='standalone'){
+    standaloneTasks=(standaloneTasks||[]).map(function(t){return t.id===task.id?Object.assign({},t,{area:areaName}):t;});
+  } else {
+    standaloneTasks=(standaloneTasks||[]).concat([{
+      id:'st_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),
+      text:task.text,deadline:task.deadline||null,resp:task.resp||null,area:areaName,
+      done:false,colStatus:null,priority:false,
+      sourceProjectId:task._projId||null,sourceStage:task._stage||null,sourceTaskId:task.id
+    }]);
+  }
+  saveTaskChange();renderDashboard();
 }
 
 // ── AREA STRIP (bottom of dashboard) ──────────────────────────────
