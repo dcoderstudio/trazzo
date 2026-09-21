@@ -61,6 +61,11 @@ function createMockFirestoreServer() {
 
   var db = {
     doc: docRef,
+    // Firestore real: db.collection('workspace').doc('proyectos').
+    // Se modela como el mismo path compuesto "workspace/proyectos".
+    collection: function (name) {
+      return { doc: function (id) { return docRef(name + '/' + id); } };
+    },
     // simula runTransaction con reintento óptimista real: si la versión
     // del documento cambió entre la lectura y el commit, reintenta.
     runTransaction: function (fn, _attempt) {

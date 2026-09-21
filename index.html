@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -610,6 +610,7 @@ tick();setInterval(tick,1000);
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="datastore.js"></script>
 <script>
 (function() {
   var _app;
@@ -626,7 +627,7 @@ tick();setInterval(tick,1000);
   var db = firebase.firestore()
   // ── AUTH GUARD ──────────────────────────────────────────────
   firebase.auth().onAuthStateChanged(function(u){
-    if(u&&['dcoderstudio@gmail.com','proyectos@dcoderstudio.com'].indexOf(u.email)>-1)return;
+    if(u&&['dcoderstudio@gmail.com','gonzonaveda@gmail.com','proyectos@dcoderstudio.com','ale@dcoderstudio.com','gonzalo@dcoderstudio.com'].indexOf(u.email)>-1)return;
     location.replace('/login.html');
   });
   // ── END AUTH GUARD ──────────────────────────────────────────;
@@ -648,9 +649,20 @@ tick();setInterval(tick,1000);
     '#6B7280','#374151','#B8760F','#8B6914'
   ];
 
+  // teamMembers también lo edita equipo.html — se reconcilia por id
+  // contra el documento vigente en vez de reemplazarse completo desde
+  // la copia local (_pass).
   function saveTeam() {
-    var payload = Object.assign({}, _pass, {teamMembers: teamMembers});
-    DOC.set(payload).catch(function(e){ console.warn(e); });
+    var basis = _pass.teamMembers || [];
+    return TrazzoStore.withFreshDoc(db, DOC, function(fresh){
+      var freshMembers = TrazzoStore.fieldOrDefault(fresh,'teamMembers',[]);
+      var rec = TrazzoStore.reconcileArrayField(freshMembers, basis, teamMembers, 'id');
+      TrazzoStore.notifyConflict(rec.conflicts,'equipo');
+      return {teamMembers: rec.result};
+    }).then(function(patch){
+      teamMembers = patch.teamMembers;
+      _pass = Object.assign({}, _pass, patch);
+    }).catch(function(e){ TrazzoStore.notifySaveError('equipo', e); });
   }
 
   // ── Render team in sidebar ───────────────────────────────
@@ -1027,3 +1039,4 @@ tick();setInterval(tick,1000);
 <script src="theme.js"></script>
 </body>
 </html>
+

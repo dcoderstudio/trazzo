@@ -869,7 +869,7 @@ firebase.initializeApp({
 var db=firebase.firestore();
 var DOC=db.collection('workspace').doc('proyectos');
 
-var ALLOWED=['dcoderstudio@gmail.com','proyectos@dcoderstudio.com','ale@dcoderstudio.com','gonzalo@dcoderstudio.com'];
+var ALLOWED=['dcoderstudio@gmail.com','gonzonaveda@gmail.com','proyectos@dcoderstudio.com','ale@dcoderstudio.com','gonzalo@dcoderstudio.com'];
 firebase.auth().onAuthStateChanged(function(u){
   if(u&&ALLOWED.indexOf(u.email)>-1){document.getElementById('eqRoot').style.display='';initApp();}
   else window.location.href='login.html';
@@ -929,9 +929,9 @@ function initApp(){
 }
 
 // ── SAVES ──────────────────────────────────────────────────────────
-function saveGoals(){_ignSnap=true;DOC.set({memberGoals:memberGoals},{merge:true}).catch(function(e){console.warn(e);});}
-function saveReminders(){_ignSnap=true;DOC.set({memberReminders:memberReminders},{merge:true}).catch(function(e){console.warn(e);});}
-function saveAvatars(){_ignSnap=true;DOC.set({memberAvatars:memberAvatars},{merge:true}).catch(function(e){console.warn(e);});}
+function saveGoals(){return saveMapField('memberGoals',memberGoals).then(function(r){memberGoals=r;}).catch(function(){});}
+function saveReminders(){return saveMapField('memberReminders',memberReminders).then(function(r){memberReminders=r;}).catch(function(){});}
+function saveAvatars(){return saveMapField('memberAvatars',memberAvatars).then(function(r){memberAvatars=r;}).catch(function(){});}
 // saveTaskChange() ya NO reemplaza projects/standaloneTasks completos
 // desde la copia local. Lee el documento vigente dentro de una
 // transacción y aplica solo la diferencia entre lo último sincronizado
@@ -939,29 +939,61 @@ function saveAvatars(){_ignSnap=true;DOC.set({memberAvatars:memberAvatars},{merg
 // registros que otra persona haya cambiado o agregado mientras tanto.
 // Si el MISMO registro fue tocado por ambos lados, se aplica el cambio
 // de este cliente pero se avisa el conflicto (no se resuelve en silencio).
-function saveTaskChange(){
-  var basisProjects=_pass.projects||[];
-  var basisTasks=_pass.standaloneTasks||[];
-  var localProjects=projects, localTasks=standaloneTasks;
+// ── Helpers genéricos de guardado seguro (sobre TrazzoStore) ───────
+// saveArrayField: para campos donde distintos registros (por id) se
+// pueden editar desde varias pantallas/personas a la vez. mergeConflict
+// es opcional — projects lo usa para no marcar como "conflicto" el que
+// dos personas editen TAREAS DISTINTAS dentro del mismo proyecto.
+function saveArrayField(field,idKey,localArr,mergeConflict){
+  var basis=_pass[field]||[];
   return TrazzoStore.withFreshDoc(db,DOC,function(fresh){
-    var freshProjects=TrazzoStore.fieldOrDefault(fresh,'projects',[]);
-    var freshTasks=TrazzoStore.fieldOrDefault(fresh,'standaloneTasks',[]);
-    var recP=TrazzoStore.reconcileArrayField(freshProjects,basisProjects,localProjects,'id');
-    var recT=TrazzoStore.reconcileArrayField(freshTasks,basisTasks,localTasks,'id');
-    TrazzoStore.notifyConflict(recP.conflicts,'proyectos');
-    TrazzoStore.notifyConflict(recT.conflicts,'tareas del equipo');
-    return {projects:recP.result,standaloneTasks:recT.result};
+    var freshArr=TrazzoStore.fieldOrDefault(fresh,field,[]);
+    var rec=TrazzoStore.reconcileArrayField(freshArr,basis,localArr,idKey,mergeConflict?{mergeConflict:mergeConflict}:undefined);
+    TrazzoStore.notifyConflict(rec.conflicts,field);
+    var patch={};patch[field]=rec.result;
+    return patch;
   }).then(function(patch){
-    projects=patch.projects;standaloneTasks=patch.standaloneTasks;
     _pass=Object.assign({},_pass,patch);
-    if(_viewMode==='equipo')renderDashboard();
-  }).catch(function(e){TrazzoStore.notifySaveError('tareas del equipo',e);});
+    return patch[field];
+  }).catch(function(e){TrazzoStore.notifySaveError(field,e);throw e;});
 }
-function saveTeamMembers(){_ignSnap=true;DOC.set({teamMembers:teamMembers},{merge:true}).catch(function(e){console.warn(e);});}
-function saveWorkAreas(){_ignSnap=true;DOC.set({workAreas:workAreas},{merge:true}).catch(function(e){console.warn(e);});}
-function saveAreaTasks(){_ignSnap=true;DOC.set({areaTasks:areaTasks},{merge:true}).catch(function(e){console.warn(e);});}
-function saveMemberAreas(){_ignSnap=true;DOC.set({memberAreas:memberAreas},{merge:true}).catch(function(e){console.warn(e);});}
-function saveCalEvents(){_ignSnap=true;DOC.set({calendarEvents:calendarEvents},{merge:true}).catch(function(e){console.warn(e);});}
+// saveMapField: para campos tipo mapa (memberGoals, memberAreas...)
+// donde cada LLAVE (miembro, área...) es su propio registro. Reconcilia
+// el mapa local completo contra el vigente por llave — dos miembros
+// distintos editados a la vez no se pisan; la MISMA llave editada por
+// ambos lados se reporta como conflicto en vez de resolverse sola.
+function saveMapField(field,localMap){
+  var basis=_pass[field]||{};
+  return TrazzoStore.withFreshDoc(db,DOC,function(fresh){
+    var freshMap=TrazzoStore.fieldOrDefault(fresh,field,{});
+    var rec=TrazzoStore.reconcileMapField(freshMap,basis,localMap);
+    TrazzoStore.notifyConflict(rec.conflicts,field);
+    var patch={};patch[field]=rec.result;
+    return patch;
+  }).then(function(patch){
+    _pass=Object.assign({},_pass,patch);
+    return patch[field];
+  }).catch(function(e){TrazzoStore.notifySaveError(field,e);throw e;});
+}
+
+// saveTaskChange() ya NO reemplaza projects/standaloneTasks completos
+// desde la copia local — reconcilia cada uno contra el documento
+// vigente. reconcileProjectRecord evita falsos conflictos cuando dos
+// personas editan tareas distintas dentro del mismo proyecto.
+function saveTaskChange(){
+  return Promise.all([
+    saveArrayField('projects','id',projects,TrazzoStore.reconcileProjectRecord),
+    saveArrayField('standaloneTasks','id',standaloneTasks)
+  ]).then(function(r){
+    projects=r[0];standaloneTasks=r[1];
+    if(_viewMode==='equipo')renderDashboard();
+  }).catch(function(){/* ya se avisó con notifySaveError/notifyConflict */});
+}
+function saveTeamMembers(){return saveArrayField('teamMembers','id',teamMembers).then(function(r){teamMembers=r;}).catch(function(){});}
+function saveWorkAreas(){return saveArrayField('workAreas','id',workAreas).then(function(r){workAreas=r;}).catch(function(){});}
+function saveAreaTasks(){return saveMapField('areaTasks',areaTasks).then(function(r){areaTasks=r;}).catch(function(){});}
+function saveMemberAreas(){return saveMapField('memberAreas',memberAreas).then(function(r){memberAreas=r;}).catch(function(){});}
+function saveCalEvents(){return saveArrayField('calendarEvents','id',calendarEvents).then(function(r){calendarEvents=r;}).catch(function(){});}
 
 // ── HELPERS ────────────────────────────────────────────────────────
 var MN=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
@@ -1566,9 +1598,11 @@ function renderTeamSemanaAll(cont,allTasks){
 // doneAt, otras no tocaban colStatus), dejando combinaciones
 // inconsistentes. colStatusOverride permite conservar la columna de
 // kanban de destino (todo/inprogress/done) en vez del genérico null.
+// Delega en TrazzoStore.taskDoneChanges (misma función que prueban los
+// tests) — today() se pasa aquí porque datastore.js no depende de
+// fechas del navegador para seguir siendo puro y fácil de probar.
 function taskDoneChanges(isDone,colStatusOverride){
-  if(isDone)return{done:true,colStatus:colStatusOverride!==undefined?colStatusOverride:'done',doneAt:today()};
-  return{done:false,colStatus:colStatusOverride!==undefined?colStatusOverride:null,doneAt:null};
+  return TrazzoStore.taskDoneChanges(isDone,colStatusOverride,today());
 }
 
 // ── TEAM ACTION WRAPPERS (refresh dashboard, not member view) ─────
@@ -1858,27 +1892,16 @@ var archivedTasks=[];
 function cleanOldDoneTasks(){
   var cutoff=new Date();cutoff.setDate(cutoff.getDate()-7);
   var cutoffDs=fmt(cutoff);
-  var toArchive=(standaloneTasks||[]).filter(function(t){
-    return t.done&&t.deadline&&t.deadline<cutoffDs;
-  });
-  if(!toArchive.length)return;
-  var basisTasks=_pass.standaloneTasks||[];
-  var localTasks=(standaloneTasks||[]).filter(function(t){
-    return !(t.done&&t.deadline&&t.deadline<cutoffDs);
-  });
-  var archived=toArchive.map(function(t){return Object.assign({},t,{archivedAt:today()});});
-  standaloneTasks=localTasks;
-  TrazzoStore.withFreshDoc(db,DOC,function(fresh){
-    var freshTasks=TrazzoStore.fieldOrDefault(fresh,'standaloneTasks',[]);
-    var rec=TrazzoStore.reconcileArrayField(freshTasks,basisTasks,localTasks,'id');
-    TrazzoStore.notifyConflict(rec.conflicts,'tareas del equipo');
-    var freshArchived=TrazzoStore.fieldOrDefault(fresh,'archivedTasks',[]);
-    var recA=TrazzoStore.reconcileArrayField(freshArchived,_pass.archivedTasks||[],(_pass.archivedTasks||[]).concat(archived),'id');
-    return {standaloneTasks:rec.result,archivedTasks:recA.result};
-  }).then(function(patch){
-    standaloneTasks=patch.standaloneTasks;archivedTasks=patch.archivedTasks;
-    _pass=Object.assign({},_pass,patch);
-  }).catch(function(e){TrazzoStore.notifySaveError('archivar tareas',e);});
+  var r=TrazzoStore.computeArchive(standaloneTasks||[],cutoffDs,today());
+  if(!r.archivedCount)return;
+  standaloneTasks=r.kept;
+  var localArchived=(archivedTasks||[]).concat(r.archived);
+  Promise.all([
+    saveArrayField('standaloneTasks','id',standaloneTasks),
+    saveArrayField('archivedTasks','id',localArchived)
+  ]).then(function(res){
+    standaloneTasks=res[0];archivedTasks=res[1];
+  }).catch(function(){});
 }
 
 // ── HELPERS ────────────────────────────────────────────────────────
@@ -2270,18 +2293,22 @@ function initDashListDrag(card,task){
 // tarea libre, se le asigna el área SIN cambiar su id; si viene de un
 // proyecto, se crea una tarea libre que conserva el vínculo al
 // proyecto/etapa de origen en vez de una copia huérfana.
+// Usa TrazzoStore.buildAreaAssignPatch: para una tarea de proyecto,
+// el área se escribe DIRECTO sobre el registro original dentro de
+// project.stageTasks — nunca se crea un segundo registro con su
+// propio `done`. Con una sola fuente de verdad no hay nada que pueda
+// desincronizarse entre "la copia" y "el original".
 function dropTaskOnArea(task,areaId){
-  var area=null;for(var i=0;i<workAreas.length;i++){if(workAreas[i].id===areaId){area=workAreas[i];break;}}
-  var areaName=area?area.name:areaId;
-  if(task._type==='standalone'){
-    standaloneTasks=(standaloneTasks||[]).map(function(t){return t.id===task.id?Object.assign({},t,{area:areaName}):t;});
+  var p=TrazzoStore.buildAreaAssignPatch(task,areaId,workAreas);
+  if(p.target==='standaloneTasks'){
+    standaloneTasks=(standaloneTasks||[]).map(function(t){return t.id===p.taskId?Object.assign({},t,p.patch):t;});
   } else {
-    standaloneTasks=(standaloneTasks||[]).concat([{
-      id:'st_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),
-      text:task.text,deadline:task.deadline||null,resp:task.resp||null,area:areaName,
-      done:false,colStatus:null,priority:false,
-      sourceProjectId:task._projId||null,sourceStage:task._stage||null,sourceTaskId:task.id
-    }]);
+    projects=(projects||[]).map(function(pr){
+      if(pr.id!==p.projectId)return pr;
+      var st=Object.assign({},pr.stageTasks||{});
+      st[p.stage]=(st[p.stage]||[]).map(function(t){return t.id===p.taskId?Object.assign({},t,p.patch):t;});
+      return Object.assign({},pr,{stageTasks:st});
+    });
   }
   saveTaskChange();renderDashboard();
 }

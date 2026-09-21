@@ -743,7 +743,7 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
   var db=firebase.firestore();
   // ── AUTH GUARD ──────────────────────────────────────────────
   firebase.auth().onAuthStateChanged(function(u){
-    if(u&&['dcoderstudio@gmail.com','proyectos@dcoderstudio.com','ale@dcoderstudio.com','gonzalo@dcoderstudio.com'].indexOf(u.email)>-1)return;
+    if(u&&['dcoderstudio@gmail.com','gonzonaveda@gmail.com','proyectos@dcoderstudio.com','ale@dcoderstudio.com','gonzalo@dcoderstudio.com'].indexOf(u.email)>-1)return;
     location.replace('/login.html');
   });
   // ── END AUTH GUARD ──────────────────────────────────────────
@@ -766,7 +766,7 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
     var basisTasks = _pass.standaloneTasks || [];
     var localProjects = projects, localTasks = standaloneTasks;
     var restPatch = {
-      categories:categories, nextId:nextId, catIdCounter:catIdCounter,
+      categories:categories, catIdCounter:catIdCounter,
       taskGroups:_wsTaskGroups||[],
       statusColumns:getStatusCols(),
       cobranzaCards:cobranzaCards,
@@ -775,17 +775,37 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
     };
     if (taskColumns) restPatch.taskColumns = taskColumns;
     if (_wsTeamMembers) restPatch.teamMembers = _wsTeamMembers;
+    var lastRemap = [];
     return TrazzoStore.withFreshDoc(db, DOC, function(fresh){
       var freshProjects = TrazzoStore.fieldOrDefault(fresh,'projects',[]);
       var freshTasks = TrazzoStore.fieldOrDefault(fresh,'standaloneTasks',[]);
-      var recP = TrazzoStore.reconcileArrayField(freshProjects, basisProjects, localProjects, 'id');
+      var freshNextId = TrazzoStore.fieldOrDefault(fresh,'nextId',nextId);
+      // Ids concurrentes: si localProjects trae un proyecto NUEVO (no
+      // estaba en basisProjects) cuyo id ya choca con lo vigente en el
+      // servidor (otra sesión creó algo con el mismo nextId casi al
+      // mismo tiempo), se reasigna a partir del contador vigente ANTES
+      // de reconciliar — nunca se pierde el registro, solo cambia su id.
+      var basisIds = {}; basisProjects.forEach(function(p){basisIds[p.id]=1;});
+      var newLocal = localProjects.filter(function(p){return !basisIds[p.id];});
+      var remap = TrazzoStore.reconcileNewIds(freshProjects, freshNextId, newLocal, 'id');
+      lastRemap = remap.remapped;
+      var idMap = {}; remap.remapped.forEach(function(r){idMap[r.oldId]=r.newId;});
+      var reconciledLocalProjects = localProjects.map(function(p){
+        if (!idMap.hasOwnProperty(p.id)) return p;
+        return remap.items.find(function(x){return x.id===idMap[p.id];});
+      });
+      var recP = TrazzoStore.reconcileArrayField(freshProjects, basisProjects, reconciledLocalProjects, 'id', {mergeConflict:TrazzoStore.reconcileProjectRecord});
       var recT = TrazzoStore.reconcileArrayField(freshTasks, basisTasks, localTasks, 'id');
       TrazzoStore.notifyConflict(recP.conflicts, 'proyectos');
       TrazzoStore.notifyConflict(recT.conflicts, 'tareas');
-      return Object.assign({}, restPatch, {projects:recP.result, standaloneTasks:recT.result});
+      return Object.assign({}, restPatch, {projects:recP.result, standaloneTasks:recT.result, nextId:remap.nextNextId});
     }).then(function(patch){
-      projects = patch.projects; standaloneTasks = patch.standaloneTasks;
+      projects = patch.projects; standaloneTasks = patch.standaloneTasks; nextId = patch.nextId;
       _pass = Object.assign({}, _pass, patch);
+      // Si el proyecto que se estaba viendo en el modal de detalle
+      // tenía un id optimista que se reasignó, se sigue mostrando el
+      // mismo registro con su id real en vez de perder la referencia.
+      lastRemap.forEach(function(r){ if (detailProjectId === r.oldId) detailProjectId = r.newId; });
       renderBoard();
     }).catch(function(e){ TrazzoStore.notifySaveError('proyectos', e); });
   }
@@ -1996,41 +2016,37 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
   }
 
   // ── CONVERT ──────────────────────────────────────────
+  // La decisión de convertir (¿ya se convirtió? ¿existe la categoría?)
+  // se toma DENTRO de la transacción, sobre el documento vigente en
+  // ese instante — no sobre la copia local de `projects`/`nextId` que
+  // puede estar desactualizada. Así, si dos sesiones piden convertir
+  // la misma cotización casi al mismo tiempo, Firestore reintenta la
+  // transacción que pierde la carrera con datos ya frescos (donde
+  // `converted` ya es true) y esa sesión no crea un segundo proyecto
+  // — es idempotente incluso bajo concurrencia real, no solo cuando se
+  // llama dos veces seguidas desde la misma pestaña.
   function convertirAProyecto(id) {
-    var p = null;
-    for (var i = 0; i < projects.length; i++) { if (projects[i].id === id) { p = projects[i]; break; } }
-    if (!p) return;
-    // Guardia de idempotencia DENTRO de la función (antes solo la UI
-    // ocultaba el botón tras convertir, así que llamar la función dos
-    // veces — doble clic, o una integración externa repitiendo la
-    // acción — podía crear un segundo proyecto).
-    if (p.converted) {
-      var already = p.convertedProjectId && projects.some(function(x){ return x.id === p.convertedProjectId; });
-      if (!already) alert('Esta solicitud ya se marcó como convertida, pero el proyecto creado ya no existe (¿se borró?). Revísalo manualmente en vez de convertir de nuevo.');
-      return;
-    }
-    if (!p.tipoCat) { alert('Define el tipo de proyecto.'); return; }
-    var cat = null;
-    for (var j = 0; j < categories.length; j++) { if (categories[j].id === p.tipoCat) { cat = categories[j]; break; } }
-    if (!cat) { alert('Categoría no encontrada.'); return; }
-    var newId = nextId++;
-    p.converted = true;
-    p.convertedProjectId = newId; // vínculo cotización -> proyecto creado
-    var newProj = {
-      id: newId, name: p.name, client: p.client, catId: p.tipoCat, stage: cat.stages[0],
-      deadline: p.deadline || '', team: p.team, empresa: p.empresa || null,
-      // Se conservan monto, adjuntos y campos personalizados de la
-      // cotización original, que antes se perdían al convertir.
-      monto: p.monto || '',
-      docs: p.docs ? Object.assign({}, p.docs) : undefined,
-      customFieldValues: p.customFieldValues ? Object.assign({}, p.customFieldValues) : undefined,
-      sourceQuoteId: p.id, // vínculo proyecto -> cotización de origen
-      stageEntryDates: {}
-    };
-    newProj.stageEntryDates[cat.stages[0]] = new Date().toISOString().split('T')[0];
-    projects.push(newProj);
-    saveData();
-    renderBoard();
+    var btnEl = document.querySelector('.conv-btn[data-pid="' + id + '"]');
+    if (btnEl) { btnEl.disabled = true; btnEl.textContent = 'Convirtiendo…'; }
+    return TrazzoStore.withFreshDoc(db, DOC, function (fresh) {
+      var freshProjects = TrazzoStore.fieldOrDefault(fresh, 'projects', []);
+      var freshNextId = TrazzoStore.fieldOrDefault(fresh, 'nextId', nextId);
+      var r = TrazzoStore.buildQuoteConversionPatch(freshProjects, freshNextId, id, categories);
+      convertirAProyecto._lastResult = r;
+      if (!r.ok) return {};
+      var stage0 = r.newProj.stage;
+      r.newProj.stageEntryDates[stage0] = new Date().toISOString().split('T')[0];
+      return { projects: r.projects, nextId: r.nextId };
+    }).then(function (patch) {
+      var r = convertirAProyecto._lastResult;
+      if (Object.keys(patch).length) { projects = patch.projects; nextId = patch.nextId; _pass = Object.assign({}, _pass, patch); }
+      if (!r.ok) {
+        if (r.reason === 'ya-convertida') alert('Esta cotización ya se convirtió a un proyecto' + (r.existingProjectId ? (' (id ' + r.existingProjectId + ')') : '') + '.');
+        else if (r.reason === 'sin-tipo') alert('Define el tipo de proyecto.');
+        else if (r.reason === 'sin-categoria') alert('Categoría no encontrada.');
+      }
+      renderTabs(); renderBoard();
+    }).catch(function (e) { TrazzoStore.notifySaveError('convertir a proyecto', e); renderBoard(); });
   }
 
   // ── DELETE CATEGORY ──────────────────────────────────
@@ -3858,6 +3874,7 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
       // cualquier apertura de la página (o el eco del propio guardado en
       // otra pestaña) las revertía a la plantilla de fábrica. Ahora se
       // respeta cualquier categoría marcada como personalizada.
+      var _categoryUpdatesAvailable = [];
       cfgs.forEach(function(cfg) {
         var fi=-1;
         for (var i=0;i<categories.length;i++) { if (categories[i].id===cfg.id) { fi=i; break; } }
@@ -3867,8 +3884,17 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
           if (fi>=0) { categories[fi].label=cfg.label; categories[fi].color=cfg.color; categories[fi].stages=cfg.stages; categories[fi].stageDays=cfg.stageDays; categories[fi].templates=cfg.templates; categories[fi].payments=cfg.payments; if(cfg.tplVersion)categories[fi].tplVersion=cfg.tplVersion; }
           else { categories.push(cfg); }
           migrated=true;
+        } else if (decision.updateAvailable) {
+          // Hay una versión más nueva de la plantilla de fábrica, pero
+          // esta categoría ya tiene contenido propio -> NO se aplica
+          // sola. Solo se avisa; para aplicarla hay que volver a
+          // guardarla manualmente desde "Editar etapas".
+          _categoryUpdatesAvailable.push(cfg.label);
         }
       });
+      if (_categoryUpdatesAvailable.length && typeof TrazzoStore!=='undefined') {
+        console.info('[Trazzo] Hay una plantilla de fábrica más nueva para: ' + _categoryUpdatesAvailable.join(', ') + '. No se aplicó automáticamente porque la categoría ya tiene contenido propio.');
+      }
     })();
     /* MARCADOR_FIN_CATS */
     // Migrate projects without empresa to dcoder

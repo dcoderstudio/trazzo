@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -142,10 +142,13 @@ body{height:100%;min-height:-webkit-fill-available;background:#0c0c0c;color:#fff
 .ev-chip:hover{opacity:.8;}
 .ev-more{font-size:9px;color:rgba(255,255,255,0.3);padding:1px 6px;cursor:pointer;}
 .ev-more:hover{color:rgba(255,255,255,0.6);}
+.ev-chip-entrega{background:rgba(26,111,212,.15)!important;border-left-color:#1A6FD4!important;color:#5AB4E8!important;}
+.ev-chip-reunion{background:rgba(139,92,246,.15)!important;border-left-color:#8B5CF6!important;color:#B09CF6!important;}
+.ev-chip-recordatorio{background:rgba(39,174,114,.15)!important;border-left-color:#27AE72!important;color:#27AE72!important;}
+/* legacy aliases kept for any old data */
 .ev-chip-delivery{background:rgba(26,111,212,.15)!important;border-left-color:#1A6FD4!important;color:#5AB4E8!important;}
-.ev-chip-task{background:rgba(232,160,32,.15)!important;border-left-color:#E8A020!important;color:#E8A020!important;}
 .ev-chip-reminder{background:rgba(39,174,114,.15)!important;border-left-color:#27AE72!important;color:#27AE72!important;}
-.ev-chip-event{background:rgba(139,92,246,.15)!important;border-left-color:#8B5CF6!important;color:#8B5CF6!important;}
+.ev-chip-event{background:rgba(139,92,246,.15)!important;border-left-color:#8B5CF6!important;color:#B09CF6!important;}
 /* WEEK GRID */
 .week-grid{display:grid;grid-template-columns:repeat(7,1fr);height:100%;}
 .week-col{border-right:0.5px solid rgba(255,255,255,0.05);display:flex;flex-direction:column;overflow:hidden;}
@@ -579,7 +582,8 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
         <button class="cal-arrow" onclick="navNext()">&#8250;</button>
         <button class="cal-today-btn" onclick="goToday()">Hoy</button>
       </div>
-      <div style="display:flex;gap:6px;">
+      <div style="display:flex;gap:6px;align-items:center;">
+        <div id="calGcBtn"></div>
         <button class="wp-btn" onclick="openWeekPlanner()">Organizar semana</button>
         <button class="wp-btn-day" onclick="location.href='daily-hub.html'">Organizar día</button>
       </div>
@@ -597,8 +601,9 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
     </div>
     <div class="cdp-events-wrap" id="cdpEvents"></div>
     <div class="cdp-actions">
-      <button class="cdp-btn" id="cdpAddReminder" onclick="openEventModal(null,'reminder')">＋ Recordatorio</button>
-      <button class="cdp-btn" id="cdpAddTask" onclick="openEventModal(null,'task')">＋ Tarea libre</button>
+      <button class="cdp-btn" id="cdpBtnRec">🔔 Recordatorio</button>
+      <button class="cdp-btn" id="cdpBtnReu">🤝 Reunión</button>
+      <button class="cdp-btn" id="cdpBtnEnt">📦 Entrega</button>
     </div>
   </div>
 </div>
@@ -654,10 +659,9 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
     <div>
       <div class="ml">Tipo</div>
       <select class="mi" id="evType">
-        <option value="reminder">Recordatorio</option>
-        <option value="event">Evento</option>
-        <option value="delivery">Entrega / hito</option>
-        <option value="task">Tarea libre</option>
+        <option value="recordatorio">🔔 Recordatorio</option>
+        <option value="reunion">🤝 Reunión</option>
+        <option value="entrega">📦 Entrega</option>
       </select>
     </div>
     <div class="grid2">
@@ -703,6 +707,7 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="datastore.js"></script>
 <script>
 (function(){
   firebase.initializeApp({
@@ -716,7 +721,7 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
   var db=firebase.firestore();
   // ── AUTH GUARD ──────────────────────────────────────────────
   firebase.auth().onAuthStateChanged(function(u){
-    if(u&&['dcoderstudio@gmail.com','proyectos@dcoderstudio.com'].indexOf(u.email)>-1)return;
+    if(u&&['dcoderstudio@gmail.com','gonzonaveda@gmail.com','proyectos@dcoderstudio.com','ale@dcoderstudio.com','gonzalo@dcoderstudio.com'].indexOf(u.email)>-1)return;
     location.replace('/login.html');
   });
   // ── END AUTH GUARD ──────────────────────────────────────────
@@ -727,6 +732,7 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
   var projects=[], categories=[], standaloneTasks=[], calendarEvents=[];
   var calCategories=[], dailyPriorities={}, weekPlans={};
   var monthGoals={}, monthReminders={};
+  var gcSyncedEvents=[];
   var _calGcEvs={}, _calGcFetched={}; // Google Cal events for main calendar view
   var _mgInputOpen=false, _mrInputOpen=false;
   var _pass={};
@@ -780,11 +786,28 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
   }
 
   // ── SAVE ────────────────────────────────────────────────────
+  // calendarEvents es el único campo de aquí que también escribe
+  // equipo.html — se reconcilia por id contra el documento vigente en
+  // vez de reemplazarse completo desde la copia local (_pass), que es
+  // justo lo que antes podía perder eventos agregados desde la otra
+  // pantalla. El resto de campos son propios de esta página; de
+  // cualquier forma ya no se usa DOC.set(p) sin merge (que podía
+  // borrar campos de otras páginas si _pass estaba desactualizado).
   function saveData(){
-    var p=Object.assign({},_pass,{calendarEvents:calendarEvents,calCategories:calCategories,dailyPriorities:dailyPriorities,monthGoals:monthGoals,monthReminders:monthReminders});
-    DOC.set(p).catch(function(e){console.warn('Save error:',e);});
+    var basisEvents=_pass.calendarEvents||[];
+    var localEvents=calendarEvents;
+    var restPatch={calCategories:calCategories,dailyPriorities:dailyPriorities,monthGoals:monthGoals,monthReminders:monthReminders};
+    return TrazzoStore.withFreshDoc(db,DOC,function(fresh){
+      var freshEvents=TrazzoStore.fieldOrDefault(fresh,'calendarEvents',[]);
+      var rec=TrazzoStore.reconcileArrayField(freshEvents,basisEvents,localEvents,'id');
+      TrazzoStore.notifyConflict(rec.conflicts,'eventos de calendario');
+      return Object.assign({},restPatch,{calendarEvents:rec.result});
+    }).then(function(patch){
+      calendarEvents=patch.calendarEvents;
+      _pass=Object.assign({},_pass,patch);
+    }).catch(function(e){TrazzoStore.notifySaveError('calendario',e);});
   }
-  function saveData2(){saveData();}
+  function saveData2(){return saveData();}
 
   // ── HELPERS ──────────────────────────────────────────────────
   function getCat(id){for(var i=0;i<categories.length;i++){if(categories[i].id===id)return categories[i];}return null;}
@@ -793,6 +816,24 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
   function parse(s){return new Date(s+'T00:00:00');}
   function sameDay(a,b){return fmt(a)===fmt(b);}
   function addDays(d,n){var r=new Date(d);r.setDate(r.getDate()+n);return r;}
+
+  // ── TYPE HELPERS ─────────────────────────────────────────────
+  var TYPE_ICON={entrega:'📦',reunion:'🤝',recordatorio:'🔔',delivery:'📦',reminder:'🔔',event:'🤝'};
+  var TYPE_COLOR={entrega:'#1A6FD4',reunion:'#8B5CF6',recordatorio:'#27AE72',delivery:'#1A6FD4',reminder:'#27AE72',event:'#8B5CF6'};
+  var TYPE_BG={entrega:'rgba(26,111,212,.12)',reunion:'rgba(139,92,246,.12)',recordatorio:'rgba(39,174,114,.12)',delivery:'rgba(26,111,212,.12)',reminder:'rgba(39,174,114,.12)',event:'rgba(139,92,246,.12)'};
+  var TYPE_CHIP={entrega:'ev-chip-entrega',reunion:'ev-chip-reunion',recordatorio:'ev-chip-recordatorio',delivery:'ev-chip-delivery',reminder:'ev-chip-reminder',event:'ev-chip-event'};
+  function tIcon(t){return TYPE_ICON[t]||'🔔';}
+  function tColor(t){return TYPE_COLOR[t]||'#27AE72';}
+  function tBg(t){return TYPE_BG[t]||'rgba(39,174,114,.12)';}
+  function tChip(t){return TYPE_CHIP[t]||'ev-chip-recordatorio';}
+
+  // Classify a GC event title into an event type
+  function _gcClassify(title){
+    var t=(title||'').toLowerCase();
+    if(/reuni[oó]n|meeting|call|junta|sync|review|standup|kickoff|entrevista|presentaci[oó]n|zoom|teams|gmeet|webinar|conferencia/.test(t))return 'reunion';
+    if(/entrega|deadline|vencimiento|hito|lanzamiento|release|deploy/.test(t))return 'entrega';
+    return 'recordatorio';
+  }
 
   // ── EVENT COLLECTION ──────────────────────────────────────────
   // Fetch Google Calendar events for a date range and cache in _calGcEvs
@@ -902,19 +943,21 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
   }
 
   function getEventsForDate(dateStr){
-    var base=getAllEvents().filter(function(e){return e.date===dateStr;});
-    var calEvs=[];
+    var evs=[];
+    // 1. Manual calendar events (user-created)
     getCustomEventsFor(dateStr).forEach(function(ev){
-      calEvs.push({id:'cal_'+ev.id+(ev.isRepeat?'_r':''),date:ev.date,title:ev.title,sub:ev.notes||'',color:ev.color||'#27AE72',type:ev.type||'reminder',icon:'🔔',calId:ev.id,isRepeat:ev.isRepeat,time:ev.time||'',catId:ev.catId||'',resp:ev.resp||''});
+      evs.push({id:'cal_'+ev.id+(ev.isRepeat?'_r':''),date:ev.date,title:ev.title,
+        sub:ev.notes||'',color:ev.color||tColor(ev.type),type:ev.type||'recordatorio',
+        icon:tIcon(ev.type),calId:ev.id,isRepeat:ev.isRepeat,time:ev.time||'',
+        catId:ev.catId||'',resp:ev.resp||''});
     });
-    var calTaskKeys={};
-    calEvs.forEach(function(e){if(e.type==='task') calTaskKeys[e.title+'|'+e.date]=true;});
-    base=base.filter(function(e){
-      if(e.id&&e.id.indexOf('st_')===0&&calTaskKeys[e.title+'|'+e.date]) return false;
-      return true;
+    // 2. GC events synced to Firestore (persistent even when offline)
+    (gcSyncedEvents||[]).forEach(function(ev){
+      if(ev.date!==dateStr)return;
+      evs.push({id:'gcs_'+ev.gcId,date:ev.date,title:ev.title,
+        sub:'Google Calendar',color:ev.color||tColor(ev.type),type:ev.type||'recordatorio',
+        icon:tIcon(ev.type),time:ev.time||'',isGCSync:true});
     });
-    var gcEvs=(_calGcEvs[dateStr]||[]);
-    var evs=base.concat(calEvs).concat(gcEvs);
     evs.sort(function(a,b){return(a.time||'99:99')<(b.time||'99:99')?-1:1;});
     return evs;
   }
@@ -958,10 +1001,8 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
       cell.appendChild(numEl);
       var dayEvs=evByDate[ds]||[];
       dayEvs.slice(0,3).forEach(function(ev){
-        var typeClass={delivery:'ev-chip-delivery',task:'ev-chip-task',reminder:'ev-chip-reminder',event:'ev-chip-event'}[ev.type]||'ev-chip-reminder';
-        var typeIcon={delivery:'📦',task:'✓',reminder:'🔔',event:'📅'}[ev.type]||'🔔';
-        var chip=document.createElement('div'); chip.className='ev-chip '+typeClass;
-        chip.textContent=typeIcon+' '+ev.title;
+        var chip=document.createElement('div'); chip.className='ev-chip '+tChip(ev.type);
+        chip.textContent=tIcon(ev.type)+' '+ev.title;
         chip.onclick=(function(d2){return function(e){e.stopPropagation();openDayPanel(d2);};})(ds);
         cell.appendChild(chip);
       });
@@ -997,14 +1038,11 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
       var dayEvs=applyFilters(getEventsForDate(ds));
       if(!dayEvs.length){var em=document.createElement('div');em.style.cssText='font-size:10px;color:rgba(255,255,255,0.12);text-align:center;padding:12px 0;';em.textContent='Sin eventos';evWrap.appendChild(em);}
       dayEvs.forEach(function(ev){
-        var typeBg={delivery:'rgba(26,111,212,.12)',task:'rgba(232,160,32,.12)',reminder:'rgba(39,174,114,.12)',event:'rgba(139,92,246,.12)'}[ev.type]||'rgba(39,174,114,.12)';
-        var typeBorder={delivery:'#1A6FD4',task:'#E8A020',reminder:'#27AE72',event:'#8B5CF6'}[ev.type]||'#27AE72';
-        var typeIcon={delivery:'📦',task:'✓',reminder:'🔔',event:'📅'}[ev.type]||'🔔';
         var card=document.createElement('div'); card.className='week-ev-card';
-        card.style.background=typeBg; card.style.borderLeftColor=typeBorder;
+        card.style.background=tBg(ev.type); card.style.borderLeftColor=tColor(ev.type);
         var tEl=document.createElement('div'); tEl.className='week-ev-title';
         var timeLbl=ev.time?ev.time+' ':'';
-        tEl.textContent=typeIcon+' '+timeLbl+ev.title;
+        tEl.textContent=tIcon(ev.type)+' '+timeLbl+ev.title;
         card.appendChild(tEl);
         if(ev.sub){var sEl=document.createElement('div');sEl.className='week-ev-sub';sEl.textContent=ev.sub;card.appendChild(sEl);}
         card.onclick=(function(ds2){return function(e){e.stopPropagation();openDayPanel(ds2);};})(ds);
@@ -1074,10 +1112,8 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
     evs.forEach(function(ev){if(ev.time)timedEvs.push(ev);else allDayEvs.push(ev);});
 
     allDayEvs.forEach(function(ev){
-      var typeClass={delivery:'ev-chip-delivery',task:'ev-chip-task',reminder:'ev-chip-reminder',event:'ev-chip-event'}[ev.type]||'ev-chip-reminder';
-      var typeIcon={delivery:'📦',task:'✓',reminder:'🔔',event:'📅'}[ev.type]||'🔔';
-      var chip=document.createElement('div'); chip.className='day-allday-ev '+typeClass;
-      chip.textContent=typeIcon+' '+ev.title;
+      var chip=document.createElement('div'); chip.className='day-allday-ev '+tChip(ev.type);
+      chip.textContent=tIcon(ev.type)+' '+ev.title;
       chip.onclick=function(){if(ev.calId)openEventModal(ds,null,ev.calId);else if(ev.taskId)openCalTaskEdit(ev);};
       allDayStrip.appendChild(chip);
     });
@@ -1104,7 +1140,7 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
       var n=grp.length;
       grp.forEach(function(item){
         var ev=item.ev;
-        var typeColor={delivery:'#1A6FD4',task:'#E8A020',reminder:'#27AE72',event:'#8B5CF6'}[ev.type]||ev.color||'#27AE72';
+        var typeColor=tColor(ev.type)||ev.color||'#27AE72';
         var block=document.createElement('div'); block.className='day-ev-block';
         var availW='calc(100% - 70px)';
         var wPct=Math.floor(100/n)+'%';
@@ -1338,8 +1374,9 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
     var d=parse(dateStr);
     document.getElementById('cdpTitle').textContent=DAYS_FULL[d.getDay()]+', '+d.getDate()+' '+MNS_LONG[d.getMonth()];
     document.getElementById('calDayPanel').classList.add('open');
-    document.getElementById('cdpAddReminder').onclick=function(){openEventModal(dateStr,'reminder');};
-    document.getElementById('cdpAddTask').onclick=function(){openEventModal(dateStr,'task');};
+    document.getElementById('cdpBtnRec').onclick=function(){openEventModal(dateStr,'recordatorio');};
+    document.getElementById('cdpBtnReu').onclick=function(){openEventModal(dateStr,'reunion');};
+    document.getElementById('cdpBtnEnt').onclick=function(){openEventModal(dateStr,'entrega');};
     renderDayEvents(dateStr);
     renderPriorities(dateStr);
   }
@@ -1349,13 +1386,19 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
     var wrap=document.getElementById('cdpEvents'); wrap.innerHTML='';
     var evs=applyFilters(getEventsForDate(dateStr));
     if(!evs.length){var e=document.createElement('div');e.className='cdp-empty';e.textContent='Sin eventos para este día';wrap.appendChild(e);return;}
-    var byType={delivery:[],task:[],reminder:[],event:[]};
-    evs.forEach(function(ev){(byType[ev.type]||(byType['reminder'])).push(ev);});
+    // Normalize legacy types to new names
+    evs.forEach(function(ev){
+      if(ev.type==='delivery')ev.type='entrega';
+      if(ev.type==='reminder')ev.type='recordatorio';
+      if(ev.type==='event')ev.type='reunion';
+      if(ev.type==='task')ev.type='recordatorio';
+    });
+    var byType={entrega:[],reunion:[],recordatorio:[]};
+    evs.forEach(function(ev){(byType[ev.type]||(byType['recordatorio'])).push(ev);});
     var sections=[
-      {key:'delivery',label:'📦  Fechas de entrega',accent:'#1A6FD4'},
-      {key:'task',label:'✓  Vencimientos de tarea',accent:'#E8A020'},
-      {key:'reminder',label:'🔔  Recordatorios',accent:'#27AE72'},
-      {key:'event',label:'📅  Eventos',accent:'#8B5CF6'}
+      {key:'entrega',  label:'📦  Entregas',      accent:'#1A6FD4'},
+      {key:'reunion',  label:'🤝  Reuniones',     accent:'#8B5CF6'},
+      {key:'recordatorio',label:'🔔  Recordatorios',accent:'#27AE72'}
     ];
     sections.forEach(function(s){
       var list=byType[s.key]||[]; if(!list.length)return;
@@ -1363,31 +1406,19 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
       wrap.appendChild(lbl);
       list.forEach(function(ev){
         var row=document.createElement('div'); row.className='cdp-event-row';
-        row.style.borderLeft='3px solid '+ev.color+'55';
+        row.style.borderLeft='3px solid '+tColor(ev.type)+'55';
         row.style.paddingLeft='10px';
         var badge=document.createElement('span');
-        badge.style.cssText='font-size:9px;font-weight:700;padding:2px 7px;border-radius:20px;flex-shrink:0;margin-top:1px;';
-        if(s.key==='delivery'){badge.style.background='rgba(26,111,212,.15)';badge.style.color='#5AB4E8';badge.textContent='ENTREGA';}
-        else if(s.key==='task'){badge.style.background='rgba(232,160,32,.15)';badge.style.color='#E8A020';badge.textContent='TAREA';}
-        else if(s.key==='reminder'){badge.style.background='rgba(39,174,114,.15)';badge.style.color='#27AE72';badge.textContent='RECOR.';}
-        else{badge.style.background='rgba(139,92,246,.15)';badge.style.color='#8B5CF6';badge.textContent='EVENTO';}
+        badge.style.cssText='font-size:9px;font-weight:700;padding:2px 7px;border-radius:20px;flex-shrink:0;margin-top:1px;background:'+tBg(ev.type)+';color:'+tColor(ev.type)+';';
+        badge.textContent={entrega:'ENTREGA',reunion:'REUNIÓN',recordatorio:'RECOR.'}[ev.type]||'RECOR.';
         var info=document.createElement('div'); info.className='cdp-ev-info';
         var title=document.createElement('div'); title.className='cdp-ev-title';
         title.textContent=(ev.time?ev.time+' ':'')+ev.title;
         info.appendChild(title);
-        if(ev.sub&&ev.sub.trim()){var sub=document.createElement('div');sub.className='cdp-ev-sub';sub.textContent=ev.sub;info.appendChild(sub);}
+        if(ev.sub&&ev.sub.trim()){var sub=document.createElement('div');sub.className='cdp-ev-sub';sub.textContent=ev.sub+(ev.isGCSync?' · Google Cal':'');info.appendChild(sub);}
         row.appendChild(badge); row.appendChild(info);
-        if(s.key==='task'&&(ev.taskId||ev.projId)){
-          var editBtn=document.createElement('button');
-          editBtn.style.cssText='background:none;border:none;color:rgba(255,255,255,0.18);font-size:12px;cursor:pointer;padding:2px 5px;flex-shrink:0;transition:color .15s;line-height:1;';
-          editBtn.textContent='✎';
-          editBtn.onmouseover=function(){editBtn.style.color='rgba(255,255,255,0.7)';};
-          editBtn.onmouseout=function(){editBtn.style.color='rgba(255,255,255,0.18)';};
-          editBtn.onclick=(function(ev2){return function(e){e.stopPropagation();openCalTaskEdit(ev2);};})(ev);
-          row.appendChild(editBtn);
-          row.onclick=(function(ev2){return function(){openCalTaskEdit(ev2);};})(ev);
-        } else if(ev.calId){
-          row.onclick=(function(cid){return function(){openEventModal(dateStr,null,cid);};})(ev.calId);
+        if(ev.calId){
+          row.onclick=(function(cid,ds){return function(){openEventModal(ds,null,cid);};})(ev.calId,dateStr);
         }
         wrap.appendChild(row);
       });
@@ -1484,6 +1515,7 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
     renderPriorities(_prioDate||selectedDate||fmt(today));
     renderMonthGoals();
     renderMonthReminders();
+    renderCalGcBtn();
     _calFetchGcForView();
   }
 
@@ -1526,7 +1558,13 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
     document.getElementById('eventModalTitle').textContent=editId?'Editar evento':'Nuevo evento';
     var ev=null; if(editId){for(var i=0;i<calendarEvents.length;i++){if(calendarEvents[i].id===editId){ev=calendarEvents[i];break;}}}
     document.getElementById('evTitle').value=ev?ev.title:'';
-    document.getElementById('evType').value=ev?ev.type:(typeHint||'reminder');
+    var _evType=ev?ev.type:(typeHint||'recordatorio');
+    // normalize legacy type values
+    if(_evType==='reminder')_evType='recordatorio';
+    if(_evType==='event')_evType='reunion';
+    if(_evType==='delivery')_evType='entrega';
+    if(_evType==='task')_evType='recordatorio';
+    document.getElementById('evType').value=_evType;
     document.getElementById('evDate').value=ev?ev.date:(dateStr||fmt(today));
     document.getElementById('evTime').value=ev?ev.time||'':(timeHint||'');
     document.getElementById('evEndDate').value=ev?ev.endDate||'':'';
@@ -1565,11 +1603,6 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
     };
     if(editingEventId){calendarEvents=calendarEvents.map(function(e){return e.id===editingEventId?ev:e;});}
     else{calendarEvents.push(ev);}
-    if(ev.type==='task'&&!editingEventId){
-      var taskId=Date.now()+1;
-      if(!_pass.standaloneTasks)_pass.standaloneTasks=[];
-      _pass.standaloneTasks.push({id:taskId,text:title,done:false,deadline:ev.date,resp:ev.resp||'',colStatus:null,sortOrder:null,priority:false,notes:ev.notes});
-    }
     saveData(); closeEventModal();
     if(selectedDate)renderDayEvents(selectedDate);
     render();
@@ -1616,8 +1649,8 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
   function _wkoPT(t){var p=(t||'00:00').split(':');return{h:parseInt(p[0]),m:parseInt(p[1]||0)};}
   function _wkoFT(h,m){return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0');}
   function _wkoSave(){
-    var p=Object.assign({},_pass,{dailyBlocks:_wkoDB,dayTasks:_wkoDT,weekGoals:_wkoGoals,weekTaskOrder:_wkoTaskOrder,mealPlan:_wkoMealPlan});
-    DOC.set(p).then(function(){_pass=Object.assign({},_pass,{dailyBlocks:_wkoDB,dayTasks:_wkoDT,weekGoals:_wkoGoals,weekTaskOrder:_wkoTaskOrder,mealPlan:_wkoMealPlan});}).catch(function(e){console.warn(e);});
+    var p={dailyBlocks:_wkoDB,dayTasks:_wkoDT,weekGoals:_wkoGoals,weekTaskOrder:_wkoTaskOrder,mealPlan:_wkoMealPlan};
+    DOC.set(p,{merge:true}).then(function(){_pass=Object.assign({},_pass,p);}).catch(function(e){TrazzoStore.notifySaveError('planificador semanal',e);});
   }
   function _wkoSaveMeal(){
     // Update _pass immediately so any subsequent save from any page includes current meal plan
@@ -1823,23 +1856,29 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
     _wkoTokenClient=google.accounts.oauth2.initTokenClient({
       client_id:WKO_GC_CLIENT_ID,scope:WKO_GC_SCOPES,
       callback:function(r){
-        if(r.error){console.warn('WKO GC auth:',r.error);localStorage.removeItem('gc_was_connected');_wkoRenderGcBtn();return;}
+        if(r.error){console.warn('WKO GC auth:',r.error);localStorage.removeItem('gc_was_connected');_wkoRenderGcBtn();renderCalGcBtn();return;}
         _wkoGcTok=r.access_token;_calGcFetched={};_calGcEvs={};
         var tok={access_token:r.access_token,expires_at:Date.now()+(r.expires_in-60)*1000};
         localStorage.setItem('gc_token',JSON.stringify(tok));
         localStorage.setItem('gc_was_connected','1');
         gapi.client.setToken({access_token:r.access_token});
         _wkoGcScheduleRefresh(tok.expires_at);
-        _wkoRenderGcBtn();
+        _wkoRenderGcBtn();renderCalGcBtn();
+        _syncGcEventsToFirestore(); // persist GC events to Firestore
         if(_wkoW)_wkoGetDays().forEach(function(d){_wkoFetchGc(fmt(d));});
-        _calFetchGcForView();render();
       }
     });
     try{
       var s=JSON.parse(localStorage.getItem('gc_token')||'null');
-      if(s&&s.expires_at>Date.now()){_wkoGcTok=s.access_token;gapi.client.setToken({access_token:s.access_token});_wkoGcScheduleRefresh(s.expires_at);_wkoRenderGcBtn();if(_wkoW)_wkoGetDays().forEach(function(d){_wkoFetchGc(fmt(d));});_calGcFetched={};_calGcEvs={};_calFetchGcForView();render();}
-      else if(localStorage.getItem('gc_was_connected')){_wkoTokenClient.requestAccessToken({prompt:''.toString()});}
-      else{_wkoRenderGcBtn();}
+      if(s&&s.expires_at>Date.now()){
+        _wkoGcTok=s.access_token;gapi.client.setToken({access_token:s.access_token});
+        _wkoGcScheduleRefresh(s.expires_at);_wkoRenderGcBtn();renderCalGcBtn();
+        if(_wkoW)_wkoGetDays().forEach(function(d){_wkoFetchGc(fmt(d));});
+        _calGcFetched={};_calGcEvs={};
+        _syncGcEventsToFirestore(); // refresh sync on page load
+        render();
+      } else if(localStorage.getItem('gc_was_connected')){_wkoTokenClient.requestAccessToken({prompt:''.toString()});}
+      else{_wkoRenderGcBtn();renderCalGcBtn();}
     }catch(e){_wkoRenderGcBtn();}
   }
   function _wkoGcConnect(){if(_wkoTokenClient)_wkoTokenClient.requestAccessToken({prompt:_wkoGcTok?'':'consent'});}
@@ -1847,7 +1886,8 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
     if(_wkoGcRefreshTimer){clearTimeout(_wkoGcRefreshTimer);_wkoGcRefreshTimer=null;}
     if(_wkoGcTok)try{google.accounts.oauth2.revoke(_wkoGcTok,function(){});}catch(e){}
     _wkoGcTok=null;localStorage.removeItem('gc_token');localStorage.removeItem('gc_was_connected');
-    _wkoGcEvs={};_wkoRenderGcBtn();_wkoRenderGrid();
+    _wkoGcEvs={};_wkoRenderGcBtn();renderCalGcBtn();_wkoRenderGrid();
+    render(); // keep synced events visible — they're in Firestore
   }
   function _wkoFetchGc(ds){
     if(!_wkoGcTok||!_wkoGapiRdy||_wkoGcEvs[ds]!==undefined)return;
@@ -1883,6 +1923,76 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
       el.appendChild(btn);
     }
   }
+  // ── GOOGLE CAL SYNC TO FIRESTORE ─────────────────────────────
+  // Fetches a wide range of GC events and persists them in Firestore
+  // so the calendar stays populated even when GC is disconnected.
+  function _syncGcEventsToFirestore(){
+    if(!_wkoGcTok||!_wkoGapiRdy)return;
+    var now=new Date();
+    var tMin=new Date(now.getTime()-90*24*3600000).toISOString();
+    var tMax=new Date(now.getTime()+365*24*3600000).toISOString();
+    gapi.client.calendar.calendarList.list({minAccessRole:'reader'}).then(function(cl){
+      var cals=(cl.result.items||[]).map(function(c){return{id:c.id,color:c.backgroundColor};});
+      if(!cals.length)cals=[{id:'primary',color:null}];
+      var all=[],done=0;
+      cals.forEach(function(cal){
+        gapi.client.calendar.events.list({
+          calendarId:cal.id,timeMin:tMin,timeMax:tMax,
+          singleEvents:true,orderBy:'startTime',maxResults:500
+        }).then(function(r){
+          (r.result.items||[]).forEach(function(ev){
+            if(!ev.start)return;
+            var isAllDay=!!ev.start.date;
+            var startDt=new Date(isAllDay?ev.start.date+'T00:00:00':ev.start.dateTime);
+            var ds=fmt(startDt);
+            var time='';
+            if(!isAllDay&&ev.start.dateTime){var d2=new Date(ev.start.dateTime);time=String(d2.getHours()).padStart(2,'0')+':'+String(d2.getMinutes()).padStart(2,'0');}
+            var evType=_gcClassify(ev.summary||'');
+            all.push({gcId:ev.id,title:ev.summary||'(sin título)',date:ds,time:time,
+              type:evType,color:cal.color||'#4285F4',lastSynced:Date.now()});
+          });
+          if(++done===cals.length){
+            // Merge: keep user-created events (no gcId), overwrite GC ones by gcId
+            var manualEvs=(gcSyncedEvents||[]).filter(function(e){return !e.gcId;});
+            gcSyncedEvents=manualEvs.concat(all);
+            _pass.gcSyncedEvents=gcSyncedEvents;
+            DOC.update({gcSyncedEvents:gcSyncedEvents}).catch(function(){saveData();});
+            _calGcFetched={};_calGcEvs={};
+            render();
+            if(selectedDate&&curView!=='day')renderDayEvents(selectedDate);
+          }
+        }).catch(function(){if(++done===cals.length){render();}});
+      });
+    }).catch(function(e){
+      if(e&&e.status===401){_wkoGcTok=null;_wkoRenderGcBtn();renderCalGcBtn();}
+    });
+  }
+
+  // ── GC BUTTON FOR MAIN CALENDAR ──────────────────────────────
+  function renderCalGcBtn(){
+    var el=document.getElementById('calGcBtn');if(!el)return;el.innerHTML='';
+    var btn=document.createElement('button');
+    if(_wkoGcTok){
+      btn.style.cssText='background:rgba(52,168,83,.12);border:1px solid rgba(52,168,83,.32);color:#34A853;font-size:11px;font-weight:700;padding:5px 12px;border-radius:8px;cursor:pointer;font-family:Inter,sans-serif;display:flex;align-items:center;gap:5px;white-space:nowrap;';
+      btn.innerHTML='<span style="font-size:8px;line-height:1;">●</span>Google Cal';
+      btn.title='Google Calendar sincronizado — clic para desconectar';
+      btn.onclick=function(){_wkoGcDisconnect();};
+    } else {
+      btn.style.cssText='background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.42);font-size:11px;font-weight:600;padding:5px 12px;border-radius:8px;cursor:pointer;font-family:Inter,sans-serif;white-space:nowrap;';
+      btn.innerHTML='📅 Google Cal';
+      btn.title='Conectar Google Calendar para sincronizar eventos';
+      btn.onclick=function(){_wkoGcConnect();};
+    }
+    // Show count of synced events if any
+    if(!_wkoGcTok&&gcSyncedEvents&&gcSyncedEvents.filter(function(e){return e.gcId;}).length){
+      var badge=document.createElement('span');
+      badge.style.cssText='font-size:8px;font-weight:700;color:rgba(52,168,83,.7);margin-left:3px;';
+      badge.textContent='('+gcSyncedEvents.filter(function(e){return e.gcId;}).length+' guardados)';
+      btn.appendChild(badge);
+    }
+    el.appendChild(btn);
+  }
+
   function _wpKey(){return _wkoW?fmt(_wkoW):null;}
 
   // ── RIGHT PANEL ───────────────────────────────────────────────
@@ -2112,7 +2222,7 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
       var items=[];
       // From calendar events (projects/custom events — exclude standalone tasks, handled separately)
       getEventsForDate(ds).forEach(function(ev){
-        if(ev.type==='delivery'&&ev.id.indexOf('st_')!==0)items.push({id:'cal_'+ev.id,text:ev.title,done:false,fromCal:true,sub:ev.sub||''});
+        if((ev.type==='entrega'||ev.type==='delivery'))items.push({id:'cal_'+ev.id,text:ev.title,done:false,fromCal:true,sub:ev.sub||''});
       });
       // From standalone tasks with isDelivery flag
       (standaloneTasks||[]).forEach(function(t){
@@ -2682,11 +2792,15 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
     if(snap.exists){
       var d=snap.data();
       _pass=Object.assign({},d);
-      if(d.projects&&d.projects.length) projects=d.projects;
-      if(d.categories&&d.categories.length) categories=d.categories;
+      // fieldOrDefault: un arreglo vacío VIGENTE ya no se ignora (antes
+      // borrar el último proyecto/categoría dejaba la copia vieja en
+      // pantalla en esta página también).
+      projects=TrazzoStore.fieldOrDefault(d,'projects',projects);
+      categories=TrazzoStore.fieldOrDefault(d,'categories',categories);
       if(d.standaloneTasks) standaloneTasks=d.standaloneTasks;
       if(d.calendarEvents) calendarEvents=d.calendarEvents;
-      if(d.calCategories&&d.calCategories.length) calCategories=d.calCategories;
+      if(d.gcSyncedEvents) gcSyncedEvents=d.gcSyncedEvents;
+      calCategories=TrazzoStore.fieldOrDefault(d,'calCategories',calCategories);
       if(d.dailyPriorities) dailyPriorities=d.dailyPriorities;
       if(d.monthGoals) monthGoals=d.monthGoals;
       if(d.monthReminders) monthReminders=d.monthReminders;
@@ -2768,3 +2882,4 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
 <script src="https://accounts.google.com/gsi/client" onload="wkoGcInitGsi()" async defer></script>
 </body>
 </html>
+

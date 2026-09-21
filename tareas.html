@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -481,6 +481,7 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="datastore.js"></script>
 <script>
 (function() {
   firebase.initializeApp({
@@ -494,12 +495,13 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
   var db=firebase.firestore();
   // ── AUTH GUARD ──────────────────────────────────────────────
   firebase.auth().onAuthStateChanged(function(u){
-    if(u&&['dcoderstudio@gmail.com','proyectos@dcoderstudio.com'].indexOf(u.email)>-1)return;
+    if(u&&['dcoderstudio@gmail.com','gonzonaveda@gmail.com','proyectos@dcoderstudio.com','ale@dcoderstudio.com','gonzalo@dcoderstudio.com'].indexOf(u.email)>-1)return;
     location.replace('/login.html');
   });
   // ── END AUTH GUARD ──────────────────────────────────────────
 
   var DOC = db.collection('workspace').doc('proyectos');
+  var _pass = {};
 
   var projects = [], categories = [], standaloneTasks = [];
   var nextId = 14, catIdCounter = 20;
@@ -584,10 +586,41 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
     {id:'oldest',   label:'Más antiguo',    sub:'Creadas hace más tiempo primero'}
   ];
 
+  // Igual que en proyectos.html: projects/standaloneTasks se
+  // reconcilian contra el documento vigente dentro de una transacción
+  // (reconcileProjectRecord evita falsos conflictos cuando dos
+  // pantallas editan tareas distintas del mismo proyecto), y los ids
+  // nuevos que choquen con lo que ya existe en el servidor se
+  // reasignan en vez de perderse o duplicar.
   function saveData() {
-    _ignoreSnap = true;
-    DOC.set({projects:projects, categories:categories, nextId:nextId, catIdCounter:catIdCounter, standaloneTasks:standaloneTasks, taskColumns:taskColumns, teamMembers:teamMembers, taskGroups:taskGroups}, {merge:true})
-      .catch(function(e){ console.warn('Error al guardar:', e); });
+    var basisProjects = _pass.projects || [];
+    var basisTasks = _pass.standaloneTasks || [];
+    var localProjects = projects, localTasks = standaloneTasks;
+    var restPatch = { categories:categories, catIdCounter:catIdCounter, taskColumns:taskColumns, teamMembers:teamMembers, taskGroups:taskGroups };
+    var lastRemap = [];
+    return TrazzoStore.withFreshDoc(db, DOC, function(fresh){
+      var freshProjects = TrazzoStore.fieldOrDefault(fresh,'projects',[]);
+      var freshTasks = TrazzoStore.fieldOrDefault(fresh,'standaloneTasks',[]);
+      var freshNextId = TrazzoStore.fieldOrDefault(fresh,'nextId',nextId);
+      var basisIds = {}; basisProjects.forEach(function(p){basisIds[p.id]=1;});
+      var newLocal = localProjects.filter(function(p){return !basisIds[p.id];});
+      var remap = TrazzoStore.reconcileNewIds(freshProjects, freshNextId, newLocal, 'id');
+      lastRemap = remap.remapped;
+      var idMap = {}; remap.remapped.forEach(function(r){idMap[r.oldId]=r.newId;});
+      var reconciledLocalProjects = localProjects.map(function(p){
+        if (!idMap.hasOwnProperty(p.id)) return p;
+        return remap.items.find(function(x){return x.id===idMap[p.id];});
+      });
+      var recP = TrazzoStore.reconcileArrayField(freshProjects, basisProjects, reconciledLocalProjects, 'id', {mergeConflict:TrazzoStore.reconcileProjectRecord});
+      var recT = TrazzoStore.reconcileArrayField(freshTasks, basisTasks, localTasks, 'id');
+      TrazzoStore.notifyConflict(recP.conflicts, 'proyectos');
+      TrazzoStore.notifyConflict(recT.conflicts, 'tareas');
+      return Object.assign({}, restPatch, {projects:recP.result, standaloneTasks:recT.result, nextId:remap.nextNextId});
+    }).then(function(patch){
+      projects = patch.projects; standaloneTasks = patch.standaloneTasks; nextId = patch.nextId;
+      _pass = Object.assign({}, _pass, patch);
+      renderBoard();
+    }).catch(function(e){ TrazzoStore.notifySaveError('tareas', e); });
   }
 
   function getCat(catId) {
@@ -600,17 +633,23 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
     projects.forEach(function(proj) {
       if (proj.catId === 'cotizaciones') return;
       if (!proj.stageTasks) proj.stageTasks = {};
+      if (!proj.stageTasksSeeded) proj.stageTasksSeeded = {};
       var cat = getCat(proj.catId);
       var stage = proj.stage;
       var tasks = proj.stageTasks[stage];
-      // Auto-siembra: si no hay tareas para esta fase pero hay templates, crearlas aquí
-      if ((!tasks || !tasks.length) && cat && cat.templates && cat.templates[stage] && cat.templates[stage].length) {
+      if (tasks && tasks.length) proj.stageTasksSeeded[stage] = true; // compat con proyectos de antes de este fix
+      // Auto-siembra: solo si esta etapa NUNCA se sembró — si el
+      // usuario borró todas sus tareas a propósito, stageTasksSeeded
+      // ya quedó en true y no se vuelven a crear solas.
+      var tpl = cat && cat.templates && cat.templates[stage] ? cat.templates[stage] : [];
+      if (TrazzoStore.shouldSeedStageTasks(proj, stage, tpl)) {
         var base = Date.now();
-        proj.stageTasks[stage] = cat.templates[stage].map(function(item, i) {
+        proj.stageTasks[stage] = tpl.map(function(item, i) {
           var text = typeof item === 'string' ? item : (item.text || '');
           return {id: base + i, text: text, done: false, deadline: '', resp: ''};
         });
         tasks = proj.stageTasks[stage];
+        proj.stageTasksSeeded[stage] = true;
         _pendingSave = true;
       }
       if (!tasks || !tasks.length) return;
@@ -1076,6 +1115,10 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
           var nd=taskColumns.filter(function(c){return !c.isDone;});
           arr[j].colStatus=arr[j].deadline?(nd.length>1?nd[1].id:nd[0]?nd[0].id:'inprogress'):(nd[0]?nd[0].id:'notstarted');
         }
+        // done/colStatus se decidían aquí con la lógica de columnas de
+        // arriba (se conserva); doneAt se unifica vía TrazzoStore para
+        // que el archivo de tareas y otras vistas lo vean consistente.
+        arr[j].doneAt = arr[j].done ? new Date().toISOString().slice(0,10) : null;
         saveData(); renderBoard(); return true;
       }
     }
@@ -1291,7 +1334,7 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
     task.resp = document.getElementById('tkDetResp').value;
     task.deadline = document.getElementById('tkDetDeadline').value;
     var newSt = document.getElementById('tkDetStatus').value;
-    task.colStatus = newSt; task.done = (newSt==='done');
+    Object.assign(task, TrazzoStore.taskDoneChanges(newSt==='done', newSt, new Date().toISOString().slice(0,10)));
     task.notes = document.getElementById('tkDetNotes').value.trim();
   }
   window.saveTaskDetail = function() {
@@ -1458,7 +1501,9 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
     if (projectId==='standalone') {
       for (var si=0;si<standaloneTasks.length;si++){
         if (standaloneTasks[si].id===taskId){
-          standaloneTasks[si].colStatus=newColType; var _sc=getColById(newColType); standaloneTasks[si].done=_sc?!!_sc.isDone:(newColType==='done'); standaloneTasks[si].sortOrder=newSortOrder;
+          var _sc=getColById(newColType); var _isDone=_sc?!!_sc.isDone:(newColType==='done');
+          Object.assign(standaloneTasks[si], TrazzoStore.taskDoneChanges(_isDone, newColType, new Date().toISOString().slice(0,10)));
+          standaloneTasks[si].sortOrder=newSortOrder;
           saveData(); renderBoard(); return;
         }
       }
@@ -1470,8 +1515,8 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
         if (tasks){
           for (var j=0;j<tasks.length;j++){
             if (tasks[j].id===taskId){
-              tasks[j].colStatus = newColType;
-              var _tc=getColById(newColType); tasks[j].done=_tc?!!_tc.isDone:(newColType==='done');
+              var _tc=getColById(newColType); var _tIsDone=_tc?!!_tc.isDone:(newColType==='done');
+              Object.assign(tasks[j], TrazzoStore.taskDoneChanges(_tIsDone, newColType, new Date().toISOString().slice(0,10)));
               tasks[j].sortOrder = newSortOrder;
               saveData();
               renderBoard();
@@ -1830,17 +1875,21 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
 
   // Init — onSnapshot para sincronización en tiempo real con proyectos.html
   DOC.onSnapshot(function(snap){
-    if (_ignoreSnap) { _ignoreSnap = false; return; }
     if (snap.exists){
       var d = snap.data();
-      if (d.projects && d.projects.length) projects = d.projects;
-      if (d.categories && d.categories.length) categories = d.categories;
+      _pass = Object.assign({}, d);
+      // fieldOrDefault distingue "el campo no existe" (usar el valor
+      // local ya cargado) de "el campo existe pero se vació" (aceptar
+      // el vacío) — antes, borrar el último proyecto/tarea/miembro
+      // hacía que esta pestaña conservara la copia vieja en pantalla.
+      projects = TrazzoStore.fieldOrDefault(d,'projects',projects);
+      categories = TrazzoStore.fieldOrDefault(d,'categories',categories);
       if (d.nextId) nextId = d.nextId;
       if (d.catIdCounter) catIdCounter = d.catIdCounter;
-      if (d.standaloneTasks && d.standaloneTasks.length) standaloneTasks = d.standaloneTasks;
-      if (d.taskColumns && d.taskColumns.length) taskColumns = d.taskColumns;
-      if (d.teamMembers && d.teamMembers.length) teamMembers = d.teamMembers;
-      if (d.taskGroups && d.taskGroups.length) taskGroups = d.taskGroups;
+      standaloneTasks = TrazzoStore.fieldOrDefault(d,'standaloneTasks',standaloneTasks);
+      taskColumns = TrazzoStore.fieldOrDefault(d,'taskColumns',taskColumns);
+      teamMembers = TrazzoStore.fieldOrDefault(d,'teamMembers',teamMembers);
+      taskGroups = TrazzoStore.fieldOrDefault(d,'taskGroups',taskGroups);
     }
     if (!taskColumns) taskColumns = JSON.parse(JSON.stringify(DEFAULT_TASK_COLS));
     teamMembers.forEach(function(m){ AV_COLORS[m.id]=m.color; AV_NAMES[m.id]=m.name; });
@@ -1939,3 +1988,4 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
 <script src="theme.js"></script>
 </body>
 </html>
+

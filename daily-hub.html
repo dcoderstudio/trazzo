@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -524,6 +524,7 @@ input[type=time].mi{color-scheme:dark;cursor:pointer;}
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="datastore.js"></script>
 <script>
 (function(){
   firebase.initializeApp({
@@ -537,7 +538,7 @@ input[type=time].mi{color-scheme:dark;cursor:pointer;}
   var db=firebase.firestore();
   // ── AUTH GUARD ──────────────────────────────────────────────
   firebase.auth().onAuthStateChanged(function(u){
-    if(u&&['dcoderstudio@gmail.com','proyectos@dcoderstudio.com'].indexOf(u.email)>-1)return;
+    if(u&&['dcoderstudio@gmail.com','gonzonaveda@gmail.com','proyectos@dcoderstudio.com','ale@dcoderstudio.com','gonzalo@dcoderstudio.com'].indexOf(u.email)>-1)return;
     location.replace('/login.html');
   });
   // ── END AUTH GUARD ──────────────────────────────────────────
@@ -673,9 +674,36 @@ input[type=time].mi{color-scheme:dark;cursor:pointer;}
   function memberColor(n){var cs=['#1A6FD4','#27AE72','#D4537E','#E8A020','#8B5CF6','#2CC5D2'];var s=0;for(var i=0;i<n.length;i++)s+=n.charCodeAt(i);return cs[s%cs.length];}
   function memberInitials(n){var p=n.trim().split(' ');return p.length>=2?(p[0][0]+p[1][0]).toUpperCase():n.slice(0,2).toUpperCase();}
 
+  // OJO: la versión anterior de esta función NO incluía `projects` en
+  // su payload, así que marcar como hecha (o cambiar la fecha de) una
+  // tarea DE PROYECTO desde el Daily Hub se veía actualizada en
+  // pantalla pero nunca llegaba a guardarse en Firestore — el
+  // siguiente snapshot la revertía. projects/standaloneTasks se
+  // reconcilian contra el documento vigente (compartido con equipo.html/
+  // proyectos.html/tareas.html/focus.html); dayTasks/reminders son
+  // mapas por fecha, compartidos con focus.html, y se reconcilian por
+  // llave. dailyBlocks es propio de esta página.
   function saveData(){
-    var p=Object.assign({},_pass,{dailyBlocks:dailyBlocks,dayTasks:dayTasks,standaloneTasks:standaloneTasks,reminders:reminders});
-    DOC.set(p).catch(function(e){console.warn(e);});
+    var basisProjects=_pass.projects||[];
+    var basisTasks=_pass.standaloneTasks||[];
+    var basisDayTasks=_pass.dayTasks||{};
+    var basisReminders=_pass.reminders||{};
+    return TrazzoStore.withFreshDoc(db,DOC,function(fresh){
+      var freshProjects=TrazzoStore.fieldOrDefault(fresh,'projects',[]);
+      var freshTasks=TrazzoStore.fieldOrDefault(fresh,'standaloneTasks',[]);
+      var freshDayTasks=TrazzoStore.fieldOrDefault(fresh,'dayTasks',{});
+      var freshReminders=TrazzoStore.fieldOrDefault(fresh,'reminders',{});
+      var recP=TrazzoStore.reconcileArrayField(freshProjects,basisProjects,projects,'id',{mergeConflict:TrazzoStore.reconcileProjectRecord});
+      var recT=TrazzoStore.reconcileArrayField(freshTasks,basisTasks,standaloneTasks,'id');
+      var recD=TrazzoStore.reconcileMapField(freshDayTasks,basisDayTasks,dayTasks);
+      var recR=TrazzoStore.reconcileMapField(freshReminders,basisReminders,reminders);
+      TrazzoStore.notifyConflict(recP.conflicts,'proyectos');
+      TrazzoStore.notifyConflict(recT.conflicts,'tareas');
+      return {projects:recP.result,standaloneTasks:recT.result,dailyBlocks:dailyBlocks,dayTasks:recD.result,reminders:recR.result};
+    }).then(function(patch){
+      projects=patch.projects;standaloneTasks=patch.standaloneTasks;dayTasks=patch.dayTasks;reminders=patch.reminders;
+      _pass=Object.assign({},_pass,patch);
+    }).catch(function(e){TrazzoStore.notifySaveError('daily-hub',e);});
   }
 
   // ── HEADER ────────────────────────────────────────────────────
@@ -1333,9 +1361,10 @@ input[type=time].mi{color-scheme:dark;cursor:pointer;}
     dayTasks[ds]=(dayTasks[ds]||[]).map(function(t){
       if(t.id!==id)return t;
       var nd=!t.done;
-      if(t.sourceType==='standalone'&&t.sourceId){standaloneTasks=standaloneTasks.map(function(s){return s.id===t.sourceId?Object.assign({},s,{done:nd}):s;});}
+      var doneChanges=TrazzoStore.taskDoneChanges(nd,undefined,fmt(new Date()));
+      if(t.sourceType==='standalone'&&t.sourceId){standaloneTasks=standaloneTasks.map(function(s){return s.id===t.sourceId?Object.assign({},s,doneChanges):s;});}
       else if(t.sourceType==='project'&&t.projId){
-        for(var i=0;i<projects.length;i++){if(projects[i].id===t.projId){var arr=(projects[i].stageTasks&&projects[i].stageTasks[t.stage])||[];projects[i].stageTasks[t.stage]=arr.map(function(s){return s.id===t.sourceId?Object.assign({},s,{done:nd}):s;});break;}}
+        for(var i=0;i<projects.length;i++){if(projects[i].id===t.projId){var arr=(projects[i].stageTasks&&projects[i].stageTasks[t.stage])||[];projects[i].stageTasks[t.stage]=arr.map(function(s){return s.id===t.sourceId?Object.assign({},s,doneChanges):s;});break;}}
       }
       return Object.assign({},t,{done:nd});
     });
@@ -1572,7 +1601,7 @@ input[type=time].mi{color-scheme:dark;cursor:pointer;}
         items.push({text:t.text,sub:p.name,color:color,done:t.done,resp:t.resp||'',
           toggle:(function(tid,pid,stg){return function(){
             var nd;
-            for(var i=0;i<projects.length;i++){if(projects[i].id===pid){var arr=(projects[i].stageTasks&&projects[i].stageTasks[stg])||[];var found=arr.filter(function(x){return x.id===tid;})[0];nd=found?!found.done:true;projects[i].stageTasks[stg]=arr.map(function(x){return x.id===tid?Object.assign({},x,{done:nd}):x;});break;}}
+            for(var i=0;i<projects.length;i++){if(projects[i].id===pid){var arr=(projects[i].stageTasks&&projects[i].stageTasks[stg])||[];var found=arr.filter(function(x){return x.id===tid;})[0];nd=found?!found.done:true;var doneChanges=TrazzoStore.taskDoneChanges(nd,undefined,fmt(new Date()));projects[i].stageTasks[stg]=arr.map(function(x){return x.id===tid?Object.assign({},x,doneChanges):x;});break;}}
             syncDayTaskDone('project',tid,nd);
             saveData();renderDeliveries();renderDayTasks();renderHeader();
           };})(t.id,p.id,stage),
@@ -1588,7 +1617,7 @@ input[type=time].mi{color-scheme:dark;cursor:pointer;}
       if(t.isDelivery)return; // shown in Entregas section
       items.push({text:t.text,sub:'Tarea libre',color:'#E8A020',done:t.done,resp:t.resp||'',
         toggle:(function(tid){return function(){
-          var nd; standaloneTasks=standaloneTasks.map(function(s){if(s.id!==tid)return s;nd=!s.done;return Object.assign({},s,{done:nd});});
+          var nd; standaloneTasks=standaloneTasks.map(function(s){if(s.id!==tid)return s;nd=!s.done;return Object.assign({},s,TrazzoStore.taskDoneChanges(nd,undefined,fmt(new Date())));});
           syncDayTaskDone('standalone',tid,nd);
           saveData();renderDeliveries();renderDayTasks();renderHeader();
         };})(t.id),
@@ -2071,7 +2100,7 @@ input[type=time].mi{color-scheme:dark;cursor:pointer;}
         if(!t.deadline||t.done||t.deadline>=todayStr)return;
         items.push({id:t.id,text:t.text,deadline:t.deadline,badge:'Tarea',badgeColor:'rgba(255,255,255,.3)',source:p.name,type:'project',pid:p.id,stage:stage,
           markDone:(function(pid,stg,tid){return function(){
-            for(var i=0;i<projects.length;i++){if(projects[i].id===pid){var arr=projects[i].stageTasks[stg]||[];projects[i].stageTasks[stg]=arr.map(function(x){return x.id===tid?Object.assign({},x,{done:true}):x;});break;}}
+            for(var i=0;i<projects.length;i++){if(projects[i].id===pid){var arr=projects[i].stageTasks[stg]||[];projects[i].stageTasks[stg]=arr.map(function(x){return x.id===tid?Object.assign({},x,TrazzoStore.taskDoneChanges(true,undefined,fmt(new Date()))):x;});break;}}
             saveData();renderOverdue();renderDeliveries();renderHeader();
           };})(p.id,stage,t.id),
           changeDeadline:(function(pid,stg,tid){return function(newDs){
@@ -2208,8 +2237,8 @@ input[type=time].mi{color-scheme:dark;cursor:pointer;}
     if(snap.exists){
       var d=snap.data();
       _pass=Object.assign({},d);
-      if(d.projects&&d.projects.length)projects=d.projects;
-      if(d.categories&&d.categories.length)categories=d.categories;
+      projects=TrazzoStore.fieldOrDefault(d,'projects',projects);
+      categories=TrazzoStore.fieldOrDefault(d,'categories',categories);
       if(d.standaloneTasks)standaloneTasks=d.standaloneTasks;
       if(d.dailyBlocks)dailyBlocks=d.dailyBlocks;
       if(d.dayTasks)dayTasks=d.dayTasks;
@@ -2242,3 +2271,4 @@ input[type=time].mi{color-scheme:dark;cursor:pointer;}
 <script src="https://accounts.google.com/gsi/client" onload="gcInitGsi()" async defer></script>
 </body>
 </html>
+

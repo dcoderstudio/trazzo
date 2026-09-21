@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -201,6 +201,7 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="datastore.js"></script>
 <script>
 (function() {
 
@@ -216,7 +217,7 @@ firebase.initializeApp({
 var db = firebase.firestore();
   // ── AUTH GUARD ──────────────────────────────────────────────
   firebase.auth().onAuthStateChanged(function(u){
-    if(u&&['dcoderstudio@gmail.com','proyectos@dcoderstudio.com'].indexOf(u.email)>-1)return;
+    if(u&&['dcoderstudio@gmail.com','gonzonaveda@gmail.com','proyectos@dcoderstudio.com','ale@dcoderstudio.com','gonzalo@dcoderstudio.com'].indexOf(u.email)>-1)return;
     location.replace('/login.html');
   });
   // ── END AUTH GUARD ──────────────────────────────────────────
@@ -317,13 +318,14 @@ function _removeTaskRow(selector) {
 }
 
 function markFocusTaskDone(task) {
+  var doneChanges = TrazzoStore.taskDoneChanges(true, undefined, todayStr);
   if (task.projectId === 'standalone') {
-    standaloneTasks = standaloneTasks.map(function(t){ return String(t.id)===String(task.id)?Object.assign({},t,{done:true}):t; });
+    standaloneTasks = standaloneTasks.map(function(t){ return String(t.id)===String(task.id)?Object.assign({},t,doneChanges):t; });
   } else {
     projects = projects.map(function(p){
       if (p.id !== task.projectId) return p;
       var arr = (p.stageTasks && p.stageTasks[task.stage]) || [];
-      p.stageTasks[task.stage] = arr.map(function(t){ return String(t.id)===String(task.id)?Object.assign({},t,{done:true}):t; });
+      p.stageTasks[task.stage] = arr.map(function(t){ return String(t.id)===String(task.id)?Object.assign({},t,doneChanges):t; });
       return p;
     });
   }
@@ -341,8 +343,9 @@ function markFocusDayTaskDone(dtTask) {
   dayTasks[ds] = (dayTasks[ds]||[]).map(function(t){
     if(t.id!==dtTask.id)return t;
     var nd=!t.done;
-    if(t.sourceType==='standalone'&&t.sourceId){standaloneTasks=standaloneTasks.map(function(s){return s.id===t.sourceId?Object.assign({},s,{done:nd}):s;});}
-    else if(t.sourceType==='project'&&t.projId){for(var i=0;i<projects.length;i++){if(projects[i].id===t.projId){var arr=(projects[i].stageTasks&&projects[i].stageTasks[t.stage])||[];projects[i].stageTasks[t.stage]=arr.map(function(s){return s.id===t.sourceId?Object.assign({},s,{done:nd}):s;});break;}}}
+    var doneChanges=TrazzoStore.taskDoneChanges(nd,undefined,todayStr);
+    if(t.sourceType==='standalone'&&t.sourceId){standaloneTasks=standaloneTasks.map(function(s){return s.id===t.sourceId?Object.assign({},s,doneChanges):s;});}
+    else if(t.sourceType==='project'&&t.projId){for(var i=0;i<projects.length;i++){if(projects[i].id===t.projId){var arr=(projects[i].stageTasks&&projects[i].stageTasks[t.stage])||[];projects[i].stageTasks[t.stage]=arr.map(function(s){return s.id===t.sourceId?Object.assign({},s,doneChanges):s;});break;}}}
     return Object.assign({},t,{done:nd});
   });
   allFbTasks = getAllTasks(); rebuildDisplayTasks();
@@ -740,10 +743,33 @@ DOC.onSnapshot(function(snap) {
 });
 
 var _focusLocalSave = false;
+// projects/standaloneTasks también los edita equipo.html/proyectos.html/
+// tareas.html — se reconcilian contra el documento vigente en vez de
+// reemplazarse desde la copia local (_focusPass), igual que en esas
+// páginas. dayTasks/reminders son mapas por fecha, propios de esta
+// vista y de daily-hub.html — se reconcilian por llave (fecha).
 function focusSaveData(){
   _focusLocalSave = true;
-  var p=Object.assign({},_focusPass,{projects:projects,standaloneTasks:standaloneTasks,dayTasks:dayTasks,reminders:reminders});
-  DOC.set(p).catch(function(e){console.warn(e);});
+  var basisProjects=_focusPass.projects||[];
+  var basisTasks=_focusPass.standaloneTasks||[];
+  var basisDayTasks=_focusPass.dayTasks||{};
+  var basisReminders=_focusPass.reminders||{};
+  return TrazzoStore.withFreshDoc(db,DOC,function(fresh){
+    var freshProjects=TrazzoStore.fieldOrDefault(fresh,'projects',[]);
+    var freshTasks=TrazzoStore.fieldOrDefault(fresh,'standaloneTasks',[]);
+    var freshDayTasks=TrazzoStore.fieldOrDefault(fresh,'dayTasks',{});
+    var freshReminders=TrazzoStore.fieldOrDefault(fresh,'reminders',{});
+    var recP=TrazzoStore.reconcileArrayField(freshProjects,basisProjects,projects,'id',{mergeConflict:TrazzoStore.reconcileProjectRecord});
+    var recT=TrazzoStore.reconcileArrayField(freshTasks,basisTasks,standaloneTasks,'id');
+    var recD=TrazzoStore.reconcileMapField(freshDayTasks,basisDayTasks,dayTasks);
+    var recR=TrazzoStore.reconcileMapField(freshReminders,basisReminders,reminders);
+    TrazzoStore.notifyConflict(recP.conflicts,'proyectos');
+    TrazzoStore.notifyConflict(recT.conflicts,'tareas');
+    return {projects:recP.result,standaloneTasks:recT.result,dayTasks:recD.result,reminders:recR.result};
+  }).then(function(patch){
+    projects=patch.projects;standaloneTasks=patch.standaloneTasks;dayTasks=patch.dayTasks;reminders=patch.reminders;
+    _focusPass=Object.assign({},_focusPass,patch);
+  }).catch(function(e){TrazzoStore.notifySaveError('focus',e);});
 }
 
 // ── ALARM ─────────────────────────────────────────────────────────────────────
@@ -929,3 +955,4 @@ updateDisplay();
 <script src="theme.js"></script>
 </body>
 </html>
+
