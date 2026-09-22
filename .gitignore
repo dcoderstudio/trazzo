@@ -1,2 +1,7 @@
 .vercel
 node_modules
+
+# Generated site and private bridge configuration
+/public/
+.env
+.env.*
