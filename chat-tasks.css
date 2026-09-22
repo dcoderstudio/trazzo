@@ -1,0 +1,12 @@
+.chat-tasks-dialog{color:#f5f5f7;background:#15151f;border:1px solid #434351;border-radius:16px;padding:24px;width:min(850px,94vw);max-height:90vh;font:14px/1.5 system-ui,sans-serif;overflow:auto;box-shadow:0 20px 80px #0008}
+.chat-tasks-dialog::backdrop{background:#000a}
+.chat-tasks-dialog h2{margin:0 0 8px;font-size:22px}
+.chat-tasks-dialog p{color:#c5c5d3;white-space:pre-line}
+.chat-tasks-dialog details{margin:16px 0}.chat-tasks-dialog summary{cursor:pointer}
+.chat-tasks-dialog label{display:block;margin-bottom:8px;font-weight:600}
+.chat-tasks-dialog textarea{box-sizing:border-box;width:100%;resize:vertical;padding:12px;background:#0e0e16;color:#fff;border:1px solid #666679;border-radius:8px;font:14px/1.6 ui-monospace,monospace}
+.chat-tasks-dialog :focus-visible{outline:2px solid #a898ff;outline-offset:3px}
+.chat-tasks-actions{display:flex;flex-wrap:wrap;gap:10px;justify-content:flex-end;margin-top:20px}
+.chat-tasks-dialog button{padding:10px 16px;border:1px solid #666679;border-radius:8px;background:#292937;color:#fff;font:inherit;cursor:pointer}
+.chat-tasks-dialog .chat-tasks-primary{background:#6953d7;border-color:#a898ff}.chat-tasks-dialog button:disabled{opacity:.45;cursor:default}
+.chat-tasks-preview{overflow:auto}.chat-tasks-dialog table{border-collapse:collapse;width:100%;font-size:13px;text-align:left}.chat-tasks-dialog th,.chat-tasks-dialog td{padding:10px;border-bottom:1px solid #434351;min-width:95px;overflow-wrap:anywhere}.chat-tasks-dialog td:first-child{min-width:170px}

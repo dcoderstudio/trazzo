@@ -748,6 +748,8 @@ select.eq-org-new-inp option{background:#1a1f35;}
 .eq-hcol-day-date{font-size:8.5px;color:rgba(255,255,255,.24);flex-shrink:0;}
 .eq-hcol-day-line{flex:1;height:.5px;background:rgba(255,255,255,.06);}
 </style>
+<link rel="stylesheet" href="chat-tasks.css">
+<script src="chat-tasks.js"></script>
 </head>
 <body>
 <div id="eqRoot" class="eq-root" style="display:none">
@@ -1185,6 +1187,11 @@ function renderTeamOrganizar(main,allTasks){
   nbtn.innerHTML='<span style="font-size:15px;line-height:1;">+</span> Nueva tarea';
   nbtn.onclick=function(){showNewTaskModal();};
   lp.appendChild(nbtn);
+  var chatBtn=document.createElement('button');chatBtn.className='eq-org-new-btn';
+  chatBtn.style.cssText='margin:6px 12px 0;width:calc(100% - 24px);justify-content:center;';
+  chatBtn.textContent='Agregar tareas desde chat';
+  chatBtn.onclick=function(){TrazzoChatTasks.open({db:db,doc:DOC,onSaved:function(tasks){standaloneTasks=tasks;renderAll();}});};
+  lp.appendChild(chatBtn);
 
   // ── NUEVA ENTREGA BUTTON ──
   var dbtn=document.createElement('button');dbtn.className='eq-org-new-btn';
