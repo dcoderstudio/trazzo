@@ -1,0 +1,6 @@
+{
+  "name": "trazzo", "version": "1.0.0", "private": true,
+  "scripts": {"build": "node scripts/build-public.cjs", "test:bridge": "node --test test/bridge.test.cjs"},
+  "engines": {"node": "22.x"},
+  "dependencies": {"@modelcontextprotocol/sdk": "1.30.0", "firebase-admin": "14.4.0", "zod": "^3.25.76"}
+}

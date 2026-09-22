@@ -1,0 +1,14 @@
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": "public",
+  "functions": {"api/trazzo.js": {"maxDuration": 30}},
+  "rewrites": [
+    {"source": "/mcp", "destination": "/api/trazzo?route=mcp"},
+    {"source": "/.well-known/oauth-protected-resource", "destination": "/api/trazzo?route=resource"},
+    {"source": "/.well-known/oauth-authorization-server", "destination": "/api/trazzo?route=metadata"},
+    {"source": "/oauth/authorize", "destination": "/api/trazzo?route=authorize"},
+    {"source": "/oauth/approve", "destination": "/api/trazzo?route=approve"},
+    {"source": "/oauth/token", "destination": "/api/trazzo?route=token"},
+    {"source": "/oauth/revoke", "destination": "/api/trazzo?route=revoke"}
+  ]
+}
