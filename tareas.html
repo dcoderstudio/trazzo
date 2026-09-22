@@ -244,6 +244,8 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
 .btn-danger{background:#E24B4A;border:none;color:#fff;font-size:12px;font-weight:700;padding:8px 16px;border-radius:10px;cursor:pointer;font-family:'Inter',sans-serif;transition:background .15s;}
 .btn-danger:hover{background:#c73838;}
 </style>
+<link rel="stylesheet" href="chat-tasks.css">
+<script src="chat-tasks.js"></script>
 </head>
 <body>
 
@@ -269,6 +271,7 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
     <button class="sort-btn" id="sortBtn" onclick="openSortPicker(this)">↕ Manual</button>
     <button class="focus-nav-btn" onclick="location.href='focus.html'">⚡ Focus</button>
     <button class="new-task-btn" onclick="openNewTaskModal()">+ Nueva tarea</button>
+    <button class="new-task-btn" onclick="openChatTasks()">Agregar tareas desde chat</button>
   </div>
 
   <!-- Team management modal -->
@@ -500,6 +503,7 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
   // ── END AUTH GUARD ──────────────────────────────────────────
 
   var DOC = db.collection('workspace').doc('proyectos');
+  window.openChatTasks=function(){TrazzoChatTasks.open({db:db,doc:DOC,onSaved:function(tasks){standaloneTasks=tasks;renderBoard();}});};
 
   var projects = [], categories = [], standaloneTasks = [];
   var nextId = 14, catIdCounter = 20;
