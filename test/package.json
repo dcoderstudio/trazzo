@@ -1,1 +1,9 @@
-{"private":true,"scripts":{"test":"node --test chat-tasks.test.cjs chat-tasks-ui.test.cjs"},"devDependencies":{"jsdom":"30.1.0"}}
+{
+  "private": true,
+  "scripts": {
+    "test": "node --test *.test.cjs"
+  },
+  "devDependencies": {
+    "jsdom": "30.1.0"
+  }
+}

@@ -750,6 +750,7 @@ select.eq-org-new-inp option{background:#1a1f35;}
 </style>
 <link rel="stylesheet" href="chat-tasks.css">
 <script src="chat-tasks.js"></script>
+<link rel="stylesheet" href="equipo-mobile.css">
 </head>
 <body>
 <div id="eqRoot" class="eq-root" style="display:none">
@@ -769,9 +770,13 @@ select.eq-org-new-inp option{background:#1a1f35;}
     </div>
   </div>
 
+  <div class="eq-mobile-tools" aria-label="Paneles de Equipo">
+    <button id="mobilePeople" aria-expanded="false" aria-controls="mobileTeamPanel">Personas y áreas</button>
+    <button id="mobileGoals" aria-expanded="false" aria-controls="mobileGoalsPanel">Metas y recordatorios</button>
+  </div>
   <div class="eq-body">
     <!-- LEFT PANEL -->
-    <aside class="eq-left">
+    <aside class="eq-left" id="mobileTeamPanel">
       <div class="eq-left-top">
         <div class="eq-slabel">Resumen</div>
         <div class="eq-stats-grid">
@@ -820,7 +825,7 @@ select.eq-org-new-inp option{background:#1a1f35;}
     </main>
 
     <!-- RIGHT PANEL -->
-    <aside class="eq-right">
+    <aside class="eq-right" id="mobileGoalsPanel">
       <!-- GOALS (person mode) -->
       <div id="rightGoals" style="display:flex;flex-direction:column;flex:1;gap:10px;overflow:hidden;">
         <!-- RECORDATORIOS -->
@@ -1371,8 +1376,10 @@ function buildOrgPersonTask(t){
 // click (no movement) → edit modal; drag → move between areas / back to unassigned
 function initOrgDrag(cardEl,task,wrap){
   var enriched=Object.assign({},task,{_type:'standalone',_projId:null,_stage:null,source:'Tarea libre',color:'rgba(90,180,232,.55)',member:task.resp?getMember(task.resp):null});
+  cardEl.addEventListener('click',function(e){if((e.pointerType==='touch'||window.matchMedia('(max-width:900px)').matches)&&!e.target.closest('.eq-org-chk'))showTaskEditModal(enriched);});
   var startX,startY,dragging=false;
   cardEl.addEventListener('pointerdown',function(e){
+    if(e.pointerType==='touch'||window.matchMedia('(max-width:900px)').matches)return;
     if(e.button!==0||e.target.closest('.eq-org-chk'))return;
     e.preventDefault();
     startX=e.clientX;startY=e.clientY;dragging=false;
@@ -1750,6 +1757,7 @@ function buildTeamWeekCard(task){
 // ── TEAM SEMANA DRAG (like initSemanaCardDrag → rescheduleTeamTask) ──
 function initTeamSemanaCardDrag(card,task,allSecs){
   card.addEventListener('pointerdown',function(e){
+    if(e.pointerType==='touch'||window.matchMedia('(max-width:900px)').matches)return;
     if(e.button!==0)return;
     if(e.target.closest('button')||e.target.closest('.eq-tcard-chk'))return;
     var rect=card.getBoundingClientRect();
@@ -2066,6 +2074,7 @@ function buildDashTaskCard(task){
 // ── KANBAN DRAG (dashboard) ────────────────────────────────────────
 function initDashKDrag(card,task){
   card.addEventListener('pointerdown',function(e){
+    if(e.pointerType==='touch'||window.matchMedia('(max-width:900px)').matches)return;
     if(e.button!==0)return;
     e.preventDefault();card.setPointerCapture(e.pointerId);
     var w=card.offsetWidth;
@@ -2163,6 +2172,7 @@ function showDashAssignPopup(task,anchorEl){
 // ── DRAG LIST CARD → AREA (dashboard) ─────────────────────────────
 function initDashListDrag(card,task){
   card.addEventListener('pointerdown',function(e){
+    if(e.pointerType==='touch'||window.matchMedia('(max-width:900px)').matches)return;
     if(e.button!==0||e.target.closest('.eq-dtask-mem'))return;
     var sx=e.clientX,sy=e.clientY,dragging=false,ghost=null;
     var pid=e.pointerId;
@@ -2276,6 +2286,17 @@ function showTaskEditModal(task){
     var opt=document.createElement('option');opt.value=m.id;opt.textContent=m.name;if(m.id===task.resp)opt.selected=true;sel.appendChild(opt);
   });
   modal.appendChild(sel);
+  // Touch-friendly alternative to dragging a free task between areas.
+  var editArea=null;
+  if(task._type==='standalone'){
+    var areaLabel=document.createElement('label');areaLabel.className='eq-tem-lbl';areaLabel.textContent='Área';areaLabel.htmlFor='editTaskArea';modal.appendChild(areaLabel);
+    editArea=document.createElement('select');editArea.id='editTaskArea';editArea.className='eq-tem-select';
+    var none=document.createElement('option');none.value='';none.textContent='Sin área';editArea.appendChild(none);
+    var available=getOrgAreaList();
+    if(task.area&&!available.some(function(a){return a.name===task.area;}))available.push({name:task.area});
+    available.forEach(function(a){var o=document.createElement('option');o.value=a.name;o.textContent=a.name;editArea.appendChild(o);});
+    editArea.value=task.area||'';modal.appendChild(editArea);
+  }
   // Deadline — custom picker (same style as rest of app)
   var lbl3=document.createElement('div');lbl3.className='eq-tem-lbl';lbl3.textContent='Fecha de entrega';modal.appendChild(lbl3);
   var _selDl=task.deadline||null;
@@ -2298,7 +2319,7 @@ function showTaskEditModal(task){
   }
   var cancel=document.createElement('button');cancel.className='eq-tem-cancel';cancel.textContent='Cancelar';cancel.onclick=closeTaskEditModal;
   var save=document.createElement('button');save.className='eq-tem-save';save.textContent='Guardar';
-  save.onclick=function(){var v=inp.value.trim();if(v)saveTaskEdit(task,v,sel.value,_selDl||'');};
+  save.onclick=function(){var v=inp.value.trim();if(v)saveTaskEdit(task,v,sel.value,_selDl||'',editArea?editArea.value:undefined);};
   btns.appendChild(cancel);btns.appendChild(save);modal.appendChild(btns);
   // Keyboard
   inp.addEventListener('keydown',function(e){if(e.key==='Enter')save.click();if(e.key==='Escape')closeTaskEditModal();});
@@ -2487,8 +2508,9 @@ function showNewTaskModalForMember(mid){
   inp.focus();
 }
 
-function saveTaskEdit(task,text,resp,deadline){
+function saveTaskEdit(task,text,resp,deadline,area){
   var changes={text:text,resp:resp||null,deadline:deadline||''};
+  if(task._type==='standalone'&&area!==undefined)changes.area=area||null;
   if(task._type==='standalone'){
     standaloneTasks=(standaloneTasks||[]).map(function(t){return t.id===task.id?Object.assign({},t,changes):t;});
   } else {
@@ -2867,6 +2889,7 @@ function showAreaTaskEdit(task,ar){
 }
 function initAreaOrgDrag(card,task,ar){
   card.addEventListener('pointerdown',function(e){
+    if(e.pointerType==='touch'||window.matchMedia('(max-width:900px)').matches)return;
     if(e.button!==0)return;
     e.preventDefault();card.setPointerCapture(e.pointerId);
     var sx=e.clientX,sy=e.clientY,moved=false,ghost=null;
@@ -3437,6 +3460,7 @@ function adelantarTask(task,mid){rescheduleTask(task,mid,today());}
 // Drag entre zona prioridades ↔ zona hoy
 function initHoyDrag(card,task,mid,prioZone,todayZone,srcZone){
   card.addEventListener('pointerdown',function(e){
+    if(e.pointerType==='touch'||window.matchMedia('(max-width:900px)').matches)return;
     // Ignore right-click, buttons, and checkboxes — info area is allowed (threshold distinguishes click vs drag)
     if(e.button!==0||e.target.closest('button')||e.target.closest('.eq-tcard-chk')||e.target.closest('.eq-hcard-chk'))return;
     var sx=e.clientX,sy=e.clientY,dragging=false,ghost=null,captured=false;
@@ -3613,6 +3637,7 @@ function renderSemana(mid,cont,all){
 // ── DRAG BETWEEN WEEK DAYS ─────────────────────────────────────────
 function initSemanaCardDrag(card,task,mid,allSecs){
   card.addEventListener('pointerdown',function(e){
+    if(e.pointerType==='touch'||window.matchMedia('(max-width:900px)').matches)return;
     if(e.button!==0)return;
     if(e.target.closest('button')||e.target.closest('.eq-tcard-chk'))return;
     var rect=card.getBoundingClientRect();
@@ -4017,6 +4042,7 @@ function buildKCard(task,colId,mid){
 // ── KANBAN DRAG ────────────────────────────────────────────────────
 function initKDrag(card,task,colId,mid){
   card.addEventListener('pointerdown',function(e){
+    if(e.pointerType==='touch'||window.matchMedia('(max-width:900px)').matches)return;
     if(e.button!==0)return;
     if(e.target.closest('.eq-kchk'))return;
     e.preventDefault();
@@ -4246,6 +4272,7 @@ document.getElementById('remInp').addEventListener('keydown',function(e){
 // Enter key on add-member inputs
 document.getElementById('newMName').addEventListener('keydown',function(e){if(e.key==='Enter')saveNewMember();if(e.key==='Escape')toggleAddForm();});
 </script>
+<script src="equipo-mobile.js"></script>
 </body>
 </html>
 
