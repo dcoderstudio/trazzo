@@ -263,6 +263,7 @@ function getAllTasks() {
     var cat = getCat(proj.catId);
     tasks.forEach(function(task) {
       if (task.done) return;
+      if (!task.sharedWithTeam) return; // solo se ve aquí si se agregó explícitamente a Equipo desde Proyectos
       result.push({
         id: task.id, text: task.text,
         deadline: task.deadline || '', resp: task.resp || '',

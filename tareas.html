@@ -619,6 +619,7 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
       }
       if (!tasks || !tasks.length) return;
       tasks.forEach(function(task) {
+        if (!task.sharedWithTeam) return; // solo se ve aquí si se agregó explícitamente a Equipo desde Proyectos
         result.push({
           id: task.id, text: task.text, done: !!task.done,
           colStatus: task.colStatus || null,
@@ -1813,7 +1814,8 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
       proj.stageTasks[stage].push({
         id: Date.now(), text: text, done: false,
         deadline: document.getElementById('ntDeadline').value,
-        resp: document.getElementById('ntResp').value
+        resp: document.getElementById('ntResp').value,
+        sharedWithTeam: true // se crea desde Tareas (vista de equipo), no desde la ficha de Proyectos
       });
       saveData(); closeNewTaskModal(); renderBoard();
     }

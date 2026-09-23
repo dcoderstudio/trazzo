@@ -1002,6 +1002,7 @@ function getMemberTasks(mid){
     if(p.catId==='cotizaciones'||!p.stageTasks)return;
     Object.keys(p.stageTasks).forEach(function(stage){
       (p.stageTasks[stage]||[]).forEach(function(t){
+        if(!t.sharedWithTeam)return; // solo se ve aquí si se agregó explícitamente a Equipo desde Proyectos
         if((t.resp||'')===mid)tasks.push(Object.assign({},t,{type:'project',source:p.name,stage:stage,projId:p.id,color:p.catColor||'#1A6FD4'}));
       });
     });
@@ -1053,6 +1054,7 @@ function collectAllTasks(){
     if(p.catId==='cotizaciones'||!p.stageTasks)return;
     Object.keys(p.stageTasks).forEach(function(stage){
       (p.stageTasks[stage]||[]).forEach(function(t){
+        if(!t.sharedWithTeam)return; // solo se ve aquí si se agregó explícitamente a Equipo desde Proyectos
         all.push(Object.assign({},t,{_type:'project',_projId:p.id,_stage:stage,source:p.name,color:p.catColor||'#1A6FD4',member:t.resp?getMember(t.resp):null}));
       });
     });
@@ -3997,6 +3999,7 @@ function renderKanban(mid,cont){
     if(p.catId==='cotizaciones'||!p.stageTasks)return;
     Object.keys(p.stageTasks).forEach(function(stage){
       (p.stageTasks[stage]||[]).forEach(function(t){
+        if(!t.sharedWithTeam)return; // solo se ve aquí si se agregó explícitamente a Equipo desde Proyectos
         if((t.resp||'')===mid&&t.done&&isThisWeek(t))
           doneTasks.push(Object.assign({},t,{type:'project',source:p.name,stage:stage,projId:p.id,color:p.catColor||'#1A6FD4',done:true}));
       });

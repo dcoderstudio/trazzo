@@ -1358,6 +1358,7 @@ input[type=time].mi{color-scheme:dark;cursor:pointer;}
       if(p.catId==='cotizaciones')return;
       var stage=p.stage||'';
       ((p.stageTasks&&p.stageTasks[stage])||[]).forEach(function(t){
+        if(!t.sharedWithTeam)return; // solo se ve aquí si se agregó explícitamente a Equipo desde Proyectos
         tasks.push({id:t.id,text:t.text,done:t.done,deadline:t.deadline,resp:t.resp||'',type:'project',projId:p.id,stage:stage,source:p.name,createdAt:t.id});
       });
     });
@@ -1569,6 +1570,7 @@ input[type=time].mi{color-scheme:dark;cursor:pointer;}
       var stage=p.stage||''; var cat=getCat(p.catId); var color=(cat&&cat.color)||'#1A6FD4';
       ((p.stageTasks&&p.stageTasks[stage])||[]).forEach(function(t){
         if(t.deadline!==ds)return;
+        if(!t.sharedWithTeam)return; // solo se ve aquí si se agregó explícitamente a Equipo desde Proyectos
         items.push({text:t.text,sub:p.name,color:color,done:t.done,resp:t.resp||'',
           toggle:(function(tid,pid,stg){return function(){
             var nd;
@@ -2069,6 +2071,7 @@ input[type=time].mi{color-scheme:dark;cursor:pointer;}
       var stage=p.stage||'';
       ((p.stageTasks&&p.stageTasks[stage])||[]).forEach(function(t){
         if(!t.deadline||t.done||t.deadline>=todayStr)return;
+        if(!t.sharedWithTeam)return; // solo se ve aquí si se agregó explícitamente a Equipo desde Proyectos
         items.push({id:t.id,text:t.text,deadline:t.deadline,badge:'Tarea',badgeColor:'rgba(255,255,255,.3)',source:p.name,type:'project',pid:p.id,stage:stage,
           markDone:(function(pid,stg,tid){return function(){
             for(var i=0;i<projects.length;i++){if(projects[i].id===pid){var arr=projects[i].stageTasks[stg]||[];projects[i].stageTasks[stg]=arr.map(function(x){return x.id===tid?Object.assign({},x,{done:true}):x;});break;}}
