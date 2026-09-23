@@ -47,8 +47,16 @@
  .eq-hcols-wrap,.eq-hcols-inner{display:flex;flex-direction:column;overflow:visible;height:auto;width:100%;min-width:0;flex:none}
  .eq-hcols-inner{padding:12px}.eq-hcol{width:100%;flex:none}.eq-hcol-body{overflow:visible;flex:none}
  .eq-kanban{flex-direction:column;width:100%;min-width:0}.eq-kcol{width:100%;min-width:0;flex:none}.eq-dash-kanban-wrap{padding:12px}
- .eq-hcard,.eq-tcard{flex-wrap:wrap}.eq-hcard-acts,.eq-tcard-actions{opacity:1;flex-wrap:wrap}
- .eq-hact-btn,.eq-tact-btn{min-height:40px;font-size:12px}.eq-hcard-body,.eq-tcard-body{min-width:0}
+ /* Give task names their own full-width row; controls wrap independently below. */
+ .eq-hcard,.eq-tcard{flex-wrap:wrap;gap:8px;padding:12px}
+ .eq-hcard-info,.eq-tcard-body{order:-1;flex:0 0 100%;width:100%;min-width:0}
+ .eq-hcard-txt,.eq-tcard-txt{word-break:normal;overflow-wrap:break-word}
+ .eq-hcard-meta,.eq-tcard-meta{margin-top:4px}
+ .eq-hcard-drag,.eq-hcard-dot{display:none}
+ .eq-hcard-acts,.eq-tcard-actions{opacity:1;flex:1 1 auto;min-width:0;flex-wrap:wrap;gap:4px;margin:0}
+ .eq-hcard-chk,.eq-tcard-chk{order:2;margin-left:auto}
+ .eq-hact-btn,.eq-tcard-act,.eq-adv-btn{min-height:40px;font-size:12px}
+ .eq-tdl{flex-shrink:0}
  .eq-member-add-btn,.eq-org-new-btn,.eq-back-btn{min-height:44px;font-size:14px}
  #rightGoals,#rightArea,.eq-right-area,.eq-right-area-list,.eq-glist{overflow:visible!important;flex:none!important;height:auto;max-height:none}
  .eq-gcard{flex:none}.eq-gadd{min-width:44px;min-height:44px}.eq-gtitle{font-size:13px}
