@@ -1239,8 +1239,8 @@ function renderTeamOrganizar(main,allTasks){
   // ── UNASSIGNED TASK LIST (su criterio depende del modo: sin área / sin encargado) ──
   var llbl=document.createElement('div');llbl.className='eq-org-left-lbl';
   var unassignedTasks=_orgGroupBy==='persona'
-    ? (standaloneTasks||[]).filter(function(t){return!t.done&&!t.resp;})
-    : (standaloneTasks||[]).filter(function(t){return!t.done&&(!t.area||t.area==='');});
+    ? allTasks.filter(function(t){return!t.done&&!t.resp;})
+    : allTasks.filter(function(t){return!t.done&&(!t.area||t.area==='');});
   llbl.textContent=(_orgGroupBy==='persona'?'Sin encargado · ':'Sin asignar · ')+unassignedTasks.length;
   lp.appendChild(llbl);
   var ll=document.createElement('div');ll.className='eq-org-left-list';lp.appendChild(ll);
@@ -1265,7 +1265,7 @@ function renderTeamOrganizar(main,allTasks){
   if(_orgGroupBy==='persona'){
     // ── COLUMNS PER TEAM MEMBER — vista general de tareas por persona ──
     teamMembers.forEach(function(m){
-      var mTks=(standaloneTasks||[]).filter(function(t){return!t.done&&t.resp===m.id;});
+      var mTks=allTasks.filter(function(t){return!t.done&&t.resp===m.id;});
       var mcolor=m.color||'#1A6FD4';
       var col=document.createElement('div');col.className='eq-orgcol';col.dataset.dropField='resp';col.dataset.dropValue=m.id;
       var chdr=document.createElement('div');chdr.className='eq-orgcol-hdr';
@@ -1300,7 +1300,7 @@ function renderTeamOrganizar(main,allTasks){
     });
 
     areasList.forEach(function(area){
-      var areaTks=(standaloneTasks||[]).filter(function(t){return!t.done&&t.area===area.name;});
+      var areaTks=allTasks.filter(function(t){return!t.done&&t.area===area.name;});
       var col=document.createElement('div');col.className='eq-orgcol';col.dataset.dropField='area';col.dataset.dropValue=area.name;
       // Header
       var chdr=document.createElement('div');chdr.className='eq-orgcol-hdr';
@@ -1335,10 +1335,7 @@ function completeOrgTask(task,cardEl){
     cardEl.classList.add('org-completing');
   }
   setTimeout(function(){
-    standaloneTasks=(standaloneTasks||[]).map(function(t){
-      return t.id===task.id?Object.assign({},t,{done:true,colStatus:'done',doneAt:today()}):t;
-    });
-    saveTaskChange();renderDashboard();
+    teamTaskUpdate(task,{done:true,colStatus:'done',doneAt:today()});
   },220);
 }
 
@@ -1396,7 +1393,7 @@ function buildOrgPersonTask(t){
 // ── UNIFIED ORG DRAG — works from left panel AND area/persona columns ──
 // click (no movement) → edit modal; drag → move between areas / back to unassigned
 function initOrgDrag(cardEl,task,wrap){
-  var enriched=Object.assign({},task,{_type:'standalone',_projId:null,_stage:null,source:'Tarea libre',color:'rgba(90,180,232,.55)',member:task.resp?getMember(task.resp):null});
+  var enriched=task;
   cardEl.addEventListener('click',function(e){if((e.pointerType==='touch'||window.matchMedia('(max-width:900px)').matches)&&!e.target.closest('.eq-org-chk'))showTaskEditModal(enriched);});
   var startX,startY,dragging=false;
   cardEl.addEventListener('pointerdown',function(e){
@@ -1455,13 +1452,11 @@ function initOrgDrag(cardEl,task,wrap){
       if(targetCol){
         var field=targetCol.dataset.dropField,value=targetCol.dataset.dropValue;
         var patch={};patch[field]=value;
-        standaloneTasks=(standaloneTasks||[]).map(function(t){return t.id===task.id?Object.assign({},t,patch):t;});
-        saveTaskChange();renderDashboard();
+        teamTaskUpdate(task,patch);
       } else if(toUnassigned){
         var clearField=_orgGroupBy==='persona'?'resp':'area';
         var patch2={};patch2[clearField]=clearField==='resp'?null:'';
-        standaloneTasks=(standaloneTasks||[]).map(function(t){return t.id===task.id?Object.assign({},t,patch2):t;});
-        saveTaskChange();renderDashboard();
+        teamTaskUpdate(task,patch2);
       }
     }
     document.addEventListener('pointermove',onMove);
