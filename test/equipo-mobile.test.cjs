@@ -29,6 +29,14 @@ test('real mobile page: panels, selection, touch tap, task area edit and all das
  for(const tab of ['hoy','semana','tareas','organizar']){h.w._dashTab=tab;h.w.renderDashboard();assert.ok(d.getElementById('eqMain').children.length);}
  assert.deepEqual(h.errors,[]);
  if(process.env.MOBILE_FIXTURE_DIR){
+  const main=d.getElementById('eqMain');main.replaceChildren();
+  for(const kind of ['Hoy y prioridades','Semana']){
+   const heading=d.createElement('h2');heading.textContent=kind;main.appendChild(heading);
+   for(const [i,text] of ['Silvestre - Confirmación de ODC','Enviar render nuevo del reconocimiento Novo','Fumigación de la camioneta a las 12:00'].entries()){
+    const task={id:'preview-'+i,text,deadline:'2026-09-23',member:{id:'G',name:'Gon',color:'#336699'},priority:i===1,color:'#5AB4E8'};
+    main.appendChild(kind==='Semana'?h.w.buildTeamWeekCard(task):h.w.buildTeamHoyCard(task,i===1,{showTomorrow:true}));
+   }
+  }
   let snapshot=h.dom.serialize().replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,'').replace(/href="(chat-tasks.css|equipo-mobile.css)"/g,'href="../$1"');
   fs.writeFileSync(path.join(process.env.MOBILE_FIXTURE_DIR,'equipo-layout-fixture.html'),snapshot);
  }
