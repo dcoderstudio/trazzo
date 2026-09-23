@@ -674,6 +674,12 @@ select.eq-org-new-inp option{background:#1a1f35;}
 .eq-org-task-info{flex:1;min-width:0;}
 .eq-org-task-name{font-size:11px;font-weight:600;color:rgba(255,255,255,.8);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .eq-org-task-meta{font-size:8.5px;color:rgba(255,255,255,.22);margin-top:1px;}
+.eq-org-task.today-hl{border-color:rgba(90,180,232,.28);background:linear-gradient(135deg,rgba(90,180,232,.12) 0%,rgba(90,180,232,.04) 55%,#0c1422 100%);}
+.eq-org-task.today-hl:hover{border-color:rgba(90,180,232,.42);}
+.eq-org-task.today-hl .eq-org-task-meta{color:#5AB4E8;}
+.eq-org-task.overdue-hl{border-color:rgba(212,83,126,.32);background:linear-gradient(135deg,rgba(212,83,126,.14) 0%,rgba(212,83,126,.04) 55%,#0c1422 100%);}
+.eq-org-task.overdue-hl:hover{border-color:rgba(212,83,126,.48);}
+.eq-org-task.overdue-hl .eq-org-task-meta{color:#D4537E;font-weight:700;}
 /* Completar tarea desde la vista general */
 .eq-org-chk{width:15px;height:15px;margin-top:1px;border-radius:50%;border:1.5px solid rgba(255,255,255,.2);flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:border-color .15s,background .15s;touch-action:manipulation;}
 .eq-org-chk:hover{border-color:#27AE72;background:rgba(39,174,114,.14);}
@@ -712,6 +718,10 @@ select.eq-org-new-inp option{background:#1a1f35;}
 .eq-org-atask:hover{border-color:rgba(255,255,255,.14);background:rgba(255,255,255,.07);}
 .eq-org-atask-bar{width:3px;align-self:stretch;border-radius:1.5px;flex-shrink:0;}
 .eq-org-atask-name{flex:1;min-width:0;font-size:10.5px;font-weight:600;color:rgba(255,255,255,.72);white-space:normal;overflow-wrap:anywhere;line-height:1.35;padding:1px 0;}
+.eq-org-atask.today-hl{border-color:rgba(90,180,232,.28);background:linear-gradient(135deg,rgba(90,180,232,.13) 0%,rgba(90,180,232,.04) 55%,rgba(255,255,255,.04) 100%);}
+.eq-org-atask.today-hl:hover{border-color:rgba(90,180,232,.4);}
+.eq-org-atask.overdue-hl{border-color:rgba(212,83,126,.32);background:linear-gradient(135deg,rgba(212,83,126,.15) 0%,rgba(212,83,126,.04) 55%,rgba(255,255,255,.04) 100%);}
+.eq-org-atask.overdue-hl:hover{border-color:rgba(212,83,126,.46);}
 .eq-org-atask-av{width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:6px;font-weight:800;color:#fff;flex-shrink:0;overflow:hidden;}
 .eq-org-atask-av img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
 .eq-org-unassigned-hint{font-size:8.5px;color:rgba(255,255,255,.22);font-style:italic;cursor:pointer;transition:color .12s;}
@@ -1338,8 +1348,9 @@ function buildOrgChk(t,card,small){
   return chk;
 }
 
+function orgDeadlineCls(deadline){var dc=dlCls(deadline);return dc==='overdue'?' overdue-hl':dc==='today'?' today-hl':'';}
 function buildOrgTask(t){
-  var card=document.createElement('div');card.className='eq-org-task';card.style.cssText='touch-action:none;cursor:grab;';
+  var card=document.createElement('div');card.className='eq-org-task'+orgDeadlineCls(t.deadline);card.style.cssText='touch-action:none;cursor:grab;';
   var bar=document.createElement('div');bar.className='eq-org-task-bar';bar.style.background='rgba(90,180,232,.55)';card.appendChild(bar);
   card.appendChild(buildOrgChk(t,card,false));
   var info=document.createElement('div');info.className='eq-org-task-info';
@@ -1350,7 +1361,7 @@ function buildOrgTask(t){
 }
 
 function buildOrgAreaTask(t,area){
-  var card=document.createElement('div');card.className='eq-org-atask';card.style.cssText='touch-action:none;cursor:grab;';
+  var card=document.createElement('div');card.className='eq-org-atask'+orgDeadlineCls(t.deadline);card.style.cssText='touch-action:none;cursor:grab;';
   var bar=document.createElement('div');bar.className='eq-org-atask-bar';bar.style.background=area.color||'rgba(90,180,232,.55)';card.appendChild(bar);
   card.appendChild(buildOrgChk(t,card,true));
   var nm=document.createElement('span');nm.className='eq-org-atask-name';nm.textContent=t.text;card.appendChild(nm);
@@ -1369,7 +1380,7 @@ function buildOrgAreaTask(t,area){
 
 function buildOrgPersonTask(t){
   var areaColor=t.area?getTeamAreaColor(t.area):'rgba(90,180,232,.55)';
-  var card=document.createElement('div');card.className='eq-org-atask';card.style.cssText='touch-action:none;cursor:grab;';
+  var card=document.createElement('div');card.className='eq-org-atask'+orgDeadlineCls(t.deadline);card.style.cssText='touch-action:none;cursor:grab;';
   var bar=document.createElement('div');bar.className='eq-org-atask-bar';bar.style.background=areaColor;card.appendChild(bar);
   card.appendChild(buildOrgChk(t,card,true));
   var nm=document.createElement('span');nm.className='eq-org-atask-name';nm.textContent=t.text;card.appendChild(nm);
