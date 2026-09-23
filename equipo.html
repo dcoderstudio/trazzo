@@ -3358,7 +3358,8 @@ function mkSecEmpty(msg){
 function buildHoyCard(task,mid,isPrio,opts){
   opts=opts||{};
   var card=document.createElement('div');
-  var cls='eq-hcard'+(task.done?' done':'')+(isPrio?' prio-indent':'');
+  var sectionCls=opts.section==='today'?' today-hl':opts.section==='overdue'?' overdue-hl':'';
+  var cls='eq-hcard'+(task.done?' done':'')+(isPrio?' prio-indent':sectionCls);
   card.className=cls;
 
   // ≡ Drag handle
@@ -3573,8 +3574,8 @@ function renderHoy(mid,cont,all){
 
   if(!todayAll.length){todayZone.appendChild(mkSecEmpty('Todo al día'));}
   else{
-    todayUndone.forEach(function(t2){var c=buildHoyCard(t2,mid,false,{showTomorrow:true});initHoyDrag(c,t2,mid,prioZone,todayZone,'today');todayZone.appendChild(c);});
-    todayDone.forEach(function(t2){todayZone.appendChild(buildHoyCard(t2,mid,false,{}));});
+    todayUndone.forEach(function(t2){var c=buildHoyCard(t2,mid,false,{showTomorrow:true,section:'today'});initHoyDrag(c,t2,mid,prioZone,todayZone,'today');todayZone.appendChild(c);});
+    todayDone.forEach(function(t2){todayZone.appendChild(buildHoyCard(t2,mid,false,{section:'today'}));});
   }
 
   block.appendChild(prioZone);
@@ -3584,7 +3585,7 @@ function renderHoy(mid,cont,all){
 
   // ── Atrasadas — siempre visible ─────────────────────────────────
   cont.appendChild(mkSHdr('Atrasadas'+(overdue.length?' — '+overdue.length:''),'red'));
-  if(overdue.length){overdue.forEach(function(t2){cont.appendChild(buildHoyCard(t2,mid,false,{showToday:true}));});}
+  if(overdue.length){overdue.forEach(function(t2){cont.appendChild(buildHoyCard(t2,mid,false,{showToday:true,section:'overdue'}));});}
   else{cont.appendChild(mkSecEmpty('Sin tareas atrasadas'));}
 
   // ── Próximos 3 días — siempre visible, lista plana ──────────────
