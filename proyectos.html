@@ -232,9 +232,8 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
 .tm-row-txt{flex:1;font-size:12px;color:rgba(255,255,255,0.85);word-break:break-word;}
 .tm-row.excluded .tm-row-txt{text-decoration:line-through;}
 .tm-toggle{font-size:9px;font-weight:700;padding:4px 9px;border-radius:8px;cursor:pointer;white-space:nowrap;transition:all .15s;flex-shrink:0;}
-.tm-toggle.applies-on{background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.55);}
-.tm-toggle.applies-on:hover{background:rgba(255,255,255,0.14);}
-.tm-toggle.applies-off{background:rgba(226,75,74,0.15);color:#E24B4A;}
+.tm-toggle.applies-off{background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.5);}
+.tm-toggle.applies-off:hover{background:rgba(255,255,255,0.14);}
 .tm-toggle.share-on{background:rgba(39,174,114,0.2);color:#27AE72;}
 .tm-toggle.share-off{background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.35);}
 .tm-toggle.share-off:hover{background:rgba(255,255,255,0.11);}
@@ -289,15 +288,17 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
 .pdm-kcol-body::-webkit-scrollbar{width:3px;}
 .pdm-kcol-body::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.08);}
 .pdm-kcol-empty{text-align:center;font-size:9.5px;color:rgba(255,255,255,0.18);font-style:italic;padding:10px 4px;}
+.pdm-kcol-cta{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:16px 10px;}
+.pdm-kcol-cta-txt{font-size:10px;color:rgba(255,255,255,0.25);font-style:italic;text-align:center;}
+.pdm-kcol-cta-btn{background:rgba(255,255,255,0.09);border:0.5px solid rgba(255,255,255,0.16);color:rgba(255,255,255,0.7);font-size:10px;font-weight:700;padding:6px 12px;border-radius:20px;cursor:pointer;font-family:'Inter',sans-serif;white-space:nowrap;transition:all .15s;}
+.pdm-kcol-cta-btn:hover{background:rgba(255,255,255,0.16);color:#fff;}
 .pdm-ktask{background:rgba(255,255,255,0.07);border:0.5px solid rgba(255,255,255,0.09);border-radius:8px;padding:6px 8px;}
 .pdm-ktask.muted{background:rgba(255,255,255,0.03);border-color:rgba(255,255,255,0.05);opacity:.65;}
-.pdm-ktask.preview{border-style:dashed;opacity:.5;}
 .pdm-ktask-row{display:flex;align-items:flex-start;gap:6px;}
 .pdm-ktask-chk{width:14px;height:14px;border-radius:50%;border:1.3px solid rgba(255,255,255,0.3);flex-shrink:0;margin-top:1px;cursor:pointer;transition:all .15s;}
 .pdm-ktask-chk.on{background:#27AE72;border-color:#27AE72;}
-.pdm-ktask.preview .pdm-ktask-chk{cursor:pointer;border-style:dashed;}
 .pdm-ktask-txt{flex:1;font-size:10.5px;color:rgba(255,255,255,0.9);line-height:1.35;word-break:break-word;}
-.pdm-ktask.muted .pdm-ktask-txt,.pdm-ktask.preview .pdm-ktask-txt{color:rgba(255,255,255,0.5);}
+.pdm-ktask.muted .pdm-ktask-txt{color:rgba(255,255,255,0.5);}
 .pdm-ktask.done .pdm-ktask-txt{text-decoration:line-through;color:rgba(255,255,255,0.3);}
 .pdm-ktask-share{font-size:8px;font-weight:700;padding:2px 6px;border-radius:8px;cursor:pointer;white-space:nowrap;display:inline-block;margin-top:5px;margin-left:20px;transition:all .15s;}
 .pdm-ktask-share.off{background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.4);}
@@ -3208,25 +3209,20 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
       }; })(stage));
 
       var body = document.createElement('div'); body.className = 'pdm-kcol-body';
-      var realTasks = (p.stageTasks && p.stageTasks[stage]) || null;
-      if (realTasks && realTasks.length) {
-        var visibleTasks = realTasks.filter(function(t) { return !t.notApplicable; });
-        if (visibleTasks.length) {
-          visibleTasks.forEach(function(t) { body.appendChild(buildKTaskCard(p, t, isCurrent)); });
-        } else {
-          var empA = document.createElement('div'); empA.className = 'pdm-kcol-empty'; empA.textContent = 'Sin tareas aplicables'; body.appendChild(empA);
-        }
-      } else if (!realTasks) {
-        // Todavía no se visita esta fase: vista previa de la plantilla del
-        // servicio — marcar cualquiera la siembra de una vez como tarea real.
-        var tpl = (cat.templates && cat.templates[stage]) || [];
-        tpl.forEach(function(item, idx) {
-          var text = typeof item === 'string' ? item : (item.text || '');
-          body.appendChild(buildPreviewTaskCard(p, cat, stage, idx, text, isCurrent));
-        });
-        if (!tpl.length) { var emp = document.createElement('div'); emp.className = 'pdm-kcol-empty'; emp.textContent = 'Sin tareas'; body.appendChild(emp); }
+      var realTasks = (p.stageTasks && p.stageTasks[stage]) || [];
+      var appliedTasks = realTasks.filter(function(t) { return t.sharedWithTeam; });
+      if (appliedTasks.length) {
+        appliedTasks.forEach(function(t) { body.appendChild(buildKTaskCard(p, t, isCurrent)); });
       } else {
-        var emp2 = document.createElement('div'); emp2.className = 'pdm-kcol-empty'; emp2.textContent = 'Sin tareas'; body.appendChild(emp2);
+        // Nada aplicado todavía en esta fase — no se muestra ninguna
+        // tarea sola (ni sembrada ni de plantilla) hasta que alguien
+        // la aplique explícitamente desde "Gestionar tareas".
+        var cta = document.createElement('div'); cta.className = 'pdm-kcol-cta';
+        var ctaTxt = document.createElement('div'); ctaTxt.className = 'pdm-kcol-cta-txt'; ctaTxt.textContent = 'Sin tareas asignadas'; cta.appendChild(ctaTxt);
+        var ctaBtn = document.createElement('button'); ctaBtn.className = 'pdm-kcol-cta-btn'; ctaBtn.textContent = 'Asignar tareas';
+        ctaBtn.onclick = function(e) { e.stopPropagation(); openTaskManager(); };
+        cta.appendChild(ctaBtn);
+        body.appendChild(cta);
       }
       col.appendChild(body);
 
@@ -3237,7 +3233,7 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
         var v = addInp.value.trim(); if (!v) return;
         if (!p.stageTasks) p.stageTasks = {};
         if (!p.stageTasks[stage]) p.stageTasks[stage] = [];
-        p.stageTasks[stage].push({ id: Date.now(), text: v, done: false, deadline: '', resp: '' });
+        p.stageTasks[stage].push({ id: Date.now(), text: v, done: false, deadline: '', resp: '', sharedWithTeam: true });
         saveData(); renderDetailKanban(); updateCardBadge(detailProjectId);
       });
       addWrap.appendChild(addInp);
@@ -3260,39 +3256,15 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
     var txt = document.createElement('div'); txt.className = 'pdm-ktask-txt'; txt.textContent = task.text;
     top.appendChild(txt);
     row.appendChild(top);
-    var share = document.createElement('span');
-    share.className = 'pdm-ktask-share ' + (task.sharedWithTeam ? 'on' : 'off');
-    share.textContent = task.sharedWithTeam ? '✓ En Equipo' : '➕ Agregar a Equipo';
-    share.title = task.sharedWithTeam ? 'Quitar de las vistas de Equipo' : 'Mostrar esta tarea en Equipo (Hoy, Organizar, etc.)';
-    share.onclick = function() {
-      task.sharedWithTeam = !task.sharedWithTeam;
-      saveData(); renderDetailKanban();
-    };
-    row.appendChild(share);
-    return row;
-  }
-
-  // Vista previa de una tarea de plantilla para una fase que el
-  // proyecto todavía no visita. Sí se puede marcar como hecha aunque
-  // no sea la fase actual — al hacer clic, esa fase se siembra de una
-  // vez (como si el proyecto ya hubiera llegado ahí) y la tarea
-  // clicada queda marcada.
-  function buildPreviewTaskCard(p, cat, stage, idx, text, isCurrent) {
-    var row = document.createElement('div'); row.className = 'pdm-ktask preview' + (isCurrent ? '' : ' muted');
-    var top = document.createElement('div'); top.className = 'pdm-ktask-row';
-    var chk = document.createElement('div'); chk.className = 'pdm-ktask-chk';
-    chk.title = 'Marcar como hecha';
-    chk.onclick = function() {
-      seedStageTasks(p, cat, stage);
-      var arr = (p.stageTasks && p.stageTasks[stage]) || [];
-      var real = arr[idx];
-      if (real) { real.done = true; real.colStatus = 'done'; }
+    var remove = document.createElement('span');
+    remove.className = 'pdm-ktask-share off';
+    remove.textContent = '✕ Quitar de esta ficha';
+    remove.title = 'Ya no aplica — deja de verse aquí y en Equipo';
+    remove.onclick = function() {
+      task.sharedWithTeam = false;
       saveData(); renderDetailKanban(); updateCardBadge(detailProjectId);
     };
-    top.appendChild(chk);
-    var txt = document.createElement('div'); txt.className = 'pdm-ktask-txt'; txt.textContent = text;
-    top.appendChild(txt);
-    row.appendChild(top);
+    row.appendChild(remove);
     return row;
   }
 
@@ -3354,37 +3326,27 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
       body.appendChild(emp);
     }
   }
+  // Un solo botón por tarea: "Aplica" decide a la vez si se ve en esta
+  // ficha Y si se ve en Equipo — son la misma cosa. Por default nada
+  // aplica (ni sembrado ni de plantilla) hasta que se marca aquí.
   function buildTmRow(p, cat, stage, idx, real, tpl) {
     var text = real ? real[idx].text : (typeof tpl[idx] === 'string' ? tpl[idx] : (tpl[idx].text || ''));
-    var excluded = !!(real && real[idx].notApplicable);
-    var shared = !!(real && real[idx].sharedWithTeam);
-    var row = document.createElement('div'); row.className = 'tm-row' + (excluded ? ' excluded' : '');
+    var applied = !!(real && real[idx].sharedWithTeam);
+    var row = document.createElement('div'); row.className = 'tm-row' + (applied ? '' : ' excluded');
     var txt = document.createElement('div'); txt.className = 'tm-row-txt'; txt.textContent = text;
     row.appendChild(txt);
 
     var applyBtn = document.createElement('span');
-    applyBtn.className = 'tm-toggle ' + (excluded ? 'applies-off' : 'applies-on');
-    applyBtn.textContent = excluded ? 'No aplica' : 'Aplica';
-    applyBtn.title = excluded ? 'Esta tarea no se usará en este proyecto — clic para reactivarla' : 'Clic si esta tarea no aplica para este proyecto';
+    applyBtn.className = 'tm-toggle ' + (applied ? 'share-on' : 'applies-off');
+    applyBtn.textContent = applied ? '✓ Aplica' : 'No aplica';
+    applyBtn.title = applied ? 'Quitar — deja de verse en esta ficha y en Equipo' : 'Aplicar — aparece en esta ficha y en Equipo';
     applyBtn.onclick = function() {
       seedStageTasks(p, cat, stage);
       var arr = p.stageTasks[stage];
-      arr[idx].notApplicable = !arr[idx].notApplicable;
+      arr[idx].sharedWithTeam = !arr[idx].sharedWithTeam;
       saveData(); renderTaskManager(p, cat); renderDetailKanban(); updateCardBadge(detailProjectId);
     };
     row.appendChild(applyBtn);
-
-    var shareBtn = document.createElement('span');
-    shareBtn.className = 'tm-toggle ' + (shared ? 'share-on' : 'share-off');
-    shareBtn.textContent = shared ? '✓ Equipo' : '+ Equipo';
-    shareBtn.title = shared ? 'Quitar de las vistas de Equipo' : 'Mostrar esta tarea en Equipo (Hoy, Organizar, etc.)';
-    shareBtn.onclick = function() {
-      seedStageTasks(p, cat, stage);
-      var arr = p.stageTasks[stage];
-      arr[idx].sharedWithTeam = !arr[idx].sharedWithTeam;
-      saveData(); renderTaskManager(p, cat); renderDetailKanban();
-    };
-    row.appendChild(shareBtn);
     return row;
   }
 
