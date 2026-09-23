@@ -214,6 +214,31 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
 .pdm-stat{background:rgba(255,255,255,0.04);border-radius:8px;padding:8px 10px;}
 .pdm-task-lbl{font-size:10px;font-weight:700;color:rgba(255,255,255,0.28);text-transform:uppercase;letter-spacing:.08em;flex-shrink:0;}
 .pdm-footer{padding:10px 18px;border-top:0.5px solid rgba(255,255,255,0.06);display:flex;justify-content:space-between;align-items:center;flex-shrink:0;}
+.tm-open-btn{background:rgba(255,255,255,0.06);border:0.5px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.6);font-size:10.5px;font-weight:700;padding:5px 11px;border-radius:20px;cursor:pointer;font-family:'Inter',sans-serif;white-space:nowrap;flex-shrink:0;transition:all .15s;}
+.tm-open-btn:hover{background:rgba(255,255,255,0.11);color:#fff;}
+.tm-modal{background:#161616;border:0.5px solid rgba(255,255,255,0.1);border-radius:18px;width:min(94vw,560px);max-height:82vh;display:flex;flex-direction:column;overflow:hidden;transform:translateY(8px);transition:transform .2s;}
+.overlay.open .tm-modal{transform:none;}
+.tm-hdr{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:0.5px solid rgba(255,255,255,0.07);flex-shrink:0;}
+.tm-title{font-size:14px;font-weight:800;color:#fff;}
+.tm-close{background:none;border:none;color:rgba(255,255,255,0.4);font-size:20px;cursor:pointer;line-height:1;padding:0;}
+.tm-close:hover{color:#fff;}
+.tm-body{flex:1;overflow-y:auto;padding:6px 18px 18px;}
+.tm-body::-webkit-scrollbar{width:4px;}
+.tm-body::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:2px;}
+.tm-stage-hdr{font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:rgba(255,255,255,0.32);margin:16px 0 8px;}
+.tm-stage-hdr:first-child{margin-top:4px;}
+.tm-row{display:flex;align-items:center;gap:10px;padding:8px 4px;border-bottom:0.5px solid rgba(255,255,255,0.04);}
+.tm-row.excluded{opacity:.45;}
+.tm-row-txt{flex:1;font-size:12px;color:rgba(255,255,255,0.85);word-break:break-word;}
+.tm-row.excluded .tm-row-txt{text-decoration:line-through;}
+.tm-toggle{font-size:9px;font-weight:700;padding:4px 9px;border-radius:8px;cursor:pointer;white-space:nowrap;transition:all .15s;flex-shrink:0;}
+.tm-toggle.applies-on{background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.55);}
+.tm-toggle.applies-on:hover{background:rgba(255,255,255,0.14);}
+.tm-toggle.applies-off{background:rgba(226,75,74,0.15);color:#E24B4A;}
+.tm-toggle.share-on{background:rgba(39,174,114,0.2);color:#27AE72;}
+.tm-toggle.share-off{background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.35);}
+.tm-toggle.share-off:hover{background:rgba(255,255,255,0.11);}
+.tm-empty{text-align:center;font-size:12px;color:rgba(255,255,255,0.25);padding:24px 0;font-style:italic;}
 .pdm-footer-info{font-size:10px;color:rgba(255,255,255,0.2);}
 /* ── CUSTOM PICKERS ─── */
 .cdt{background:#1e1e1e;border:0.5px solid rgba(255,255,255,0.1);border-radius:10px;padding:9px 12px;font-size:12px;color:rgba(255,255,255,0.3);font-family:'Inter',sans-serif;cursor:pointer;text-align:left;width:100%;display:block;transition:border-color .15s,color .15s;}
@@ -270,7 +295,7 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
 .pdm-ktask-row{display:flex;align-items:flex-start;gap:6px;}
 .pdm-ktask-chk{width:14px;height:14px;border-radius:50%;border:1.3px solid rgba(255,255,255,0.3);flex-shrink:0;margin-top:1px;cursor:pointer;transition:all .15s;}
 .pdm-ktask-chk.on{background:#27AE72;border-color:#27AE72;}
-.pdm-ktask.preview .pdm-ktask-chk{cursor:default;border-style:dashed;}
+.pdm-ktask.preview .pdm-ktask-chk{cursor:pointer;border-style:dashed;}
 .pdm-ktask-txt{flex:1;font-size:10.5px;color:rgba(255,255,255,0.9);line-height:1.35;word-break:break-word;}
 .pdm-ktask.muted .pdm-ktask-txt,.pdm-ktask.preview .pdm-ktask-txt{color:rgba(255,255,255,0.5);}
 .pdm-ktask.done .pdm-ktask-txt{text-decoration:line-through;color:rgba(255,255,255,0.3);}
@@ -731,6 +756,7 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
       <div style="display:flex;align-items:center;gap:8px;padding:0 0 8px;">
         <div class="pdm-task-lbl">Fases del proyecto</div>
         <div style="flex:1;height:0.5px;background:rgba(255,255,255,0.06);"></div>
+        <button class="tm-open-btn" id="tmOpenBtn">🗂 Gestionar tareas</button>
       </div>
       <div class="pdm-kanban-scroll" id="pdmKanban"></div>
     </div>
@@ -750,6 +776,16 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
         <button class="btn-ok" id="pdmSaveBtn">Guardar cambios</button>
       </div>
     </div>
+  </div>
+</div>
+
+<div class="overlay" id="tmOverlay">
+  <div class="tm-modal">
+    <div class="tm-hdr">
+      <div class="tm-title">Gestionar tareas</div>
+      <button class="tm-close" id="tmClose">×</button>
+    </div>
+    <div class="tm-body" id="tmBody"></div>
   </div>
 </div>
 
@@ -3174,13 +3210,19 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
       var body = document.createElement('div'); body.className = 'pdm-kcol-body';
       var realTasks = (p.stageTasks && p.stageTasks[stage]) || null;
       if (realTasks && realTasks.length) {
-        realTasks.forEach(function(t) { body.appendChild(buildKTaskCard(p, t, isCurrent)); });
+        var visibleTasks = realTasks.filter(function(t) { return !t.notApplicable; });
+        if (visibleTasks.length) {
+          visibleTasks.forEach(function(t) { body.appendChild(buildKTaskCard(p, t, isCurrent)); });
+        } else {
+          var empA = document.createElement('div'); empA.className = 'pdm-kcol-empty'; empA.textContent = 'Sin tareas aplicables'; body.appendChild(empA);
+        }
       } else if (!realTasks) {
-        // Todavía no se visita esta fase: vista previa de la plantilla del servicio.
+        // Todavía no se visita esta fase: vista previa de la plantilla del
+        // servicio — marcar cualquiera la siembra de una vez como tarea real.
         var tpl = (cat.templates && cat.templates[stage]) || [];
-        tpl.forEach(function(item) {
+        tpl.forEach(function(item, idx) {
           var text = typeof item === 'string' ? item : (item.text || '');
-          body.appendChild(buildPreviewTaskCard(text, isCurrent));
+          body.appendChild(buildPreviewTaskCard(p, cat, stage, idx, text, isCurrent));
         });
         if (!tpl.length) { var emp = document.createElement('div'); emp.className = 'pdm-kcol-empty'; emp.textContent = 'Sin tareas'; body.appendChild(emp); }
       } else {
@@ -3231,13 +3273,22 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
   }
 
   // Vista previa de una tarea de plantilla para una fase que el
-  // proyecto todavía no visita — no es un registro real todavía
-  // (no tiene id ni se puede marcar/compartir), solo un adelanto de
-  // lo que se sembrará cuando el proyecto llegue a esa fase.
-  function buildPreviewTaskCard(text, isCurrent) {
+  // proyecto todavía no visita. Sí se puede marcar como hecha aunque
+  // no sea la fase actual — al hacer clic, esa fase se siembra de una
+  // vez (como si el proyecto ya hubiera llegado ahí) y la tarea
+  // clicada queda marcada.
+  function buildPreviewTaskCard(p, cat, stage, idx, text, isCurrent) {
     var row = document.createElement('div'); row.className = 'pdm-ktask preview' + (isCurrent ? '' : ' muted');
     var top = document.createElement('div'); top.className = 'pdm-ktask-row';
     var chk = document.createElement('div'); chk.className = 'pdm-ktask-chk';
+    chk.title = 'Marcar como hecha';
+    chk.onclick = function() {
+      seedStageTasks(p, cat, stage);
+      var arr = (p.stageTasks && p.stageTasks[stage]) || [];
+      var real = arr[idx];
+      if (real) { real.done = true; real.colStatus = 'done'; }
+      saveData(); renderDetailKanban(); updateCardBadge(detailProjectId);
+    };
     top.appendChild(chk);
     var txt = document.createElement('div'); txt.className = 'pdm-ktask-txt'; txt.textContent = text;
     top.appendChild(txt);
@@ -3261,6 +3312,80 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
     saveData();
     renderProjDetail();
     renderBoard();
+  }
+
+  // ── GESTIONAR TAREAS ──────────────────────────────────────────
+  // Lista, fase por fase, todas las tareas del proyecto (sembradas o
+  // no) en un solo lugar: decidir cuáles aplican a este proyecto en
+  // particular y cuáles se agregan a Equipo, sin tener que abrir cada
+  // columna del mini-Kanban una por una.
+  function openTaskManager() {
+    var p = null;
+    for (var i = 0; i < projects.length; i++) { if (projects[i].id === detailProjectId) { p = projects[i]; break; } }
+    if (!p) return;
+    var cat = null;
+    for (var i = 0; i < categories.length; i++) { if (categories[i].id === p.catId) { cat = categories[i]; break; } }
+    if (!cat) return;
+    renderTaskManager(p, cat);
+    document.getElementById('tmOverlay').classList.add('open');
+  }
+  function closeTaskManager() {
+    document.getElementById('tmOverlay').classList.remove('open');
+  }
+  function renderTaskManager(p, cat) {
+    var body = document.getElementById('tmBody');
+    if (!body) return;
+    body.innerHTML = '';
+    (cat.stages || []).forEach(function(stage) {
+      var real = (p.stageTasks && p.stageTasks[stage]) || null;
+      var tpl = (cat.templates && cat.templates[stage]) || [];
+      var count = real ? real.length : tpl.length;
+      if (!count) return;
+      var hdr = document.createElement('div'); hdr.className = 'tm-stage-hdr';
+      hdr.textContent = stage + (stage === p.stage ? ' · fase actual' : '');
+      body.appendChild(hdr);
+      for (var idx = 0; idx < count; idx++) {
+        body.appendChild(buildTmRow(p, cat, stage, idx, real, tpl));
+      }
+    });
+    if (!body.children.length) {
+      var emp = document.createElement('div'); emp.className = 'tm-empty';
+      emp.textContent = 'Este servicio no tiene tareas definidas.';
+      body.appendChild(emp);
+    }
+  }
+  function buildTmRow(p, cat, stage, idx, real, tpl) {
+    var text = real ? real[idx].text : (typeof tpl[idx] === 'string' ? tpl[idx] : (tpl[idx].text || ''));
+    var excluded = !!(real && real[idx].notApplicable);
+    var shared = !!(real && real[idx].sharedWithTeam);
+    var row = document.createElement('div'); row.className = 'tm-row' + (excluded ? ' excluded' : '');
+    var txt = document.createElement('div'); txt.className = 'tm-row-txt'; txt.textContent = text;
+    row.appendChild(txt);
+
+    var applyBtn = document.createElement('span');
+    applyBtn.className = 'tm-toggle ' + (excluded ? 'applies-off' : 'applies-on');
+    applyBtn.textContent = excluded ? 'No aplica' : 'Aplica';
+    applyBtn.title = excluded ? 'Esta tarea no se usará en este proyecto — clic para reactivarla' : 'Clic si esta tarea no aplica para este proyecto';
+    applyBtn.onclick = function() {
+      seedStageTasks(p, cat, stage);
+      var arr = p.stageTasks[stage];
+      arr[idx].notApplicable = !arr[idx].notApplicable;
+      saveData(); renderTaskManager(p, cat); renderDetailKanban(); updateCardBadge(detailProjectId);
+    };
+    row.appendChild(applyBtn);
+
+    var shareBtn = document.createElement('span');
+    shareBtn.className = 'tm-toggle ' + (shared ? 'share-on' : 'share-off');
+    shareBtn.textContent = shared ? '✓ Equipo' : '+ Equipo';
+    shareBtn.title = shared ? 'Quitar de las vistas de Equipo' : 'Mostrar esta tarea en Equipo (Hoy, Organizar, etc.)';
+    shareBtn.onclick = function() {
+      seedStageTasks(p, cat, stage);
+      var arr = p.stageTasks[stage];
+      arr[idx].sharedWithTeam = !arr[idx].sharedWithTeam;
+      saveData(); renderTaskManager(p, cat); renderDetailKanban();
+    };
+    row.appendChild(shareBtn);
+    return row;
   }
 
   function renderDetailTimeline() {
@@ -3780,6 +3905,9 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
   document.getElementById('pdmConfirmDel').onclick = confirmDeleteProj;
   document.getElementById('pdmSaveBtn').onclick = function(){ saveProjDetail(); document.getElementById('projDetailOverlay').classList.remove('open'); };
   document.getElementById('projDetailOverlay').addEventListener('click', function(e){ if(e.target===document.getElementById('projDetailOverlay')) document.getElementById('projDetailOverlay').classList.remove('open'); });
+  document.getElementById('tmOpenBtn').onclick = openTaskManager;
+  document.getElementById('tmClose').onclick = closeTaskManager;
+  document.getElementById('tmOverlay').addEventListener('click', function(e){ if(e.target===document.getElementById('tmOverlay')) closeTaskManager(); });
 
   // ── AUTO-SAVE en detalle de ficha ─────────────────────
   var _pdmTimer = null;
