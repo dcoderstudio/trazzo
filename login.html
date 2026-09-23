@@ -92,7 +92,7 @@ function isAllowed(email) {
 // Si ya hay sesión activa → redirigir
 firebase.auth().onAuthStateChanged(function(u) {
   if (u && isAllowed(u.email)) {
-    location.replace('/daily-hub.html');
+    location.replace('/equipo.html');
   } else if (u) {
     firebase.auth().signOut();
     showError('La cuenta ' + u.email + ' no tiene acceso.');

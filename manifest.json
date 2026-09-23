@@ -2,7 +2,7 @@
   "name": "Trazzo",
   "short_name": "Trazzo",
   "description": "Dcoder Studio — gestión de proyectos y planificación",
-  "start_url": "/daily-hub.html",
+  "start_url": "/equipo.html",
   "display": "standalone",
   "orientation": "portrait-primary",
   "background_color": "#0c0c0c",
