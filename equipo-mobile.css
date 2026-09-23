@@ -24,12 +24,13 @@
  .eq-mrow,.eq-arow{min-height:56px}.eq-mname,.eq-a-name{font-size:15px}.eq-marea-btn,.eq-marea,.eq-a-sub{font-size:12px;color:#a9b5cb}
  .eq-mdel{opacity:1;width:36px;height:40px}.eq-mbadge{font-size:11px}
  .eq-view-toggle{margin-top:10px}.eq-vt-btn,.eq-vg-btn,.eq-add-btn{min-height:44px;font-size:13px}
- .eq-phdr{height:auto;min-height:110px;flex-wrap:wrap}.eq-phdr-av{width:76px;min-height:104px}
+ .eq-phdr{height:auto;min-height:110px;flex-wrap:wrap}.eq-phdr-av{width:76px!important;min-height:104px}
+ .eq-team-avatar>div:first-child:not(.av-img){width:200px!important;position:absolute!important;left:-62px;height:100%!important}
  .eq-phdr-body{padding:12px;min-width:0}.eq-pname{font-size:21px;overflow-wrap:anywhere}.eq-psub{font-size:12px}
  .eq-pstats{width:100%;padding:8px 12px 12px;gap:8px}.eq-pstat{flex:1;padding:9px 6px}.eq-pstat-l{font-size:10px}
  .eq-area-hdr{flex-wrap:wrap;padding:14px}.eq-area-stats-row{width:100%;margin:0}.eq-area-stat{flex:1;padding:8px}
- .eq-tab-bar,.eq-dash-tabs{padding:0;overflow-x:auto;min-width:0;max-width:100%;flex:none;width:100%}
- .eq-tab{flex:1;white-space:nowrap;padding:12px 8px;font-size:13px;min-height:46px}
+ .eq-tab-bar,.eq-dash-tabs{padding:0;overflow-x:auto;overflow-y:hidden;min-width:0;max-width:100%;flex:none;width:100%}
+ .eq-tab{flex:1;white-space:nowrap;padding:12px 6px;font-size:12px;min-height:46px;color:#b4c3d9}
  .eq-dash-toolbar{flex-wrap:wrap;gap:6px}.eq-org-groupbar{flex-wrap:wrap;padding:8px 12px}.eq-org-groupbtn{min-height:40px;font-size:13px}
  .eq-dash-content,.eq-dash-body,.eq-tab-content,.eq-area-body,.eq-dash,.eq-dash-col,.eq-dash-col-body,.eq-dash-list{height:auto!important;max-height:none!important;overflow:visible!important;flex:none!important;min-width:0;width:100%}
  .eq-main.page-scroll{overflow:visible}
@@ -46,7 +47,7 @@
  .eq-hcols-wrap,.eq-hcols-inner{display:flex;flex-direction:column;overflow:visible;height:auto;width:100%;min-width:0;flex:none}
  .eq-hcols-inner{padding:12px}.eq-hcol{width:100%;flex:none}.eq-hcol-body{overflow:visible;flex:none}
  .eq-kanban{flex-direction:column;width:100%;min-width:0}.eq-kcol{width:100%;min-width:0;flex:none}.eq-dash-kanban-wrap{padding:12px}
- .eq-hcard,.eq-tcard{flex-wrap:wrap}.eq-hcard-acts,.eq-tcard-acts{opacity:1;flex-wrap:wrap}
+ .eq-hcard,.eq-tcard{flex-wrap:wrap}.eq-hcard-acts,.eq-tcard-actions{opacity:1;flex-wrap:wrap}
  .eq-hact-btn,.eq-tact-btn{min-height:40px;font-size:12px}.eq-hcard-body,.eq-tcard-body{min-width:0}
  .eq-member-add-btn,.eq-org-new-btn,.eq-back-btn{min-height:44px;font-size:14px}
  #rightGoals,#rightArea,.eq-right-area,.eq-right-area-list,.eq-glist{overflow:visible!important;flex:none!important;height:auto;max-height:none}
@@ -65,5 +66,5 @@
 /* Native finger scrolling must win over desktop drag gestures. */
 @media (pointer:coarse),(max-width:900px){
  .eq-org-task,.eq-org-atask,.eq-kcard,.eq-tcard,.eq-hcard,.eq-dtask,.eq-hccard{touch-action:pan-y!important;cursor:pointer!important}
- .eq-hcard-acts,.eq-tcard-acts{opacity:1}
+ .eq-hcard-acts,.eq-tcard-actions{opacity:1}
 }

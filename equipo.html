@@ -1069,7 +1069,7 @@ function renderTeamHeader(main,allTasks){
   var hdr=document.createElement('div');hdr.className='eq-phdr';
 
   // ── Left: team banner image ─────────────────────────────────────
-  var avCol=document.createElement('div');avCol.className='eq-phdr-av';
+  var avCol=document.createElement('div');avCol.className='eq-phdr-av eq-team-avatar';
   avCol.style.width='200px';
   avCol.title='Cambiar imagen del equipo';
   avCol.onclick=function(){_avatarFor='_team';document.getElementById('avatarFileInp').click();};
