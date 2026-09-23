@@ -520,6 +520,14 @@ html,body{height:100%;overflow:hidden;background:#080b16;font-family:'Inter',sys
 .eq-hcard.done{opacity:.44;}
 .eq-hcard.prio-indent{margin-left:10px;border-color:rgba(232,160,32,.22);background:linear-gradient(135deg,rgba(232,160,32,.13) 0%,rgba(232,160,32,.05) 55%,#0c1522 100%);}
 .eq-hcard.prio-indent:hover{border-color:rgba(232,160,32,.36);background:linear-gradient(135deg,rgba(232,160,32,.18) 0%,rgba(232,160,32,.08) 55%,#111d32 100%);}
+/* Distinción notoria hoy/atrasadas — mismo lenguaje de color que Daily Hub */
+.eq-hcard.today-hl{border-color:rgba(90,180,232,.28);background:linear-gradient(135deg,rgba(90,180,232,.12) 0%,rgba(90,180,232,.04) 55%,#0c1522 100%);}
+.eq-hcard.today-hl:hover{border-color:rgba(90,180,232,.42);background:linear-gradient(135deg,rgba(90,180,232,.17) 0%,rgba(90,180,232,.06) 55%,#111d32 100%);}
+.eq-hcard.today-hl.done{background:linear-gradient(135deg,rgba(90,180,232,.05) 0%,rgba(90,180,232,.02) 100%);border-color:rgba(90,180,232,.14);}
+.eq-hcard.overdue-hl{border-color:rgba(212,83,126,.32);background:linear-gradient(135deg,rgba(212,83,126,.14) 0%,rgba(212,83,126,.04) 55%,#0c1522 100%);}
+.eq-hcard.overdue-hl:hover{border-color:rgba(212,83,126,.48);background:linear-gradient(135deg,rgba(212,83,126,.2) 0%,rgba(212,83,126,.06) 55%,#111d32 100%);}
+.eq-hcard.overdue-hl.done{background:linear-gradient(135deg,rgba(212,83,126,.06) 0%,rgba(212,83,126,.02) 100%);border-color:rgba(212,83,126,.14);}
+.eq-hcard.overdue-hl .eq-hcard-txt{color:#f0b0c0;}
 .eq-hcard.prio-indent.done{background:linear-gradient(135deg,rgba(232,160,32,.07) 0%,rgba(232,160,32,.02) 100%);border-color:rgba(232,160,32,.12);}
 .eq-hcard-drag{color:rgba(255,255,255,.14);font-size:14px;cursor:grab;flex-shrink:0;user-select:none;line-height:1;}
 .eq-hcard-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
@@ -1481,8 +1489,8 @@ function renderTeamHoyAll(cont,allTasks){
   }
   if(!todayAll.length){todayZone.appendChild(mkSecEmpty('Todo al día'));}
   else{
-    addTeamAreaGroups(todayZone,todayUndone,function(t){return buildTeamHoyCard(t,false,{showTomorrow:true});});
-    addTeamAreaGroups(todayZone,todayDone,function(t){return buildTeamHoyCard(t,false,{});});
+    addTeamAreaGroups(todayZone,todayUndone,function(t){return buildTeamHoyCard(t,false,{showTomorrow:true,section:'today'});});
+    addTeamAreaGroups(todayZone,todayDone,function(t){return buildTeamHoyCard(t,false,{section:'today'});});
   }
   block.appendChild(prioZone);
   var zsep=document.createElement('div');zsep.className='eq-hoy-zone-sep';block.appendChild(zsep);
@@ -1490,7 +1498,7 @@ function renderTeamHoyAll(cont,allTasks){
   cont.appendChild(block);
   // ── Atrasadas ───────────────────────────────────────────────────
   cont.appendChild(mkSHdr('Atrasadas'+(overdue.length?' — '+overdue.length:''),'red'));
-  if(overdue.length){addTeamAreaGroups(cont,overdue,function(t){return buildTeamHoyCard(t,false,{showToday:true});});}
+  if(overdue.length){addTeamAreaGroups(cont,overdue,function(t){return buildTeamHoyCard(t,false,{showToday:true,section:'overdue'});});}
   else{cont.appendChild(mkSecEmpty('Sin tareas atrasadas'));}
   // ── Próximos 3 días ─────────────────────────────────────────────
   cont.appendChild(mkSHdr('Próximos 3 días'+(upcoming.length?' — '+upcoming.length:''),''));
@@ -1605,7 +1613,8 @@ function addTeamAreaGroups(zone,tasks,buildFn){
 function buildTeamHoyCard(task,isPrio,opts){
   opts=opts||{};
   var card=document.createElement('div');
-  card.className='eq-hcard'+(task.done?' done':'')+(isPrio?' prio-indent':'');
+  var sectionCls=opts.section==='today'?' today-hl':opts.section==='overdue'?' overdue-hl':'';
+  card.className='eq-hcard'+(task.done?' done':'')+(isPrio?' prio-indent':sectionCls);
   var dh=document.createElement('div');dh.className='eq-hcard-drag';dh.textContent='≡';card.appendChild(dh);
   var dot=document.createElement('div');dot.className='eq-hcard-dot';dot.style.background=task.color||'#5AB4E8';card.appendChild(dot);
   var info=document.createElement('div');info.className='eq-hcard-info';
