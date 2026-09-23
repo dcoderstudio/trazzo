@@ -252,27 +252,32 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
 .pdm-kanban-scroll{display:flex;gap:10px;overflow-x:auto;padding-bottom:10px;}
 .pdm-kanban-scroll::-webkit-scrollbar{height:4px;}
 .pdm-kanban-scroll::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:2px;}
-.pdm-kcol{flex-shrink:0;width:190px;background:#0f0f0f;border:0.5px solid rgba(255,255,255,0.08);border-radius:12px;display:flex;flex-direction:column;max-height:260px;transition:border-color .15s,box-shadow .15s;}
-.pdm-kcol.current{border-color:rgba(255,255,255,0.32);}
-.pdm-kcol.drop-over{border-color:rgba(90,180,232,.55);box-shadow:0 0 0 2px rgba(90,180,232,.16);}
-.pdm-kcol-hdr{padding:9px 10px 7px;border-bottom:0.5px solid rgba(255,255,255,0.06);flex-shrink:0;}
-.pdm-kcol-title{font-size:10.5px;font-weight:700;color:rgba(255,255,255,0.68);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.pdm-kcol-here{padding:8px 10px 0;flex-shrink:0;}
-.pdm-kcol-card{background:rgba(255,255,255,0.12);border:0.5px solid rgba(255,255,255,0.24);border-radius:8px;padding:7px 8px;font-size:10px;font-weight:700;color:#fff;cursor:grab;text-align:center;user-select:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.pdm-kcol-card:active{cursor:grabbing;}
+.pdm-kcol{flex-shrink:0;width:200px;border-radius:14px;display:flex;flex-direction:column;max-height:300px;transition:all .18s;}
+.pdm-kcol.muted.drop-over{box-shadow:0 0 0 2px rgba(255,255,255,.3);}
+.pdm-kcol-hdr{padding:10px 12px 8px;flex-shrink:0;}
+.pdm-kcol-hdr.ficha-hdr{cursor:grab;border-bottom:0.5px solid rgba(255,255,255,0.18);}
+.pdm-kcol-hdr.ficha-hdr:active{cursor:grabbing;}
+.pdm-kcol-hdr.muted-hdr{border-bottom:0.5px solid rgba(255,255,255,0.05);}
+.pdm-kcol-proj-name{font-size:12px;font-weight:800;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.pdm-kcol-stage-name{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px;}
 .pdm-kcol-body{flex:1;overflow-y:auto;padding:8px;display:flex;flex-direction:column;gap:5px;min-height:30px;}
 .pdm-kcol-body::-webkit-scrollbar{width:3px;}
 .pdm-kcol-body::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.08);}
-.pdm-ktask{background:#181818;border:0.5px solid rgba(255,255,255,0.07);border-radius:8px;padding:6px 8px;}
+.pdm-kcol-empty{text-align:center;font-size:9.5px;color:rgba(255,255,255,0.18);font-style:italic;padding:10px 4px;}
+.pdm-ktask{background:rgba(255,255,255,0.07);border:0.5px solid rgba(255,255,255,0.09);border-radius:8px;padding:6px 8px;}
+.pdm-ktask.muted{background:rgba(255,255,255,0.03);border-color:rgba(255,255,255,0.05);opacity:.65;}
+.pdm-ktask.preview{border-style:dashed;opacity:.5;}
 .pdm-ktask-row{display:flex;align-items:flex-start;gap:6px;}
-.pdm-ktask-chk{width:14px;height:14px;border-radius:50%;border:1.3px solid rgba(255,255,255,0.25);flex-shrink:0;margin-top:1px;cursor:pointer;transition:all .15s;}
+.pdm-ktask-chk{width:14px;height:14px;border-radius:50%;border:1.3px solid rgba(255,255,255,0.3);flex-shrink:0;margin-top:1px;cursor:pointer;transition:all .15s;}
 .pdm-ktask-chk.on{background:#27AE72;border-color:#27AE72;}
-.pdm-ktask-txt{flex:1;font-size:10.5px;color:rgba(255,255,255,0.85);line-height:1.35;word-break:break-word;}
+.pdm-ktask.preview .pdm-ktask-chk{cursor:default;border-style:dashed;}
+.pdm-ktask-txt{flex:1;font-size:10.5px;color:rgba(255,255,255,0.9);line-height:1.35;word-break:break-word;}
+.pdm-ktask.muted .pdm-ktask-txt,.pdm-ktask.preview .pdm-ktask-txt{color:rgba(255,255,255,0.5);}
 .pdm-ktask.done .pdm-ktask-txt{text-decoration:line-through;color:rgba(255,255,255,0.3);}
 .pdm-ktask-share{font-size:8px;font-weight:700;padding:2px 6px;border-radius:8px;cursor:pointer;white-space:nowrap;display:inline-block;margin-top:5px;margin-left:20px;transition:all .15s;}
-.pdm-ktask-share.off{background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.32);}
-.pdm-ktask-share.off:hover{background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.55);}
-.pdm-ktask-share.on{background:rgba(39,174,114,0.16);color:#27AE72;}
+.pdm-ktask-share.off{background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.4);}
+.pdm-ktask-share.off:hover{background:rgba(255,255,255,0.14);color:rgba(255,255,255,0.65);}
+.pdm-ktask-share.on{background:rgba(39,174,114,0.2);color:#27AE72;}
 .pdm-kcol-add{padding:6px 8px 8px;border-top:0.5px solid rgba(255,255,255,0.06);flex-shrink:0;}
 .pdm-kcol-add-inp{width:100%;box-sizing:border-box;background:rgba(255,255,255,0.05);border:0.5px solid rgba(255,255,255,0.1);border-radius:6px;padding:5px 7px;font-size:10px;color:#fff;font-family:'Inter',sans-serif;outline:none;}
 .pdm-kcol-add-inp:focus{border-color:rgba(255,255,255,0.25);}
@@ -3109,12 +3114,13 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
   // Sync with live data if already loaded
   if (_wsTeamMembers && _wsTeamMembers.length) _syncTeamData(_wsTeamMembers);
 
-  // Mini-Kanban de fases dentro de la ficha: columnas = etapas de la
-  // categoría del proyecto; la tarjeta "aquí" se arrastra entre
-  // columnas para cambiar de fase (mismo efecto que arrastrar en el
-  // tablero general, pero sin el ruido visual de las demás fichas).
-  // Cada columna muestra sus propias tareas — que por default NO se
-  // agregan a Equipo salvo que alguien le dé "Agregar a Equipo".
+  // Mini-Kanban de fases dentro de la ficha. La fase ACTUAL se ve como
+  // una ficha de color (con el nombre del proyecto arriba y sus
+  // tareas dentro); las demás fases se ven en el mismo color pero
+  // pálidas, mostrando también sus tareas (las ya sembradas, o una
+  // vista previa de la plantilla si esa fase todavía no se visita).
+  // Se arrastra la ficha completa (por su encabezado) a otra columna
+  // para cambiar de fase — esa columna es la que se "prende" de color.
   var _pdmKDrag = false;
   function renderDetailKanban() {
     var p = null;
@@ -3126,29 +3132,39 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
     if (!wrap) return;
     wrap.innerHTML = '';
     if (!cat || !cat.stages || !cat.stages.length) return;
+    var color = cat.color || '#1A6FD4';
+    var rgb = _coRgb(color);
+
     cat.stages.forEach(function(stage) {
       var isCurrent = stage === p.stage;
       var col = document.createElement('div');
-      col.className = 'pdm-kcol' + (isCurrent ? ' current' : '');
-      var hdr = document.createElement('div'); hdr.className = 'pdm-kcol-hdr';
-      var title = document.createElement('div'); title.className = 'pdm-kcol-title'; title.textContent = stage;
-      hdr.appendChild(title); col.appendChild(hdr);
+      col.className = 'pdm-kcol' + (isCurrent ? ' ficha' : ' muted');
+      col.style.cssText = isCurrent
+        ? 'background:linear-gradient(160deg,rgba('+rgb+',.32) 0%,rgba('+rgb+',.1) 100%);border:1px solid rgba('+rgb+',.6);box-shadow:0 8px 24px rgba(0,0,0,.35);'
+        : 'background:rgba('+rgb+',.05);border:0.5px solid rgba('+rgb+',.12);';
 
+      var hdr = document.createElement('div');
+      hdr.className = 'pdm-kcol-hdr' + (isCurrent ? ' ficha-hdr' : ' muted-hdr');
       if (isCurrent) {
-        var hereWrap = document.createElement('div'); hereWrap.className = 'pdm-kcol-here';
-        var card = document.createElement('div'); card.className = 'pdm-kcol-card'; card.textContent = '📍 ' + p.name;
-        card.draggable = true;
-        card.addEventListener('dragstart', function(e) { _pdmKDrag = true; e.dataTransfer.setData('text/plain', 'p'); });
-        card.addEventListener('dragend', function() {
+        var pname = document.createElement('div'); pname.className = 'pdm-kcol-proj-name'; pname.textContent = p.name;
+        hdr.appendChild(pname);
+        hdr.draggable = true;
+        hdr.title = 'Arrastra para mover el proyecto a otra fase';
+        hdr.addEventListener('dragstart', function(e) { _pdmKDrag = true; e.dataTransfer.setData('text/plain', 'p'); });
+        hdr.addEventListener('dragend', function() {
           _pdmKDrag = false;
           document.querySelectorAll('.pdm-kcol.drop-over').forEach(function(c) { c.classList.remove('drop-over'); });
         });
-        hereWrap.appendChild(card);
-        col.appendChild(hereWrap);
       }
+      var stageName = document.createElement('div');
+      stageName.className = 'pdm-kcol-stage-name';
+      stageName.style.color = isCurrent ? 'rgba(255,255,255,.85)' : 'rgba('+rgb+',.55)';
+      stageName.textContent = stage;
+      hdr.appendChild(stageName);
+      col.appendChild(hdr);
 
       col.addEventListener('dragover', function(e) { if (_pdmKDrag) e.preventDefault(); });
-      col.addEventListener('dragenter', function(e) { if (_pdmKDrag) { e.preventDefault(); this.classList.add('drop-over'); } });
+      col.addEventListener('dragenter', function(e) { if (_pdmKDrag && !isCurrent) { e.preventDefault(); this.classList.add('drop-over'); } });
       col.addEventListener('dragleave', function() { this.classList.remove('drop-over'); });
       col.addEventListener('drop', (function(stg) { return function(e) {
         e.preventDefault(); this.classList.remove('drop-over');
@@ -3156,8 +3172,20 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
       }; })(stage));
 
       var body = document.createElement('div'); body.className = 'pdm-kcol-body';
-      var tasks = (p.stageTasks && p.stageTasks[stage]) || [];
-      tasks.forEach(function(t) { body.appendChild(buildKTaskCard(p, t)); });
+      var realTasks = (p.stageTasks && p.stageTasks[stage]) || null;
+      if (realTasks && realTasks.length) {
+        realTasks.forEach(function(t) { body.appendChild(buildKTaskCard(p, t, isCurrent)); });
+      } else if (!realTasks) {
+        // Todavía no se visita esta fase: vista previa de la plantilla del servicio.
+        var tpl = (cat.templates && cat.templates[stage]) || [];
+        tpl.forEach(function(item) {
+          var text = typeof item === 'string' ? item : (item.text || '');
+          body.appendChild(buildPreviewTaskCard(text, isCurrent));
+        });
+        if (!tpl.length) { var emp = document.createElement('div'); emp.className = 'pdm-kcol-empty'; emp.textContent = 'Sin tareas'; body.appendChild(emp); }
+      } else {
+        var emp2 = document.createElement('div'); emp2.className = 'pdm-kcol-empty'; emp2.textContent = 'Sin tareas'; body.appendChild(emp2);
+      }
       col.appendChild(body);
 
       var addWrap = document.createElement('div'); addWrap.className = 'pdm-kcol-add';
@@ -3177,8 +3205,8 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
     });
   }
 
-  function buildKTaskCard(p, task) {
-    var row = document.createElement('div'); row.className = 'pdm-ktask' + (task.done ? ' done' : '');
+  function buildKTaskCard(p, task, isCurrent) {
+    var row = document.createElement('div'); row.className = 'pdm-ktask' + (task.done ? ' done' : '') + (isCurrent ? '' : ' muted');
     var top = document.createElement('div'); top.className = 'pdm-ktask-row';
     var chk = document.createElement('div'); chk.className = 'pdm-ktask-chk' + (task.done ? ' on' : '');
     chk.onclick = function() {
@@ -3199,6 +3227,21 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
       saveData(); renderDetailKanban();
     };
     row.appendChild(share);
+    return row;
+  }
+
+  // Vista previa de una tarea de plantilla para una fase que el
+  // proyecto todavía no visita — no es un registro real todavía
+  // (no tiene id ni se puede marcar/compartir), solo un adelanto de
+  // lo que se sembrará cuando el proyecto llegue a esa fase.
+  function buildPreviewTaskCard(text, isCurrent) {
+    var row = document.createElement('div'); row.className = 'pdm-ktask preview' + (isCurrent ? '' : ' muted');
+    var top = document.createElement('div'); top.className = 'pdm-ktask-row';
+    var chk = document.createElement('div'); chk.className = 'pdm-ktask-chk';
+    top.appendChild(chk);
+    var txt = document.createElement('div'); txt.className = 'pdm-ktask-txt'; txt.textContent = text;
+    top.appendChild(txt);
+    row.appendChild(top);
     return row;
   }
 
