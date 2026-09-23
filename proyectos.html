@@ -225,8 +225,10 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
 .tm-body{flex:1;overflow-y:auto;padding:6px 18px 18px;}
 .tm-body::-webkit-scrollbar{width:4px;}
 .tm-body::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:2px;}
-.tm-stage-hdr{font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:rgba(255,255,255,0.32);margin:16px 0 8px;}
-.tm-stage-hdr:first-child{margin-top:4px;}
+.tm-stage-group{border-radius:12px;margin-bottom:14px;padding:2px 10px 8px;}
+.tm-stage-hdr{display:flex;align-items:center;gap:7px;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;padding:10px 2px 8px;border-bottom:0.5px solid rgba(255,255,255,0.08);margin-bottom:2px;}
+.tm-stage-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.tm-stage-empty{font-size:10.5px;color:rgba(255,255,255,0.18);font-style:italic;padding:6px 4px;}
 .tm-row{display:flex;align-items:center;gap:10px;padding:8px 4px;border-bottom:0.5px solid rgba(255,255,255,0.04);}
 .tm-row.excluded{opacity:.45;}
 .tm-row-txt{flex:1;font-size:12px;color:rgba(255,255,255,0.85);word-break:break-word;}
@@ -237,6 +239,10 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
 .tm-toggle.share-on{background:rgba(39,174,114,0.2);color:#27AE72;}
 .tm-toggle.share-off{background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.35);}
 .tm-toggle.share-off:hover{background:rgba(255,255,255,0.11);}
+.tm-add-row{padding:8px 4px 2px;}
+.tm-add-inp{width:100%;box-sizing:border-box;background:rgba(255,255,255,0.05);border:0.5px solid rgba(255,255,255,0.1);border-radius:7px;padding:7px 10px;font-size:11px;color:#fff;font-family:'Inter',sans-serif;outline:none;transition:border-color .15s;}
+.tm-add-inp:focus{border-color:rgba(255,255,255,0.28);}
+.tm-add-inp::placeholder{color:rgba(255,255,255,0.22);}
 .tm-empty{text-align:center;font-size:12px;color:rgba(255,255,255,0.25);padding:24px 0;font-style:italic;}
 .pdm-footer-info{font-size:10px;color:rgba(255,255,255,0.2);}
 /* ── CUSTOM PICKERS ─── */
@@ -3308,21 +3314,49 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
     var body = document.getElementById('tmBody');
     if (!body) return;
     body.innerHTML = '';
+    var color = cat.color || '#1A6FD4';
+    var rgb = _coRgb(color);
     (cat.stages || []).forEach(function(stage) {
       var real = (p.stageTasks && p.stageTasks[stage]) || null;
       var tpl = (cat.templates && cat.templates[stage]) || [];
       var count = real ? real.length : tpl.length;
-      if (!count) return;
+
+      var group = document.createElement('div'); group.className = 'tm-stage-group';
+      group.style.background = 'rgba(' + rgb + ',.05)';
+
       var hdr = document.createElement('div'); hdr.className = 'tm-stage-hdr';
-      hdr.textContent = stage + (stage === p.stage ? ' · fase actual' : '');
-      body.appendChild(hdr);
-      for (var idx = 0; idx < count; idx++) {
-        body.appendChild(buildTmRow(p, cat, stage, idx, real, tpl));
+      hdr.style.cssText = 'color:' + color + ';border-bottom-color:rgba(' + rgb + ',.25);';
+      var dot = document.createElement('span'); dot.className = 'tm-stage-dot'; dot.style.background = color;
+      hdr.appendChild(dot);
+      var hdrTxt = document.createElement('span'); hdrTxt.textContent = stage + (stage === p.stage ? ' · fase actual' : '');
+      hdr.appendChild(hdrTxt);
+      group.appendChild(hdr);
+
+      if (count) {
+        for (var idx = 0; idx < count; idx++) { group.appendChild(buildTmRow(p, cat, stage, idx, real, tpl)); }
+      } else {
+        var emptyStage = document.createElement('div'); emptyStage.className = 'tm-stage-empty'; emptyStage.textContent = 'Sin tareas todavía';
+        group.appendChild(emptyStage);
       }
+
+      var addRow = document.createElement('div'); addRow.className = 'tm-add-row';
+      var addInp = document.createElement('input'); addInp.className = 'tm-add-inp'; addInp.placeholder = '+ tarea en "' + stage + '"…';
+      addInp.addEventListener('keydown', function(e) {
+        if (e.key !== 'Enter') return;
+        var v = addInp.value.trim(); if (!v) return;
+        seedStageTasks(p, cat, stage);
+        if (!p.stageTasks[stage]) p.stageTasks[stage] = [];
+        p.stageTasks[stage].push({ id: Date.now(), text: v, done: false, deadline: '', resp: '', sharedWithTeam: true });
+        saveData(); renderTaskManager(p, cat); renderDetailKanban(); updateCardBadge(detailProjectId);
+      });
+      addRow.appendChild(addInp);
+      group.appendChild(addRow);
+
+      body.appendChild(group);
     });
     if (!body.children.length) {
       var emp = document.createElement('div'); emp.className = 'tm-empty';
-      emp.textContent = 'Este servicio no tiene tareas definidas.';
+      emp.textContent = 'Este servicio no tiene fases definidas.';
       body.appendChild(emp);
     }
   }
