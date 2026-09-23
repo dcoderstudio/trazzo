@@ -326,6 +326,28 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
 .status-toggle-btn{background:rgba(255,255,255,0.06);border:0.5px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.5);font-size:11px;font-weight:600;padding:5px 12px;border-radius:20px;cursor:pointer;font-family:'Inter',sans-serif;white-space:nowrap;transition:all .15s;flex-shrink:0;}
 .status-toggle-btn:hover{background:rgba(255,255,255,0.1);border-color:rgba(255,255,255,0.28);color:#fff;}
 .status-toggle-btn.active{background:rgba(255,255,255,0.12);border-color:rgba(255,255,255,0.35);color:#fff;}
+/* ── RESUMEN (vista general en tarjetas de color) ─────────────── */
+.summary-view{display:none;flex-direction:column;gap:22px;padding:20px 28px 32px;height:calc(100dvh - 52px - 48px);height:calc(var(--vh,100vh) - 52px - 48px);overflow-y:auto;}
+.summary-view::-webkit-scrollbar{width:5px;}
+.summary-view::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:3px;}
+.summary-section-hdr{font-size:13px;font-weight:800;color:rgba(255,255,255,0.75);margin-bottom:12px;letter-spacing:.01em;}
+.summary-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;}
+.summary-empty{font-size:12px;color:rgba(255,255,255,0.22);font-style:italic;grid-column:1/-1;padding:6px 2px;}
+.summary-card{border-radius:16px;padding:14px 16px;cursor:pointer;transition:transform .14s,box-shadow .14s;position:relative;}
+.summary-card:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(0,0,0,.4);}
+.summary-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:6px;}
+.summary-card-name{font-size:14px;font-weight:800;color:#fff;line-height:1.3;flex:1;min-width:0;}
+.summary-card-pills{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0;}
+.summary-card-pill{font-size:8.5px;font-weight:700;padding:2px 8px;border-radius:10px;white-space:nowrap;}
+.summary-card-pill.stage{background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.55);}
+.summary-card-client{font-size:11px;color:rgba(255,255,255,0.5);margin-bottom:12px;}
+.summary-card-avatars{display:flex;margin-bottom:10px;min-height:20px;}
+.summary-card-av{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:700;color:#fff;border:1.5px solid rgba(0,0,0,.35);margin-left:-4px;flex-shrink:0;}
+.summary-card-av:first-child{margin-left:0;}
+.summary-card-prog-wrap{display:flex;align-items:center;gap:8px;}
+.summary-card-prog-bar{flex:1;height:5px;border-radius:3px;background:rgba(255,255,255,0.12);overflow:hidden;}
+.summary-card-prog-fill{height:100%;border-radius:3px;transition:width .3s;}
+.summary-card-prog-pct{font-size:10.5px;font-weight:800;color:rgba(255,255,255,0.7);flex-shrink:0;}
 /* STATUS COLUMN EDITOR */
 .sc-ed-panel{position:fixed;z-index:9999;background:#161616;border:0.5px solid rgba(255,255,255,0.14);border-radius:16px;padding:14px;box-shadow:0 20px 70px rgba(0,0,0,.92);width:230px;font-family:'Inter',sans-serif;display:flex;flex-direction:column;gap:10px;}
 .sc-ed-inp{background:#1e1e1e;border:0.5px solid rgba(255,255,255,0.12);border-radius:9px;padding:8px 11px;font-size:13px;font-weight:600;color:#fff;font-family:'Inter',sans-serif;outline:none;width:100%;transition:border-color .15s;}
@@ -474,20 +496,22 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
 
 <div class="layout">
   <div class="subbar">
-    <button id="backToProjectsBtn" onclick="toggleStatusView()" style="display:none;background:rgba(255,255,255,0.06);border:0.5px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.7);font-size:12px;font-weight:600;padding:5px 13px;border-radius:20px;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s;" onmouseover="this.style.background='rgba(255,255,255,0.1)';this.style.color='#fff'" onmouseout="this.style.background='rgba(255,255,255,0.06)';this.style.color='rgba(255,255,255,0.7)'">← Proyectos</button>
-    <div class="tabs" id="tabs"></div>
-    <button class="tab-add" id="addCatBtn">+ Categoría</button>
-    <span class="count-pill" id="countPill">0 proyectos</span>
+    <button id="backToProjectsBtn" onclick="backToProjects()" style="display:;background:rgba(255,255,255,0.06);border:0.5px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.7);font-size:12px;font-weight:600;padding:5px 13px;border-radius:20px;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s;" onmouseover="this.style.background='rgba(255,255,255,0.1)';this.style.color='#fff'" onmouseout="this.style.background='rgba(255,255,255,0.06)';this.style.color='rgba(255,255,255,0.7)'">← Tablero</button>
+    <div class="tabs" id="tabs" style="display:none;"></div>
+    <button class="tab-add" id="addCatBtn" style="display:none;">+ Categoría</button>
+    <span class="count-pill" id="countPill" style="display:none;">0 proyectos</span>
+    <button class="status-toggle-btn active" id="summaryToggleBtn" onclick="toggleSummaryView()">🗂 Resumen</button>
     <button class="status-toggle-btn" id="statusToggleBtn" onclick="toggleStatusView()">💰 Cobranza</button>
   </div>
   <div class="co-bar" id="coBar"></div>
   <div class="prog-strip" id="progStrip" style="display:none;">
     <span class="prog-strip-lbl">Progreso</span>
   </div>
-  <div class="board-scroll" id="boardScroll">
+  <div class="board-scroll" id="boardScroll" style="display:none;">
     <div id="boardInner"></div>
   </div>
   <div class="status-board-wrap" id="statusBoard" style="display:none;"></div>
+  <div class="summary-view" id="summaryView" style="display:flex;"></div>
 </div>
 
 <!-- COBRANZA CARD DETAIL -->
@@ -844,6 +868,7 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
   var solCollapsed = false;
   var entregadoCollapsed = false;
   var _statusView = false;
+  var _summaryView = true; // vista de aterrizaje por default
   var _sDragId = null;
   var _sDragType = null; // 'project' | 'cobranza'
   var statusColumns = null;
@@ -1140,8 +1165,9 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
       if (_scrollSave[_cid]) _newLanes[_ri].scrollLeft = _scrollSave[_cid];
     }
 
-    // Keep status board in sync if visible
+    // Keep status board / summary in sync if visible
     if (_statusView) renderStatusBoard();
+    if (_summaryView) renderSummaryView();
     renderProgress();
   }
 
@@ -1188,15 +1214,121 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
 
   window.toggleStatusView = function() {
     _statusView = !_statusView;
+    if (_statusView && _summaryView) { _summaryView = false; document.getElementById('summaryView').style.display = 'none'; document.getElementById('summaryToggleBtn').classList.remove('active'); }
     document.getElementById('boardScroll').style.display     = _statusView ? 'none' : '';
     document.getElementById('statusBoard').style.display     = _statusView ? 'flex'  : 'none';
     document.getElementById('statusToggleBtn').classList.toggle('active', _statusView);
-    document.getElementById('backToProjectsBtn').style.display = _statusView ? '' : 'none';
-    document.getElementById('tabs').style.display            = _statusView ? 'none' : '';
-    document.getElementById('addCatBtn').style.display       = _statusView ? 'none' : '';
-    document.getElementById('countPill').style.display       = _statusView ? 'none' : '';
+    document.getElementById('backToProjectsBtn').style.display = (_statusView || _summaryView) ? '' : 'none';
+    document.getElementById('tabs').style.display            = (_statusView || _summaryView) ? 'none' : '';
+    document.getElementById('addCatBtn').style.display       = (_statusView || _summaryView) ? 'none' : '';
+    document.getElementById('countPill').style.display       = (_statusView || _summaryView) ? 'none' : '';
     if (_statusView) renderStatusBoard();
   };
+
+  // ── RESUMEN — vista general en tarjetas de color, una por proyecto ──
+  window.toggleSummaryView = function() {
+    _summaryView = !_summaryView;
+    if (_summaryView && _statusView) { _statusView = false; document.getElementById('statusBoard').style.display = 'none'; document.getElementById('statusToggleBtn').classList.remove('active'); }
+    document.getElementById('boardScroll').style.display      = _summaryView ? 'none' : '';
+    document.getElementById('summaryView').style.display      = _summaryView ? 'flex' : 'none';
+    document.getElementById('summaryToggleBtn').classList.toggle('active', _summaryView);
+    document.getElementById('backToProjectsBtn').style.display = (_summaryView || _statusView) ? '' : 'none';
+    document.getElementById('tabs').style.display             = (_summaryView || _statusView) ? 'none' : '';
+    document.getElementById('addCatBtn').style.display        = (_summaryView || _statusView) ? 'none' : '';
+    document.getElementById('countPill').style.display        = (_summaryView || _statusView) ? 'none' : '';
+    if (_summaryView) renderSummaryView();
+  };
+
+  // El botón "← Tablero" regresa a la vista que esté activa (Resumen o Cobranza)
+  window.backToProjects = function() {
+    if (_statusView) toggleStatusView();
+    else if (_summaryView) toggleSummaryView();
+  };
+
+  function getCat(catId) {
+    for (var i = 0; i < categories.length; i++) { if (categories[i].id === catId) return categories[i]; }
+    return null;
+  }
+
+  // Progreso: % de tareas hechas entre todas las fases sembradas; si
+  // todavía no hay tareas sembradas, usa la posición de la fase actual
+  // dentro de las fases de su categoría como aproximación.
+  function computeProjectProgress(p) {
+    var total = 0, done = 0;
+    Object.keys(p.stageTasks || {}).forEach(function(stage) {
+      (p.stageTasks[stage] || []).forEach(function(t) { total++; if (t.done) done++; });
+    });
+    if (total > 0) return Math.round(done / total * 100);
+    var cat = getCat(p.catId);
+    if (!cat || !cat.stages || cat.stages.length < 2) return 0;
+    var idx = cat.stages.indexOf(p.stage);
+    if (idx < 0) return 0;
+    return Math.round(idx / (cat.stages.length - 1) * 100);
+  }
+
+  function buildSummaryCard(p) {
+    var cat = getCat(p.catId);
+    var color = cat ? cat.color : '#1A6FD4';
+    var pct = computeProjectProgress(p);
+    var card = document.createElement('div');
+    card.className = 'summary-card';
+    card.style.cssText = 'background:linear-gradient(135deg,rgba(' + _coRgb(color) + ',.16) 0%,rgba(' + _coRgb(color) + ',.05) 60%,#181818 100%);border:0.5px solid rgba(' + _coRgb(color) + ',.28);';
+    card.onclick = function() { openProjDetail(p.id); };
+
+    var top = document.createElement('div'); top.className = 'summary-card-top';
+    var name = document.createElement('div'); name.className = 'summary-card-name'; name.textContent = p.name; top.appendChild(name);
+    var pillWrap = document.createElement('div'); pillWrap.className = 'summary-card-pills';
+    if (cat) {
+      var catPill = document.createElement('span'); catPill.className = 'summary-card-pill';
+      catPill.style.cssText = 'background:rgba(' + _coRgb(color) + ',.18);color:' + color + ';';
+      catPill.textContent = cat.label; pillWrap.appendChild(catPill);
+    }
+    var stagePill = document.createElement('span'); stagePill.className = 'summary-card-pill stage'; stagePill.textContent = p.stage || ''; pillWrap.appendChild(stagePill);
+    top.appendChild(pillWrap);
+    card.appendChild(top);
+
+    var client = document.createElement('div'); client.className = 'summary-card-client';
+    client.textContent = (p.client || '—') + (p.deadline ? ' · ' + fmtDate(p.deadline) : '');
+    card.appendChild(client);
+
+    var avWrap = document.createElement('div'); avWrap.className = 'summary-card-avatars';
+    (p.team || []).forEach(function(a) {
+      if (!a) return;
+      var av = document.createElement('div'); av.className = 'summary-card-av';
+      av.style.background = AV_COLORS[a] || '#555'; av.textContent = a;
+      avWrap.appendChild(av);
+    });
+    card.appendChild(avWrap);
+
+    var progWrap = document.createElement('div'); progWrap.className = 'summary-card-prog-wrap';
+    var bar = document.createElement('div'); bar.className = 'summary-card-prog-bar';
+    var fill = document.createElement('div'); fill.className = 'summary-card-prog-fill'; fill.style.cssText = 'width:' + pct + '%;background:' + color + ';'; bar.appendChild(fill);
+    progWrap.appendChild(bar);
+    var pctLbl = document.createElement('span'); pctLbl.className = 'summary-card-prog-pct'; pctLbl.textContent = pct + '%'; progWrap.appendChild(pctLbl);
+    card.appendChild(progWrap);
+
+    return card;
+  }
+
+  function renderSummaryView() {
+    var el = document.getElementById('summaryView'); if (!el) return;
+    el.innerHTML = '';
+    var visible = projects.filter(function(p) { return activeCompany === 'all' || p.empresa === activeCompany; });
+    var activos = visible.filter(function(p) { return p.catId !== 'cotizaciones'; });
+    var cotizados = visible.filter(function(p) { return p.catId === 'cotizaciones'; });
+
+    function section(title, list) {
+      var wrap = document.createElement('div'); wrap.className = 'summary-section';
+      var hdr = document.createElement('div'); hdr.className = 'summary-section-hdr'; hdr.textContent = title + ' (' + list.length + ')'; wrap.appendChild(hdr);
+      var grid = document.createElement('div'); grid.className = 'summary-grid';
+      if (!list.length) { var emp = document.createElement('div'); emp.className = 'summary-empty'; emp.textContent = 'Nada por aquí todavía.'; grid.appendChild(emp); }
+      else list.forEach(function(p) { grid.appendChild(buildSummaryCard(p)); });
+      wrap.appendChild(grid);
+      el.appendChild(wrap);
+    }
+    section('📁 Proyectos activos', activos);
+    section('📝 Cotizados', cotizados);
+  }
 
   function _onColDragMove(e) {
     if (!_colDrag) return;
@@ -3789,7 +3921,7 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
       cfgs.forEach(function(cfg) {
         var fi=-1;
         for (var i=0;i<categories.length;i++) { if (categories[i].id===cfg.id) { fi=i; break; } }
-        var hasTpl = categories[fi].templates && Object.keys(categories[fi].templates).length > 0;
+        var hasTpl = fi>=0 && categories[fi].templates && Object.keys(categories[fi].templates).length > 0;
         var nu = fi<0 || categories[fi].stages.join('|')!==cfg.stages.join('|') || !hasTpl || (cfg.tplVersion && categories[fi].tplVersion!==cfg.tplVersion);
         if (nu) {
           if (fi>=0) { categories[fi].label=cfg.label; categories[fi].color=cfg.color; categories[fi].stages=cfg.stages; categories[fi].stageDays=cfg.stageDays; categories[fi].templates=cfg.templates; categories[fi].payments=cfg.payments; if(cfg.tplVersion)categories[fi].tplVersion=cfg.tplVersion; }
