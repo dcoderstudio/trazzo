@@ -1,0 +1,70 @@
+/* Equipo: keep desktop layout; use a single, touch-scrollable page on phones. */
+.eq-mobile-tools{display:none}
+.eq-main{min-width:0}
+@media (min-width:901px) and (max-width:1200px){
+ .eq-left{width:210px}.eq-right{width:180px}.eq-org-left-panel{width:190px}
+ .eq-org-cols-wrap{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .eq-phdr{height:auto;min-height:130px;flex-wrap:wrap}.eq-pstats{padding:10px;flex-wrap:wrap}
+}
+@media (max-width:900px){
+ html,body{height:auto;min-height:100%;overflow:auto}
+ body{overflow-x:clip}
+ .eq-root{height:auto;min-height:100vh;min-height:100dvh;overflow:visible;padding-bottom:env(safe-area-inset-bottom)}
+ .nav-bar{overflow-x:auto;justify-content:flex-start;gap:12px;padding:6px max(10px,env(safe-area-inset-left));scrollbar-width:thin}
+ .nav-bar>div{flex-shrink:0}.nav-btn{min-height:44px;padding:8px 12px;white-space:nowrap;color:#c2cadc}
+ .eq-mobile-tools{display:flex;gap:8px;padding:10px;background:#0b0e1c;position:sticky;top:0;z-index:100;border-bottom:1px solid #273047}
+ .eq-mobile-tools button{flex:1;min-height:44px;border:1px solid #354560;border-radius:10px;background:#141e32;color:#e8efff;font:600 13px system-ui;padding:8px}
+ .eq-mobile-tools button[aria-expanded=true]{background:#1a4779;border-color:#69b6ed}
+ .eq-body{display:flex;flex-direction:column;overflow:visible;flex:none;min-width:0}
+ .eq-left,.eq-right{display:none;width:100%;max-width:100%;border:0;overflow:visible;flex:none}
+ .eq-left.mobile-open,.eq-right.mobile-open{display:flex}
+ .eq-left{order:0}.eq-right{order:1;padding:12px}.eq-main{order:2;flex:none;min-width:0;overflow:visible;width:100%}
+ .eq-team-list{max-height:55dvh;overflow-y:auto;flex:none}.eq-stats-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+ .eq-stat{padding:8px 6px}.eq-stat-lbl{font-size:9px;letter-spacing:0}.eq-stat-n{font-size:22px}
+ .eq-mrow,.eq-arow{min-height:56px}.eq-mname,.eq-a-name{font-size:15px}.eq-marea-btn,.eq-marea,.eq-a-sub{font-size:12px;color:#a9b5cb}
+ .eq-mdel{opacity:1;width:36px;height:40px}.eq-mbadge{font-size:11px}
+ .eq-view-toggle{margin-top:10px}.eq-vt-btn,.eq-vg-btn,.eq-add-btn{min-height:44px;font-size:13px}
+ .eq-phdr{height:auto;min-height:110px;flex-wrap:wrap}.eq-phdr-av{width:76px!important;min-height:104px}
+ .eq-team-avatar>div:first-child:not(.av-img){width:200px!important;position:absolute!important;left:-62px;height:100%!important}
+ .eq-phdr-body{padding:12px;min-width:0}.eq-pname{font-size:21px;overflow-wrap:anywhere}.eq-psub{font-size:12px}
+ .eq-pstats{width:100%;padding:8px 12px 12px;gap:8px}.eq-pstat{flex:1;padding:9px 6px}.eq-pstat-l{font-size:10px}
+ .eq-area-hdr{flex-wrap:wrap;padding:14px}.eq-area-stats-row{width:100%;margin:0}.eq-area-stat{flex:1;padding:8px}
+ .eq-tab-bar,.eq-dash-tabs{padding:0;overflow-x:auto;overflow-y:hidden;min-width:0;max-width:100%;flex:none;width:100%}
+ .eq-tab{flex:1;white-space:nowrap;padding:12px 6px;font-size:12px;min-height:46px;color:#b4c3d9}
+ .eq-dash-toolbar{flex-wrap:wrap;gap:6px}.eq-org-groupbar{flex-wrap:wrap;padding:8px 12px}.eq-org-groupbtn{min-height:40px;font-size:13px}
+ .eq-dash-content,.eq-dash-body,.eq-tab-content,.eq-area-body,.eq-dash,.eq-dash-col,.eq-dash-col-body,.eq-dash-list{height:auto!important;max-height:none!important;overflow:visible!important;flex:none!important;min-width:0;width:100%}
+ .eq-main.page-scroll{overflow:visible}
+ .eq-tab-content-plain{padding:12px}
+ .eq-tab-content,.eq-area-body,.eq-dash-list,.eq-dash{padding:12px}.eq-dash{flex-direction:column}
+ .eq-org-wrap{flex-direction:column;overflow:visible;flex:none}.eq-org-left-panel{width:100%;overflow:visible;border-right:0;border-bottom:1px solid #273047;flex:none}
+ .eq-org-left-list{max-height:260px;overflow-y:auto;flex:none}.eq-org-right-panel{overflow:visible;flex:none;width:100%}
+ .eq-org-cols-wrap{grid-template-columns:minmax(0,1fr);grid-auto-rows:auto;overflow:visible;flex:none;padding:12px}
+ .eq-orgcol{min-height:0}.eq-orgcol-body{overflow:visible;flex:none}.eq-orgcol-name,.eq-hcol-name{font-size:15px}
+ .eq-org-task,.eq-org-atask,.eq-hccard{padding:12px 10px;gap:10px;min-height:54px}
+ .eq-org-task-name,.eq-org-atask-name,.eq-hccard-txt,.eq-hcard-txt,.eq-tcard-txt,.eq-dtask-txt,.eq-kcard-txt,.eq-tc-name{font-size:14px;line-height:1.45;white-space:normal;overflow-wrap:anywhere}
+ .eq-org-task-meta,.eq-hccard-dl,.eq-org-unassigned-hint{font-size:11px;color:#a9b5cb}
+ .eq-org-chk,.eq-org-chk-sm,.eq-kchk,.eq-tcard-chk,.eq-hcard-chk{width:32px;height:32px;min-width:32px;align-self:center}
+ .eq-hcols-wrap,.eq-hcols-inner{display:flex;flex-direction:column;overflow:visible;height:auto;width:100%;min-width:0;flex:none}
+ .eq-hcols-inner{padding:12px}.eq-hcol{width:100%;flex:none}.eq-hcol-body{overflow:visible;flex:none}
+ .eq-kanban{flex-direction:column;width:100%;min-width:0}.eq-kcol{width:100%;min-width:0;flex:none}.eq-dash-kanban-wrap{padding:12px}
+ .eq-hcard,.eq-tcard{flex-wrap:wrap}.eq-hcard-acts,.eq-tcard-actions{opacity:1;flex-wrap:wrap}
+ .eq-hact-btn,.eq-tact-btn{min-height:40px;font-size:12px}.eq-hcard-body,.eq-tcard-body{min-width:0}
+ .eq-member-add-btn,.eq-org-new-btn,.eq-back-btn{min-height:44px;font-size:14px}
+ #rightGoals,#rightArea,.eq-right-area,.eq-right-area-list,.eq-glist{overflow:visible!important;flex:none!important;height:auto;max-height:none}
+ .eq-gcard{flex:none}.eq-gadd{min-width:44px;min-height:44px}.eq-gtitle{font-size:13px}
+ .eq-task-edit-overlay,#eqModalOv{padding:12px;overflow-y:auto;align-items:flex-start!important}
+ .eq-task-edit-modal,#eqModalOv>div{width:100%!important;max-width:440px!important;max-height:calc(100dvh - 24px);overflow-y:auto;margin:auto;padding:18px!important}
+ .eq-tem-title{font-size:20px}.eq-tem-lbl{font-size:12px}.eq-tem-src{font-size:12px;color:#a9b5cb}
+ input,select,textarea,.eq-tem-inp,.eq-tem-select{font-size:16px!important;min-height:44px}
+ .eq-tem-btns{flex-wrap:wrap}.eq-tem-btns button{min-height:44px;font-size:14px}
+ .eq-datepick{left:50%!important;top:50%!important;transform:translate(-50%,-50%);width:min(340px,calc(100vw - 24px));min-width:0;max-height:90dvh;overflow:auto}
+ .eq-datepick-day,.eq-datepick-nav{min-height:40px;height:40px}.eq-datepick-nav{width:40px}
+ .eq-assign-popup{max-width:calc(100vw - 24px);max-height:65dvh;overflow-y:auto}.eq-assign-popup-opt{min-height:44px;font-size:14px}
+ .chat-tasks-dialog{padding:16px;max-height:90dvh}.chat-tasks-actions button{min-height:44px;flex:1}
+ :focus-visible{outline:2px solid #8dcfff;outline-offset:3px}
+}
+/* Native finger scrolling must win over desktop drag gestures. */
+@media (pointer:coarse),(max-width:900px){
+ .eq-org-task,.eq-org-atask,.eq-kcard,.eq-tcard,.eq-hcard,.eq-dtask,.eq-hccard{touch-action:pan-y!important;cursor:pointer!important}
+ .eq-hcard-acts,.eq-tcard-actions{opacity:1}
+}
