@@ -19,6 +19,13 @@ html,body{
   backdrop-filter:blur(30px) !important;
   -webkit-backdrop-filter:blur(30px) !important;
   border-bottom:0.5px solid rgba(255,255,255,.07) !important;
+  position:relative;
+}
+/* Center the nav tabs on their own, independent of how wide the
+   logo or the right-side content happens to be on each page. */
+.topbar-center{
+  position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  display:flex;align-items:center;gap:2px;
 }
 .subbar{
   background:rgba(6,6,16,.76) !important;
