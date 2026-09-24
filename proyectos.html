@@ -4697,6 +4697,15 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
       });
     })();
     /* MARCADOR_FIN_CATS */
+    // Categoría "Proyecto libre": una sola fase, sin plantillas ni
+    // tiempos estimados — el mini-Kanban de la ficha queda como una
+    // simple lista de tareas por marcar. Se agrega una sola vez si no
+    // existe; a diferencia de las de arriba, no se vuelve a re-sincronizar
+    // en cada carga (para no pisar cambios que el usuario le haga).
+    if (!categories.some(function(c) { return c.id === 'libre'; })) {
+      categories.push({id: 'libre', label: 'Proyecto libre', color: '#6B7280', stages: ['Tareas'], stageDays: {}, payments: {}, templates: {}});
+      migrated = true;
+    }
     // Migrate projects without empresa to dcoder
     var empMig = false;
     projects.forEach(function(p) { if (!p.empresa) { p.empresa = 'dcoder'; empMig = true; } });
