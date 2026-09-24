@@ -1005,7 +1005,7 @@ function getMemberTasks(mid){
     if((t.resp||'')===mid)tasks.push(Object.assign({},t,{type:'standalone',source:'Tarea libre',color:'rgba(255,255,255,.28)'}));
   });
   (projects||[]).forEach(function(p){
-    if(p.catId==='cotizaciones'||!p.stageTasks)return;
+    if(p.catId==='cotizaciones'||p.pendingApproval||p.quoteArchived||!p.stageTasks)return;
     Object.keys(p.stageTasks).forEach(function(stage){
       (p.stageTasks[stage]||[]).forEach(function(t){
         if(!t.sharedWithTeam)return; // solo se ve aquí si se agregó explícitamente a Equipo desde Proyectos
@@ -1057,7 +1057,10 @@ function collectAllTasks(){
     all.push(Object.assign({},t,{_type:'standalone',_projId:null,_stage:null,source:'Tarea libre',color:'rgba(90,180,232,.55)',member:t.resp?getMember(t.resp):null}));
   });
   (projects||[]).forEach(function(p){
-    if(p.catId==='cotizaciones'||!p.stageTasks)return;
+    // Mientras un proyecto no esté confirmado en Activos (sigue en
+    // Pendientes de aprobación, o fue mandado a Cotizaciones/Rechazados),
+    // sus tareas no deben aparecer en Equipo todavía.
+    if(p.catId==='cotizaciones'||p.pendingApproval||p.quoteArchived||!p.stageTasks)return;
     Object.keys(p.stageTasks).forEach(function(stage){
       (p.stageTasks[stage]||[]).forEach(function(t){
         if(!t.sharedWithTeam)return; // solo se ve aquí si se agregó explícitamente a Equipo desde Proyectos
@@ -4020,7 +4023,7 @@ function renderKanban(mid,cont){
       doneTasks.push(Object.assign({},t,{type:'standalone',source:'Tarea libre',color:'rgba(255,255,255,.28)'}));
   });
   (projects||[]).forEach(function(p){
-    if(p.catId==='cotizaciones'||!p.stageTasks)return;
+    if(p.catId==='cotizaciones'||p.pendingApproval||p.quoteArchived||!p.stageTasks)return;
     Object.keys(p.stageTasks).forEach(function(stage){
       (p.stageTasks[stage]||[]).forEach(function(t){
         if(!t.sharedWithTeam)return; // solo se ve aquí si se agregó explícitamente a Equipo desde Proyectos

@@ -598,7 +598,7 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
   function getAllTasks() {
     var result = [];
     projects.forEach(function(proj) {
-      if (proj.catId === 'cotizaciones') return;
+      if (proj.catId === 'cotizaciones' || proj.pendingApproval || proj.quoteArchived) return;
       if (!proj.stageTasks) proj.stageTasks = {};
       var cat = getCat(proj.catId);
       var stage = proj.stage;

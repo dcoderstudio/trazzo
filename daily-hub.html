@@ -1350,7 +1350,7 @@ input[type=time].mi{color-scheme:dark;cursor:pointer;}
       tasks.push({id:t.id,text:t.text,done:t.done,deadline:t.deadline,resp:t.resp||'',isStandalone:true,type:'standalone',source:'Tarea libre',createdAt:t.id});
     });
     projects.forEach(function(p){
-      if(p.catId==='cotizaciones')return;
+      if(p.catId==='cotizaciones'||p.pendingApproval||p.quoteArchived)return;
       var stage=p.stage||'';
       ((p.stageTasks&&p.stageTasks[stage])||[]).forEach(function(t){
         if(!t.sharedWithTeam)return; // solo se ve aquí si se agregó explícitamente a Equipo desde Proyectos
@@ -1561,7 +1561,7 @@ input[type=time].mi{color-scheme:dark;cursor:pointer;}
     wrap.innerHTML='';
     var items=[];
     projects.forEach(function(p){
-      if(p.catId==='cotizaciones')return;
+      if(p.catId==='cotizaciones'||p.pendingApproval||p.quoteArchived)return;
       var stage=p.stage||''; var cat=getCat(p.catId); var color=(cat&&cat.color)||'#1A6FD4';
       ((p.stageTasks&&p.stageTasks[stage])||[]).forEach(function(t){
         if(t.deadline!==ds)return;
@@ -2062,7 +2062,7 @@ input[type=time].mi{color-scheme:dark;cursor:pointer;}
       });
     });
     projects.forEach(function(p){
-      if(p.catId==='cotizaciones')return;
+      if(p.catId==='cotizaciones'||p.pendingApproval||p.quoteArchived)return;
       var stage=p.stage||'';
       ((p.stageTasks&&p.stageTasks[stage])||[]).forEach(function(t){
         if(!t.deadline||t.done||t.deadline>=todayStr)return;
@@ -2134,7 +2134,7 @@ input[type=time].mi{color-scheme:dark;cursor:pointer;}
     var items=[];
     // Project deadlines matching today
     (projects||[]).forEach(function(p){
-      if(!p||p.catId==='cotizaciones')return;
+      if(!p||p.catId==='cotizaciones'||p.pendingApproval||p.quoteArchived)return;
       if(p.deadline===ds)items.push({id:'proj_'+p.id,text:p.name,done:false,badge:'Proyecto'});
     });
     // Standalone tasks with isDelivery

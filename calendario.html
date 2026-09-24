@@ -850,13 +850,13 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
     var evs=[];
     projects.forEach(function(p){
       if(!p.deadline) return;
-      if(p.catId==='cotizaciones') return;
+      if(p.catId==='cotizaciones'||p.pendingApproval||p.quoteArchived) return;
       var cat=getCat(p.catId);
       evs.push({id:'proj_'+p.id,date:p.deadline,title:p.name,sub:p.client||'',color:cat?cat.color:'#1A6FD4',type:'delivery',icon:'📦'});
     });
     projects.forEach(function(p){
       if(!p.stageTasks) return;
-      if(p.catId==='cotizaciones') return;
+      if(p.catId==='cotizaciones'||p.pendingApproval||p.quoteArchived) return;
       var cat=getCat(p.catId);
       var stage=p.stage;
       var tasks=p.stageTasks[stage]||[];
@@ -2239,7 +2239,7 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
       });
     });
     (projects||[]).forEach(function(p){
-      if(!p.stageTasks||p.catId==='cotizaciones')return;
+      if(!p.stageTasks||p.catId==='cotizaciones'||p.pendingApproval||p.quoteArchived)return;
       var stage=p.stage;
       (p.stageTasks[stage]||[]).forEach(function(t){
         if(!t.deadline)return;

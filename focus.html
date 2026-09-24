@@ -251,7 +251,7 @@ function getCat(catId) {
 function getAllTasks() {
   var result = [];
   projects.forEach(function(proj) {
-    if (proj.catId === 'cotizaciones') return;
+    if (proj.catId === 'cotizaciones' || proj.pendingApproval || proj.quoteArchived) return;
     if (!proj.stageTasks) return;
     var stage = proj.stage;
     var tasks = proj.stageTasks[stage];
