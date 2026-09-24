@@ -203,6 +203,8 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
 .pdm-del-btn:hover{background:rgba(226,75,74,0.22);border-color:rgba(226,75,74,0.5);}
 .pdm-del-confirm{align-items:center;gap:8px;background:rgba(226,75,74,0.07);border:0.5px solid rgba(226,75,74,0.2);border-radius:10px;padding:4px 10px;}
 .pdm-del-confirm span{font-size:11px;color:rgba(255,255,255,0.6);white-space:nowrap;}
+.pdm-complete-confirm{align-items:center;gap:8px;background:rgba(26,111,212,0.08);border:0.5px solid rgba(26,111,212,0.25);border-radius:10px;padding:4px 10px;}
+.pdm-complete-confirm span{font-size:11px;color:rgba(255,255,255,0.6);white-space:nowrap;}
 .pdm-body{display:flex;flex:1;overflow:hidden;min-height:0;}
 .pdm-info{flex:1;padding:16px 18px;overflow-y:auto;display:flex;flex-direction:column;gap:12px;}
 .pdm-info::-webkit-scrollbar{width:3px;}
@@ -772,8 +774,14 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
     </div>
     <div class="pdm-footer">
       <span class="pdm-footer-info" id="pdmFooterInfo"></span>
-      <div style="display:flex;gap:8px;">
+      <div style="display:flex;gap:8px;align-items:center;">
         <button class="btn-c" id="pdmConcludeBtn"></button>
+        <div class="pdm-complete-confirm" id="pdmCompleteConfirm" style="display:none;">
+          <span>¿Marcar todas las tareas como hechas?</span>
+          <button class="btn-c" id="pdmCancelComplete" style="padding:4px 10px;font-size:11px;">No</button>
+          <button class="btn-ok" id="pdmConfirmComplete" style="padding:4px 10px;font-size:11px;">Sí, completar</button>
+        </div>
+        <button class="btn-c" id="pdmCompleteBtn" style="background:rgba(26,111,212,0.14);border-color:rgba(26,111,212,0.35);color:#5AB4E8;">🏁 Dar por terminado</button>
         <button class="btn-c" id="pdmClose2">Cerrar</button>
         <button class="btn-ok" id="pdmSaveBtn">Guardar cambios</button>
       </div>
@@ -1262,6 +1270,7 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
       (p.stageTasks[stage] || []).forEach(function(t) { total++; if (t.done) done++; });
     });
     if (total > 0) return Math.round(done / total * 100);
+    if (p.completed) return 100;
     var cat = getCat(p.catId);
     if (!cat || !cat.stages || cat.stages.length < 2) return 0;
     var idx = cat.stages.indexOf(p.stage);
@@ -2864,6 +2873,8 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
     selectedPhaseIdx = -1;
     document.getElementById('pdmDelConfirm').style.display = 'none';
     document.getElementById('pdmDeleteBtn').style.display = '';
+    document.getElementById('pdmCompleteConfirm').style.display = 'none';
+    document.getElementById('pdmCompleteBtn').style.display = '';
     renderProjDetail();
     document.getElementById('projDetailOverlay').classList.add('open');
   }
@@ -2892,6 +2903,32 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
     p.concluded = !p.concluded;
     saveData();
     renderProjDetail();
+    if (_summaryView) renderSummaryView();
+  }
+
+  function startCompleteProj() {
+    document.getElementById('pdmCompleteConfirm').style.display = 'flex';
+    document.getElementById('pdmCompleteBtn').style.display = 'none';
+  }
+
+  function cancelCompleteProj() {
+    document.getElementById('pdmCompleteConfirm').style.display = 'none';
+    document.getElementById('pdmCompleteBtn').style.display = '';
+  }
+
+  function confirmCompleteProj() {
+    var p = null;
+    for (var i = 0; i < projects.length; i++) { if (projects[i].id === detailProjectId) { p = projects[i]; break; } }
+    if (!p) return;
+    Object.keys(p.stageTasks || {}).forEach(function(stage) {
+      (p.stageTasks[stage] || []).forEach(function(t) { t.done = true; t.colStatus = 'done'; });
+    });
+    p.completed = true;
+    saveData();
+    document.getElementById('pdmCompleteConfirm').style.display = 'none';
+    document.getElementById('pdmCompleteBtn').style.display = '';
+    renderProjDetail();
+    renderBoard();
     if (_summaryView) renderSummaryView();
   }
 
@@ -3934,6 +3971,9 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
   document.getElementById('pdmClose2').onclick = function(){ document.getElementById('projDetailOverlay').classList.remove('open'); };
   document.getElementById('pdmDeleteBtn').onclick = startDeleteProj;
   document.getElementById('pdmConcludeBtn').onclick = toggleProjectConcluded;
+  document.getElementById('pdmCompleteBtn').onclick = startCompleteProj;
+  document.getElementById('pdmCancelComplete').onclick = cancelCompleteProj;
+  document.getElementById('pdmConfirmComplete').onclick = confirmCompleteProj;
   document.getElementById('pdmCancelDel').onclick = cancelDeleteProj;
   document.getElementById('pdmConfirmDel').onclick = confirmDeleteProj;
   document.getElementById('pdmSaveBtn').onclick = function(){ saveProjDetail(); document.getElementById('projDetailOverlay').classList.remove('open'); };
