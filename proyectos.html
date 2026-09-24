@@ -205,10 +205,11 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
 .pdm-del-confirm span{font-size:11px;color:rgba(255,255,255,0.6);white-space:nowrap;}
 .pdm-complete-confirm{align-items:center;gap:8px;background:rgba(26,111,212,0.08);border:0.5px solid rgba(26,111,212,0.25);border-radius:10px;padding:4px 10px;}
 .pdm-complete-confirm span{font-size:11px;color:rgba(255,255,255,0.6);white-space:nowrap;}
-.pdm-body{display:flex;flex:1;overflow:hidden;min-height:0;}
-.pdm-info{flex:1;padding:16px 18px;overflow-y:auto;display:flex;flex-direction:column;gap:12px;}
-.pdm-info::-webkit-scrollbar{width:3px;}
-.pdm-info::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);}
+.pdm-scroll{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;}
+.pdm-scroll::-webkit-scrollbar{width:4px;}
+.pdm-scroll::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:2px;}
+.pdm-body{display:flex;flex-shrink:0;}
+.pdm-info{flex:1;padding:16px 18px;display:flex;flex-direction:column;gap:12px;}
 .pdm-field{display:flex;flex-direction:column;gap:4px;}
 .pdm-lbl{font-size:9px;font-weight:700;color:rgba(255,255,255,0.22);text-transform:uppercase;letter-spacing:.08em;}
 .pdm-inp{background:#1e1e1e;border:0.5px solid rgba(255,255,255,0.1);border-radius:8px;padding:8px 10px;font-size:12px;color:#fff;font-family:'Inter',sans-serif;outline:none;width:100%;transition:border-color .15s;}
@@ -747,31 +748,33 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
       </button>
       <button class="pdm-close" id="pdmClose">×</button>
     </div>
-    <div class="pdm-body">
-      <div class="pdm-info">
-        <div class="pdm-field" style="margin-bottom:4px;"><div class="pdm-lbl">Empresa</div><div id="pdmEmpRow"></div></div>
-        <div id="pdmDynFields"></div>
-        <div id="pdmMontoRow" class="pdm-field" style="display:none;"><div class="pdm-lbl">Monto estimado</div><input class="pdm-inp" id="pdmMonto" placeholder="$0.00"></div>
-        <div id="pdmTimeInfo"></div>
-        <button class="cf-manage-btn" onclick="openCfEditor()">⚙ Personalizar campos</button>
+    <div class="pdm-scroll" id="pdmScroll">
+      <div class="pdm-body">
+        <div class="pdm-info">
+          <div class="pdm-field" style="margin-bottom:4px;"><div class="pdm-lbl">Empresa</div><div id="pdmEmpRow"></div></div>
+          <div id="pdmDynFields"></div>
+          <div id="pdmMontoRow" class="pdm-field" style="display:none;"><div class="pdm-lbl">Monto estimado</div><input class="pdm-inp" id="pdmMonto" placeholder="$0.00"></div>
+          <div id="pdmTimeInfo"></div>
+          <button class="cf-manage-btn" onclick="openCfEditor()">⚙ Personalizar campos</button>
+        </div>
       </div>
-    </div>
-    <div class="pdm-kanban-wrap" id="pdmKanbanWrap">
-      <div style="display:flex;align-items:center;gap:8px;padding:0 0 8px;">
-        <div class="pdm-task-lbl">Fases del proyecto</div>
-        <div style="flex:1;height:0.5px;background:rgba(255,255,255,0.06);"></div>
-        <button class="tm-open-btn" id="tmOpenBtn">🗂 Gestionar tareas</button>
+      <div class="pdm-kanban-wrap" id="pdmKanbanWrap">
+        <div style="display:flex;align-items:center;gap:8px;padding:0 0 8px;">
+          <div class="pdm-task-lbl">Fases del proyecto</div>
+          <div style="flex:1;height:0.5px;background:rgba(255,255,255,0.06);"></div>
+          <button class="tm-open-btn" id="tmOpenBtn">🗂 Gestionar tareas</button>
+        </div>
+        <div class="pdm-kanban-scroll" id="pdmKanban"></div>
       </div>
-      <div class="pdm-kanban-scroll" id="pdmKanban"></div>
-    </div>
-    <div class="pdm-docs-section" id="pdmDocsSection"></div>
-    <div class="pdm-timeline-wrap" id="pdmTimelineWrap">
-      <div style="display:flex;align-items:center;gap:8px;">
-        <div class="pdm-task-lbl">Línea de tiempo</div>
-        <div style="flex:1;height:0.5px;background:rgba(255,255,255,0.06);"></div>
+      <div class="pdm-docs-section" id="pdmDocsSection"></div>
+      <div class="pdm-timeline-wrap" id="pdmTimelineWrap">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div class="pdm-task-lbl">Línea de tiempo</div>
+          <div style="flex:1;height:0.5px;background:rgba(255,255,255,0.06);"></div>
+        </div>
+        <div class="pdm-timeline-scroll" id="pdmTimeline"></div>
+        <div id="pdmPhaseDetail"></div>
       </div>
-      <div class="pdm-timeline-scroll" id="pdmTimeline"></div>
-      <div id="pdmPhaseDetail"></div>
     </div>
     <div class="pdm-footer">
       <span class="pdm-footer-info" id="pdmFooterInfo"></span>
@@ -2885,7 +2888,7 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
     document.getElementById('pdmDeleteBtn').style.display = '';
     document.getElementById('pdmCompleteConfirm').style.display = 'none';
     document.getElementById('pdmCompleteBtn').style.display = '';
-    renderProjDetail();
+    renderProjDetail(true);
     document.getElementById('projDetailOverlay').classList.add('open');
   }
 
@@ -2942,7 +2945,7 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
     if (_summaryView) renderSummaryView();
   }
 
-  function renderProjDetail() {
+  function renderProjDetail(scrollKanbanToCurrent) {
     var p = null;
     for (var i = 0; i < projects.length; i++) { if (projects[i].id === detailProjectId) { p = projects[i]; break; } }
     if (!p) return;
@@ -3014,7 +3017,7 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
       concBtn.style.cssText = p.concluded ? '' : 'background:rgba(39,174,114,0.14);border-color:rgba(39,174,114,0.35);color:#27AE72;';
     }
 
-    renderDetailKanban();
+    renderDetailKanban(scrollKanbanToCurrent);
     renderDetailTimeline();
     renderPdmDocs(p);
   }
@@ -3248,7 +3251,7 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
   // Se arrastra la ficha completa (por su encabezado) a otra columna
   // para cambiar de fase — esa columna es la que se "prende" de color.
   var _pdmKDrag = false;
-  function renderDetailKanban() {
+  function renderDetailKanban(scrollToCurrent) {
     var p = null;
     for (var i = 0; i < projects.length; i++) { if (projects[i].id === detailProjectId) { p = projects[i]; break; } }
     if (!p) return;
@@ -3330,6 +3333,11 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
 
       wrap.appendChild(col);
     });
+
+    if (scrollToCurrent) {
+      var curCol = wrap.querySelector('.pdm-kcol.ficha');
+      if (curCol) wrap.scrollLeft = Math.max(0, curCol.offsetLeft - 4);
+    }
   }
 
   function buildKTaskCard(p, task, isCurrent) {
@@ -3371,7 +3379,7 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
     if (_isLast && _curFin !== 'facturado' && _curFin !== 'cobrado') { p.finStatus = 'entregado'; }
     else if (!_isLast && _curFin === 'entregado') { p.finStatus = 'sinoc'; }
     saveData();
-    renderProjDetail();
+    renderProjDetail(true);
     renderBoard();
   }
 
@@ -3792,7 +3800,7 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
     }
     if (p.catId === 'cotizaciones') p.monto = document.getElementById('pdmMonto').value;
     saveData();
-    renderProjDetail();
+    renderProjDetail(true);
     renderBoard();
   }
 
