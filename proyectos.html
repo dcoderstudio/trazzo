@@ -3687,6 +3687,7 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
     for (var i = 0; i < categories.length; i++) { if (categories[i].id === p.catId) { cat = categories[i]; break; } }
     var wrap = document.getElementById('pdmKanban');
     if (!wrap) return;
+    var savedScroll = wrap.scrollLeft;
     wrap.innerHTML = '';
     if (!cat || !cat.stages || !cat.stages.length) return;
     var color = cat.color || '#1A6FD4';
@@ -3765,6 +3766,11 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
     if (scrollToCurrent) {
       var curCol = wrap.querySelector('.pdm-kcol.ficha');
       if (curCol) wrap.scrollLeft = Math.max(0, curCol.offsetLeft - 4);
+    } else {
+      // Reconstruir el innerHTML resetea el scroll a 0 por defecto; en
+      // cada interacción normal (marcar tarea, agregar tarea...) hay
+      // que devolverlo a donde estaba en vez de saltar al extremo.
+      wrap.scrollLeft = savedScroll;
     }
   }
 
