@@ -1498,6 +1498,28 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
     renderBoard();
   }
 
+  // Soltar una ficha en marcha sobre la carpeta Cotizaciones la revierte
+  // a solicitud: recuerda su categoría real en tipoCat (para aceptarla
+  // otra vez más adelante) y la manda a la primera fase del kanban de
+  // Cotizaciones. Las tareas NO se tocan (a diferencia de Completados/
+  // Rechazados, aquí no se está cerrando el trabajo, solo pausándolo).
+  function revertProjectToQuote(id) {
+    var p = null;
+    for (var i = 0; i < projects.length; i++) { if (projects[i].id === id) { p = projects[i]; break; } }
+    if (!p || p.catId === 'cotizaciones') return;
+    p.tipoCat = p.catId;
+    p.catId = 'cotizaciones';
+    p.stage = COTIZ_STAGES[0];
+    p.pendingApproval = false;
+    p.concluded = false;
+    p.quoteArchived = false;
+    if (!p.stageEntryDates) p.stageEntryDates = {};
+    p.stageEntryDates[p.stage] = new Date().toISOString().split('T')[0];
+    saveData();
+    renderSummaryView();
+    renderBoard();
+  }
+
   function renderSummaryView() {
     var el = document.getElementById('summaryView'); if (!el) return;
     el.innerHTML = '';
@@ -1537,7 +1559,7 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
     var folders = document.createElement('div'); folders.className = 'summary-folders';
     folders.appendChild(buildFolderTile('concluded', '📁', 'Completados', concluidos.length, 'sfolder-green', function() { setSummaryDrill('concluded'); }, function(id) { archiveProjectToFolder(id, 'concluded'); }));
     folders.appendChild(buildFolderTile('rejected', '🗄', 'Rechazados', rechazadas.length, 'sfolder-red', function() { setSummaryDrill('rejected'); }, function(id) { archiveProjectToFolder(id, 'rejected'); }));
-    folders.appendChild(buildFolderTile('cotizaciones', '📝', 'Cotizaciones', cotizActivas.length, 'sfolder-blue', function() { openCotizKanban(); }));
+    folders.appendChild(buildFolderTile('cotizaciones', '📝', 'Cotizaciones', cotizActivas.length, 'sfolder-blue', function() { openCotizKanban(); }, function(id) { revertProjectToQuote(id); }));
     el.appendChild(folders);
 
     if (_summaryDrill === 'concluded') { section('✅ Completados', concluidos, { backable: true }); return; }
