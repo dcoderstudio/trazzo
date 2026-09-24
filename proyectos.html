@@ -1307,11 +1307,11 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
     var color = computeProjectStatusColor(p);
     var rgb = _coRgb(color);
     var pct = computeProjectProgress(p);
-    var p1 = Math.max(6, Math.min(94, pct - 10));
-    var p2 = Math.max(p1 + 6, Math.min(98, pct + 12));
+    var p1 = Math.max(2, Math.min(96, pct - 4));
+    var p2 = Math.max(p1 + 2, Math.min(98, pct + 4));
     var card = document.createElement('div');
     card.className = 'summary-card' + (p.concluded ? ' concluded' : '');
-    card.style.cssText = 'background:linear-gradient(135deg,rgba(' + rgb + ',.62) 0%,rgba(' + rgb + ',.5) ' + p1 + '%,rgba(' + rgb + ',.13) ' + p2 + '%,rgba(' + rgb + ',.13) 100%);border:0.5px solid rgba(' + rgb + ',.35);';
+    card.style.cssText = 'background:linear-gradient(135deg,rgba(' + rgb + ',.68) 0%,rgba(' + rgb + ',.58) ' + p1 + '%,rgba(' + rgb + ',.14) ' + p2 + '%,rgba(' + rgb + ',.14) 100%);border:0.5px solid rgba(' + rgb + ',.35);';
     card.onclick = function() { openProjDetail(p.id); };
 
     var top = document.createElement('div'); top.className = 'summary-card-top';
