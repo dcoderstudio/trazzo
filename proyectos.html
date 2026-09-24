@@ -408,17 +408,27 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
 .summary-section-hdr{font-size:13px;font-weight:800;color:rgba(255,255,255,0.75);margin-bottom:12px;letter-spacing:.01em;display:flex;align-items:center;gap:10px;}
 .summary-back-link{font-size:11px;font-weight:700;color:rgba(255,255,255,0.4);cursor:pointer;transition:color .12s;}
 .summary-back-link:hover{color:#fff;}
-.summary-folders{display:flex;gap:14px;flex-wrap:wrap;}
-.sfolder{width:150px;border-radius:16px;padding:16px 14px;cursor:pointer;transition:transform .14s,box-shadow .14s;border:0.5px solid transparent;}
-.sfolder:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(0,0,0,.4);}
-.sfolder.active{border-color:rgba(255,255,255,.5);}
-.sfolder.drag-over{border-color:rgba(255,255,255,.7);transform:scale(1.04);box-shadow:0 10px 24px rgba(0,0,0,.4);}
-.sfolder-icon{font-size:26px;margin-bottom:10px;}
-.sfolder-name{font-size:13px;font-weight:800;color:#fff;}
-.sfolder-count{font-size:10.5px;color:rgba(255,255,255,.6);margin-top:2px;}
-.sfolder-green{background:linear-gradient(135deg,rgba(39,174,114,.32) 0%,rgba(39,174,114,.08) 100%);}
-.sfolder-red{background:linear-gradient(135deg,rgba(226,75,74,.28) 0%,rgba(226,75,74,.07) 100%);}
-.sfolder-blue{background:linear-gradient(135deg,rgba(26,111,212,.32) 0%,rgba(26,111,212,.08) 100%);}
+.summary-folders{display:flex;gap:18px;flex-wrap:wrap;padding-top:6px;}
+.sfolder{position:relative;width:148px;height:126px;cursor:pointer;transition:transform .16s;flex-shrink:0;}
+.sfolder:hover{transform:translateY(-3px);}
+.sfolder.drag-over{transform:scale(1.05) translateY(-3px);}
+.sfolder-tab{position:absolute;top:0;left:0;width:56%;height:22px;border-radius:9px 9px 0 0;}
+.sfolder-back{position:absolute;top:13px;left:0;right:0;bottom:0;border-radius:3px 15px 15px 15px;}
+.sfolder-sheet{position:absolute;top:23px;left:5%;right:5%;bottom:9px;border-radius:9px 9px 5px 5px;
+  background:linear-gradient(165deg,rgba(255,255,255,.96) 0%,rgba(228,232,238,.88) 100%);
+  box-shadow:0 -1px 4px rgba(0,0,0,.12);}
+.sfolder-front{position:absolute;top:38px;left:0;right:0;bottom:0;border-radius:15px;
+  padding:14px 13px 12px;display:flex;flex-direction:column;justify-content:flex-end;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.2);transition:box-shadow .16s;}
+.sfolder.active .sfolder-front{box-shadow:inset 0 1px 0 rgba(255,255,255,.2),0 0 0 1.5px rgba(255,255,255,.55);}
+.sfolder-name{font-size:12.5px;font-weight:800;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.2);}
+.sfolder-count{font-size:10px;color:rgba(255,255,255,.75);margin-top:2px;}
+.sfolder-green .sfolder-tab,.sfolder-green .sfolder-back{background:linear-gradient(165deg,#1E8A5C 0%,#136B45 100%);}
+.sfolder-green .sfolder-front{background:linear-gradient(165deg,#2FC98A 0%,#1B8F5F 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,.2),0 10px 22px rgba(39,174,114,.3);}
+.sfolder-red .sfolder-tab,.sfolder-red .sfolder-back{background:linear-gradient(165deg,#8C3550 0%,#601F37 100%);}
+.sfolder-red .sfolder-front{background:linear-gradient(165deg,#B14A65 0%,#7A2E45 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,.2),0 10px 22px rgba(139,60,90,.32);}
+.sfolder-blue .sfolder-tab,.sfolder-blue .sfolder-back{background:linear-gradient(165deg,#14539E 0%,#0D3B75 100%);}
+.sfolder-blue .sfolder-front{background:linear-gradient(165deg,#2E85DE 0%,#1A5FA8 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,.2),0 10px 22px rgba(26,111,212,.32);}
 .summary-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;border-radius:14px;transition:background .12s;}
 .summary-grid.drag-over{background:rgba(255,255,255,.05);outline:1px dashed rgba(255,255,255,.2);}
 .summary-empty{font-size:12px;color:rgba(255,255,255,0.22);font-style:italic;grid-column:1/-1;padding:6px 2px;}
@@ -1508,13 +1518,20 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
     renderSummaryView();
   }
 
+  // La carpeta se arma con 4 capas apiladas (pestaña + parte trasera +
+  // hoja blanca + panel frontal) para que se lea como una carpeta física
+  // con profundidad, no como una tarjeta con un icono de carpeta encima.
   function buildFolderTile(kind, icon, label, count, colorClass, onClick, onDrop) {
     var tile = document.createElement('div');
     tile.className = 'sfolder ' + colorClass + (_summaryDrill === kind ? ' active' : '');
     tile.onclick = onClick;
-    var ic = document.createElement('div'); ic.className = 'sfolder-icon'; ic.textContent = icon; tile.appendChild(ic);
-    var nm = document.createElement('div'); nm.className = 'sfolder-name'; nm.textContent = label; tile.appendChild(nm);
-    var cnt = document.createElement('div'); cnt.className = 'sfolder-count'; cnt.textContent = count + (count === 1 ? ' proyecto' : ' proyectos'); tile.appendChild(cnt);
+    tile.appendChild(document.createElement('div')).className = 'sfolder-tab';
+    tile.appendChild(document.createElement('div')).className = 'sfolder-back';
+    tile.appendChild(document.createElement('div')).className = 'sfolder-sheet';
+    var front = document.createElement('div'); front.className = 'sfolder-front';
+    var nm = document.createElement('div'); nm.className = 'sfolder-name'; nm.textContent = label; front.appendChild(nm);
+    var cnt = document.createElement('div'); cnt.className = 'sfolder-count'; cnt.textContent = count + (count === 1 ? ' proyecto' : ' proyectos'); front.appendChild(cnt);
+    tile.appendChild(front);
     if (onDrop) {
       tile.addEventListener('dragover', function(e) { if (_summaryDragId) { e.preventDefault(); tile.classList.add('drag-over'); } });
       tile.addEventListener('dragleave', function() { tile.classList.remove('drag-over'); });
