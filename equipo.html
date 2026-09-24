@@ -11,6 +11,9 @@
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 html,body{height:100%;overflow:hidden;background:#080b16;font-family:'Inter',system-ui,sans-serif;color:#fff;}
 .nav-bar{background:#080b16;border-bottom:.5px solid rgba(255,255,255,.06);padding:9px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.logo{display:flex;align-items:center;gap:10px;}
+.logo-pill{background:#fff;color:#0c0c0c;font-size:11px;font-weight:800;padding:5px 10px;border-radius:8px;}
+.logo-name{font-size:14px;font-weight:700;letter-spacing:.04em;}
 .nav-btn{background:none;border:none;color:rgba(255,255,255,.32);font-size:12px;font-weight:500;padding:6px 14px;border-radius:20px;cursor:pointer;font-family:'Inter',sans-serif;transition:background .15s,color .15s;}
 .nav-btn:hover{background:rgba(255,255,255,.07);color:rgba(255,255,255,.78);}
 .nav-btn.active{background:rgba(255,255,255,.11);color:#fff;font-weight:600;}
@@ -777,6 +780,7 @@ select.eq-org-new-inp option{background:#1a1f35;}
 <div id="eqRoot" class="eq-root" style="display:none">
 
   <div class="nav-bar">
+    <div class="logo"><div class="logo-pill">D/</div><span class="logo-name">Dcoder Studio</span></div>
     <div style="display:flex;align-items:center;gap:2px;">
       <button class="nav-btn" onclick="location.href='index.html'">Inicio</button>
       <button class="nav-btn" onclick="location.href='proyectos.html'">Proyectos</button>
