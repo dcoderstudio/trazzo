@@ -1313,8 +1313,15 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
     card.style.cssText = 'background:rgba(' + rgb + ',.13);border:0.5px solid rgba(' + rgb + ',.35);';
     card.onclick = function() { openProjDetail(p.id); };
 
+    // El degradado va de claro (esquina sup-izq) a oscuro (esquina inf-der)
+    // DENTRO de la zona ya completada: background-size se escala a pct%
+    // para que el degradado termine su recorrido justo donde termina el
+    // relleno (el clip-path), no a la mitad de un degradado pensado para
+    // toda la tarjeta.
+    var bright = 'color-mix(in srgb,' + color + ' 78%, white 18%)';
+    var dark = 'color-mix(in srgb,' + color + ' 55%, black 45%)';
     var fill = document.createElement('div'); fill.className = 'summary-card-fill';
-    fill.style.cssText = 'background:linear-gradient(135deg,rgba(' + rgb + ',.75) 0%,rgba(' + rgb + ',.5) 100%);clip-path:inset(0 ' + (100 - pct) + '% 0 0);';
+    fill.style.cssText = 'background-image:linear-gradient(135deg,' + bright + ' 0%,' + dark + ' 100%);background-repeat:no-repeat;background-position:top left;background-size:' + pct + '% 100%;clip-path:inset(0 ' + (100 - pct) + '% 0 0);';
     card.appendChild(fill);
 
     var top = document.createElement('div'); top.className = 'summary-card-top';
