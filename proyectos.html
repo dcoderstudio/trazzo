@@ -75,6 +75,7 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
 .single-wrap::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,0.28);}
 /* modal */
 .overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(8px);z-index:500;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s;}
+#projOverlay,#solOverlay{z-index:600;} /* pueden abrirse encima de otro modal (p.ej. el kanban de Cotizaciones) */
 .overlay.open{opacity:1;pointer-events:all;}
 .modal{background:#161616;border:0.5px solid rgba(255,255,255,0.1);border-radius:20px;padding:28px;width:440px;max-width:90vw;display:flex;flex-direction:column;gap:16px;transform:translateY(8px);transition:transform .2s;}
 .overlay.open .modal{transform:none;}
@@ -231,6 +232,26 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
 .tm-stage-group{border-radius:12px;margin-bottom:14px;padding:2px 10px 8px;}
 .tm-stage-hdr{display:flex;align-items:center;gap:7px;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;padding:10px 2px 8px;border-bottom:0.5px solid rgba(255,255,255,0.08);margin-bottom:2px;}
 .tm-stage-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+
+.cotiz-modal{width:min(96vw,1120px);max-height:88vh;}
+.cotiz-toolbar{padding:12px 18px 0;flex-shrink:0;}
+.cotiz-board{flex:1;overflow-x:auto;overflow-y:hidden;display:flex;gap:12px;padding:14px 18px 18px;min-height:0;}
+.cotiz-board::-webkit-scrollbar{height:4px;}
+.cotiz-board::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:2px;}
+.cotiz-col{flex:0 0 210px;display:flex;flex-direction:column;background:rgba(255,255,255,.03);border:0.5px solid rgba(255,255,255,.08);border-radius:14px;overflow:hidden;}
+.cotiz-col-hdr{padding:10px 12px;font-size:10.5px;font-weight:800;color:rgba(255,255,255,.75);border-bottom:0.5px solid rgba(255,255,255,.07);display:flex;align-items:center;gap:6px;flex-shrink:0;}
+.cotiz-col-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.cotiz-col-cnt{margin-left:auto;font-size:9px;font-weight:700;color:rgba(255,255,255,.3);}
+.cotiz-col-body{flex:1;overflow-y:auto;padding:8px;display:flex;flex-direction:column;gap:8px;min-height:60px;}
+.cotiz-col-body.drag-over{background:rgba(255,255,255,.04);}
+.cotiz-card{background:#1c1c1c;border:0.5px solid rgba(255,255,255,.08);border-radius:10px;padding:10px;cursor:grab;}
+.cotiz-card.cotiz-dragging{opacity:.3;}
+.cotiz-card-name{font-size:12px;font-weight:700;color:#fff;}
+.cotiz-card-meta{font-size:10px;color:rgba(255,255,255,.4);margin-top:3px;}
+.cotiz-card-act{margin-top:8px;width:100%;border:none;border-radius:8px;padding:6px;font-size:10.5px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;}
+.cotiz-card-act.accept{background:rgba(39,174,114,.16);color:#27AE72;}
+.cotiz-card-act.reject{background:rgba(226,75,74,.16);color:#E24B4A;}
+.cotiz-col-empty{font-size:10.5px;color:rgba(255,255,255,.2);font-style:italic;text-align:center;padding:10px 4px;}
 .tm-stage-empty{font-size:10.5px;color:rgba(255,255,255,0.18);font-style:italic;padding:6px 4px;}
 .tm-row{display:flex;align-items:center;gap:10px;padding:8px 4px;border-bottom:0.5px solid rgba(255,255,255,0.04);}
 .tm-row.excluded{opacity:.45;}
@@ -382,7 +403,19 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
 .summary-view{display:none;flex-direction:column;gap:22px;padding:20px 28px 32px;height:calc(100dvh - 52px - 48px);height:calc(var(--vh,100vh) - 52px - 48px);overflow-y:auto;}
 .summary-view::-webkit-scrollbar{width:5px;}
 .summary-view::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:3px;}
-.summary-section-hdr{font-size:13px;font-weight:800;color:rgba(255,255,255,0.75);margin-bottom:12px;letter-spacing:.01em;}
+.summary-section-hdr{font-size:13px;font-weight:800;color:rgba(255,255,255,0.75);margin-bottom:12px;letter-spacing:.01em;display:flex;align-items:center;gap:10px;}
+.summary-back-link{font-size:11px;font-weight:700;color:rgba(255,255,255,0.4);cursor:pointer;transition:color .12s;}
+.summary-back-link:hover{color:#fff;}
+.summary-folders{display:flex;gap:14px;flex-wrap:wrap;}
+.sfolder{width:150px;border-radius:16px;padding:16px 14px;cursor:pointer;transition:transform .14s,box-shadow .14s;border:0.5px solid transparent;}
+.sfolder:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(0,0,0,.4);}
+.sfolder.active{border-color:rgba(255,255,255,.5);}
+.sfolder-icon{font-size:26px;margin-bottom:10px;}
+.sfolder-name{font-size:13px;font-weight:800;color:#fff;}
+.sfolder-count{font-size:10.5px;color:rgba(255,255,255,.6);margin-top:2px;}
+.sfolder-green{background:linear-gradient(135deg,rgba(39,174,114,.32) 0%,rgba(39,174,114,.08) 100%);}
+.sfolder-red{background:linear-gradient(135deg,rgba(226,75,74,.28) 0%,rgba(226,75,74,.07) 100%);}
+.sfolder-blue{background:linear-gradient(135deg,rgba(26,111,212,.32) 0%,rgba(26,111,212,.08) 100%);}
 .summary-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;}
 .summary-empty{font-size:12px;color:rgba(255,255,255,0.22);font-style:italic;grid-column:1/-1;padding:6px 2px;}
 .summary-card{border-radius:18px;padding:16px 18px;cursor:pointer;transition:transform .14s,box-shadow .14s;position:relative;min-height:128px;display:flex;flex-direction:column;justify-content:space-between;overflow:hidden;}
@@ -803,6 +836,19 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
   </div>
 </div>
 
+<div class="overlay" id="cotizOverlay">
+  <div class="tm-modal cotiz-modal">
+    <div class="tm-hdr">
+      <div class="tm-title">📝 Cotizaciones</div>
+      <button class="tm-close" id="cotizClose">×</button>
+    </div>
+    <div class="cotiz-toolbar">
+      <button class="tm-open-btn" id="cotizNewBtn">+ Nueva solicitud de cotización</button>
+    </div>
+    <div class="cotiz-board" id="cotizBoard"></div>
+  </div>
+</div>
+
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
@@ -998,8 +1044,10 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
   var presetCat = null;
   var presetStage = null;
 
+  var COTIZ_STAGES = ['Cotización','Cotización enviada','Reactivar','Rechazada','Aprobada'];
+
   var categories = [
-    {id:'cotizaciones', label:'Solicitudes', color:'#27AE72', stages:['Solicitud recibida','En proceso','Enviado','Aceptado','Rechazado','Entregado']},
+    {id:'cotizaciones', label:'Solicitudes', color:'#27AE72', stages:COTIZ_STAGES.slice()},
     {id:'industrial',   label:'Diseño Industrial', color:'#1A6FD4', stages:['Brief','Concepto','Desarrollo','Prototipo','Pruebas','Revisión','Aprobación','Entrega']},
     {id:'proyectos',    label:'Diseño de Proyectos', color:'#7B6FD0', stages:['Brief','Concepto','Desarrollo','Documentación','Revisión','Aprobación','Entrega']},
     {id:'senaletica',   label:'Señalética', color:'#E8A020', stages:['Brief','Recorrido de sitio','Concepto','Desarrollo','Fabricación','Instalación','Entrega']},
@@ -1359,26 +1407,188 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
     return card;
   }
 
+  // Tarjeta simple para cotizaciones archivadas en la carpeta Rechazados:
+  // sin degradado de avance (no aplica a una cotización cerrada), solo
+  // nombre, cliente/tipo y un botón para reactivarla de vuelta al kanban.
+  function buildRejectedCard(p) {
+    var tipoCat = getCat(p.tipoCat);
+    var card = document.createElement('div'); card.className = 'summary-card';
+    card.style.cssText = 'background:rgba(226,75,74,.06);border:0.5px solid rgba(226,75,74,.18);cursor:default;min-height:auto;';
+    var name = document.createElement('div'); name.className = 'summary-card-name'; name.textContent = p.name;
+    var meta = document.createElement('div'); meta.className = 'summary-card-client';
+    meta.textContent = (p.client || '—') + (tipoCat ? ' · ' + tipoCat.label : '');
+    var btn = document.createElement('button'); btn.className = 'cotiz-card-act';
+    btn.style.cssText = 'margin-top:12px;background:rgba(232,160,32,.16);color:#E8A020;';
+    btn.textContent = '↺ Reactivar';
+    btn.onclick = function() { reactivateCotiz(p); };
+    card.appendChild(name); card.appendChild(meta); card.appendChild(btn);
+    return card;
+  }
+
+  var _summaryDrill = null; // null | 'concluded' | 'rejected'
+
+  function setSummaryDrill(kind) {
+    _summaryDrill = (_summaryDrill === kind) ? null : kind;
+    renderSummaryView();
+  }
+
+  function buildFolderTile(kind, icon, label, count, colorClass, onClick) {
+    var tile = document.createElement('div');
+    tile.className = 'sfolder ' + colorClass + (_summaryDrill === kind ? ' active' : '');
+    tile.onclick = onClick;
+    var ic = document.createElement('div'); ic.className = 'sfolder-icon'; ic.textContent = icon; tile.appendChild(ic);
+    var nm = document.createElement('div'); nm.className = 'sfolder-name'; nm.textContent = label; tile.appendChild(nm);
+    var cnt = document.createElement('div'); cnt.className = 'sfolder-count'; cnt.textContent = count + (count === 1 ? ' proyecto' : ' proyectos'); tile.appendChild(cnt);
+    return tile;
+  }
+
   function renderSummaryView() {
     var el = document.getElementById('summaryView'); if (!el) return;
     el.innerHTML = '';
     var visible = projects.filter(function(p) { return activeCompany === 'all' || p.empresa === activeCompany; });
     var activos = visible.filter(function(p) { return p.catId !== 'cotizaciones' && !p.concluded; });
-    var cotizados = visible.filter(function(p) { return p.catId === 'cotizaciones' && !p.concluded; });
+    var cotizActivas = visible.filter(function(p) { return p.catId === 'cotizaciones' && !p.quoteArchived; });
     var concluidos = visible.filter(function(p) { return p.concluded; });
+    var rechazadas = visible.filter(function(p) { return p.catId === 'cotizaciones' && p.quoteArchived; });
 
-    function section(title, list) {
+    function section(title, list, backable, builder) {
       var wrap = document.createElement('div'); wrap.className = 'summary-section';
-      var hdr = document.createElement('div'); hdr.className = 'summary-section-hdr'; hdr.textContent = title + ' (' + list.length + ')'; wrap.appendChild(hdr);
+      var hdr = document.createElement('div'); hdr.className = 'summary-section-hdr';
+      if (backable) {
+        var back = document.createElement('span'); back.className = 'summary-back-link'; back.textContent = '← Volver';
+        back.onclick = function() { setSummaryDrill(null); };
+        hdr.appendChild(back);
+      }
+      var hdrTxt = document.createElement('span'); hdrTxt.textContent = title + ' (' + list.length + ')'; hdr.appendChild(hdrTxt);
+      wrap.appendChild(hdr);
       var grid = document.createElement('div'); grid.className = 'summary-grid';
       if (!list.length) { var emp = document.createElement('div'); emp.className = 'summary-empty'; emp.textContent = 'Nada por aquí todavía.'; grid.appendChild(emp); }
-      else list.forEach(function(p) { grid.appendChild(buildSummaryCard(p)); });
+      else list.forEach(function(p) { grid.appendChild((builder || buildSummaryCard)(p)); });
       wrap.appendChild(grid);
       el.appendChild(wrap);
     }
-    section('📁 Proyectos activos', activos);
-    section('📝 Cotizados', cotizados);
-    if (concluidos.length) section('✅ Concluidos', concluidos);
+
+    var folders = document.createElement('div'); folders.className = 'summary-folders';
+    folders.appendChild(buildFolderTile('concluded', '📁', 'Completados', concluidos.length, 'sfolder-green', function() { setSummaryDrill('concluded'); }));
+    folders.appendChild(buildFolderTile('rejected', '🗄', 'Rechazados', rechazadas.length, 'sfolder-red', function() { setSummaryDrill('rejected'); }));
+    folders.appendChild(buildFolderTile('cotizaciones', '📝', 'Cotizaciones', cotizActivas.length, 'sfolder-blue', function() { openCotizKanban(); }));
+    el.appendChild(folders);
+
+    if (_summaryDrill === 'concluded') section('✅ Completados', concluidos, true);
+    else if (_summaryDrill === 'rejected') section('🗄 Rechazados', rechazadas, true, buildRejectedCard);
+    else section('📁 Proyectos activos', activos);
+  }
+
+  // ── COTIZACIONES: mini-kanban dedicado ─────────────────────────
+  var COTIZ_COLORS = {
+    'Cotización': '#5AB4E8',
+    'Cotización enviada': '#1A6FD4',
+    'Reactivar': '#E8A020',
+    'Rechazada': '#E24B4A',
+    'Aprobada': '#27AE72'
+  };
+  var _cotizDragId = null;
+
+  function openCotizKanban() {
+    renderCotizKanban();
+    document.getElementById('cotizOverlay').classList.add('open');
+  }
+
+  function closeCotizKanban() {
+    document.getElementById('cotizOverlay').classList.remove('open');
+    if (_summaryView) renderSummaryView();
+  }
+
+  function buildCotizCard(p, stage) {
+    var tipoCat = getCat(p.tipoCat);
+    var card = document.createElement('div'); card.className = 'cotiz-card'; card.draggable = true; card.dataset.id = p.id;
+    var name = document.createElement('div'); name.className = 'cotiz-card-name'; name.textContent = p.name; card.appendChild(name);
+    var meta = document.createElement('div'); meta.className = 'cotiz-card-meta';
+    meta.textContent = (p.client || '—') + (tipoCat ? ' · ' + tipoCat.label : '') + (p.monto ? ' · $' + p.monto : '');
+    card.appendChild(meta);
+    card.onclick = function() { openProjDetail(p.id); };
+    card.addEventListener('dragstart', function(e) {
+      _cotizDragId = p.id; card.classList.add('cotiz-dragging');
+      e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', String(p.id));
+    });
+    card.addEventListener('dragend', function() { _cotizDragId = null; card.classList.remove('cotiz-dragging'); });
+    if (stage === 'Aprobada') {
+      var acc = document.createElement('button'); acc.className = 'cotiz-card-act accept'; acc.textContent = '✓ Aceptar';
+      acc.onclick = function(e) { e.stopPropagation(); acceptCotiz(p); };
+      card.appendChild(acc);
+    } else if (stage === 'Rechazada') {
+      var rej = document.createElement('button'); rej.className = 'cotiz-card-act reject'; rej.textContent = '🗄 Enviar a Rechazados';
+      rej.onclick = function(e) { e.stopPropagation(); rejectCotiz(p); };
+      card.appendChild(rej);
+    }
+    return card;
+  }
+
+  function renderCotizKanban() {
+    var wrap = document.getElementById('cotizBoard'); if (!wrap) return;
+    wrap.innerHTML = '';
+    var quotes = projects.filter(function(p) { return p.catId === 'cotizaciones' && !p.quoteArchived; });
+    COTIZ_STAGES.forEach(function(stage) {
+      var col = document.createElement('div'); col.className = 'cotiz-col';
+      var hdr = document.createElement('div'); hdr.className = 'cotiz-col-hdr';
+      var dot = document.createElement('div'); dot.className = 'cotiz-col-dot'; dot.style.background = COTIZ_COLORS[stage] || '#5AB4E8'; hdr.appendChild(dot);
+      var lbl = document.createElement('span'); lbl.textContent = stage; hdr.appendChild(lbl);
+      var stageQuotes = quotes.filter(function(p) { return p.stage === stage; });
+      var cnt = document.createElement('span'); cnt.className = 'cotiz-col-cnt'; cnt.textContent = stageQuotes.length; hdr.appendChild(cnt);
+      col.appendChild(hdr);
+      var body = document.createElement('div'); body.className = 'cotiz-col-body';
+      if (!stageQuotes.length) {
+        var emp = document.createElement('div'); emp.className = 'cotiz-col-empty'; emp.textContent = 'Sin cotizaciones'; body.appendChild(emp);
+      } else {
+        stageQuotes.forEach(function(p) { body.appendChild(buildCotizCard(p, stage)); });
+      }
+      body.addEventListener('dragover', function(e) { e.preventDefault(); body.classList.add('drag-over'); });
+      body.addEventListener('dragleave', function() { body.classList.remove('drag-over'); });
+      body.addEventListener('drop', function(e) {
+        e.preventDefault(); body.classList.remove('drag-over');
+        if (!_cotizDragId) return;
+        var p = null;
+        for (var i = 0; i < projects.length; i++) { if (projects[i].id === _cotizDragId) { p = projects[i]; break; } }
+        if (!p || p.stage === stage) return;
+        p.stage = stage;
+        if (!p.stageEntryDates) p.stageEntryDates = {};
+        p.stageEntryDates[stage] = new Date().toISOString().split('T')[0];
+        saveData();
+        renderCotizKanban();
+      });
+      col.appendChild(body);
+      wrap.appendChild(col);
+    });
+  }
+
+  function acceptCotiz(p) {
+    var cat = getCat(p.tipoCat);
+    if (!cat) { alert('Esta cotización no tiene un tipo de proyecto asignado. Ábrela y define su tipo antes de aceptarla.'); return; }
+    p.catId = cat.id;
+    p.stage = cat.stages[0];
+    if (!p.stageEntryDates) p.stageEntryDates = {};
+    p.stageEntryDates[p.stage] = new Date().toISOString().split('T')[0];
+    seedStageTasks(p, cat, p.stage);
+    saveData();
+    closeCotizKanban();
+    renderBoard();
+    openProjDetail(p.id);
+  }
+
+  function rejectCotiz(p) {
+    p.quoteArchived = true;
+    saveData();
+    renderCotizKanban();
+    if (_summaryView) renderSummaryView();
+  }
+
+  function reactivateCotiz(p) {
+    p.quoteArchived = false;
+    p.stage = 'Reactivar';
+    if (!p.stageEntryDates) p.stageEntryDates = {};
+    p.stageEntryDates['Reactivar'] = new Date().toISOString().split('T')[0];
+    saveData();
+    renderSummaryView();
   }
 
   function _onColDragMove(e) {
@@ -1848,7 +2058,7 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
   // ── COLUMN ────────────────────────────────────────────
   function buildCol(cat, stage, catProjects) {
     var cards = catProjects.filter(function(p) { return p.stage === stage; });
-    var isEntregadoCol = cat.id === 'cotizaciones' && stage === 'Entregado';
+    var isEntregadoCol = cat.id === 'cotizaciones' && stage === 'Aprobada';
     var isLastCol = cat.id !== 'cotizaciones' && cat.stages.length > 0 && stage === cat.stages[cat.stages.length - 1];
     var lastColKey = 'trazzo_lastcol_' + cat.id;
     var lastColCollapsed = isLastCol && localStorage.getItem(lastColKey) === '1';
@@ -1954,9 +2164,9 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
   // ── CARD ─────────────────────────────────────────────
   function buildCard(p, cat) {
     var isCot = cat.id === 'cotizaciones';
-    var isAccepted = isCot && p.stage === 'Aceptado';
-    var isRejected = isCot && p.stage === 'Rechazado';
-    var isEntregado = isCot && p.stage === 'Entregado';
+    var isAccepted = isCot && p.stage === 'Aprobada';
+    var isRejected = isCot && p.stage === 'Rechazada';
+    var isEntregado = isCot && p.stage === 'Aprobada';
     var isLastStage = !isCot && cat.stages.length > 0 && p.stage === cat.stages[cat.stages.length - 1];
     var dlColor = 'rgba(255,255,255,0.25)';
     if (p.deadline) {
@@ -2391,6 +2601,9 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
     saveData();
     document.getElementById('solOverlay').classList.remove('open');
     renderBoard();
+    if (_summaryView) renderSummaryView();
+    var cotizOv = document.getElementById('cotizOverlay');
+    if (cotizOv && cotizOv.classList.contains('open')) renderCotizKanban();
   }
 
   // ── PROJECT MODAL ─────────────────────────────────────
@@ -2519,6 +2732,9 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
     saveData();
     closeProjModal();
     renderBoard();
+    if (_summaryView) renderSummaryView();
+    var cotizOv = document.getElementById('cotizOverlay');
+    if (cotizOv && cotizOv.classList.contains('open')) renderCotizKanban();
   }
 
   // ── CATEGORY MODAL ────────────────────────────────────
@@ -3999,6 +4215,9 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
   document.getElementById('tmOpenBtn').onclick = openTaskManager;
   document.getElementById('tmClose').onclick = closeTaskManager;
   document.getElementById('tmOverlay').addEventListener('click', function(e){ if(e.target===document.getElementById('tmOverlay')) closeTaskManager(); });
+  document.getElementById('cotizClose').onclick = closeCotizKanban;
+  document.getElementById('cotizOverlay').addEventListener('click', function(e){ if(e.target===document.getElementById('cotizOverlay')) closeCotizKanban(); });
+  document.getElementById('cotizNewBtn').onclick = openSolModal;
 
   // ── AUTO-SAVE en detalle de ficha ─────────────────────
   var _pdmTimer = null;
@@ -4064,23 +4283,29 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
       }
       _syncCustomFieldsCompat();
     }
-    // Migración: quitar Negociación y asegurar Entregado al final
+    // Migración: nuevo pipeline simplificado de cotizaciones
+    // (Cotización → Cotización enviada → Reactivar → Rechazada/Aprobada)
     var migrated = false;
+    var COTIZ_STAGE_MAP = {
+      'Solicitud recibida': 'Cotización',
+      'En proceso': 'Cotización',
+      'Enviado': 'Cotización enviada',
+      'Negociación': 'Cotización enviada',
+      'Aceptado': 'Aprobada',
+      'Rechazado': 'Rechazada',
+      'Entregado': 'Aprobada'
+    };
     for (var mi = 0; mi < categories.length; mi++) {
       if (categories[mi].id === 'cotizaciones') {
-        var st = categories[mi].stages;
-        var hasNeg = st.indexOf('Negociación') >= 0;
-        var hasEnt = st[st.length - 1] === 'Entregado';
-        if (hasNeg || !hasEnt) {
-          categories[mi].stages = st.filter(function(s){ return s !== 'Negociación' && s !== 'Entregado'; }).concat(['Entregado']);
+        if (categories[mi].stages.join('|') !== COTIZ_STAGES.join('|')) {
+          categories[mi].stages = COTIZ_STAGES.slice();
           migrated = true;
         }
         break;
       }
     }
-    // Mover tarjetas en Negociación a Enviado
     projects.forEach(function(p) {
-      if (p.catId === 'cotizaciones' && p.stage === 'Negociación') { p.stage = 'Enviado'; migrated = true; }
+      if (p.catId === 'cotizaciones' && COTIZ_STAGE_MAP[p.stage]) { p.stage = COTIZ_STAGE_MAP[p.stage]; migrated = true; }
     });
     // === MIGRACIÓN DEFINITIVA DE CATEGORÍAS ===
     (function() {
