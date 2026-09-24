@@ -412,6 +412,7 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
 .sfolder{width:150px;border-radius:16px;padding:16px 14px;cursor:pointer;transition:transform .14s,box-shadow .14s;border:0.5px solid transparent;}
 .sfolder:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(0,0,0,.4);}
 .sfolder.active{border-color:rgba(255,255,255,.5);}
+.sfolder.drag-over{border-color:rgba(255,255,255,.7);transform:scale(1.04);box-shadow:0 10px 24px rgba(0,0,0,.4);}
 .sfolder-icon{font-size:26px;margin-bottom:10px;}
 .sfolder-name{font-size:13px;font-weight:800;color:#fff;}
 .sfolder-count{font-size:10.5px;color:rgba(255,255,255,.6);margin-top:2px;}
@@ -1430,12 +1431,12 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
   // sin degradado de avance (no aplica a una cotización cerrada), solo
   // nombre, cliente/tipo y un botón para reactivarla de vuelta al kanban.
   function buildRejectedCard(p) {
-    var tipoCat = getCat(p.tipoCat);
+    var cat = getCat(p.tipoCat || p.catId);
     var card = document.createElement('div'); card.className = 'summary-card';
     card.style.cssText = 'background:rgba(226,75,74,.06);border:0.5px solid rgba(226,75,74,.18);cursor:default;min-height:auto;';
     var name = document.createElement('div'); name.className = 'summary-card-name'; name.textContent = p.name;
     var meta = document.createElement('div'); meta.className = 'summary-card-client';
-    meta.textContent = (p.client || '—') + (tipoCat ? ' · ' + tipoCat.label : '');
+    meta.textContent = (p.client || '—') + (cat ? ' · ' + cat.label : '');
     var btn = document.createElement('button'); btn.className = 'cotiz-card-act';
     btn.style.cssText = 'margin-top:12px;background:rgba(232,160,32,.16);color:#E8A020;';
     btn.textContent = '↺ Reactivar';
@@ -1451,13 +1452,21 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
     renderSummaryView();
   }
 
-  function buildFolderTile(kind, icon, label, count, colorClass, onClick) {
+  function buildFolderTile(kind, icon, label, count, colorClass, onClick, onDrop) {
     var tile = document.createElement('div');
     tile.className = 'sfolder ' + colorClass + (_summaryDrill === kind ? ' active' : '');
     tile.onclick = onClick;
     var ic = document.createElement('div'); ic.className = 'sfolder-icon'; ic.textContent = icon; tile.appendChild(ic);
     var nm = document.createElement('div'); nm.className = 'sfolder-name'; nm.textContent = label; tile.appendChild(nm);
     var cnt = document.createElement('div'); cnt.className = 'sfolder-count'; cnt.textContent = count + (count === 1 ? ' proyecto' : ' proyectos'); tile.appendChild(cnt);
+    if (onDrop) {
+      tile.addEventListener('dragover', function(e) { if (_summaryDragId) { e.preventDefault(); tile.classList.add('drag-over'); } });
+      tile.addEventListener('dragleave', function() { tile.classList.remove('drag-over'); });
+      tile.addEventListener('drop', function(e) {
+        e.preventDefault(); tile.classList.remove('drag-over');
+        if (_summaryDragId) onDrop(_summaryDragId);
+      });
+    }
     return tile;
   }
 
@@ -1473,15 +1482,31 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
     }
   }
 
+  // Soltar una ficha sobre la carpeta de Completados/Rechazados la saca
+  // de las vistas normales (standby) y marca todas sus tareas como
+  // hechas, tal como pide el usuario: "completado" o "rechazado" son
+  // estados de cierre, no de trabajo pendiente.
+  function archiveProjectToFolder(id, kind) {
+    var p = null;
+    for (var i = 0; i < projects.length; i++) { if (projects[i].id === id) { p = projects[i]; break; } }
+    if (!p) return;
+    markAllTasksDone(p);
+    if (kind === 'concluded') { p.concluded = true; p.quoteArchived = false; }
+    else if (kind === 'rejected') { p.quoteArchived = true; p.concluded = false; }
+    saveData();
+    renderSummaryView();
+    renderBoard();
+  }
+
   function renderSummaryView() {
     var el = document.getElementById('summaryView'); if (!el) return;
     el.innerHTML = '';
     var visible = projects.filter(function(p) { return activeCompany === 'all' || p.empresa === activeCompany; });
-    var activos = visible.filter(function(p) { return p.catId !== 'cotizaciones' && !p.concluded && !p.pendingApproval; });
-    var pendientes = visible.filter(function(p) { return p.catId !== 'cotizaciones' && !p.concluded && p.pendingApproval; });
+    var activos = visible.filter(function(p) { return p.catId !== 'cotizaciones' && !p.concluded && !p.pendingApproval && !p.quoteArchived; });
+    var pendientes = visible.filter(function(p) { return p.catId !== 'cotizaciones' && !p.concluded && p.pendingApproval && !p.quoteArchived; });
     var cotizActivas = visible.filter(function(p) { return p.catId === 'cotizaciones' && !p.quoteArchived; });
     var concluidos = visible.filter(function(p) { return p.concluded; });
-    var rechazadas = visible.filter(function(p) { return p.catId === 'cotizaciones' && p.quoteArchived; });
+    var rechazadas = visible.filter(function(p) { return p.quoteArchived && !p.concluded; });
 
     function section(title, list, opts) {
       opts = opts || {};
@@ -1510,8 +1535,8 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
     }
 
     var folders = document.createElement('div'); folders.className = 'summary-folders';
-    folders.appendChild(buildFolderTile('concluded', '📁', 'Completados', concluidos.length, 'sfolder-green', function() { setSummaryDrill('concluded'); }));
-    folders.appendChild(buildFolderTile('rejected', '🗄', 'Rechazados', rechazadas.length, 'sfolder-red', function() { setSummaryDrill('rejected'); }));
+    folders.appendChild(buildFolderTile('concluded', '📁', 'Completados', concluidos.length, 'sfolder-green', function() { setSummaryDrill('concluded'); }, function(id) { archiveProjectToFolder(id, 'concluded'); }));
+    folders.appendChild(buildFolderTile('rejected', '🗄', 'Rechazados', rechazadas.length, 'sfolder-red', function() { setSummaryDrill('rejected'); }, function(id) { archiveProjectToFolder(id, 'rejected'); }));
     folders.appendChild(buildFolderTile('cotizaciones', '📝', 'Cotizaciones', cotizActivas.length, 'sfolder-blue', function() { openCotizKanban(); }));
     el.appendChild(folders);
 
@@ -1627,9 +1652,11 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
 
   function reactivateCotiz(p) {
     p.quoteArchived = false;
-    p.stage = 'Reactivar';
-    if (!p.stageEntryDates) p.stageEntryDates = {};
-    p.stageEntryDates['Reactivar'] = new Date().toISOString().split('T')[0];
+    if (p.catId === 'cotizaciones') {
+      p.stage = 'Reactivar';
+      if (!p.stageEntryDates) p.stageEntryDates = {};
+      p.stageEntryDates['Reactivar'] = new Date().toISOString().split('T')[0];
+    }
     saveData();
     renderSummaryView();
   }
@@ -3239,14 +3266,18 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
     document.getElementById('pdmCompleteBtn').style.display = '';
   }
 
-  function confirmCompleteProj() {
-    var p = null;
-    for (var i = 0; i < projects.length; i++) { if (projects[i].id === detailProjectId) { p = projects[i]; break; } }
-    if (!p) return;
+  function markAllTasksDone(p) {
     Object.keys(p.stageTasks || {}).forEach(function(stage) {
       (p.stageTasks[stage] || []).forEach(function(t) { t.done = true; t.colStatus = 'done'; });
     });
     p.completed = true;
+  }
+
+  function confirmCompleteProj() {
+    var p = null;
+    for (var i = 0; i < projects.length; i++) { if (projects[i].id === detailProjectId) { p = projects[i]; break; } }
+    if (!p) return;
+    markAllTasksDone(p);
     saveData();
     document.getElementById('pdmCompleteConfirm').style.display = 'none';
     document.getElementById('pdmCompleteBtn').style.display = '';
