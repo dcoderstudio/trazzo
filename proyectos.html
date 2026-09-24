@@ -1269,15 +1269,40 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
     return Math.round(idx / (cat.stages.length - 1) * 100);
   }
 
+  // Color de estado de la ficha: azul si va a tiempo, amarillo si alguna
+  // tarea del proyecto está atrasada, rojo si la fase actual ya rebasó
+  // su tiempo estimado (cat.stageDays vs. stageEntryDates).
+  function computeProjectStatusColor(p) {
+    var cat = getCat(p.catId);
+    var sd = cat && cat.stageDays && cat.stageDays[p.stage];
+    if (sd) {
+      var ed = p.stageEntryDates && p.stageEntryDates[p.stage];
+      if (ed) {
+        var rem = Math.ceil((new Date(ed + 'T00:00:00').getTime() + sd * 86400000 - Date.now()) / 86400000);
+        if (rem < 0) return '#E24B4A';
+      }
+    }
+    var today0 = new Date(); today0.setHours(0, 0, 0, 0);
+    var taskLate = false;
+    Object.keys(p.stageTasks || {}).forEach(function(stage) {
+      (p.stageTasks[stage] || []).forEach(function(t) {
+        if (!t.done && t.deadline && new Date(t.deadline + 'T00:00:00') < today0) taskLate = true;
+      });
+    });
+    if (taskLate) return '#E8A020';
+    return '#1A6FD4';
+  }
+
   function buildSummaryCard(p) {
     var cat = getCat(p.catId);
-    var color = cat ? cat.color : '#1A6FD4';
+    var color = computeProjectStatusColor(p);
+    var rgb = _coRgb(color);
     var pct = computeProjectProgress(p);
-    var bright = 'color-mix(in srgb,' + color + ' 70%, black 30%)';
-    var dim = 'color-mix(in srgb,' + color + ' 26%, #14100c 74%)';
+    var p1 = Math.max(6, Math.min(94, pct - 12));
+    var p2 = Math.max(p1 + 6, Math.min(98, pct + 16));
     var card = document.createElement('div');
     card.className = 'summary-card' + (p.concluded ? ' concluded' : '');
-    card.style.background = 'linear-gradient(to right,' + bright + ' 0%,' + bright + ' ' + pct + '%,' + dim + ' ' + pct + '%,' + dim + ' 100%)';
+    card.style.cssText = 'background:linear-gradient(135deg,rgba(' + rgb + ',.5) 0%,rgba(' + rgb + ',.26) ' + p1 + '%,rgba(' + rgb + ',.05) ' + p2 + '%,#181818 100%);border:0.5px solid rgba(' + rgb + ',.28);';
     card.onclick = function() { openProjDetail(p.id); };
 
     var top = document.createElement('div'); top.className = 'summary-card-top';
