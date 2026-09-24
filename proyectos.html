@@ -269,6 +269,8 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
 .tm-date-pill:hover{background:rgba(255,255,255,0.12);color:rgba(255,255,255,0.7);}
 .tm-date-pill.has-date{background:rgba(26,111,212,0.18);color:#5AB4E8;}
 .tm-date-pill.has-date:hover{background:rgba(26,111,212,0.28);}
+.tm-resp-pill{font-size:9.5px;font-weight:600;padding:4px 8px;border-radius:8px;cursor:pointer;white-space:nowrap;flex-shrink:0;background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.35);transition:all .15s;}
+.tm-resp-pill:hover{background:rgba(255,255,255,0.12);color:rgba(255,255,255,0.7);}
 .tm-add-row{padding:8px 4px 2px;}
 .tm-add-inp{width:100%;box-sizing:border-box;background:rgba(255,255,255,0.05);border:0.5px solid rgba(255,255,255,0.1);border-radius:7px;padding:7px 10px;font-size:11px;color:#fff;font-family:'Inter',sans-serif;outline:none;transition:border-color .15s;}
 .tm-add-inp:focus{border-color:rgba(255,255,255,0.28);}
@@ -3916,9 +3918,27 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
     var text = real ? real[idx].text : (typeof tpl[idx] === 'string' ? tpl[idx] : (tpl[idx].text || ''));
     var applied = !!(real && real[idx].sharedWithTeam);
     var deadline = real ? (real[idx].deadline || '') : '';
+    var resp = real ? (real[idx].resp || '') : '';
     var row = document.createElement('div'); row.className = 'tm-row' + (applied ? '' : ' excluded');
     var txt = document.createElement('div'); txt.className = 'tm-row-txt'; txt.textContent = text;
     row.appendChild(txt);
+
+    var respMember = resp ? TEAM_MEMBERS.filter(function(m) { return m.id === resp; })[0] : null;
+    var respBtn = document.createElement('span');
+    respBtn.className = 'tm-resp-pill' + (respMember ? ' has-resp' : '');
+    respBtn.textContent = respMember ? '👤 ' + respMember.name.split(' ')[0] : '👤 Sin resp.';
+    if (respMember) respBtn.style.cssText = 'background:rgba(' + _coRgb(respMember.color) + ',.18);color:' + respMember.color + ';';
+    respBtn.title = 'Responsable de esta tarea';
+    respBtn.onclick = function(e) {
+      e.stopPropagation();
+      seedStageTasks(p, cat, stage);
+      var arr = p.stageTasks[stage];
+      openPersonPicker(respBtn, arr[idx].resp || '', function(v) {
+        arr[idx].resp = v;
+        saveData(); renderTaskManager(p, cat); renderDetailKanban(); updateCardBadge(detailProjectId);
+      });
+    };
+    row.appendChild(respBtn);
 
     var dateBtn = document.createElement('span');
     dateBtn.className = 'tm-date-pill' + (deadline ? ' has-date' : '');
