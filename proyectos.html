@@ -382,21 +382,19 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
 .summary-section-hdr{font-size:13px;font-weight:800;color:rgba(255,255,255,0.75);margin-bottom:12px;letter-spacing:.01em;}
 .summary-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;}
 .summary-empty{font-size:12px;color:rgba(255,255,255,0.22);font-style:italic;grid-column:1/-1;padding:6px 2px;}
-.summary-card{border-radius:16px;padding:14px 16px;cursor:pointer;transition:transform .14s,box-shadow .14s;position:relative;}
-.summary-card:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(0,0,0,.4);}
-.summary-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:6px;}
-.summary-card-name{font-size:14px;font-weight:800;color:#fff;line-height:1.3;flex:1;min-width:0;}
-.summary-card-pills{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0;}
-.summary-card-pill{font-size:8.5px;font-weight:700;padding:2px 8px;border-radius:10px;white-space:nowrap;}
-.summary-card-pill.stage{background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.55);}
-.summary-card-client{font-size:11px;color:rgba(255,255,255,0.5);margin-bottom:12px;}
-.summary-card-avatars{display:flex;margin-bottom:10px;min-height:20px;}
-.summary-card-av{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:700;color:#fff;border:1.5px solid rgba(0,0,0,.35);margin-left:-4px;flex-shrink:0;}
+.summary-card{border-radius:18px;padding:16px 18px;cursor:pointer;transition:transform .14s,box-shadow .14s;position:relative;min-height:128px;display:flex;flex-direction:column;justify-content:space-between;overflow:hidden;}
+.summary-card:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(0,0,0,.45);}
+.summary-card.concluded{opacity:.62;}
+.summary-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;}
+.summary-card-name{font-size:15px;font-weight:800;color:#fff;line-height:1.28;}
+.summary-card-pill{font-size:8.5px;font-weight:700;padding:3px 9px;border-radius:10px;white-space:nowrap;flex-shrink:0;background:rgba(0,0,0,.28);color:rgba(255,255,255,.85);}
+.summary-card-client{font-size:10.5px;color:rgba(255,255,255,.7);margin-top:3px;}
+.summary-card-avatars{display:flex;margin-top:8px;min-height:18px;}
+.summary-card-av{width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:700;color:#fff;border:1.5px solid rgba(0,0,0,.4);margin-left:-4px;flex-shrink:0;}
 .summary-card-av:first-child{margin-left:0;}
-.summary-card-prog-wrap{display:flex;align-items:center;gap:8px;}
-.summary-card-prog-bar{flex:1;height:5px;border-radius:3px;background:rgba(255,255,255,0.12);overflow:hidden;}
-.summary-card-prog-fill{height:100%;border-radius:3px;transition:width .3s;}
-.summary-card-prog-pct{font-size:10.5px;font-weight:800;color:rgba(255,255,255,0.7);flex-shrink:0;}
+.summary-card-bottom{display:flex;align-items:flex-end;justify-content:space-between;gap:8px;margin-top:10px;}
+.summary-card-deadline{font-size:10.5px;font-weight:600;color:rgba(255,255,255,.75);}
+.summary-card-pct{font-size:26px;font-weight:800;color:#fff;line-height:1;}
 /* STATUS COLUMN EDITOR */
 .sc-ed-panel{position:fixed;z-index:9999;background:#161616;border:0.5px solid rgba(255,255,255,0.14);border-radius:16px;padding:14px;box-shadow:0 20px 70px rgba(0,0,0,.92);width:230px;font-family:'Inter',sans-serif;display:flex;flex-direction:column;gap:10px;}
 .sc-ed-inp{background:#1e1e1e;border:0.5px solid rgba(255,255,255,0.12);border-radius:9px;padding:8px 11px;font-size:13px;font-weight:600;color:#fff;font-family:'Inter',sans-serif;outline:none;width:100%;transition:border-color .15s;}
@@ -775,6 +773,7 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
     <div class="pdm-footer">
       <span class="pdm-footer-info" id="pdmFooterInfo"></span>
       <div style="display:flex;gap:8px;">
+        <button class="btn-c" id="pdmConcludeBtn"></button>
         <button class="btn-c" id="pdmClose2">Cerrar</button>
         <button class="btn-ok" id="pdmSaveBtn">Guardar cambios</button>
       </div>
@@ -1274,26 +1273,24 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
     var cat = getCat(p.catId);
     var color = cat ? cat.color : '#1A6FD4';
     var pct = computeProjectProgress(p);
+    var bright = 'color-mix(in srgb,' + color + ' 70%, black 30%)';
+    var dim = 'color-mix(in srgb,' + color + ' 26%, #14100c 74%)';
     var card = document.createElement('div');
-    card.className = 'summary-card';
-    card.style.cssText = 'background:linear-gradient(135deg,rgba(' + _coRgb(color) + ',.16) 0%,rgba(' + _coRgb(color) + ',.05) 60%,#181818 100%);border:0.5px solid rgba(' + _coRgb(color) + ',.28);';
+    card.className = 'summary-card' + (p.concluded ? ' concluded' : '');
+    card.style.background = 'linear-gradient(to right,' + bright + ' 0%,' + bright + ' ' + pct + '%,' + dim + ' ' + pct + '%,' + dim + ' 100%)';
     card.onclick = function() { openProjDetail(p.id); };
 
     var top = document.createElement('div'); top.className = 'summary-card-top';
-    var name = document.createElement('div'); name.className = 'summary-card-name'; name.textContent = p.name; top.appendChild(name);
-    var pillWrap = document.createElement('div'); pillWrap.className = 'summary-card-pills';
-    if (cat) {
-      var catPill = document.createElement('span'); catPill.className = 'summary-card-pill';
-      catPill.style.cssText = 'background:rgba(' + _coRgb(color) + ',.18);color:' + color + ';';
-      catPill.textContent = cat.label; pillWrap.appendChild(catPill);
-    }
-    var stagePill = document.createElement('span'); stagePill.className = 'summary-card-pill stage'; stagePill.textContent = p.stage || ''; pillWrap.appendChild(stagePill);
-    top.appendChild(pillWrap);
-    card.appendChild(top);
-
+    var nameWrap = document.createElement('div');
+    var name = document.createElement('div'); name.className = 'summary-card-name'; name.textContent = p.name; nameWrap.appendChild(name);
     var client = document.createElement('div'); client.className = 'summary-card-client';
-    client.textContent = (p.client || '—') + (p.deadline ? ' · ' + fmtDate(p.deadline) : '');
-    card.appendChild(client);
+    client.textContent = (cat ? cat.label : '') + (p.stage ? ' · ' + p.stage : '');
+    nameWrap.appendChild(client);
+    top.appendChild(nameWrap);
+    var badge = document.createElement('span'); badge.className = 'summary-card-pill';
+    badge.textContent = p.concluded ? '✓ Concluido' : (p.client || '—');
+    top.appendChild(badge);
+    card.appendChild(top);
 
     var avWrap = document.createElement('div'); avWrap.className = 'summary-card-avatars';
     (p.team || []).forEach(function(a) {
@@ -1304,12 +1301,13 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
     });
     card.appendChild(avWrap);
 
-    var progWrap = document.createElement('div'); progWrap.className = 'summary-card-prog-wrap';
-    var bar = document.createElement('div'); bar.className = 'summary-card-prog-bar';
-    var fill = document.createElement('div'); fill.className = 'summary-card-prog-fill'; fill.style.cssText = 'width:' + pct + '%;background:' + color + ';'; bar.appendChild(fill);
-    progWrap.appendChild(bar);
-    var pctLbl = document.createElement('span'); pctLbl.className = 'summary-card-prog-pct'; pctLbl.textContent = pct + '%'; progWrap.appendChild(pctLbl);
-    card.appendChild(progWrap);
+    var bottom = document.createElement('div'); bottom.className = 'summary-card-bottom';
+    var dl = document.createElement('span'); dl.className = 'summary-card-deadline';
+    dl.textContent = p.deadline ? '📅 ' + fmtDate(p.deadline) : 'Sin fecha de entrega';
+    bottom.appendChild(dl);
+    var pctLbl = document.createElement('span'); pctLbl.className = 'summary-card-pct'; pctLbl.textContent = pct + '%';
+    bottom.appendChild(pctLbl);
+    card.appendChild(bottom);
 
     return card;
   }
@@ -1318,8 +1316,9 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
     var el = document.getElementById('summaryView'); if (!el) return;
     el.innerHTML = '';
     var visible = projects.filter(function(p) { return activeCompany === 'all' || p.empresa === activeCompany; });
-    var activos = visible.filter(function(p) { return p.catId !== 'cotizaciones'; });
-    var cotizados = visible.filter(function(p) { return p.catId === 'cotizaciones'; });
+    var activos = visible.filter(function(p) { return p.catId !== 'cotizaciones' && !p.concluded; });
+    var cotizados = visible.filter(function(p) { return p.catId === 'cotizaciones' && !p.concluded; });
+    var concluidos = visible.filter(function(p) { return p.concluded; });
 
     function section(title, list) {
       var wrap = document.createElement('div'); wrap.className = 'summary-section';
@@ -1332,6 +1331,7 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
     }
     section('📁 Proyectos activos', activos);
     section('📝 Cotizados', cotizados);
+    if (concluidos.length) section('✅ Concluidos', concluidos);
   }
 
   function _onColDragMove(e) {
@@ -2860,6 +2860,16 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
     renderBoard();
   }
 
+  function toggleProjectConcluded() {
+    var p = null;
+    for (var i = 0; i < projects.length; i++) { if (projects[i].id === detailProjectId) { p = projects[i]; break; } }
+    if (!p) return;
+    p.concluded = !p.concluded;
+    saveData();
+    renderProjDetail();
+    if (_summaryView) renderSummaryView();
+  }
+
   function renderProjDetail() {
     var p = null;
     for (var i = 0; i < projects.length; i++) { if (projects[i].id === detailProjectId) { p = projects[i]; break; } }
@@ -2926,6 +2936,11 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
       };
     }
     document.getElementById('pdmFooterInfo').textContent = (cat ? cat.label : '') + (p.stage ? ' · ' + p.stage : '');
+    var concBtn = document.getElementById('pdmConcludeBtn');
+    if (concBtn) {
+      concBtn.textContent = p.concluded ? '↺ Reactivar proyecto' : '✓ Dar por concluido';
+      concBtn.style.cssText = p.concluded ? '' : 'background:rgba(39,174,114,0.14);border-color:rgba(39,174,114,0.35);color:#27AE72;';
+    }
 
     renderDetailKanban();
     renderDetailTimeline();
@@ -3893,6 +3908,7 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
   document.getElementById('pdmClose').onclick = function(){ document.getElementById('projDetailOverlay').classList.remove('open'); };
   document.getElementById('pdmClose2').onclick = function(){ document.getElementById('projDetailOverlay').classList.remove('open'); };
   document.getElementById('pdmDeleteBtn').onclick = startDeleteProj;
+  document.getElementById('pdmConcludeBtn').onclick = toggleProjectConcluded;
   document.getElementById('pdmCancelDel').onclick = cancelDeleteProj;
   document.getElementById('pdmConfirmDel').onclick = confirmDeleteProj;
   document.getElementById('pdmSaveBtn').onclick = function(){ saveProjDetail(); document.getElementById('projDetailOverlay').classList.remove('open'); };
