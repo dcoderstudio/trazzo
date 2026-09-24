@@ -11,6 +11,8 @@
 <meta name="apple-mobile-web-app-title" content="Trazzo">
 <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
 <link rel="stylesheet" href="theme.css">
+<link rel="stylesheet" href="chat-tasks.css">
+<script src="chat-projects.js"></script>
 <title>Proyectos — Dcoder Studio</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,800&display=swap');
@@ -842,8 +844,9 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
       <div class="tm-title">📝 Cotizaciones</div>
       <button class="tm-close" id="cotizClose">×</button>
     </div>
-    <div class="cotiz-toolbar">
+    <div class="cotiz-toolbar" style="display:flex;gap:8px;flex-wrap:wrap;">
       <button class="tm-open-btn" id="cotizNewBtn">+ Nueva solicitud de cotización</button>
+      <button class="tm-open-btn" id="cotizPasteBtn">📋 Pegar desde texto</button>
     </div>
     <div class="cotiz-board" id="cotizBoard"></div>
   </div>
@@ -1589,6 +1592,28 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
     p.stageEntryDates['Reactivar'] = new Date().toISOString().split('T')[0];
     saveData();
     renderSummaryView();
+  }
+
+  function openCotizPasteDialog() {
+    TrazzoChatProjects.open({
+      categories: categories,
+      teamMembers: TEAM_MEMBERS,
+      onCreate: function(items) {
+        var entryDate = new Date().toISOString().split('T')[0];
+        items.forEach(function(t) {
+          var solEntry = {}; solEntry[COTIZ_STAGES[0]] = entryDate;
+          projects.push({
+            id: nextId++, name: t.name, client: t.client, catId: 'cotizaciones',
+            stage: COTIZ_STAGES[0], deadline: t.deadline, team: [t.resp],
+            monto: t.monto, tipoCat: t.tipoCatId, stageEntryDates: solEntry
+          });
+        });
+        saveData();
+        renderBoard();
+        if (_summaryView) renderSummaryView();
+        renderCotizKanban();
+      }
+    });
   }
 
   function _onColDragMove(e) {
@@ -4218,6 +4243,7 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
   document.getElementById('cotizClose').onclick = closeCotizKanban;
   document.getElementById('cotizOverlay').addEventListener('click', function(e){ if(e.target===document.getElementById('cotizOverlay')) closeCotizKanban(); });
   document.getElementById('cotizNewBtn').onclick = openSolModal;
+  document.getElementById('cotizPasteBtn').onclick = openCotizPasteDialog;
 
   // ── AUTO-SAVE en detalle de ficha ─────────────────────
   var _pdmTimer = null;
