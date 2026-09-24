@@ -489,6 +489,7 @@ html,body{height:100%;overflow:hidden;background:#080b16;font-family:'Inter',sys
 .eq-task-edit-modal{background:#141c2e;border:.5px solid rgba(255,255,255,.14);border-radius:14px;width:340px;padding:18px 18px 16px;box-shadow:0 24px 64px rgba(0,0,0,.85);}
 .eq-tem-title{font-size:13px;font-weight:800;color:#fff;margin-bottom:4px;}
 .eq-tem-src{font-size:9px;color:rgba(255,255,255,.28);margin-bottom:14px;}
+.eq-tem-src-proj{display:inline-flex;align-items:center;gap:4px;font-size:10.5px;font-weight:700;padding:3px 8px;border-radius:6px;margin-bottom:14px;}
 .eq-tem-lbl{font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:rgba(255,255,255,.3);margin-bottom:5px;margin-top:10px;}
 .eq-tem-inp{width:100%;background:rgba(255,255,255,.07);border:.5px solid rgba(255,255,255,.12);border-radius:8px;padding:8px 10px;font-size:12px;color:#fff;font-family:inherit;outline:none;}
 .eq-tem-inp:focus{border-color:rgba(90,180,232,.4);}
@@ -2291,7 +2292,16 @@ function showTaskEditModal(task){
   modal.onclick=function(e){e.stopPropagation();};
   // Header
   var ttl=document.createElement('div');ttl.className='eq-tem-title';ttl.textContent='Editar tarea';modal.appendChild(ttl);
-  var src=document.createElement('div');src.className='eq-tem-src';src.textContent=task.source||'';modal.appendChild(src);
+  var src=document.createElement('div');
+  if(task._type==='project'&&task.source){
+    src.className='eq-tem-src-proj';
+    var pc=task.color||'#1A6FD4';
+    src.style.cssText='background:'+pc+'22;color:'+pc+';border:.5px solid '+pc+'44;';
+    src.textContent='🗂 '+task.source;
+  } else {
+    src.className='eq-tem-src';src.textContent=task.source||'';
+  }
+  modal.appendChild(src);
   // Task name
   var lbl1=document.createElement('div');lbl1.className='eq-tem-lbl';lbl1.textContent='Nombre de la tarea';modal.appendChild(lbl1);
   var inp=document.createElement('input');inp.className='eq-tem-inp';inp.value=task.text;inp.placeholder='Nombre de la tarea';modal.appendChild(inp);
