@@ -792,6 +792,15 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
       <div class="pdm-body">
         <div class="pdm-info">
           <div class="pdm-field" style="margin-bottom:4px;"><div class="pdm-lbl">Empresa</div><div id="pdmEmpRow"></div></div>
+          <div class="pdm-field" id="pdmCatFieldRow" style="margin-bottom:4px;">
+            <div class="pdm-lbl">Categoría</div>
+            <div id="pdmCatRow"></div>
+            <div class="pdm-complete-confirm" id="pdmCatConfirm" style="display:none;margin-top:6px;">
+              <span id="pdmCatConfirmTxt"></span>
+              <button class="btn-c" id="pdmCatCancel" style="padding:4px 10px;font-size:11px;">No</button>
+              <button class="btn-ok" id="pdmCatConfirmBtn" style="padding:4px 10px;font-size:11px;">Sí, cambiar</button>
+            </div>
+          </div>
           <div id="pdmDynFields"></div>
           <div id="pdmMontoRow" class="pdm-field" style="display:none;"><div class="pdm-lbl">Monto estimado</div><input class="pdm-inp" id="pdmMonto" placeholder="$0.00"></div>
           <div id="pdmTimeInfo"></div>
@@ -1161,6 +1170,51 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
       };
       row.appendChild(b);
     });
+  }
+
+  var _pendingCatChange = null; // {projId, newCatId} mientras se confirma el cambio de categoría
+
+  function renderCatRow(p, currentCat) {
+    var row = document.getElementById('pdmCatRow'); if (!row) return;
+    row.innerHTML = '';
+    categories.forEach(function(c) {
+      if (c.id === 'cotizaciones') return;
+      var b = document.createElement('button'); b.className = 'emp-btn'; b.type = 'button';
+      b.textContent = c.label;
+      var isSel = p.catId === c.id;
+      if (isSel) { b.style.background = 'rgba(' + _coRgb(c.color) + ',.18)'; b.style.borderColor = c.color; b.style.color = c.color; }
+      b.onclick = function() {
+        if (isSel) return;
+        _pendingCatChange = { projId: p.id, newCatId: c.id };
+        document.getElementById('pdmCatConfirmTxt').textContent = '¿Cambiar a "' + c.label + '"? Reinicia a su primera fase.';
+        document.getElementById('pdmCatConfirm').style.display = 'flex';
+      };
+      row.appendChild(b);
+    });
+  }
+
+  function cancelCatChange() {
+    _pendingCatChange = null;
+    document.getElementById('pdmCatConfirm').style.display = 'none';
+  }
+
+  function confirmCatChange() {
+    if (!_pendingCatChange) return;
+    var p = null;
+    for (var i = 0; i < projects.length; i++) { if (projects[i].id === _pendingCatChange.projId) { p = projects[i]; break; } }
+    var newCat = getCat(_pendingCatChange.newCatId);
+    _pendingCatChange = null;
+    document.getElementById('pdmCatConfirm').style.display = 'none';
+    if (!p || !newCat) return;
+    p.catId = newCat.id;
+    p.stage = newCat.stages[0];
+    if (!p.stageEntryDates) p.stageEntryDates = {};
+    p.stageEntryDates[p.stage] = new Date().toISOString().split('T')[0];
+    seedStageTasks(p, newCat, p.stage);
+    saveData();
+    renderProjDetail(true);
+    renderBoard();
+    if (_summaryView) renderSummaryView();
   }
 
   // ── BOARD ─────────────────────────────────────────────
@@ -3247,6 +3301,7 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
     document.getElementById('pdmDeleteBtn').style.display = '';
     document.getElementById('pdmCompleteConfirm').style.display = 'none';
     document.getElementById('pdmCompleteBtn').style.display = '';
+    _pendingCatChange = null;
     renderProjDetail(true);
     document.getElementById('projDetailOverlay').classList.add('open');
   }
@@ -3325,6 +3380,14 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
     pill.textContent = cat ? cat.label : '';
     pill.style.background = cat ? cat.color + '22' : 'rgba(255,255,255,0.1)';
     pill.style.color = cat ? cat.color : '#fff';
+    var catFieldRow = document.getElementById('pdmCatFieldRow');
+    if (p.catId === 'cotizaciones') {
+      catFieldRow.style.display = 'none';
+    } else {
+      catFieldRow.style.display = '';
+      document.getElementById('pdmCatConfirm').style.display = 'none';
+      renderCatRow(p, cat);
+    }
     document.getElementById('pdmMontoRow').style.display = 'none';
     var _pm = document.getElementById('pdmMonto'); if (_pm) _pm.value = p.monto || '';
 
@@ -4352,6 +4415,8 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
   document.getElementById('pdmClose2').onclick = function(){ document.getElementById('projDetailOverlay').classList.remove('open'); };
   document.getElementById('pdmDeleteBtn').onclick = startDeleteProj;
   document.getElementById('pdmConcludeBtn').onclick = toggleProjectConcluded;
+  document.getElementById('pdmCatCancel').onclick = cancelCatChange;
+  document.getElementById('pdmCatConfirmBtn').onclick = confirmCatChange;
   document.getElementById('pdmCompleteBtn').onclick = startCompleteProj;
   document.getElementById('pdmCancelComplete').onclick = cancelCompleteProj;
   document.getElementById('pdmConfirmComplete').onclick = confirmCompleteProj;
