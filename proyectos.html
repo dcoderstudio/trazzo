@@ -637,6 +637,7 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
 <div class="overlay" id="projOverlay">
   <div class="modal">
     <div class="modal-title" id="projModalTitle">Nuevo proyecto</div>
+    <button id="projPasteBtn" style="background:none;border:0.5px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.5);font-size:11px;font-weight:600;padding:7px;border-radius:10px;cursor:pointer;font-family:'Inter',sans-serif;width:100%;transition:all .15s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,0.5)'">📋 Pegar desde texto</button>
     <div><div class="ml">Nombre</div><input class="mi" id="mName" placeholder="Nombre del proyecto"></div>
     <div><div class="ml">Categoría</div><select class="mi" id="mType"></select></div>
     <div><div class="ml">Empresa</div><div class="emp-row" id="mEmpRow"></div></div>
@@ -1612,6 +1613,33 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
         renderBoard();
         if (_summaryView) renderSummaryView();
         renderCotizKanban();
+      }
+    });
+  }
+
+  // Igual que el paste de Cotizaciones, pero crea proyectos reales
+  // directamente (sin pasar por el pipeline de solicitudes): cada línea
+  // entra en la primera fase de la categoría que se indique.
+  function openProjPasteDialog() {
+    TrazzoChatProjects.open({
+      categories: categories,
+      teamMembers: TEAM_MEMBERS,
+      onCreate: function(items) {
+        var entryDate = new Date().toISOString().split('T')[0];
+        items.forEach(function(t) {
+          var cat = null;
+          for (var i = 0; i < categories.length; i++) { if (categories[i].id === t.tipoCatId) { cat = categories[i]; break; } }
+          if (!cat) return;
+          var stage = cat.stages[0];
+          var proj = { id: nextId++, name: t.name, client: t.client, catId: cat.id, stage: stage, deadline: t.deadline, team: [t.resp], stageEntryDates: {}, empresa: null };
+          proj.stageEntryDates[stage] = entryDate;
+          seedStageTasks(proj, cat, stage);
+          projects.push(proj);
+        });
+        saveData();
+        closeProjModal();
+        renderBoard();
+        if (_summaryView) renderSummaryView();
       }
     });
   }
@@ -4244,6 +4272,7 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
   document.getElementById('cotizOverlay').addEventListener('click', function(e){ if(e.target===document.getElementById('cotizOverlay')) closeCotizKanban(); });
   document.getElementById('cotizNewBtn').onclick = openSolModal;
   document.getElementById('cotizPasteBtn').onclick = openCotizPasteDialog;
+  document.getElementById('projPasteBtn').onclick = openProjPasteDialog;
 
   // ── AUTO-SAVE en detalle de ficha ─────────────────────
   var _pdmTimer = null;
