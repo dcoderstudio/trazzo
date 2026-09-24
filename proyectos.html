@@ -1321,7 +1321,7 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
     var bright = 'color-mix(in srgb,' + color + ' 88%, black 10%)';
     var dark = 'color-mix(in srgb,' + color + ' 42%, black 58%)';
     var fill = document.createElement('div'); fill.className = 'summary-card-fill';
-    fill.style.cssText = 'background-image:linear-gradient(135deg,' + bright + ' 0%,' + dark + ' 100%);background-repeat:no-repeat;background-position:top left;background-size:' + pct + '% 100%;clip-path:inset(0 ' + (100 - pct) + '% 0 0);';
+    fill.style.cssText = 'background-image:linear-gradient(135deg,' + bright + ' 0%,' + dark + ' 100%);background-repeat:no-repeat;background-position:top left;background-size:' + pct + '% 100%;clip-path:inset(0 ' + (100 - pct) + '% 0 0);opacity:.8;';
     card.appendChild(fill);
 
     var top = document.createElement('div'); top.className = 'summary-card-top';
