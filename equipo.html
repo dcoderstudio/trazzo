@@ -727,6 +727,8 @@ select.eq-org-new-inp option{background:#1a1f35;}
 .eq-org-atask-av img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
 .eq-org-unassigned-hint{font-size:8.5px;color:rgba(255,255,255,.22);font-style:italic;cursor:pointer;transition:color .12s;}
 .eq-org-unassigned-hint:hover{color:rgba(90,180,232,.6);}
+.eq-org-atask-txtwrap{flex:1;min-width:0;display:flex;flex-direction:column;}
+.eq-org-atask-src{font-size:8px;font-weight:700;margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 /* Drag ghost for organizar */
 .eq-org-ghost{position:fixed;pointer-events:none;z-index:12000;background:#1C2840;border:.5px solid rgba(90,180,232,.5);border-radius:8px;padding:7px 12px;font-size:11px;font-weight:600;color:rgba(255,255,255,.8);box-shadow:0 8px 28px rgba(0,0,0,.7);max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 
@@ -1355,7 +1357,11 @@ function buildOrgTask(t){
   card.appendChild(buildOrgChk(t,card,false));
   var info=document.createElement('div');info.className='eq-org-task-info';
   var name=document.createElement('div');name.className='eq-org-task-name';name.textContent=t.text;
-  var meta=document.createElement('div');meta.className='eq-org-task-meta';meta.textContent=t.deadline?fmtDl(t.deadline):'Sin fecha';
+  var meta=document.createElement('div');meta.className='eq-org-task-meta';
+  var metaParts=[];
+  if(t._type==='project'&&t.source)metaParts.push('🗂 '+t.source);
+  metaParts.push(t.deadline?fmtDl(t.deadline):'Sin fecha');
+  meta.textContent=metaParts.join(' · ');
   info.appendChild(name);info.appendChild(meta);card.appendChild(info);
   return card;
 }
@@ -1364,7 +1370,12 @@ function buildOrgAreaTask(t,area){
   var card=document.createElement('div');card.className='eq-org-atask'+orgDeadlineCls(t.deadline);card.style.cssText='touch-action:none;cursor:grab;';
   var bar=document.createElement('div');bar.className='eq-org-atask-bar';bar.style.background=area.color||'rgba(90,180,232,.55)';card.appendChild(bar);
   card.appendChild(buildOrgChk(t,card,true));
-  var nm=document.createElement('span');nm.className='eq-org-atask-name';nm.textContent=t.text;card.appendChild(nm);
+  var txtwrap=document.createElement('div');txtwrap.className='eq-org-atask-txtwrap';
+  var nm=document.createElement('span');nm.className='eq-org-atask-name';nm.textContent=t.text;txtwrap.appendChild(nm);
+  if(t._type==='project'&&t.source){
+    var psrc=document.createElement('span');psrc.className='eq-org-atask-src';psrc.style.color=t.color||'#1A6FD4';psrc.textContent='🗂 '+t.source;txtwrap.appendChild(psrc);
+  }
+  card.appendChild(txtwrap);
   if(t.resp){
     var m=getMember(t.resp);
     if(m){
@@ -1383,7 +1394,12 @@ function buildOrgPersonTask(t){
   var card=document.createElement('div');card.className='eq-org-atask'+orgDeadlineCls(t.deadline);card.style.cssText='touch-action:none;cursor:grab;';
   var bar=document.createElement('div');bar.className='eq-org-atask-bar';bar.style.background=areaColor;card.appendChild(bar);
   card.appendChild(buildOrgChk(t,card,true));
-  var nm=document.createElement('span');nm.className='eq-org-atask-name';nm.textContent=t.text;card.appendChild(nm);
+  var txtwrap=document.createElement('div');txtwrap.className='eq-org-atask-txtwrap';
+  var nm=document.createElement('span');nm.className='eq-org-atask-name';nm.textContent=t.text;txtwrap.appendChild(nm);
+  if(t._type==='project'&&t.source){
+    var psrc=document.createElement('span');psrc.className='eq-org-atask-src';psrc.style.color=t.color||'#1A6FD4';psrc.textContent='🗂 '+t.source;txtwrap.appendChild(psrc);
+  }
+  card.appendChild(txtwrap);
   if(t.area){
     var tag=document.createElement('span');tag.style.cssText='font-size:8.5px;font-weight:600;color:rgba(255,255,255,.3);white-space:nowrap;flex-shrink:0;align-self:flex-start;margin-top:2px;';
     tag.textContent=t.area;card.appendChild(tag);
