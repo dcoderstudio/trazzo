@@ -1375,13 +1375,15 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
     return null;
   }
 
-  // Progreso: % de tareas hechas entre todas las fases sembradas; si
-  // todavía no hay tareas sembradas, usa la posición de la fase actual
-  // dentro de las fases de su categoría como aproximación.
+  // Progreso: % de tareas hechas entre las tareas realmente aplicadas
+  // (sharedWithTeam:true, el mismo criterio que usa el mini-Kanban y
+  // "Gestionar tareas") en todas las fases; las plantillas auto-sembradas
+  // que nunca se aplicaron no cuentan. Si todavía no hay ninguna tarea
+  // aplicada, usa la posición de la fase actual como aproximación.
   function computeProjectProgress(p) {
     var total = 0, done = 0;
     Object.keys(p.stageTasks || {}).forEach(function(stage) {
-      (p.stageTasks[stage] || []).forEach(function(t) { total++; if (t.done) done++; });
+      (p.stageTasks[stage] || []).forEach(function(t) { if (!t.sharedWithTeam) return; total++; if (t.done) done++; });
     });
     if (total > 0) return Math.round(done / total * 100);
     if (p.completed) return 100;
