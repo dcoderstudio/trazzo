@@ -387,14 +387,15 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
 .summary-card{border-radius:18px;padding:16px 18px;cursor:pointer;transition:transform .14s,box-shadow .14s;position:relative;min-height:128px;display:flex;flex-direction:column;justify-content:space-between;overflow:hidden;}
 .summary-card:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(0,0,0,.45);}
 .summary-card.concluded{opacity:.62;}
-.summary-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;}
+.summary-card-fill{position:absolute;inset:0;pointer-events:none;}
+.summary-card-top{position:relative;z-index:1;display:flex;align-items:flex-start;justify-content:space-between;gap:8px;}
 .summary-card-name{font-size:15px;font-weight:800;color:#fff;line-height:1.28;}
 .summary-card-pill{font-size:8.5px;font-weight:700;padding:3px 9px;border-radius:10px;white-space:nowrap;flex-shrink:0;background:rgba(0,0,0,.28);color:rgba(255,255,255,.85);}
 .summary-card-client{font-size:10.5px;color:rgba(255,255,255,.7);margin-top:3px;}
-.summary-card-avatars{display:flex;margin-top:8px;min-height:18px;}
+.summary-card-avatars{position:relative;z-index:1;display:flex;margin-top:8px;min-height:18px;}
 .summary-card-av{width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:700;color:#fff;border:1.5px solid rgba(0,0,0,.4);margin-left:-4px;flex-shrink:0;}
 .summary-card-av:first-child{margin-left:0;}
-.summary-card-bottom{display:flex;align-items:flex-end;justify-content:space-between;gap:8px;margin-top:10px;}
+.summary-card-bottom{position:relative;z-index:1;display:flex;align-items:flex-end;justify-content:space-between;gap:8px;margin-top:10px;}
 .summary-card-deadline{font-size:10.5px;font-weight:600;color:rgba(255,255,255,.75);}
 .summary-card-pct{font-size:26px;font-weight:800;color:#fff;line-height:1;}
 /* STATUS COLUMN EDITOR */
@@ -1307,12 +1308,14 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
     var color = computeProjectStatusColor(p);
     var rgb = _coRgb(color);
     var pct = computeProjectProgress(p);
-    var p1 = Math.max(2, Math.min(96, pct - 4));
-    var p2 = Math.max(p1 + 2, Math.min(98, pct + 4));
     var card = document.createElement('div');
     card.className = 'summary-card' + (p.concluded ? ' concluded' : '');
-    card.style.cssText = 'background:linear-gradient(135deg,rgba(' + rgb + ',.68) 0%,rgba(' + rgb + ',.58) ' + p1 + '%,rgba(' + rgb + ',.14) ' + p2 + '%,rgba(' + rgb + ',.14) 100%);border:0.5px solid rgba(' + rgb + ',.35);';
+    card.style.cssText = 'background:rgba(' + rgb + ',.13);border:0.5px solid rgba(' + rgb + ',.35);';
     card.onclick = function() { openProjDetail(p.id); };
+
+    var fill = document.createElement('div'); fill.className = 'summary-card-fill';
+    fill.style.cssText = 'background:linear-gradient(135deg,rgba(' + rgb + ',.75) 0%,rgba(' + rgb + ',.5) 100%);clip-path:inset(0 ' + (100 - pct) + '% 0 0);';
+    card.appendChild(fill);
 
     var top = document.createElement('div'); top.className = 'summary-card-top';
     var nameWrap = document.createElement('div');
