@@ -418,10 +418,13 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
 .sfolder-green{background:linear-gradient(135deg,rgba(39,174,114,.32) 0%,rgba(39,174,114,.08) 100%);}
 .sfolder-red{background:linear-gradient(135deg,rgba(226,75,74,.28) 0%,rgba(226,75,74,.07) 100%);}
 .sfolder-blue{background:linear-gradient(135deg,rgba(26,111,212,.32) 0%,rgba(26,111,212,.08) 100%);}
-.summary-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;}
+.summary-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;border-radius:14px;transition:background .12s;}
+.summary-grid.drag-over{background:rgba(255,255,255,.05);outline:1px dashed rgba(255,255,255,.2);}
 .summary-empty{font-size:12px;color:rgba(255,255,255,0.22);font-style:italic;grid-column:1/-1;padding:6px 2px;}
+.summary-section.pending .summary-section-hdr{color:#E8A020;}
 .summary-card{border-radius:18px;padding:16px 18px;cursor:pointer;transition:transform .14s,box-shadow .14s;position:relative;min-height:128px;display:flex;flex-direction:column;justify-content:space-between;overflow:hidden;}
 .summary-card:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(0,0,0,.45);}
+.summary-card.summary-card-dragging{opacity:.3;}
 .summary-card.concluded{opacity:.62;}
 .summary-card-fill{position:absolute;inset:0;pointer-events:none;}
 .summary-card-top{position:relative;z-index:1;display:flex;align-items:flex-start;justify-content:space-between;gap:8px;}
@@ -1358,6 +1361,8 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
     return '#1A6FD4';
   }
 
+  var _summaryDragId = null;
+
   function buildSummaryCard(p) {
     var cat = getCat(p.catId);
     var color = computeProjectStatusColor(p);
@@ -1366,7 +1371,17 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
     var card = document.createElement('div');
     card.className = 'summary-card' + (p.concluded ? ' concluded' : '');
     card.style.cssText = 'background:rgba(' + rgb + ',.13);border:0.5px solid rgba(' + rgb + ',.35);';
-    card.onclick = function() { openProjDetail(p.id); };
+    card.draggable = true;
+    card._dragged = false;
+    card.onclick = function() { if (card._dragged) return; openProjDetail(p.id); };
+    card.addEventListener('dragstart', function(e) {
+      card._dragged = true; _summaryDragId = p.id; card.classList.add('summary-card-dragging');
+      e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', String(p.id));
+    });
+    card.addEventListener('dragend', function() {
+      card.classList.remove('summary-card-dragging'); _summaryDragId = null;
+      setTimeout(function() { card._dragged = false; }, 150);
+    });
 
     // El degradado va de claro (esquina sup-izq) a oscuro (esquina inf-der)
     // DENTRO de la zona ya completada: background-size se escala a pct%
@@ -1446,19 +1461,33 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
     return tile;
   }
 
+  function setProjectPending(id, pending) {
+    for (var i = 0; i < projects.length; i++) {
+      if (projects[i].id === id) {
+        if (!!projects[i].pendingApproval === !!pending) return;
+        projects[i].pendingApproval = pending;
+        saveData();
+        renderSummaryView();
+        return;
+      }
+    }
+  }
+
   function renderSummaryView() {
     var el = document.getElementById('summaryView'); if (!el) return;
     el.innerHTML = '';
     var visible = projects.filter(function(p) { return activeCompany === 'all' || p.empresa === activeCompany; });
-    var activos = visible.filter(function(p) { return p.catId !== 'cotizaciones' && !p.concluded; });
+    var activos = visible.filter(function(p) { return p.catId !== 'cotizaciones' && !p.concluded && !p.pendingApproval; });
+    var pendientes = visible.filter(function(p) { return p.catId !== 'cotizaciones' && !p.concluded && p.pendingApproval; });
     var cotizActivas = visible.filter(function(p) { return p.catId === 'cotizaciones' && !p.quoteArchived; });
     var concluidos = visible.filter(function(p) { return p.concluded; });
     var rechazadas = visible.filter(function(p) { return p.catId === 'cotizaciones' && p.quoteArchived; });
 
-    function section(title, list, backable, builder) {
-      var wrap = document.createElement('div'); wrap.className = 'summary-section';
+    function section(title, list, opts) {
+      opts = opts || {};
+      var wrap = document.createElement('div'); wrap.className = 'summary-section' + (opts.pendingClass ? ' pending' : '');
       var hdr = document.createElement('div'); hdr.className = 'summary-section-hdr';
-      if (backable) {
+      if (opts.backable) {
         var back = document.createElement('span'); back.className = 'summary-back-link'; back.textContent = '← Volver';
         back.onclick = function() { setSummaryDrill(null); };
         hdr.appendChild(back);
@@ -1466,8 +1495,16 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
       var hdrTxt = document.createElement('span'); hdrTxt.textContent = title + ' (' + list.length + ')'; hdr.appendChild(hdrTxt);
       wrap.appendChild(hdr);
       var grid = document.createElement('div'); grid.className = 'summary-grid';
-      if (!list.length) { var emp = document.createElement('div'); emp.className = 'summary-empty'; emp.textContent = 'Nada por aquí todavía.'; grid.appendChild(emp); }
-      else list.forEach(function(p) { grid.appendChild((builder || buildSummaryCard)(p)); });
+      if (!list.length) { var emp = document.createElement('div'); emp.className = 'summary-empty'; emp.textContent = opts.emptyText || 'Nada por aquí todavía.'; grid.appendChild(emp); }
+      else list.forEach(function(p) { grid.appendChild((opts.builder || buildSummaryCard)(p)); });
+      if (opts.dropTo) {
+        grid.addEventListener('dragover', function(e) { if (_summaryDragId) { e.preventDefault(); grid.classList.add('drag-over'); } });
+        grid.addEventListener('dragleave', function() { grid.classList.remove('drag-over'); });
+        grid.addEventListener('drop', function(e) {
+          e.preventDefault(); grid.classList.remove('drag-over');
+          if (_summaryDragId) setProjectPending(_summaryDragId, opts.dropTo === 'pending');
+        });
+      }
       wrap.appendChild(grid);
       el.appendChild(wrap);
     }
@@ -1478,9 +1515,10 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
     folders.appendChild(buildFolderTile('cotizaciones', '📝', 'Cotizaciones', cotizActivas.length, 'sfolder-blue', function() { openCotizKanban(); }));
     el.appendChild(folders);
 
-    if (_summaryDrill === 'concluded') section('✅ Completados', concluidos, true);
-    else if (_summaryDrill === 'rejected') section('🗄 Rechazados', rechazadas, true, buildRejectedCard);
-    else section('📁 Proyectos activos', activos);
+    if (_summaryDrill === 'concluded') { section('✅ Completados', concluidos, { backable: true }); return; }
+    if (_summaryDrill === 'rejected') { section('🗄 Rechazados', rechazadas, { backable: true, builder: buildRejectedCard }); return; }
+    section('📁 Proyectos activos', activos, { dropTo: 'active', emptyText: 'Arrastra aquí una ficha de Pendientes de aprobación para confirmarla.' });
+    section('🕐 Pendientes de aprobación', pendientes, { pendingClass: true, dropTo: 'pending', emptyText: 'Nada pendiente de aprobar.' });
   }
 
   // ── COTIZACIONES: mini-kanban dedicado ─────────────────────────
@@ -1570,6 +1608,7 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
     if (!cat) { alert('Esta cotización no tiene un tipo de proyecto asignado. Ábrela y define su tipo antes de aceptarla.'); return; }
     p.catId = cat.id;
     p.stage = cat.stages[0];
+    p.pendingApproval = true;
     if (!p.stageEntryDates) p.stageEntryDates = {};
     p.stageEntryDates[p.stage] = new Date().toISOString().split('T')[0];
     seedStageTasks(p, cat, p.stage);
@@ -1633,7 +1672,7 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
           for (var i = 0; i < categories.length; i++) { if (categories[i].id === t.tipoCatId) { cat = categories[i]; break; } }
           if (!cat) return;
           var stage = cat.stages[0];
-          var proj = { id: nextId++, name: t.name, client: t.client, catId: cat.id, stage: stage, deadline: t.deadline, team: [t.resp], stageEntryDates: {}, empresa: t.empresaId };
+          var proj = { id: nextId++, name: t.name, client: t.client, catId: cat.id, stage: stage, deadline: t.deadline, team: [t.resp], stageEntryDates: {}, empresa: t.empresaId, pendingApproval: true };
           proj.stageEntryDates[stage] = entryDate;
           seedStageTasks(proj, cat, stage);
           projects.push(proj);
@@ -2772,7 +2811,7 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
     var cat = null;
     for (var i = 0; i < categories.length; i++) { if (categories[i].id === catId) { cat = categories[i]; break; } }
     var stage = (presetStage && cat.stages.indexOf(presetStage) >= 0) ? presetStage : cat.stages[0];
-    var proj = {id: nextId++, name: name, client: client || '—', catId: catId, stage: stage, deadline: deadline, team: [resp], stageEntryDates: {}, empresa: _mEmpSel||null};
+    var proj = {id: nextId++, name: name, client: client || '—', catId: catId, stage: stage, deadline: deadline, team: [resp], stageEntryDates: {}, empresa: _mEmpSel||null, pendingApproval: true};
     proj.stageEntryDates[stage] = new Date().toISOString().split('T')[0];
     if (catId === 'cotizaciones') { proj.monto = monto; proj.tipoCat = tipoCat; }
     // Save custom field values from dynamic fields
