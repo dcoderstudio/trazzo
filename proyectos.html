@@ -429,6 +429,8 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
 .sfolder-red .sfolder-front{background:linear-gradient(165deg,#B14A65 0%,#7A2E45 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,.2),0 10px 22px rgba(139,60,90,.32);}
 .sfolder-blue .sfolder-tab,.sfolder-blue .sfolder-back{background:linear-gradient(165deg,#14539E 0%,#0D3B75 100%);}
 .sfolder-blue .sfolder-front{background:linear-gradient(165deg,#2E85DE 0%,#1A5FA8 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,.2),0 10px 22px rgba(26,111,212,.32);}
+.sfolder-gray .sfolder-tab,.sfolder-gray .sfolder-back{background:linear-gradient(165deg,#4B5568 0%,#313A47 100%);}
+.sfolder-gray .sfolder-front{background:linear-gradient(165deg,#6B7686 0%,#4A5364 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,.2),0 10px 22px rgba(90,100,116,.32);}
 .summary-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;border-radius:14px;transition:background .12s;}
 .summary-grid.drag-over{background:rgba(255,255,255,.05);outline:1px dashed rgba(255,255,255,.2);}
 .summary-empty{font-size:12px;color:rgba(255,255,255,0.22);font-style:italic;grid-column:1/-1;padding:6px 2px;}
@@ -1630,6 +1632,7 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
     }
 
     var folders = document.createElement('div'); folders.className = 'summary-folders';
+    folders.appendChild(buildFolderTile(null, '📁', 'Proyectos activos', activos.length, 'sfolder-gray', function() { _summaryDrill = null; renderSummaryView(); }, function(id) { setProjectPending(id, false); }));
     folders.appendChild(buildFolderTile('concluded', '📁', 'Completados', concluidos.length, 'sfolder-green', function() { setSummaryDrill('concluded'); }, function(id) { archiveProjectToFolder(id, 'concluded'); }));
     folders.appendChild(buildFolderTile('rejected', '🗄', 'Rechazados', rechazadas.length, 'sfolder-red', function() { setSummaryDrill('rejected'); }, function(id) { archiveProjectToFolder(id, 'rejected'); }));
     folders.appendChild(buildFolderTile('cotizaciones', '📝', 'Cotizaciones', cotizActivas.length, 'sfolder-blue', function() { openCotizKanban(); }, function(id) { revertProjectToQuote(id); }));
