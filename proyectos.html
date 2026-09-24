@@ -1599,13 +1599,14 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
     TrazzoChatProjects.open({
       categories: categories,
       teamMembers: TEAM_MEMBERS,
+      companies: COMPANIES,
       onCreate: function(items) {
         var entryDate = new Date().toISOString().split('T')[0];
         items.forEach(function(t) {
           var solEntry = {}; solEntry[COTIZ_STAGES[0]] = entryDate;
           projects.push({
             id: nextId++, name: t.name, client: t.client, catId: 'cotizaciones',
-            stage: COTIZ_STAGES[0], deadline: t.deadline, team: [t.resp],
+            stage: COTIZ_STAGES[0], deadline: t.deadline, team: [t.resp], empresa: t.empresaId,
             monto: t.monto, tipoCat: t.tipoCatId, stageEntryDates: solEntry
           });
         });
@@ -1624,6 +1625,7 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
     TrazzoChatProjects.open({
       categories: categories,
       teamMembers: TEAM_MEMBERS,
+      companies: COMPANIES,
       onCreate: function(items) {
         var entryDate = new Date().toISOString().split('T')[0];
         items.forEach(function(t) {
@@ -1631,7 +1633,7 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
           for (var i = 0; i < categories.length; i++) { if (categories[i].id === t.tipoCatId) { cat = categories[i]; break; } }
           if (!cat) return;
           var stage = cat.stages[0];
-          var proj = { id: nextId++, name: t.name, client: t.client, catId: cat.id, stage: stage, deadline: t.deadline, team: [t.resp], stageEntryDates: {}, empresa: null };
+          var proj = { id: nextId++, name: t.name, client: t.client, catId: cat.id, stage: stage, deadline: t.deadline, team: [t.resp], stageEntryDates: {}, empresa: t.empresaId };
           proj.stageEntryDates[stage] = entryDate;
           seedStageTasks(proj, cat, stage);
           projects.push(proj);
