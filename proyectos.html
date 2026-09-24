@@ -265,6 +265,10 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
 .tm-toggle.share-on{background:rgba(39,174,114,0.2);color:#27AE72;}
 .tm-toggle.share-off{background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.35);}
 .tm-toggle.share-off:hover{background:rgba(255,255,255,0.11);}
+.tm-date-pill{font-size:9.5px;font-weight:600;padding:4px 8px;border-radius:8px;cursor:pointer;white-space:nowrap;flex-shrink:0;background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.35);transition:all .15s;}
+.tm-date-pill:hover{background:rgba(255,255,255,0.12);color:rgba(255,255,255,0.7);}
+.tm-date-pill.has-date{background:rgba(26,111,212,0.18);color:#5AB4E8;}
+.tm-date-pill.has-date:hover{background:rgba(26,111,212,0.28);}
 .tm-add-row{padding:8px 4px 2px;}
 .tm-add-inp{width:100%;box-sizing:border-box;background:rgba(255,255,255,0.05);border:0.5px solid rgba(255,255,255,0.1);border-radius:7px;padding:7px 10px;font-size:11px;color:#fff;font-family:'Inter',sans-serif;outline:none;transition:border-color .15s;}
 .tm-add-inp:focus{border-color:rgba(255,255,255,0.28);}
@@ -3911,9 +3915,25 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
   function buildTmRow(p, cat, stage, idx, real, tpl) {
     var text = real ? real[idx].text : (typeof tpl[idx] === 'string' ? tpl[idx] : (tpl[idx].text || ''));
     var applied = !!(real && real[idx].sharedWithTeam);
+    var deadline = real ? (real[idx].deadline || '') : '';
     var row = document.createElement('div'); row.className = 'tm-row' + (applied ? '' : ' excluded');
     var txt = document.createElement('div'); txt.className = 'tm-row-txt'; txt.textContent = text;
     row.appendChild(txt);
+
+    var dateBtn = document.createElement('span');
+    dateBtn.className = 'tm-date-pill' + (deadline ? ' has-date' : '');
+    dateBtn.textContent = deadline ? '📅 ' + fmtDate(deadline) : '📅 Sin fecha';
+    dateBtn.title = 'Fecha de esta tarea';
+    dateBtn.onclick = function(e) {
+      e.stopPropagation();
+      seedStageTasks(p, cat, stage);
+      var arr = p.stageTasks[stage];
+      openDatePicker(dateBtn, arr[idx].deadline || '', function(v) {
+        arr[idx].deadline = v;
+        saveData(); renderTaskManager(p, cat); renderDetailKanban(); updateCardBadge(detailProjectId);
+      });
+    };
+    row.appendChild(dateBtn);
 
     var applyBtn = document.createElement('span');
     applyBtn.className = 'tm-toggle ' + (applied ? 'share-on' : 'applies-off');
