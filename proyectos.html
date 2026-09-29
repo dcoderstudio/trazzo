@@ -1467,7 +1467,7 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
 
   function buildSummaryCard(p) {
     var cat = getCat(p.catId);
-    var color = computeProjectStatusColor(p);
+    var color = p.concluded ? '#9CA3AF' : computeProjectStatusColor(p);
     var rgb = _coRgb(color);
     var pct = computeProjectProgress(p);
     var card = document.createElement('div');
@@ -1534,7 +1534,7 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
   function buildRejectedCard(p) {
     var cat = getCat(p.tipoCat || p.catId);
     var card = document.createElement('div'); card.className = 'summary-card';
-    card.style.cssText = 'background:rgba(226,75,74,.06);border:0.5px solid rgba(226,75,74,.18);cursor:default;min-height:auto;';
+    card.style.cssText = 'background:rgba(156,163,175,.10);border:0.5px solid rgba(156,163,175,.25);cursor:default;min-height:auto;';
     var name = document.createElement('div'); name.className = 'summary-card-name'; name.textContent = p.name;
     var meta = document.createElement('div'); meta.className = 'summary-card-client';
     meta.textContent = (p.client || '—') + (cat ? ' · ' + cat.label : '');
