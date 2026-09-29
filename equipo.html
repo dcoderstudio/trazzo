@@ -718,6 +718,18 @@ select.eq-org-new-inp option{background:#1a1f35;}
 .eq-orgcol-body::-webkit-scrollbar-thumb{background:rgba(255,255,255,.06);}
 .eq-orgcol-empty{text-align:center;padding:14px 8px;font-size:9.5px;color:rgba(255,255,255,.12);font-style:italic;}
 .eq-orgcol-drop-hint{text-align:center;font-size:9px;color:rgba(90,180,232,.25);padding:3px;}
+.eq-org-cal-nav{display:flex;align-items:center;gap:8px;padding:10px 12px 0;flex-shrink:0;}
+.eq-org-cal-navbtn{background:rgba(255,255,255,.06);border:.5px solid rgba(255,255,255,.1);border-radius:7px;color:rgba(255,255,255,.6);font-size:12px;font-weight:700;padding:4px 9px;cursor:pointer;font-family:inherit;transition:background .12s;}
+.eq-org-cal-navbtn:hover{background:rgba(255,255,255,.12);}
+.eq-org-cal-navlbl{font-size:11.5px;font-weight:700;color:rgba(255,255,255,.75);min-width:110px;text-align:center;}
+.eq-org-cal-wkrow{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:9px;padding:8px 12px 0;flex-shrink:0;}
+.eq-org-cal-wkhdr{text-align:center;font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:rgba(255,255,255,.25);}
+.eq-org-cols-wrap.eq-cal-mode{grid-template-columns:repeat(7,minmax(0,1fr));}
+.eq-orgcol.cal-day{min-height:92px;}
+.eq-orgcol.cal-day.other-month{opacity:.4;}
+.eq-orgcol.cal-day.is-today{border-color:rgba(90,180,232,.4);}
+.eq-org-cal-daynum{font-size:10px;font-weight:700;color:rgba(255,255,255,.5);padding:6px 8px 2px;flex-shrink:0;}
+.eq-orgcol.cal-day.is-today .eq-org-cal-daynum{color:#5AB4E8;}
 /* Small task card inside area column */
 .eq-org-atask{display:flex;align-items:flex-start;gap:6px;padding:7px 8px;border-radius:7px;background:rgba(255,255,255,.04);border:.5px solid rgba(255,255,255,.06);cursor:pointer;transition:border-color .12s;}
 .eq-org-atask:hover{border-color:rgba(255,255,255,.14);background:rgba(255,255,255,.07);}
@@ -1161,7 +1173,7 @@ function renderTeamHeader(main,allTasks){
 function buildGroupToggle(){
   var groupBar=document.createElement('div');groupBar.className='eq-org-groupbar eq-dash-groupbar';
   var glbl=document.createElement('span');glbl.className='eq-org-groupbar-lbl';glbl.textContent='Ver por';groupBar.appendChild(glbl);
-  [['area','🏢 Por área'],['persona','👤 Por persona'],['proyecto','📁 Por proyecto']].forEach(function(pair){
+  [['area','🏢 Por área'],['persona','👤 Por persona'],['proyecto','📁 Por proyecto'],['fecha','📅 Por fecha']].forEach(function(pair){
     var gb=document.createElement('button');gb.className='eq-org-groupbtn'+(_orgGroupBy===pair[0]?' active':'');gb.textContent=pair[1];
     gb.onclick=(function(g){return function(){_orgGroupBy=g;renderDashboard();};})(pair[0]);
     groupBar.appendChild(gb);
@@ -1208,7 +1220,7 @@ function renderDashboard(){
 }
 
 // ── TEAM: ORGANIZAR TAREAS ────────────────────────────────────────
-var _orgDragGhost=null,_orgDragTask=null,_orgDragEl=null,_orgGroupBy='area';
+var _orgDragGhost=null,_orgDragTask=null,_orgDragEl=null,_orgGroupBy='area',_orgCalDate=null;
 function renderTeamOrganizar(main,allTasks){
   var wrap=document.createElement('div');wrap.className='eq-org-wrap';main.appendChild(wrap);
 
@@ -1251,14 +1263,16 @@ function renderTeamOrganizar(main,allTasks){
     ? allTasks.filter(function(t){return!t.done&&!t.resp;})
     : _orgGroupBy==='proyecto'
     ? allTasks.filter(function(t){return!t.done&&t._type==='standalone';})
+    : _orgGroupBy==='fecha'
+    ? allTasks.filter(function(t){return!t.done&&!t.deadline;})
     : allTasks.filter(function(t){return!t.done&&(!t.area||t.area==='');});
-  var unassignedLbl=_orgGroupBy==='persona'?'Sin encargado · ':_orgGroupBy==='proyecto'?'Sin proyecto · ':'Sin asignar · ';
+  var unassignedLbl=_orgGroupBy==='persona'?'Sin encargado · ':_orgGroupBy==='proyecto'?'Sin proyecto · ':_orgGroupBy==='fecha'?'Sin fecha · ':'Sin asignar · ';
   llbl.textContent=unassignedLbl+unassignedTasks.length;
   lp.appendChild(llbl);
   var ll=document.createElement('div');ll.className='eq-org-left-list';lp.appendChild(ll);
   if(!unassignedTasks.length){
     var emp=document.createElement('div');emp.className='eq-org-left-empty';
-    emp.textContent=_orgGroupBy==='persona'?'Todas las tareas tienen encargado ✓':_orgGroupBy==='proyecto'?'Todas las tareas libres tienen proyecto ✓':'Todas las tareas están asignadas ✓';
+    emp.textContent=_orgGroupBy==='persona'?'Todas las tareas tienen encargado ✓':_orgGroupBy==='proyecto'?'Todas las tareas libres tienen proyecto ✓':_orgGroupBy==='fecha'?'Todas las tareas tienen fecha ✓':'Todas las tareas están asignadas ✓';
     ll.appendChild(emp);
   } else {
     unassignedTasks.forEach(function(t){
@@ -1272,9 +1286,17 @@ function renderTeamOrganizar(main,allTasks){
 
   // ── RIGHT PANEL: COLUMNS (el toggle Ver por área/persona vive en el toolbar) ──
   var rp=document.createElement('div');rp.className='eq-org-right-panel';wrap.appendChild(rp);
-  var colWrap=document.createElement('div');colWrap.className='eq-org-cols-wrap';rp.appendChild(colWrap);
 
-  if(_orgGroupBy==='proyecto'){
+  if(_orgGroupBy==='fecha'){
+    rp.appendChild(buildOrgCalNav());
+    rp.appendChild(buildOrgCalWeekRow());
+  }
+
+  var colWrap=document.createElement('div');colWrap.className='eq-org-cols-wrap'+(_orgGroupBy==='fecha'?' eq-cal-mode':'');rp.appendChild(colWrap);
+
+  if(_orgGroupBy==='fecha'){
+    renderOrgCalendarDays(colWrap,allTasks,wrap);
+  } else if(_orgGroupBy==='proyecto'){
     // ── COLUMNS PER PROJECT — solo proyectos activos (ni cotizaciones,
     // ni concluidos, ni en pendientes de aprobación o archivados) ──
     getActiveProjects().forEach(function(pr){
@@ -1361,6 +1383,59 @@ function renderTeamOrganizar(main,allTasks){
       col.appendChild(cbody);
       colWrap.appendChild(col);
     });
+  }
+}
+
+// ── ORGANIZAR: POR FECHA — mini calendario mensual con drag-and-drop ──
+function buildOrgCalNav(){
+  if(!_orgCalDate)_orgCalDate=new Date(new Date().getFullYear(),new Date().getMonth(),1);
+  var nav=document.createElement('div');nav.className='eq-org-cal-nav';
+  var prev=document.createElement('button');prev.className='eq-org-cal-navbtn';prev.innerHTML='&#8249;';
+  prev.onclick=function(){_orgCalDate.setMonth(_orgCalDate.getMonth()-1);renderDashboard();};
+  var lbl=document.createElement('span');lbl.className='eq-org-cal-navlbl';
+  var MNS=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  lbl.textContent=MNS[_orgCalDate.getMonth()]+' '+_orgCalDate.getFullYear();
+  var next=document.createElement('button');next.className='eq-org-cal-navbtn';next.innerHTML='&#8250;';
+  next.onclick=function(){_orgCalDate.setMonth(_orgCalDate.getMonth()+1);renderDashboard();};
+  var todayBtn=document.createElement('button');todayBtn.className='eq-org-cal-navbtn';todayBtn.textContent='Hoy';
+  todayBtn.onclick=function(){_orgCalDate=new Date(new Date().getFullYear(),new Date().getMonth(),1);renderDashboard();};
+  nav.appendChild(prev);nav.appendChild(lbl);nav.appendChild(next);nav.appendChild(todayBtn);
+  return nav;
+}
+function buildOrgCalWeekRow(){
+  var row=document.createElement('div');row.className='eq-org-cal-wkrow';
+  ['Lu','Ma','Mi','Ju','Vi','Sá','Do'].forEach(function(d){var c=document.createElement('div');c.className='eq-org-cal-wkhdr';c.textContent=d;row.appendChild(c);});
+  return row;
+}
+function renderOrgCalendarDays(colWrap,allTasks,wrap){
+  if(!_orgCalDate)_orgCalDate=new Date(new Date().getFullYear(),new Date().getMonth(),1);
+  var y=_orgCalDate.getFullYear(),m=_orgCalDate.getMonth();
+  var first=new Date(y,m,1);
+  var dow=first.getDay();var off=dow===0?6:dow-1;
+  var daysInMonth=new Date(y,m+1,0).getDate();
+  var startDate=new Date(y,m,1-off);
+  var totalCells=Math.ceil((off+daysInMonth)/7)*7;
+  var todayStr=today();
+  var byDate={};
+  allTasks.forEach(function(t){if(!t.done&&t.deadline){(byDate[t.deadline]=byDate[t.deadline]||[]).push(t);}});
+  for(var i=0;i<totalCells;i++){
+    var d=new Date(startDate);d.setDate(startDate.getDate()+i);
+    var ds=fmt(d);
+    var isOtherMonth=d.getMonth()!==m;
+    var isToday=ds===todayStr;
+    var dayTasks=byDate[ds]||[];
+    var col=document.createElement('div');
+    col.className='eq-orgcol cal-day'+(isOtherMonth?' other-month':'')+(isToday?' is-today':'');
+    col.dataset.dropField='deadline';col.dataset.dropValue=ds;
+    var dn=document.createElement('div');dn.className='eq-org-cal-daynum';dn.textContent=String(d.getDate());col.appendChild(dn);
+    var cbody=document.createElement('div');cbody.className='eq-orgcol-body';
+    dayTasks.forEach(function(t){
+      var card=buildOrgPersonTask(t);
+      initOrgDrag(card,t,wrap);
+      cbody.appendChild(card);
+    });
+    col.appendChild(cbody);
+    colWrap.appendChild(col);
   }
 }
 
@@ -1512,6 +1587,8 @@ function initOrgDrag(cardEl,task,wrap){
       } else if(toUnassigned){
         if(_orgGroupBy==='proyecto'){
           moveTaskToProject(task,null);
+        } else if(_orgGroupBy==='fecha'){
+          teamTaskUpdate(task,{deadline:''});
         } else {
           var clearField=_orgGroupBy==='persona'?'resp':'area';
           var patch2={};patch2[clearField]=clearField==='resp'?null:'';
