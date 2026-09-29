@@ -2471,10 +2471,11 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
       }
     }
 
-    // Task badge
-    var stTasks = p.stageTasks && p.stageTasks[p.stage] ? p.stageTasks[p.stage] : [];
-    var pending = stTasks.filter(function(t){ return !t.done; }).length;
-    var total = stTasks.length;
+    // Task badge — cuenta las tareas de TODO el proyecto, no solo de
+    // la fase actual (las tareas ya no son "de una fase").
+    var _stats = computeProjectTaskStats(p);
+    var pending = _stats.total - _stats.done;
+    var total = _stats.total;
     if (total > 0) {
       var pillCls = pending === 0 ? 'fin' : 'pnd';
       var pillTxt = pending === 0 ? '✓ Todo listo' : pending + ' pendiente' + (pending !== 1 ? 's' : '');
@@ -2761,9 +2762,12 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
     var p = null;
     for (var i = 0; i < projects.length; i++) { if (projects[i].id === projectId) { p = projects[i]; break; } }
     if (!p) return;
-    var stTasks = p.stageTasks && p.stageTasks[p.stage] ? p.stageTasks[p.stage] : [];
-    var pending = stTasks.filter(function(t){ return !t.done; }).length;
-    var total = stTasks.length;
+    // El badge ahora refleja las tareas de TODO el proyecto (todas las
+    // fases), no solo la fase actual — las tareas ya no son "de una
+    // fase", son del proyecto como tal.
+    var _stats = computeProjectTaskStats(p);
+    var pending = _stats.total - _stats.done;
+    var total = _stats.total;
     var existing = cardEl.querySelector('[data-task-badge]');
     if (existing) existing.remove();
     if (total > 0) {
