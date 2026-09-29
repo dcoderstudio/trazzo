@@ -320,6 +320,8 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
 .pdm-kcol-stage-name{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;gap:5px;}
 .pdm-kcol-icon{flex-shrink:0;}
 .pdm-kcol-line{font-size:10.5px;color:rgba(255,255,255,0.55);margin-top:6px;}
+.pdm-kcol.drop-over{box-shadow:0 0 0 2px rgba(255,255,255,.4);}
+.pdm-kcol-est-inp{width:44px;background:rgba(255,255,255,.1);border:0.5px solid rgba(255,255,255,.3);border-radius:4px;color:#fff;font-size:10.5px;padding:1px 4px;font-family:inherit;outline:none;}
 .pdm-kcol-line.warn{color:#E8A020;font-weight:700;}
 .pdm-kcol-line.late{color:#E24B4A;font-weight:700;}
 .pdm-kcol-line.ok{color:#27AE72;font-weight:700;}
@@ -3328,7 +3330,7 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
     document.getElementById('pdmStageConfirm').style.display = 'none';
     _pendingCatChange = null;
     _pendingStageChange = null;
-    _pdmTaskFilter = 'pending';
+    _pdmTaskFilter = 'all';
     renderProjDetail(true);
     document.getElementById('projDetailOverlay').classList.add('open');
   }
@@ -3696,14 +3698,13 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
   // Sync with live data if already loaded
   if (_wsTeamMembers && _wsTeamMembers.length) _syncTeamData(_wsTeamMembers);
 
-  // Mini-Kanban de fases dentro de la ficha. La fase ACTUAL se ve como
-  // una ficha de color (con el nombre del proyecto arriba y sus
-  // tareas dentro); las demás fases se ven en el mismo color pero
-  // pálidas, mostrando también sus tareas (las ya sembradas, o una
-  // vista previa de la plantilla si esa fase todavía no se visita).
   // Tira de fases: solo tiempos y estado (completada / actual /
   // pendiente / atrasada) — las fases ya no contienen tareas ni
-  // checklists, eso vive ahora en "Tareas del proyecto".
+  // checklists, eso vive ahora en "Tareas del proyecto". La fase
+  // actual se puede arrastrar y soltar en otra columna (o usar el
+  // botón "Cambiar de fase"); ambos caminos piden la misma
+  // confirmación. Los "días estimados" de cada fase son editables.
+  var _pdmKDragActive = false;
   function renderDetailKanban(scrollToCurrent) {
     var p = null;
     for (var i = 0; i < projects.length; i++) { if (projects[i].id === detailProjectId) { p = projects[i]; break; } }
@@ -3726,7 +3727,31 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
       var isLate = isCurrent && ts.started && ts.late;
       var col = document.createElement('div');
       col.className = 'pdm-kcol';
-      col.style.cssText = isLate
+
+      // Arrastrar la ficha (la fase actual) y soltarla en otra fase
+      // pide la misma confirmación que el botón "Cambiar de fase".
+      if (isCurrent) {
+        col.draggable = true;
+        col.style.cursor = 'grab';
+        col.title = 'Arrastra para cambiar de fase';
+        col.addEventListener('dragstart', function(e) { _pdmKDragActive = true; e.dataTransfer.setData('text/plain', 'p'); });
+        col.addEventListener('dragend', function() {
+          _pdmKDragActive = false;
+          wrap.querySelectorAll('.pdm-kcol.drop-over').forEach(function(c) { c.classList.remove('drop-over'); });
+        });
+      }
+      col.addEventListener('dragover', function(e) { if (_pdmKDragActive) e.preventDefault(); });
+      col.addEventListener('dragenter', function(e) { if (_pdmKDragActive && !isCurrent) { e.preventDefault(); col.classList.add('drop-over'); } });
+      col.addEventListener('dragleave', function() { col.classList.remove('drop-over'); });
+      col.addEventListener('drop', (function(stg) { return function(e) {
+        e.preventDefault(); col.classList.remove('drop-over');
+        if (!_pdmKDragActive) return;
+        _pendingStageChange = stg;
+        document.getElementById('pdmStageConfirmTxt').textContent = '¿Cambiar de "' + p.stage + '" a "' + stg + '"? Se cerrará la fase actual y comenzará el conteo de tiempo de la nueva.';
+        document.getElementById('pdmStageConfirm').style.display = 'flex';
+      }; })(stage));
+
+      col.style.cssText += isLate
         ? 'background:linear-gradient(160deg,rgba(226,75,74,.28) 0%,rgba(226,75,74,.08) 100%);border:1px solid rgba(226,75,74,.55);'
         : isCurrent
         ? 'background:linear-gradient(160deg,rgba('+rgb+',.32) 0%,rgba('+rgb+',.1) 100%);border:1px solid rgba('+rgb+',.6);box-shadow:0 8px 24px rgba(0,0,0,.35);'
@@ -3745,7 +3770,29 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
       col.appendChild(stageName);
 
       var estLine = document.createElement('div'); estLine.className = 'pdm-kcol-line';
-      estLine.textContent = 'Estimado: ' + ts.estDays + (ts.estDays === 1 ? ' día' : ' días');
+      estLine.textContent = 'Estimado: ' + ts.estDays + (ts.estDays === 1 ? ' día' : ' días') + ' ✎';
+      estLine.style.cursor = 'pointer';
+      estLine.title = 'Editar días estimados de esta fase';
+      estLine.onclick = function(e) {
+        e.stopPropagation();
+        var inp = document.createElement('input');
+        inp.type = 'number'; inp.min = '1'; inp.value = ts.estDays;
+        inp.className = 'pdm-kcol-est-inp';
+        inp.onclick = function(ev) { ev.stopPropagation(); };
+        estLine.textContent = ''; estLine.appendChild(document.createTextNode('Estimado: ')); estLine.appendChild(inp);
+        inp.focus(); inp.select();
+        function commit() {
+          var v = parseInt(inp.value, 10);
+          if (v > 0) {
+            if (!p.stageDaysOverride) p.stageDaysOverride = {};
+            p.stageDaysOverride[stage] = v;
+            saveData();
+          }
+          renderProjDetail();
+        }
+        inp.addEventListener('keydown', function(ev) { if (ev.key === 'Enter') commit(); else if (ev.key === 'Escape') renderProjDetail(); });
+        inp.addEventListener('blur', commit);
+      };
       col.appendChild(estLine);
 
       if (isPast) {
@@ -3854,7 +3901,11 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
 
 
   // ── TAREAS DEL PROYECTO (agregadas de todas las fases) ─────────
-  var _pdmTaskFilter = 'pending';
+  // Por default se ven todas juntas: al marcar una como hecha no
+  // desaparece, solo se hunde debajo de las pendientes (y se puede
+  // desmarcar ahí mismo). Los tabs siguen sirviendo para ver solo
+  // pendientes o solo completadas si se prefiere.
+  var _pdmTaskFilter = 'all';
   function renderProjectTasks(p) {
     var filterRow = document.getElementById('pdmTaskFilterRow');
     var listEl = document.getElementById('pdmTasksList');
@@ -3875,6 +3926,12 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
       if (_pdmTaskFilter === 'done') return t.done;
       return true;
     });
+    if (_pdmTaskFilter === 'all') {
+      // Pendientes primero, completadas al final — orden estable.
+      filtered = filtered.map(function(t, i) { return { t: t, i: i }; })
+        .sort(function(a, b) { return (a.t.done === b.t.done) ? a.i - b.i : (a.t.done ? 1 : -1); })
+        .map(function(x) { return x.t; });
+    }
     listEl.innerHTML = '';
     if (!filtered.length) {
       var emp = document.createElement('div'); emp.className = 'pdm-tasks-empty';
