@@ -1161,7 +1161,7 @@ function renderTeamHeader(main,allTasks){
 function buildGroupToggle(){
   var groupBar=document.createElement('div');groupBar.className='eq-org-groupbar eq-dash-groupbar';
   var glbl=document.createElement('span');glbl.className='eq-org-groupbar-lbl';glbl.textContent='Ver por';groupBar.appendChild(glbl);
-  [['area','🏢 Por área'],['persona','👤 Por persona']].forEach(function(pair){
+  [['area','🏢 Por área'],['persona','👤 Por persona'],['proyecto','📁 Por proyecto']].forEach(function(pair){
     var gb=document.createElement('button');gb.className='eq-org-groupbtn'+(_orgGroupBy===pair[0]?' active':'');gb.textContent=pair[1];
     gb.onclick=(function(g){return function(){_orgGroupBy=g;renderDashboard();};})(pair[0]);
     groupBar.appendChild(gb);
@@ -1249,13 +1249,16 @@ function renderTeamOrganizar(main,allTasks){
   var llbl=document.createElement('div');llbl.className='eq-org-left-lbl';
   var unassignedTasks=_orgGroupBy==='persona'
     ? allTasks.filter(function(t){return!t.done&&!t.resp;})
+    : _orgGroupBy==='proyecto'
+    ? allTasks.filter(function(t){return!t.done&&t._type==='standalone';})
     : allTasks.filter(function(t){return!t.done&&(!t.area||t.area==='');});
-  llbl.textContent=(_orgGroupBy==='persona'?'Sin encargado · ':'Sin asignar · ')+unassignedTasks.length;
+  var unassignedLbl=_orgGroupBy==='persona'?'Sin encargado · ':_orgGroupBy==='proyecto'?'Sin proyecto · ':'Sin asignar · ';
+  llbl.textContent=unassignedLbl+unassignedTasks.length;
   lp.appendChild(llbl);
   var ll=document.createElement('div');ll.className='eq-org-left-list';lp.appendChild(ll);
   if(!unassignedTasks.length){
     var emp=document.createElement('div');emp.className='eq-org-left-empty';
-    emp.textContent=_orgGroupBy==='persona'?'Todas las tareas tienen encargado ✓':'Todas las tareas están asignadas ✓';
+    emp.textContent=_orgGroupBy==='persona'?'Todas las tareas tienen encargado ✓':_orgGroupBy==='proyecto'?'Todas las tareas libres tienen proyecto ✓':'Todas las tareas están asignadas ✓';
     ll.appendChild(emp);
   } else {
     unassignedTasks.forEach(function(t){
@@ -1271,7 +1274,33 @@ function renderTeamOrganizar(main,allTasks){
   var rp=document.createElement('div');rp.className='eq-org-right-panel';wrap.appendChild(rp);
   var colWrap=document.createElement('div');colWrap.className='eq-org-cols-wrap';rp.appendChild(colWrap);
 
-  if(_orgGroupBy==='persona'){
+  if(_orgGroupBy==='proyecto'){
+    // ── COLUMNS PER PROJECT — solo proyectos activos (ni cotizaciones,
+    // ni concluidos, ni en pendientes de aprobación o archivados) ──
+    getActiveProjects().forEach(function(pr){
+      var prTks=allTasks.filter(function(t){return!t.done&&t._projId===pr.id;});
+      var pcolor=pr.catColor||'#1A6FD4';
+      var col=document.createElement('div');col.className='eq-orgcol';col.dataset.dropField='project';col.dataset.dropValue=String(pr.id);
+      var chdr=document.createElement('div');chdr.className='eq-orgcol-hdr';
+      chdr.style.cssText='background:linear-gradient(135deg,'+pcolor+'18,'+pcolor+'06);border-bottom:.5px solid '+pcolor+'22;';
+      var cdot=document.createElement('div');cdot.className='eq-orgcol-dot';cdot.style.background=pcolor;
+      var cname=document.createElement('span');cname.className='eq-orgcol-name';cname.textContent=pr.name;
+      var ccnt=document.createElement('span');ccnt.className='eq-orgcol-cnt';ccnt.textContent=prTks.length;
+      chdr.appendChild(cdot);chdr.appendChild(cname);chdr.appendChild(ccnt);col.appendChild(chdr);
+      var cbody=document.createElement('div');cbody.className='eq-orgcol-body';
+      if(!prTks.length){
+        var cemp=document.createElement('div');cemp.className='eq-orgcol-empty';cemp.textContent='Suelta tareas aquí';cbody.appendChild(cemp);
+      } else {
+        prTks.forEach(function(t){
+          var ptCard=buildOrgPersonTask(t);
+          initOrgDrag(ptCard,t,wrap);
+          cbody.appendChild(ptCard);
+        });
+      }
+      col.appendChild(cbody);
+      colWrap.appendChild(col);
+    });
+  } else if(_orgGroupBy==='persona'){
     // ── COLUMNS PER TEAM MEMBER — vista general de tareas por persona ──
     teamMembers.forEach(function(m){
       var mTks=allTasks.filter(function(t){return!t.done&&t.resp===m.id;});
@@ -1474,12 +1503,20 @@ function initOrgDrag(cardEl,task,wrap){
       _orgDragTask=null;_orgDragEl=null;
       if(targetCol){
         var field=targetCol.dataset.dropField,value=targetCol.dataset.dropValue;
-        var patch={};patch[field]=value;
-        teamTaskUpdate(task,patch);
+        if(field==='project'){
+          moveTaskToProject(task,parseInt(value));
+        } else {
+          var patch={};patch[field]=value;
+          teamTaskUpdate(task,patch);
+        }
       } else if(toUnassigned){
-        var clearField=_orgGroupBy==='persona'?'resp':'area';
-        var patch2={};patch2[clearField]=clearField==='resp'?null:'';
-        teamTaskUpdate(task,patch2);
+        if(_orgGroupBy==='proyecto'){
+          moveTaskToProject(task,null);
+        } else {
+          var clearField=_orgGroupBy==='persona'?'resp':'area';
+          var patch2={};patch2[clearField]=clearField==='resp'?null:'';
+          teamTaskUpdate(task,patch2);
+        }
       }
     }
     document.addEventListener('pointermove',onMove);
@@ -1606,6 +1643,37 @@ function teamTaskUpdate(task,changes){
 function toggleTeamTaskDone(task){teamTaskUpdate(task,{done:!task.done});}
 function rescheduleTeamTask(task,newDate){teamTaskUpdate(task,{deadline:newDate||''});}
 function toggleTeamTaskPriority(task){teamTaskUpdate(task,{priority:!task.priority});}
+
+// Mueve una tarea de donde esté (libre o de otro proyecto) hacia un
+// proyecto distinto (o de vuelta a libre si newProjId es null) — a
+// diferencia de teamTaskUpdate, esto reubica la tarea entre arreglos,
+// no solo cambia un campo en el mismo lugar.
+function moveTaskToProject(task,newProjId){
+  var plain={id:task.id,text:task.text,resp:task.resp||null,area:task.area||null,deadline:task.deadline||null,done:!!task.done,colStatus:task.colStatus||null,priority:!!task.priority,notes:task.notes||''};
+  if(task._type==='standalone'){
+    standaloneTasks=(standaloneTasks||[]).filter(function(t){return t.id!==task.id;});
+  } else {
+    var oldPi=-1;for(var i=0;i<projects.length;i++){if(projects[i].id===task._projId){oldPi=i;break;}}
+    if(oldPi>=0&&projects[oldPi].stageTasks&&projects[oldPi].stageTasks[task._stage]){
+      projects[oldPi].stageTasks[task._stage]=projects[oldPi].stageTasks[task._stage].filter(function(t){return t.id!==task.id;});
+    }
+  }
+  if(!newProjId){
+    standaloneTasks=(standaloneTasks||[]).concat([plain]);
+  } else {
+    var pi=-1;for(var i=0;i<projects.length;i++){if(projects[i].id===newProjId){pi=i;break;}}
+    if(pi<0){standaloneTasks=(standaloneTasks||[]).concat([plain]);}
+    else{
+      var p=projects[pi],stage=p.stage;
+      if(!p.stageTasks)p.stageTasks={};
+      if(!p.stageTasks[stage])p.stageTasks[stage]=[];
+      plain.sharedWithTeam=true;
+      p.stageTasks[stage].push(plain);
+    }
+  }
+  saveTaskChange();
+  renderDashboard();
+}
 
 // ── TEAM GROUPING — tiny area/persona dividers within sections ────
 // Groups by area or by encargado depending on the shared _orgGroupBy toggle.
@@ -1994,6 +2062,26 @@ function createStandaloneTask(text,resp,area,deadline){
   var id='st_'+Date.now()+'_'+Math.random().toString(36).slice(2,7);
   var task={id:id,text:text,resp:resp||null,area:area||null,deadline:deadline||null,done:false,colStatus:null,priority:false};
   standaloneTasks=(standaloneTasks||[]).concat([task]);
+  saveTaskChange();
+  renderDashboard();
+}
+
+// Proyectos activos: ni cotizaciones, ni concluidos, ni en pendientes
+// de aprobación o archivados — el mismo criterio de "Proyectos activos"
+// que usa la vista de Resumen en Proyectos.
+function getActiveProjects(){
+  return (projects||[]).filter(function(p){ return p.catId!=='cotizaciones' && !p.concluded && !p.pendingApproval && !p.quoteArchived; });
+}
+
+function createProjectTask(text,resp,area,deadline,projId){
+  var pi=-1; for(var i=0;i<projects.length;i++){ if(projects[i].id===projId){ pi=i; break; } }
+  if(pi<0) return;
+  var p=projects[pi];
+  var stage=p.stage;
+  if(!p.stageTasks) p.stageTasks={};
+  if(!p.stageTasks[stage]) p.stageTasks[stage]=[];
+  var id='pt_'+Date.now()+'_'+Math.random().toString(36).slice(2,7);
+  p.stageTasks[stage].push({id:id,text:text,resp:resp||null,area:area||null,deadline:deadline||null,done:false,colStatus:null,priority:false,sharedWithTeam:true});
   saveTaskChange();
   renderDashboard();
 }
@@ -2394,6 +2482,14 @@ function showNewTaskModal(){
   var lbl1=document.createElement('div');lbl1.className='eq-tem-lbl';lbl1.textContent='Nombre de la tarea';modal.appendChild(lbl1);
   var inp=document.createElement('input');inp.className='eq-tem-inp';inp.placeholder='¿Qué hay que hacer?';modal.appendChild(inp);
 
+  // Proyecto (opcional) — si se elige uno, la tarea se agrega a ese
+  // proyecto (visible en su ficha y aquí) en vez de ser una tarea libre.
+  var lblP=document.createElement('div');lblP.className='eq-tem-lbl';lblP.textContent='Proyecto';modal.appendChild(lblP);
+  var selP=document.createElement('select');selP.className='eq-tem-select';
+  var p0=document.createElement('option');p0.value='';p0.textContent='Otros (sin proyecto)';selP.appendChild(p0);
+  getActiveProjects().forEach(function(pr){var o=document.createElement('option');o.value=pr.id;o.textContent=pr.name;selP.appendChild(o);});
+  modal.appendChild(selP);
+
   // Área
   var lbl2=document.createElement('div');lbl2.className='eq-tem-lbl';lbl2.textContent='Área';modal.appendChild(lbl2);
   var selA=document.createElement('select');selA.className='eq-tem-select';
@@ -2423,7 +2519,8 @@ function showNewTaskModal(){
   var save=document.createElement('button');save.className='eq-tem-save';save.textContent='Crear tarea';
   save.onclick=function(){
     var text=inp.value.trim();if(!text){inp.focus();return;}
-    createStandaloneTask(text,selR.value||null,selA.value||null,_nd);
+    if(selP.value)createProjectTask(text,selR.value||null,selA.value||null,_nd,parseInt(selP.value));
+    else createStandaloneTask(text,selR.value||null,selA.value||null,_nd);
     closeTaskEditModal();
   };
   inp.addEventListener('keydown',function(e){if(e.key==='Enter')save.click();if(e.key==='Escape')closeTaskEditModal();});

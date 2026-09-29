@@ -1393,23 +1393,26 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
     return null;
   }
 
-  // Progreso: % de tareas hechas entre las tareas realmente aplicadas
-  // (sharedWithTeam:true, el mismo criterio que usa el mini-Kanban y
-  // "Gestionar tareas") en todas las fases; las plantillas auto-sembradas
-  // que nunca se aplicaron no cuentan. Si todavía no hay ninguna tarea
-  // aplicada, usa la posición de la fase actual como aproximación.
+  // Progreso: para categorías con varias fases, el % se mide según qué
+  // tan avanzada está la fase actual dentro del total de fases (llevar
+  // el avance por tarea aplicada resultó poco práctico en el uso real).
+  // Para "Proyecto libre" (o cualquier categoría de una sola fase, que
+  // no tiene fases que avanzar) se sigue midiendo por tareas aplicadas,
+  // ya que ahí es el único criterio posible.
   function computeProjectProgress(p) {
+    if (p.completed) return 100;
+    var cat = getCat(p.catId);
+    if (cat && cat.stages && cat.stages.length >= 2) {
+      var idx = cat.stages.indexOf(p.stage);
+      if (idx < 0) return 0;
+      return Math.round(idx / (cat.stages.length - 1) * 100);
+    }
     var total = 0, done = 0;
     Object.keys(p.stageTasks || {}).forEach(function(stage) {
       (p.stageTasks[stage] || []).forEach(function(t) { if (!t.sharedWithTeam) return; total++; if (t.done) done++; });
     });
     if (total > 0) return Math.round(done / total * 100);
-    if (p.completed) return 100;
-    var cat = getCat(p.catId);
-    if (!cat || !cat.stages || cat.stages.length < 2) return 0;
-    var idx = cat.stages.indexOf(p.stage);
-    if (idx < 0) return 0;
-    return Math.round(idx / (cat.stages.length - 1) * 100);
+    return 0;
   }
 
   // Color de estado de la ficha: azul si va a tiempo, amarillo si alguna
