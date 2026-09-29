@@ -342,6 +342,7 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
 .pdm-task-row-txt{cursor:pointer;}
 .pdm-add-task-btn{width:100%;background:rgba(26,111,212,0.08);border:0.5px dashed rgba(26,111,212,0.3);border-radius:8px;padding:8px 10px;font-size:11.5px;color:#5AB4E8;font-family:inherit;cursor:pointer;transition:background .15s;}
 .pdm-add-task-btn:hover{background:rgba(26,111,212,0.16);}
+.pdm-area-pill{font-size:9.5px;font-weight:600;padding:4px 8px;border-radius:8px;cursor:pointer;white-space:nowrap;flex-shrink:0;}
 .pdm-tem-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(8px);z-index:900;display:flex;align-items:center;justify-content:center;}
 .pdm-tem-modal{background:#141c2e;border:.5px solid rgba(255,255,255,.14);border-radius:14px;width:340px;padding:18px 18px 16px;box-shadow:0 24px 64px rgba(0,0,0,.85);}
 .pdm-tem-title{font-size:13px;font-weight:800;color:#fff;margin-bottom:4px;}
@@ -927,6 +928,19 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
   ];
   var AV_COLORS = {AR:'#1A6FD4',LM:'#7B6FD0',SV:'#D4537E',RG:'#E8A020'};
   var TEAM_MEMBERS = [{id:'AR',name:'Ana Ramírez',color:'#1A6FD4'},{id:'LM',name:'Luis Mora',color:'#7B6FD0'},{id:'SV',name:'Sofía Vega',color:'#D4537E'},{id:'RG',name:'Rodrigo Gil',color:'#E8A020'}];
+  var DEFAULT_WORK_AREAS = [
+    {id:'campo',name:'Campo',color:'#27AE72'},
+    {id:'logistica',name:'Logística',color:'#E8A020'},
+    {id:'diseno',name:'Diseño',color:'#1A6FD4'},
+    {id:'direccion',name:'Dirección',color:'#9B59B6'},
+    {id:'administracion',name:'Administración',color:'#D4537E'},
+    {id:'taller',name:'Taller',color:'#E85D20'}
+  ];
+  var WORK_AREAS = DEFAULT_WORK_AREAS.slice();
+  function getAreaColor(name) {
+    for (var i = 0; i < WORK_AREAS.length; i++) { if (WORK_AREAS[i].name === name) return WORK_AREAS[i].color; }
+    return '#5AB4E8';
+  }
 
   function _syncTeamData(members) {
     if (!members || !members.length) return;
@@ -3948,6 +3962,15 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
     txt.onclick = function(e) { e.stopPropagation(); openPdmTaskModal(p, task); };
     row.appendChild(txt);
 
+    if (task.area) {
+      var areaColor = getAreaColor(task.area);
+      var areaPill = document.createElement('span'); areaPill.className = 'pdm-area-pill';
+      areaPill.textContent = task.area;
+      areaPill.style.cssText = 'background:rgba(' + _coRgb(areaColor) + ',.18);color:' + areaColor + ';';
+      areaPill.onclick = function(e) { e.stopPropagation(); openPdmTaskModal(p, task); };
+      row.appendChild(areaPill);
+    }
+
     var respMember = task.resp ? TEAM_MEMBERS.filter(function(m) { return m.id === task.resp; })[0] : null;
     var respBtn = document.createElement('span'); respBtn.className = 'tm-resp-pill' + (respMember ? ' has-resp' : '');
     respBtn.textContent = respMember ? '👤 ' + respMember.name.split(' ')[0] : '👤 Sin resp.';
@@ -3995,6 +4018,13 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
     var lbl1 = document.createElement('div'); lbl1.className = 'pdm-tem-lbl'; lbl1.textContent = 'Nombre de la tarea'; modal.appendChild(lbl1);
     var inp = document.createElement('input'); inp.className = 'pdm-tem-inp'; inp.placeholder = '¿Qué hay que hacer?'; inp.value = task ? task.text : ''; modal.appendChild(inp);
 
+    var lblArea = document.createElement('div'); lblArea.className = 'pdm-tem-lbl'; lblArea.textContent = 'Área de trabajo'; modal.appendChild(lblArea);
+    var selArea = document.createElement('select'); selArea.className = 'pdm-tem-select';
+    var areaNone = document.createElement('option'); areaNone.value = ''; areaNone.textContent = 'Sin área'; selArea.appendChild(areaNone);
+    WORK_AREAS.forEach(function(a) { var o = document.createElement('option'); o.value = a.name; o.textContent = a.name; selArea.appendChild(o); });
+    selArea.value = task ? (task.area || '') : '';
+    modal.appendChild(selArea);
+
     var lbl2 = document.createElement('div'); lbl2.className = 'pdm-tem-lbl'; lbl2.textContent = 'Encargado'; modal.appendChild(lbl2);
     var _resp = task ? (task.resp || '') : '';
     var respBtn = document.createElement('button'); respBtn.type = 'button'; respBtn.className = 'pdm-tem-datebtn';
@@ -4032,11 +4062,11 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
     save.onclick = function() {
       var v = inp.value.trim(); if (!v) { inp.focus(); return; }
       if (task) {
-        task.text = v; task.resp = _resp || ''; task.deadline = _dl || '';
+        task.text = v; task.resp = _resp || ''; task.deadline = _dl || ''; task.area = selArea.value || '';
       } else {
         if (!p.stageTasks) p.stageTasks = {};
         if (!p.stageTasks[p.stage]) p.stageTasks[p.stage] = [];
-        p.stageTasks[p.stage].push({ id: Date.now(), text: v, done: false, deadline: _dl || '', resp: _resp || '', sharedWithTeam: true });
+        p.stageTasks[p.stage].push({ id: Date.now(), text: v, done: false, deadline: _dl || '', resp: _resp || '', area: selArea.value || '', sharedWithTeam: true });
       }
       saveData(); closePdmTaskModal(); renderProjectTasks(p); updateCardBadge(detailProjectId);
     };
@@ -4383,6 +4413,7 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
       if (d.standaloneTasks) standaloneTasks = d.standaloneTasks;
       if (d.taskColumns) taskColumns = d.taskColumns;
       if (d.teamMembers) { _wsTeamMembers = d.teamMembers; _syncTeamData(d.teamMembers); }
+      WORK_AREAS = (d.workAreas && d.workAreas.length) ? d.workAreas : DEFAULT_WORK_AREAS.slice();
       if (d.taskGroups) { _wsTaskGroups = d.taskGroups; }
       if (d.statusColumns) statusColumns = d.statusColumns;
       if (d.cobranzaCards) cobranzaCards = d.cobranzaCards;
