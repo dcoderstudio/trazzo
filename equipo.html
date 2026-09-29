@@ -506,6 +506,26 @@ html,body{height:100%;overflow:hidden;background:#080b16;font-family:'Inter',sys
 .eq-tem-del{background:rgba(226,75,74,.1);border:.5px solid rgba(226,75,74,.25);border-radius:8px;padding:9px 14px;font-size:11.5px;color:#E24B4A;cursor:pointer;font-family:inherit;transition:background .15s;}
 .eq-tem-del:hover{background:rgba(226,75,74,.22);}
 
+/* ── ORGANIZAR: DESGLOSE DEL DÍA (Por fecha) */
+.eq-org-day-overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:9998;display:flex;align-items:center;justify-content:center;}
+.eq-org-day-modal{background:#141c2e;border:.5px solid rgba(255,255,255,.14);border-radius:14px;width:360px;max-height:80vh;display:flex;flex-direction:column;box-shadow:0 24px 64px rgba(0,0,0,.85);}
+.eq-org-day-hdr{display:flex;align-items:center;justify-content:space-between;padding:16px 18px 12px;border-bottom:.5px solid rgba(255,255,255,.07);flex-shrink:0;}
+.eq-org-day-title{font-size:13px;font-weight:800;color:#fff;text-transform:capitalize;}
+.eq-org-day-close{background:rgba(255,255,255,.06);border:none;border-radius:7px;width:24px;height:24px;color:rgba(255,255,255,.5);font-size:11px;cursor:pointer;font-family:inherit;}
+.eq-org-day-close:hover{background:rgba(255,255,255,.12);}
+.eq-org-day-body{overflow-y:auto;padding:14px 18px 18px;}
+.eq-org-day-sec+.eq-org-day-sec{margin-top:16px;}
+.eq-org-day-seclbl{font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:rgba(255,255,255,.32);margin-bottom:8px;}
+.eq-org-day-empty{font-size:10.5px;color:rgba(255,255,255,.2);font-style:italic;padding:4px 0 6px;}
+.eq-org-day-row{display:flex;align-items:flex-start;gap:8px;padding:8px 4px;border-bottom:.5px solid rgba(255,255,255,.05);cursor:pointer;}
+.eq-org-day-row:last-child{border-bottom:none;}
+.eq-org-day-row:hover{background:rgba(255,255,255,.03);border-radius:6px;}
+.eq-org-day-row-delivery{cursor:default;}
+.eq-org-day-row-delivery:hover{background:none;}
+.eq-org-day-row-info{flex:1;min-width:0;}
+.eq-org-day-row-name{font-size:11.5px;font-weight:600;color:rgba(255,255,255,.82);line-height:1.35;}
+.eq-org-day-row-meta{font-size:9.5px;color:rgba(255,255,255,.3);margin-top:2px;}
+
 /* ── HOY TAB ENHANCEMENTS */
 /* Connected prioridades+hoy block */
 .eq-hoy-block{border-radius:13px;overflow:hidden;border:.5px solid rgba(255,255,255,.07);margin-bottom:14px;}
@@ -725,7 +745,8 @@ select.eq-org-new-inp option{background:#1a1f35;}
 .eq-org-cal-wkrow{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:9px;padding:8px 12px 0;flex-shrink:0;}
 .eq-org-cal-wkhdr{text-align:center;font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:rgba(255,255,255,.25);}
 .eq-org-cols-wrap.eq-cal-mode{grid-template-columns:repeat(7,minmax(0,1fr));}
-.eq-orgcol.cal-day{min-height:92px;}
+.eq-orgcol.cal-day{min-height:92px;cursor:pointer;}
+.eq-orgcol.cal-day:hover{border-color:rgba(255,255,255,.18);}
 .eq-orgcol.cal-day.other-month{opacity:.4;}
 .eq-orgcol.cal-day.is-today{border-color:rgba(90,180,232,.4);}
 .eq-org-cal-daynum{font-size:10px;font-weight:700;color:rgba(255,255,255,.5);padding:6px 8px 2px;flex-shrink:0;}
@@ -1427,6 +1448,10 @@ function renderOrgCalendarDays(colWrap,allTasks,wrap){
     var col=document.createElement('div');
     col.className='eq-orgcol cal-day'+(isOtherMonth?' other-month':'')+(isToday?' is-today':'');
     col.dataset.dropField='deadline';col.dataset.dropValue=ds;
+    col.onclick=function(e){
+      if(e.target.closest('.eq-org-atask'))return;
+      openOrgDayPanel(this.dataset.dropValue);
+    };
     var dn=document.createElement('div');dn.className='eq-org-cal-daynum';dn.textContent=String(d.getDate());col.appendChild(dn);
     var cbody=document.createElement('div');cbody.className='eq-orgcol-body';
     dayTasks.forEach(function(t){
@@ -1437,6 +1462,76 @@ function renderOrgCalendarDays(colWrap,allTasks,wrap){
     col.appendChild(cbody);
     colWrap.appendChild(col);
   }
+}
+
+// ── ORGANIZAR: DESGLOSE DEL DÍA — tareas y entregas pendientes ────
+function openOrgDayPanel(dateStr){
+  closeOrgDayPanel();
+  var overlay=document.createElement('div');overlay.className='eq-org-day-overlay';overlay.id='orgDayPanelOverlay';
+  overlay.onclick=function(e){if(e.target===overlay)closeOrgDayPanel();};
+  var modal=document.createElement('div');modal.className='eq-org-day-modal';
+  modal.onclick=function(e){e.stopPropagation();};
+
+  var d=new Date(dateStr+'T12:00:00');
+  var DAYS=['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+  var MNS=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  var hdr=document.createElement('div');hdr.className='eq-org-day-hdr';
+  var ttl=document.createElement('div');ttl.className='eq-org-day-title';
+  ttl.textContent=DAYS[d.getDay()]+', '+d.getDate()+' de '+MNS[d.getMonth()];
+  var closeBtn=document.createElement('button');closeBtn.className='eq-org-day-close';closeBtn.textContent='✕';closeBtn.onclick=closeOrgDayPanel;
+  hdr.appendChild(ttl);hdr.appendChild(closeBtn);modal.appendChild(hdr);
+
+  var body=document.createElement('div');body.className='eq-org-day-body';modal.appendChild(body);
+  renderOrgDayPanelBody(body,dateStr);
+
+  overlay.appendChild(modal);document.body.appendChild(overlay);
+}
+function closeOrgDayPanel(){
+  var el=document.getElementById('orgDayPanelOverlay');if(el&&el.parentNode)el.parentNode.removeChild(el);
+}
+function renderOrgDayPanelBody(body,dateStr){
+  body.innerHTML='';
+  var dayTasks=collectAllTasks().filter(function(t){return!t.done&&t.deadline===dateStr;});
+  var deliveries=getActiveProjects().filter(function(p){return p.deadline===dateStr;});
+
+  var tSec=document.createElement('div');tSec.className='eq-org-day-sec';
+  var tLbl=document.createElement('div');tLbl.className='eq-org-day-seclbl';tLbl.textContent='✓ Tareas ('+dayTasks.length+')';tSec.appendChild(tLbl);
+  if(!dayTasks.length){
+    var e1=document.createElement('div');e1.className='eq-org-day-empty';e1.textContent='Sin tareas pendientes.';tSec.appendChild(e1);
+  } else {
+    dayTasks.forEach(function(t){
+      var row=document.createElement('div');row.className='eq-org-day-row';
+      var chk=document.createElement('div');chk.className='eq-org-chk';chk.title='Marcar como hecha';
+      chk.onclick=function(e){e.stopPropagation();teamTaskUpdate(t,{done:true});renderOrgDayPanelBody(body,dateStr);};
+      row.appendChild(chk);
+      var info=document.createElement('div');info.className='eq-org-day-row-info';
+      var nm=document.createElement('div');nm.className='eq-org-day-row-name';nm.textContent=t.text;info.appendChild(nm);
+      var metaParts=[];
+      if(t._type==='project'&&t.source)metaParts.push('🗂 '+t.source);
+      if(t.resp){var mb=getMember(t.resp);if(mb)metaParts.push('👤 '+mb.name);}
+      if(metaParts.length){var meta=document.createElement('div');meta.className='eq-org-day-row-meta';meta.textContent=metaParts.join(' · ');info.appendChild(meta);}
+      row.appendChild(info);
+      row.onclick=function(){closeOrgDayPanel();showTaskEditModal(t);};
+      tSec.appendChild(row);
+    });
+  }
+  body.appendChild(tSec);
+
+  var dSec=document.createElement('div');dSec.className='eq-org-day-sec';
+  var dLbl=document.createElement('div');dLbl.className='eq-org-day-seclbl';dLbl.textContent='📦 Entregas ('+deliveries.length+')';dSec.appendChild(dLbl);
+  if(!deliveries.length){
+    var e2=document.createElement('div');e2.className='eq-org-day-empty';e2.textContent='Sin entregas de proyecto.';dSec.appendChild(e2);
+  } else {
+    deliveries.forEach(function(p){
+      var row=document.createElement('div');row.className='eq-org-day-row eq-org-day-row-delivery';
+      var info=document.createElement('div');info.className='eq-org-day-row-info';
+      var nm=document.createElement('div');nm.className='eq-org-day-row-name';nm.textContent=p.name;info.appendChild(nm);
+      var meta=document.createElement('div');meta.className='eq-org-day-row-meta';meta.textContent=(p.client||'—')+' · '+p.stage;info.appendChild(meta);
+      row.appendChild(info);
+      dSec.appendChild(row);
+    });
+  }
+  body.appendChild(dSec);
 }
 
 // ── COMPLETAR TAREA DESDE LA VISTA GENERAL ────────────────────────
