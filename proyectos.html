@@ -807,11 +807,6 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
           <button class="tm-open-btn" id="pdmChangeStageBtn">⇄ Cambiar de fase</button>
           <div class="pdm-stage-picker" id="pdmStagePicker" style="display:none;"></div>
         </div>
-        <div class="pdm-complete-confirm" id="pdmStageConfirm" style="display:none;margin-bottom:8px;">
-          <span id="pdmStageConfirmTxt"></span>
-          <button class="btn-c" id="pdmStageCancel" style="padding:4px 10px;font-size:11px;">Cancelar</button>
-          <button class="btn-ok" id="pdmStageConfirmBtn" style="padding:4px 10px;font-size:11px;">Cambiar de fase</button>
-        </div>
         <div class="pdm-kanban-scroll" id="pdmKanban"></div>
       </div>
       <div class="pdm-tasks-wrap" id="pdmTasksWrap">
@@ -3327,9 +3322,7 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
     document.getElementById('pdmCompleteConfirm').style.display = 'none';
     document.getElementById('pdmCompleteBtn').style.display = '';
     document.getElementById('pdmStagePicker').style.display = 'none';
-    document.getElementById('pdmStageConfirm').style.display = 'none';
     _pendingCatChange = null;
-    _pendingStageChange = null;
     _pdmTaskFilter = 'all';
     renderProjDetail(true);
     document.getElementById('projDetailOverlay').classList.add('open');
@@ -3746,9 +3739,7 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
       col.addEventListener('drop', (function(stg) { return function(e) {
         e.preventDefault(); col.classList.remove('drop-over');
         if (!_pdmKDragActive) return;
-        _pendingStageChange = stg;
-        document.getElementById('pdmStageConfirmTxt').textContent = '¿Cambiar de "' + p.stage + '" a "' + stg + '"? Se cerrará la fase actual y comenzará el conteo de tiempo de la nueva.';
-        document.getElementById('pdmStageConfirm').style.display = 'flex';
+        moveProjectToStage(p, cat, stg);
       }; })(stage));
 
       col.style.cssText += isLate
@@ -3832,7 +3823,6 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
   }
 
   // ── CAMBIAR DE FASE (acción explícita, con confirmación) ───────
-  var _pendingStageChange = null;
   function toggleStagePicker() {
     var picker = document.getElementById('pdmStagePicker');
     if (picker.style.display === 'flex') { picker.style.display = 'none'; return; }
@@ -3847,33 +3837,16 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
       var b = document.createElement('button'); b.className = 'pdm-stage-picker-opt'; b.textContent = stage;
       b.onclick = function() {
         picker.style.display = 'none';
-        _pendingStageChange = stage;
-        document.getElementById('pdmStageConfirmTxt').textContent = '¿Cambiar de "' + p.stage + '" a "' + stage + '"? Se cerrará la fase actual y comenzará el conteo de tiempo de la nueva.';
-        document.getElementById('pdmStageConfirm').style.display = 'flex';
+        moveProjectToStage(p, cat, stage);
       };
       picker.appendChild(b);
     });
   }
-  function cancelStageChange() {
-    _pendingStageChange = null;
-    document.getElementById('pdmStageConfirm').style.display = 'none';
-  }
-  function confirmStageChange() {
-    if (!_pendingStageChange) return;
-    var p = null;
-    for (var i = 0; i < projects.length; i++) { if (projects[i].id === detailProjectId) { p = projects[i]; break; } }
-    var cat = p ? getCat(p.catId) : null;
-    var newStage = _pendingStageChange;
-    _pendingStageChange = null;
-    document.getElementById('pdmStageConfirm').style.display = 'none';
-    if (!p || !cat) return;
-    moveProjectToStage(p, cat, newStage);
-  }
 
-  // Mueve el proyecto de fase — ahora exclusivamente vía la acción
-  // explícita "Cambiar de fase" con confirmación (ya no se arrastra la
-  // ficha), guardando además cuántos días hábiles tomó la fase que se
-  // cierra y sincronizando finStatus como antes.
+  // Mueve el proyecto de fase de forma inmediata (sin confirmación),
+  // vía el picker "Cambiar de fase" o arrastrando la ficha actual,
+  // guardando además cuántos días hábiles tomó la fase que se cierra
+  // y sincronizando finStatus como antes.
   function moveProjectToStage(p, cat, newStage) {
     if (p.stage === newStage) return;
     var today = new Date().toISOString().split('T')[0];
@@ -4254,8 +4227,6 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
   document.getElementById('pdmSaveBtn').onclick = function(){ saveProjDetail(); document.getElementById('projDetailOverlay').classList.remove('open'); };
   document.getElementById('projDetailOverlay').addEventListener('click', function(e){ if(e.target===document.getElementById('projDetailOverlay')) document.getElementById('projDetailOverlay').classList.remove('open'); });
   document.getElementById('pdmChangeStageBtn').onclick = toggleStagePicker;
-  document.getElementById('pdmStageCancel').onclick = cancelStageChange;
-  document.getElementById('pdmStageConfirmBtn').onclick = confirmStageChange;
   document.getElementById('pdmNewTaskInp').addEventListener('keydown', function(e) {
     if (e.key !== 'Enter') return;
     var inp = e.target, v = inp.value.trim(); if (!v) return;
