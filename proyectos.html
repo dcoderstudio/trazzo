@@ -314,56 +314,29 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
 .pdm-kanban-scroll{display:flex;gap:10px;overflow-x:auto;padding-bottom:10px;}
 .pdm-kanban-scroll::-webkit-scrollbar{height:4px;}
 .pdm-kanban-scroll::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:2px;}
-.pdm-kcol{flex-shrink:0;width:200px;border-radius:14px;display:flex;flex-direction:column;max-height:300px;transition:all .18s;}
-.pdm-kcol.muted.drop-over{box-shadow:0 0 0 2px rgba(255,255,255,.3);}
-.pdm-kcol-hdr{padding:10px 12px 8px;flex-shrink:0;}
-.pdm-kcol-hdr.ficha-hdr{cursor:grab;border-bottom:0.5px solid rgba(255,255,255,0.18);}
-.pdm-kcol-hdr.ficha-hdr:active{cursor:grabbing;}
-.pdm-kcol-hdr.muted-hdr{border-bottom:0.5px solid rgba(255,255,255,0.05);}
-.pdm-kcol-proj-name{font-size:12px;font-weight:800;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.pdm-kcol-stage-name{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px;}
-.pdm-kcol-body{flex:1;overflow-y:auto;padding:8px;display:flex;flex-direction:column;gap:5px;min-height:30px;}
-.pdm-kcol-body::-webkit-scrollbar{width:3px;}
-.pdm-kcol-body::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.08);}
-.pdm-kcol-empty{text-align:center;font-size:9.5px;color:rgba(255,255,255,0.18);font-style:italic;padding:10px 4px;}
-.pdm-kcol-cta{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:16px 10px;}
-.pdm-kcol-cta-txt{font-size:10px;color:rgba(255,255,255,0.25);font-style:italic;text-align:center;}
-.pdm-kcol-cta-btn{background:rgba(255,255,255,0.09);border:0.5px solid rgba(255,255,255,0.16);color:rgba(255,255,255,0.7);font-size:10px;font-weight:700;padding:6px 12px;border-radius:20px;cursor:pointer;font-family:'Inter',sans-serif;white-space:nowrap;transition:all .15s;}
-.pdm-kcol-cta-btn:hover{background:rgba(255,255,255,0.16);color:#fff;}
-.pdm-ktask{background:rgba(255,255,255,0.07);border:0.5px solid rgba(255,255,255,0.09);border-radius:8px;padding:6px 8px;}
-.pdm-ktask.muted{background:rgba(255,255,255,0.03);border-color:rgba(255,255,255,0.05);opacity:.65;}
-.pdm-ktask-row{display:flex;align-items:flex-start;gap:6px;}
-.pdm-ktask-chk{width:14px;height:14px;border-radius:50%;border:1.3px solid rgba(255,255,255,0.3);flex-shrink:0;margin-top:1px;cursor:pointer;transition:all .15s;}
-.pdm-ktask-chk.on{background:#27AE72;border-color:#27AE72;}
-.pdm-ktask-txt{flex:1;font-size:10.5px;color:rgba(255,255,255,0.9);line-height:1.35;word-break:break-word;}
-.pdm-ktask.muted .pdm-ktask-txt{color:rgba(255,255,255,0.5);}
-.pdm-ktask.done .pdm-ktask-txt{text-decoration:line-through;color:rgba(255,255,255,0.3);}
-.pdm-ktask-share{font-size:8px;font-weight:700;padding:2px 6px;border-radius:8px;cursor:pointer;white-space:nowrap;display:inline-block;margin-top:5px;margin-left:20px;transition:all .15s;}
-.pdm-ktask-share.off{background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.4);}
-.pdm-ktask-share.off:hover{background:rgba(255,255,255,0.14);color:rgba(255,255,255,0.65);}
-.pdm-ktask-share.on{background:rgba(39,174,114,0.2);color:#27AE72;}
-.pdm-kcol-add{padding:6px 8px 8px;border-top:0.5px solid rgba(255,255,255,0.06);flex-shrink:0;}
-.pdm-kcol-add-inp{width:100%;box-sizing:border-box;background:rgba(255,255,255,0.05);border:0.5px solid rgba(255,255,255,0.1);border-radius:6px;padding:5px 7px;font-size:10px;color:#fff;font-family:'Inter',sans-serif;outline:none;}
-.pdm-kcol-add-inp:focus{border-color:rgba(255,255,255,0.25);}
-.pdm-timeline-wrap{border-top:0.5px solid rgba(255,255,255,0.06);flex-shrink:0;padding:14px 18px 16px;}
-.pdm-phase-detail{margin-top:10px;background:rgba(255,255,255,0.03);border-radius:12px;padding:11px 14px;border:0.5px solid rgba(255,255,255,0.08);display:flex;flex-direction:column;gap:7px;}
-.pdm-phase-det-hdr{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
-.pdm-phase-det-name{font-size:12px;font-weight:700;color:#fff;}
-.pdm-phase-det-pill{font-size:9px;font-weight:700;padding:2px 9px;border-radius:20px;}
-.pdm-phase-det-meta{display:flex;gap:14px;flex-wrap:wrap;}
-.pdm-phase-det-info{font-size:10px;color:rgba(255,255,255,0.38);}
-.pdm-phase-det-tasks{display:flex;flex-direction:column;gap:3px;max-height:80px;overflow-y:auto;}
-.pdm-phase-tk{display:flex;align-items:center;gap:7px;padding:4px 6px;border-radius:7px;background:rgba(255,255,255,0.03);}
-.pdm-phase-chk{width:14px;height:14px;border-radius:50%;border:1.5px solid rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:all .15s;}
-.pdm-phase-chk.on{background:#27AE72;border-color:#27AE72;}
-.pdm-phase-txt{font-size:10px;color:rgba(255,255,255,0.65);}
-.pdm-phase-txt.done{text-decoration:line-through;color:rgba(255,255,255,0.28);}
-.pdm-phase-no-tasks{font-size:10px;color:rgba(255,255,255,0.2);}
-.pdm-timeline-scroll{overflow-x:auto;overflow-y:hidden;margin-top:8px;width:100%;padding-bottom:8px;}
-.pdm-timeline-scroll::-webkit-scrollbar{height:6px;}
-.pdm-timeline-scroll::-webkit-scrollbar-track{background:rgba(255,255,255,0.04);border-radius:4px;}
-.pdm-timeline-scroll::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.2);border-radius:4px;}
-.pdm-timeline-scroll::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,0.38);}
+/* Fases del proyecto: tarjetas compactas de solo tiempo/estado
+   (sin tareas dentro) — completada / actual / pendiente / atrasada. */
+.pdm-kcol{flex-shrink:0;width:150px;border-radius:12px;padding:10px 12px;transition:all .18s;}
+.pdm-kcol-stage-name{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;gap:5px;}
+.pdm-kcol-icon{flex-shrink:0;}
+.pdm-kcol-line{font-size:10.5px;color:rgba(255,255,255,0.55);margin-top:6px;}
+.pdm-kcol-line.warn{color:#E8A020;font-weight:700;}
+.pdm-kcol-line.late{color:#E24B4A;font-weight:700;}
+.pdm-kcol-line.ok{color:#27AE72;font-weight:700;}
+.pdm-stage-picker{position:absolute;top:100%;right:0;z-index:20;background:#1e1e1e;border:0.5px solid rgba(255,255,255,0.14);border-radius:12px;padding:8px;box-shadow:0 12px 30px rgba(0,0,0,.5);display:flex;flex-direction:column;gap:4px;min-width:180px;max-height:260px;overflow-y:auto;}
+.pdm-stage-picker-opt{background:rgba(255,255,255,0.05);border:none;color:rgba(255,255,255,0.8);font-size:11px;font-weight:600;padding:7px 10px;border-radius:8px;cursor:pointer;text-align:left;font-family:'Inter',sans-serif;transition:background .12s;}
+.pdm-stage-picker-opt:hover{background:rgba(255,255,255,0.12);}
+/* Tareas del proyecto */
+.pdm-tasks-wrap{border-top:0.5px solid rgba(255,255,255,0.06);flex-shrink:0;padding:14px 18px 16px;}
+.pdm-task-filter-btn{font-size:9.5px;font-weight:700;padding:4px 9px;border-radius:20px;cursor:pointer;white-space:nowrap;background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.4);border:none;font-family:'Inter',sans-serif;transition:all .15s;}
+.pdm-task-filter-btn:hover{background:rgba(255,255,255,0.12);}
+.pdm-task-filter-btn.active{background:rgba(26,111,212,0.22);color:#5AB4E8;}
+.pdm-task-row{display:flex;align-items:center;gap:8px;padding:7px 4px;border-bottom:0.5px solid rgba(255,255,255,0.04);}
+.pdm-task-row-chk{width:14px;height:14px;border-radius:50%;border:1.3px solid rgba(255,255,255,0.3);flex-shrink:0;cursor:pointer;transition:all .15s;}
+.pdm-task-row-chk.on{background:#27AE72;border-color:#27AE72;}
+.pdm-task-row-txt{flex:1;font-size:11.5px;color:rgba(255,255,255,0.85);word-break:break-word;}
+.pdm-task-row.done .pdm-task-row-txt{text-decoration:line-through;color:rgba(255,255,255,0.35);}
+.pdm-tasks-empty{font-size:10.5px;color:rgba(255,255,255,0.2);font-style:italic;padding:10px 4px;}
 .phase-card:active{cursor:grabbing;}
 .phase-card:hover{border-color:rgba(255,255,255,0.22);}
 .phase-card.dragging{opacity:0.25;border-color:rgba(255,255,255,0.05);}
@@ -821,27 +794,36 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
           </div>
           <div id="pdmDynFields"></div>
           <div id="pdmMontoRow" class="pdm-field" style="display:none;"><div class="pdm-lbl">Monto estimado</div><input class="pdm-inp" id="pdmMonto" placeholder="$0.00"></div>
-          <div id="pdmTimeInfo"></div>
+          <div id="pdmSummaryInfo"></div>
           <button class="cf-manage-btn" onclick="openCfEditor()">⚙ Personalizar campos</button>
         </div>
       </div>
       <div class="pdm-kanban-wrap" id="pdmKanbanWrap">
-        <div style="display:flex;align-items:center;gap:8px;padding:0 0 8px;">
+        <div style="display:flex;align-items:center;gap:8px;padding:0 0 8px;position:relative;">
           <div class="pdm-task-lbl">Fases del proyecto</div>
           <div style="flex:1;height:0.5px;background:rgba(255,255,255,0.06);"></div>
-          <button class="tm-open-btn" id="tmOpenBtn">🗂 Gestionar tareas</button>
+          <button class="tm-open-btn" id="pdmChangeStageBtn">⇄ Cambiar de fase</button>
+          <div class="pdm-stage-picker" id="pdmStagePicker" style="display:none;"></div>
+        </div>
+        <div class="pdm-complete-confirm" id="pdmStageConfirm" style="display:none;margin-bottom:8px;">
+          <span id="pdmStageConfirmTxt"></span>
+          <button class="btn-c" id="pdmStageCancel" style="padding:4px 10px;font-size:11px;">Cancelar</button>
+          <button class="btn-ok" id="pdmStageConfirmBtn" style="padding:4px 10px;font-size:11px;">Cambiar de fase</button>
         </div>
         <div class="pdm-kanban-scroll" id="pdmKanban"></div>
       </div>
-      <div class="pdm-docs-section" id="pdmDocsSection"></div>
-      <div class="pdm-timeline-wrap" id="pdmTimelineWrap">
-        <div style="display:flex;align-items:center;gap:8px;">
-          <div class="pdm-task-lbl">Línea de tiempo</div>
-          <div style="flex:1;height:0.5px;background:rgba(255,255,255,0.06);"></div>
+      <div class="pdm-tasks-wrap" id="pdmTasksWrap">
+        <div style="display:flex;align-items:center;gap:8px;padding:0 0 8px;flex-wrap:wrap;">
+          <div class="pdm-task-lbl">Tareas del proyecto</div>
+          <div id="pdmTaskFilterRow" style="display:flex;gap:4px;"></div>
+          <div style="flex:1;height:0.5px;background:rgba(255,255,255,0.06);min-width:12px;"></div>
         </div>
-        <div class="pdm-timeline-scroll" id="pdmTimeline"></div>
-        <div id="pdmPhaseDetail"></div>
+        <div id="pdmTasksList"></div>
+        <div class="pdm-kcol-add" style="margin-top:6px;">
+          <input class="pdm-kcol-add-inp" id="pdmNewTaskInp" placeholder="+ Nueva tarea…">
+        </div>
       </div>
+      <div class="pdm-docs-section" id="pdmDocsSection"></div>
     </div>
     <div class="pdm-footer">
       <span class="pdm-footer-info" id="pdmFooterInfo"></span>
@@ -857,16 +839,6 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
         <button class="btn-ok" id="pdmSaveBtn">Guardar cambios</button>
       </div>
     </div>
-  </div>
-</div>
-
-<div class="overlay" id="tmOverlay">
-  <div class="tm-modal">
-    <div class="tm-hdr">
-      <div class="tm-title">Gestionar tareas</div>
-      <button class="tm-close" id="tmClose">×</button>
-    </div>
-    <div class="tm-body" id="tmBody"></div>
   </div>
 </div>
 
@@ -986,8 +958,6 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
   var editingPhasePayments = [];
   var taskPanelProjectId = null;
   var detailProjectId = null;
-  var selectedPhaseIdx = -1;
-  var _detailStartDates = [], _detailCat = null, _detailStages = [];
   var COMPANIES = [
     {id:'dcoder',    name:'Dcoder Studio', abbr:'DC', color:'#6B7280'},
     {id:'gestchaft', name:'Gestchaft',     abbr:'GS', color:'#27AE72'},
@@ -1101,6 +1071,36 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
   function fmtDate(dl) {
     if (!dl) return '—';
     return new Date(dl).toLocaleDateString('es-MX', {day:'numeric', month:'short'});
+  }
+
+  // ── DÍAS HÁBILES Y TIEMPO POR FASE ────────────────────────────
+  function _isBizDay(d) { var dow = d.getDay(); return dow !== 0 && dow !== 6; }
+  // Cuenta días hábiles entre dos fechas, ambas inclusive (si from===to
+  // y es día hábil, regresa 1 — "Día 1 de N").
+  function countBizDays(fromDate, toDate) {
+    if (toDate < fromDate) return 0;
+    var count = 0, d = new Date(fromDate);
+    while (d <= toDate) { if (_isBizDay(d)) count++; d = new Date(d.getTime() + 86400000); }
+    return count;
+  }
+  // Días estimados de una fase: primero el valor propio del proyecto
+  // (editable individualmente), si no el default de su categoría.
+  function getStageDays(p, cat, stage) {
+    if (p.stageDaysOverride && p.stageDaysOverride[stage] != null) return p.stageDaysOverride[stage];
+    if (cat && cat.stageDays && cat.stageDays[stage] > 0) return cat.stageDays[stage];
+    return 7;
+  }
+  // Estado de tiempo de una fase ya iniciada: transcurridos (días
+  // hábiles desde que entró, incluyendo hoy), restantes o atraso.
+  function getStageTimeStats(p, cat, stage) {
+    var estDays = getStageDays(p, cat, stage);
+    var entry = p.stageEntryDates && p.stageEntryDates[stage];
+    if (!entry) return { estDays: estDays, started: false };
+    var today = new Date(); today.setHours(0,0,0,0);
+    var entryDate = new Date(entry + 'T00:00:00');
+    var elapsed = countBizDays(entryDate, today);
+    var remaining = estDays - elapsed;
+    return { estDays: estDays, started: true, elapsed: elapsed, remaining: remaining, late: remaining < 0 };
   }
 
   // ── TABS ─────────────────────────────────────────────
@@ -1393,20 +1393,12 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
     return null;
   }
 
-  // Progreso: para categorías con varias fases, el % se mide según qué
-  // tan avanzada está la fase actual dentro del total de fases (llevar
-  // el avance por tarea aplicada resultó poco práctico en el uso real).
-  // Para "Proyecto libre" (o cualquier categoría de una sola fase, que
-  // no tiene fases que avanzar) se sigue midiendo por tareas aplicadas,
-  // ya que ahí es el único criterio posible.
+  // Avance del proyecto (tareas completadas / total de tareas
+  // relacionadas, en todas las fases): las fases indican en qué etapa
+  // del proceso va el proyecto; el avance indica cuánto trabajo
+  // identificado ya se hizo — son dos indicadores distintos.
   function computeProjectProgress(p) {
     if (p.completed) return 100;
-    var cat = getCat(p.catId);
-    if (cat && cat.stages && cat.stages.length >= 2) {
-      var idx = cat.stages.indexOf(p.stage);
-      if (idx < 0) return 0;
-      return Math.round(idx / (cat.stages.length - 1) * 100);
-    }
     var total = 0, done = 0;
     Object.keys(p.stageTasks || {}).forEach(function(stage) {
       (p.stageTasks[stage] || []).forEach(function(t) { if (!t.sharedWithTeam) return; total++; if (t.done) done++; });
@@ -1415,19 +1407,21 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
     return 0;
   }
 
+  function computeProjectTaskStats(p) {
+    var total = 0, done = 0;
+    Object.keys(p.stageTasks || {}).forEach(function(stage) {
+      (p.stageTasks[stage] || []).forEach(function(t) { if (!t.sharedWithTeam) return; total++; if (t.done) done++; });
+    });
+    return { done: done, total: total, pct: total > 0 ? Math.round(done / total * 100) : 0 };
+  }
+
   // Color de estado de la ficha: azul si va a tiempo, amarillo si alguna
   // tarea del proyecto está atrasada, rojo si la fase actual ya rebasó
-  // su tiempo estimado (cat.stageDays vs. stageEntryDates).
+  // su tiempo estimado (en días hábiles).
   function computeProjectStatusColor(p) {
     var cat = getCat(p.catId);
-    var sd = cat && cat.stageDays && cat.stageDays[p.stage];
-    if (sd) {
-      var ed = p.stageEntryDates && p.stageEntryDates[p.stage];
-      if (ed) {
-        var rem = Math.ceil((new Date(ed + 'T00:00:00').getTime() + sd * 86400000 - Date.now()) / 86400000);
-        if (rem < 0) return '#E24B4A';
-      }
-    }
+    var ts = getStageTimeStats(p, cat, p.stage);
+    if (ts.started && ts.late) return '#E24B4A';
     var today0 = new Date(); today0.setHours(0, 0, 0, 0);
     var taskLate = false;
     Object.keys(p.stageTasks || {}).forEach(function(stage) {
@@ -2918,19 +2912,14 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
     if (dyn) dyn.querySelectorAll('input,select').forEach(function(el){ el.value = ''; });
   }
 
+  // Las fases ya no traen checklists predeterminados (se eliminó esa
+  // lógica): las tareas ahora se crean explícitamente desde "Tareas del
+  // proyecto" o desde Equipo. Se deja esta función como no-op en vez de
+  // quitar sus ~12 llamadas dispersas (todas asumen que es segura de
+  // invocar siempre); solo se asegura de que stageTasks[stage] exista.
   function seedStageTasks(proj, cat, stage) {
     if (!proj.stageTasks) proj.stageTasks = {};
-    if (proj.stageTasks[stage] && proj.stageTasks[stage].length > 0) return;
-    // Re-fetch cat from categories in case the passed cat is stale
-    var freshCat = null;
-    for (var ci=0; ci<categories.length; ci++) { if (categories[ci].id === (cat ? cat.id : proj.catId)) { freshCat = categories[ci]; break; } }
-    var tpl = freshCat && freshCat.templates && freshCat.templates[stage] ? freshCat.templates[stage] : [];
-    if (!tpl.length) return;
-    var base = Date.now();
-    proj.stageTasks[stage] = tpl.map(function(item, i) {
-      var text = typeof item === 'string' ? item : (item.text || '');
-      return {id: base + i, text: text, done: false, deadline: '', resp: ''};
-    });
+    if (!proj.stageTasks[stage]) proj.stageTasks[stage] = [];
   }
 
   function createProject() {
@@ -3327,12 +3316,15 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
   // ── PROJECT DETAIL PANEL ─────────────────────────────
   function openProjDetail(projectId) {
     detailProjectId = projectId;
-    selectedPhaseIdx = -1;
     document.getElementById('pdmDelConfirm').style.display = 'none';
     document.getElementById('pdmDeleteBtn').style.display = '';
     document.getElementById('pdmCompleteConfirm').style.display = 'none';
     document.getElementById('pdmCompleteBtn').style.display = '';
+    document.getElementById('pdmStagePicker').style.display = 'none';
+    document.getElementById('pdmStageConfirm').style.display = 'none';
     _pendingCatChange = null;
+    _pendingStageChange = null;
+    _pdmTaskFilter = 'pending';
     renderProjDetail(true);
     document.getElementById('projDetailOverlay').classList.add('open');
   }
@@ -3425,40 +3417,40 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
     // Render configurable fields
     renderPdmFields(p, cat);
 
-    var timeHtml = '';
-    var sd = cat && cat.stageDays && cat.stageDays[p.stage] ? cat.stageDays[p.stage] : null;
-    if (sd) {
-      var ed = p.stageEntryDates && p.stageEntryDates[p.stage];
-      if (ed) {
-        var rem = Math.ceil((new Date(ed+'T00:00:00').getTime() + sd*86400000 - Date.now()) / 86400000);
-        var tc = rem > 1 ? 'time-ok' : rem >= 0 ? 'time-warn' : 'time-late';
-        var tt = rem > 1 ? rem+' días restantes' : rem===1 ? '1 día restante' : rem===0 ? 'Vence hoy' : Math.abs(rem)+' días fuera de fase';
-        timeHtml += '<div class="pdm-field"><div class="pdm-lbl">Tiempo en fase</div><div class="pdm-stat"><span class="'+tc+'" style="font-size:13px;font-weight:700;">⏱ '+tt+'</span></div></div>';
-      } else {
-        timeHtml += '<div class="pdm-field"><div class="pdm-lbl">Tiempo en fase</div><div class="pdm-stat"><span style="font-size:12px;font-weight:700;color:rgba(255,255,255,0.4);">⏱ '+sd+' días estimados</span></div></div>';
-      }
+    var summaryHtml = '';
+    var taskStats = computeProjectTaskStats(p);
+    var pct = computeProjectProgress(p);
+    summaryHtml += '<div class="pdm-field"><div class="pdm-lbl">Avance por tareas</div><div class="pdm-stat"><span style="font-size:15px;font-weight:800;color:#fff;">' + pct + '%</span> <span style="font-size:11px;color:rgba(255,255,255,0.4);">' + taskStats.done + ' / ' + taskStats.total + ' tareas completadas</span></div></div>';
+
+    var ts = getStageTimeStats(p, cat, p.stage);
+    var tt, tc;
+    if (!ts.started) {
+      tt = ts.estDays + (ts.estDays === 1 ? ' día estimado' : ' días estimados'); tc = 'rgba(255,255,255,0.4)';
+    } else if (ts.late) {
+      tt = '+' + Math.abs(ts.remaining) + ' días de atraso (día ' + ts.elapsed + ' de ' + ts.estDays + ')'; tc = '#E24B4A';
+    } else {
+      tt = 'Día ' + ts.elapsed + ' de ' + ts.estDays + ' · ' + ts.remaining + (ts.remaining === 1 ? ' día restante' : ' días restantes'); tc = ts.remaining <= 1 ? '#E8A020' : '#27AE72';
     }
+    summaryHtml += '<div class="pdm-field"><div class="pdm-lbl">Fase actual · Tiempo en fase</div><div class="pdm-stat"><span style="font-size:12px;font-weight:700;color:#fff;">' + (p.stage || '—') + '</span><br><span style="font-size:12px;font-weight:700;color:' + tc + ';">⏱ ' + tt + '</span></div></div>';
+
     if (p.deadline) {
       var dlDiff = Math.ceil((new Date(p.deadline+'T00:00:00') - new Date()) / 86400000);
       var dlCol = dlDiff > 7 ? '#1A6FD4' : dlDiff >= 4 ? '#27AE72' : dlDiff >= 1 ? '#E8A020' : '#E24B4A';
       var dlTxt = dlDiff > 0 ? dlDiff+' días' : dlDiff===0 ? 'Hoy' : Math.abs(dlDiff)+' días de retraso';
-      timeHtml += '<div class="pdm-field"><div class="pdm-lbl">Días hasta entrega</div><div class="pdm-stat"><span style="font-size:13px;font-weight:700;color:'+dlCol+';">📅 '+dlTxt+'</span></div></div>';
-    }
-    if (p.stageEntryDates && p.stageEntryDates[p.stage]) {
-      timeHtml += '<div class="pdm-field"><div class="pdm-lbl">Entró a esta fase</div><div style="font-size:11px;color:rgba(255,255,255,0.35);">'+p.stageEntryDates[p.stage]+'</div></div>';
+      summaryHtml += '<div class="pdm-field"><div class="pdm-lbl">Días hasta entrega</div><div class="pdm-stat"><span style="font-size:13px;font-weight:700;color:'+dlCol+';">📅 '+dlTxt+'</span></div></div>';
     }
     // Payment info
     var stgPay = cat && cat.payments && cat.payments[p.stage];
     if (stgPay) {
       var pdmPayDone = p.paymentsDone && p.paymentsDone[p.stage];
       var stgPayLbl = (stgPay.amount || stgPay.label || '') + (stgPay.description ? ' — ' + stgPay.description : '');
-      timeHtml += '<div class="pdm-field"><div class="pdm-lbl">Cobro</div>'
+      summaryHtml += '<div class="pdm-field"><div class="pdm-lbl">Cobro</div>'
         + '<div id="pdmPayRow" style="cursor:pointer;">'
         + '<span class="card-pay-pill ' + (pdmPayDone ? 'pdone' : 'ppend') + '">'
         + (pdmPayDone ? '✓ Recibido: ' : '💰 Pendiente: ') + stgPayLbl
         + '</span></div></div>';
     }
-    document.getElementById('pdmTimeInfo').innerHTML = timeHtml;
+    document.getElementById('pdmSummaryInfo').innerHTML = summaryHtml;
     var pdmPayRow = document.getElementById('pdmPayRow');
     if (pdmPayRow) {
       pdmPayRow.onclick = function() {
@@ -3475,7 +3467,7 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
     }
 
     renderDetailKanban(scrollKanbanToCurrent);
-    renderDetailTimeline();
+    renderProjectTasks(p);
     renderPdmDocs(p);
   }
 
@@ -3705,9 +3697,9 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
   // tareas dentro); las demás fases se ven en el mismo color pero
   // pálidas, mostrando también sus tareas (las ya sembradas, o una
   // vista previa de la plantilla si esa fase todavía no se visita).
-  // Se arrastra la ficha completa (por su encabezado) a otra columna
-  // para cambiar de fase — esa columna es la que se "prende" de color.
-  var _pdmKDrag = false;
+  // Tira de fases: solo tiempos y estado (completada / actual /
+  // pendiente / atrasada) — las fases ya no contienen tareas ni
+  // checklists, eso vive ahora en "Tareas del proyecto".
   function renderDetailKanban(scrollToCurrent) {
     var p = null;
     for (var i = 0; i < projects.length; i++) { if (projects[i].id === detailProjectId) { p = projects[i]; break; } }
@@ -3721,121 +3713,131 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
     if (!cat || !cat.stages || !cat.stages.length) return;
     var color = cat.color || '#1A6FD4';
     var rgb = _coRgb(color);
+    var currentIdx = cat.stages.indexOf(p.stage);
 
-    cat.stages.forEach(function(stage) {
-      var isCurrent = stage === p.stage;
+    cat.stages.forEach(function(stage, idx) {
+      var isCurrent = idx === currentIdx;
+      var isPast = currentIdx >= 0 && idx < currentIdx;
+      var ts = getStageTimeStats(p, cat, stage);
+      var isLate = isCurrent && ts.started && ts.late;
       var col = document.createElement('div');
-      col.className = 'pdm-kcol' + (isCurrent ? ' ficha' : ' muted');
-      col.style.cssText = isCurrent
+      col.className = 'pdm-kcol';
+      col.style.cssText = isLate
+        ? 'background:linear-gradient(160deg,rgba(226,75,74,.28) 0%,rgba(226,75,74,.08) 100%);border:1px solid rgba(226,75,74,.55);'
+        : isCurrent
         ? 'background:linear-gradient(160deg,rgba('+rgb+',.32) 0%,rgba('+rgb+',.1) 100%);border:1px solid rgba('+rgb+',.6);box-shadow:0 8px 24px rgba(0,0,0,.35);'
-        : 'background:rgba('+rgb+',.05);border:0.5px solid rgba('+rgb+',.12);';
+        : isPast
+        ? 'background:rgba(39,174,114,.07);border:0.5px solid rgba(39,174,114,.2);'
+        : 'background:rgba(255,255,255,.03);border:0.5px solid rgba(255,255,255,.08);';
 
-      var hdr = document.createElement('div');
-      hdr.className = 'pdm-kcol-hdr' + (isCurrent ? ' ficha-hdr' : ' muted-hdr');
-      if (isCurrent) {
-        var pname = document.createElement('div'); pname.className = 'pdm-kcol-proj-name'; pname.textContent = p.name;
-        hdr.appendChild(pname);
-        hdr.draggable = true;
-        hdr.title = 'Arrastra para mover el proyecto a otra fase';
-        hdr.addEventListener('dragstart', function(e) { _pdmKDrag = true; e.dataTransfer.setData('text/plain', 'p'); });
-        hdr.addEventListener('dragend', function() {
-          _pdmKDrag = false;
-          document.querySelectorAll('.pdm-kcol.drop-over').forEach(function(c) { c.classList.remove('drop-over'); });
-        });
-      }
       var stageName = document.createElement('div');
       stageName.className = 'pdm-kcol-stage-name';
-      stageName.style.color = isCurrent ? 'rgba(255,255,255,.85)' : 'rgba('+rgb+',.55)';
-      stageName.textContent = stage;
-      hdr.appendChild(stageName);
-      col.appendChild(hdr);
+      stageName.style.color = isLate ? '#E24B4A' : isCurrent ? 'rgba(255,255,255,.9)' : isPast ? '#27AE72' : 'rgba(255,255,255,.4)';
+      var icon = document.createElement('span'); icon.className = 'pdm-kcol-icon';
+      icon.textContent = isPast ? '✓' : isCurrent ? '●' : '○';
+      stageName.appendChild(icon);
+      var stageLbl = document.createElement('span'); stageLbl.textContent = stage;
+      stageName.appendChild(stageLbl);
+      col.appendChild(stageName);
 
-      col.addEventListener('dragover', function(e) { if (_pdmKDrag) e.preventDefault(); });
-      col.addEventListener('dragenter', function(e) { if (_pdmKDrag && !isCurrent) { e.preventDefault(); this.classList.add('drop-over'); } });
-      col.addEventListener('dragleave', function() { this.classList.remove('drop-over'); });
-      col.addEventListener('drop', (function(stg) { return function(e) {
-        e.preventDefault(); this.classList.remove('drop-over');
-        if (_pdmKDrag) moveProjectToStage(p, cat, stg);
-      }; })(stage));
+      var estLine = document.createElement('div'); estLine.className = 'pdm-kcol-line';
+      estLine.textContent = 'Estimado: ' + ts.estDays + (ts.estDays === 1 ? ' día' : ' días');
+      col.appendChild(estLine);
 
-      var body = document.createElement('div'); body.className = 'pdm-kcol-body';
-      var realTasks = (p.stageTasks && p.stageTasks[stage]) || [];
-      var appliedTasks = realTasks.filter(function(t) { return t.sharedWithTeam; });
-      if (appliedTasks.length) {
-        appliedTasks.forEach(function(t) { body.appendChild(buildKTaskCard(p, t, isCurrent)); });
+      if (isPast) {
+        var closedDays = p.stageClosed && p.stageClosed[stage];
+        if (closedDays) {
+          var diff = closedDays.real - closedDays.est;
+          var diffLine = document.createElement('div'); diffLine.className = 'pdm-kcol-line' + (diff > 0 ? ' late' : diff < 0 ? ' ok' : '');
+          diffLine.textContent = 'Real: ' + closedDays.real + (closedDays.real === 1 ? ' día' : ' días') + ' (' + (diff > 0 ? '+' : '') + diff + ')';
+          col.appendChild(diffLine);
+        }
+      } else if (isCurrent) {
+        if (ts.started) {
+          var dayLine = document.createElement('div'); dayLine.className = 'pdm-kcol-line';
+          dayLine.textContent = 'Día ' + ts.elapsed + ' de ' + ts.estDays;
+          col.appendChild(dayLine);
+          var remLine = document.createElement('div'); remLine.className = 'pdm-kcol-line ' + (isLate ? 'late' : 'warn');
+          remLine.textContent = isLate ? ('+' + Math.abs(ts.remaining) + ' días de atraso') : (ts.remaining + (ts.remaining === 1 ? ' día restante' : ' días restantes'));
+          col.appendChild(remLine);
+        }
       } else {
-        // Nada aplicado todavía en esta fase — no se muestra ninguna
-        // tarea sola (ni sembrada ni de plantilla) hasta que alguien
-        // la aplique explícitamente desde "Gestionar tareas".
-        var cta = document.createElement('div'); cta.className = 'pdm-kcol-cta';
-        var ctaTxt = document.createElement('div'); ctaTxt.className = 'pdm-kcol-cta-txt'; ctaTxt.textContent = 'Sin tareas asignadas'; cta.appendChild(ctaTxt);
-        var ctaBtn = document.createElement('button'); ctaBtn.className = 'pdm-kcol-cta-btn'; ctaBtn.textContent = 'Asignar tareas';
-        ctaBtn.onclick = function(e) { e.stopPropagation(); openTaskManager(); };
-        cta.appendChild(ctaBtn);
-        body.appendChild(cta);
+        var pendLine = document.createElement('div'); pendLine.className = 'pdm-kcol-line'; pendLine.textContent = 'No iniciada';
+        col.appendChild(pendLine);
       }
-      col.appendChild(body);
-
-      var addWrap = document.createElement('div'); addWrap.className = 'pdm-kcol-add';
-      var addInp = document.createElement('input'); addInp.className = 'pdm-kcol-add-inp'; addInp.placeholder = '+ tarea…';
-      addInp.addEventListener('keydown', function(e) {
-        if (e.key !== 'Enter') return;
-        var v = addInp.value.trim(); if (!v) return;
-        if (!p.stageTasks) p.stageTasks = {};
-        if (!p.stageTasks[stage]) p.stageTasks[stage] = [];
-        p.stageTasks[stage].push({ id: Date.now(), text: v, done: false, deadline: '', resp: '', sharedWithTeam: true });
-        saveData(); renderDetailKanban(); updateCardBadge(detailProjectId);
-      });
-      addWrap.appendChild(addInp);
-      col.appendChild(addWrap);
 
       wrap.appendChild(col);
     });
 
     if (scrollToCurrent) {
-      var curCol = wrap.querySelector('.pdm-kcol.ficha');
+      var curCol = wrap.children[currentIdx >= 0 ? currentIdx : 0];
       if (curCol) wrap.scrollLeft = Math.max(0, curCol.offsetLeft - 4);
     } else {
       // Reconstruir el innerHTML resetea el scroll a 0 por defecto; en
-      // cada interacción normal (marcar tarea, agregar tarea...) hay
-      // que devolverlo a donde estaba en vez de saltar al extremo.
+      // cada interacción normal hay que devolverlo a donde estaba en
+      // vez de saltar al extremo.
       wrap.scrollLeft = savedScroll;
     }
   }
 
-  function buildKTaskCard(p, task, isCurrent) {
-    var row = document.createElement('div'); row.className = 'pdm-ktask' + (task.done ? ' done' : '') + (isCurrent ? '' : ' muted');
-    var top = document.createElement('div'); top.className = 'pdm-ktask-row';
-    var chk = document.createElement('div'); chk.className = 'pdm-ktask-chk' + (task.done ? ' on' : '');
-    chk.onclick = function() {
-      task.done = !task.done;
-      task.colStatus = task.done ? 'done' : (task.deadline ? 'inprogress' : 'notstarted');
-      saveData(); renderDetailKanban(); updateCardBadge(detailProjectId);
-    };
-    top.appendChild(chk);
-    var txt = document.createElement('div'); txt.className = 'pdm-ktask-txt'; txt.textContent = task.text;
-    top.appendChild(txt);
-    row.appendChild(top);
-    var remove = document.createElement('span');
-    remove.className = 'pdm-ktask-share off';
-    remove.textContent = '✕ Quitar de esta ficha';
-    remove.title = 'Ya no aplica — deja de verse aquí y en Equipo';
-    remove.onclick = function() {
-      task.sharedWithTeam = false;
-      saveData(); renderDetailKanban(); updateCardBadge(detailProjectId);
-    };
-    row.appendChild(remove);
-    return row;
+  // ── CAMBIAR DE FASE (acción explícita, con confirmación) ───────
+  var _pendingStageChange = null;
+  function toggleStagePicker() {
+    var picker = document.getElementById('pdmStagePicker');
+    if (picker.style.display === 'flex') { picker.style.display = 'none'; return; }
+    var p = null;
+    for (var i = 0; i < projects.length; i++) { if (projects[i].id === detailProjectId) { p = projects[i]; break; } }
+    var cat = p ? getCat(p.catId) : null;
+    if (!p || !cat || !cat.stages) return;
+    picker.innerHTML = '';
+    picker.style.display = 'flex';
+    cat.stages.forEach(function(stage) {
+      if (stage === p.stage) return;
+      var b = document.createElement('button'); b.className = 'pdm-stage-picker-opt'; b.textContent = stage;
+      b.onclick = function() {
+        picker.style.display = 'none';
+        _pendingStageChange = stage;
+        document.getElementById('pdmStageConfirmTxt').textContent = '¿Cambiar de "' + p.stage + '" a "' + stage + '"? Se cerrará la fase actual y comenzará el conteo de tiempo de la nueva.';
+        document.getElementById('pdmStageConfirm').style.display = 'flex';
+      };
+      picker.appendChild(b);
+    });
+  }
+  function cancelStageChange() {
+    _pendingStageChange = null;
+    document.getElementById('pdmStageConfirm').style.display = 'none';
+  }
+  function confirmStageChange() {
+    if (!_pendingStageChange) return;
+    var p = null;
+    for (var i = 0; i < projects.length; i++) { if (projects[i].id === detailProjectId) { p = projects[i]; break; } }
+    var cat = p ? getCat(p.catId) : null;
+    var newStage = _pendingStageChange;
+    _pendingStageChange = null;
+    document.getElementById('pdmStageConfirm').style.display = 'none';
+    if (!p || !cat) return;
+    moveProjectToStage(p, cat, newStage);
   }
 
-  // Mueve el proyecto de fase desde el mini-Kanban de la ficha — misma
-  // lógica que arrastrar en el tablero general (siembra de tareas,
-  // fecha de entrada a la fase, sincronía de finStatus).
+  // Mueve el proyecto de fase — ahora exclusivamente vía la acción
+  // explícita "Cambiar de fase" con confirmación (ya no se arrastra la
+  // ficha), guardando además cuántos días hábiles tomó la fase que se
+  // cierra y sincronizando finStatus como antes.
   function moveProjectToStage(p, cat, newStage) {
     if (p.stage === newStage) return;
+    var today = new Date().toISOString().split('T')[0];
+    // Cerrar la fase que se abandona: guardar cuántos días hábiles
+    // realmente tomó, para comparar contra lo estimado.
+    var oldStage = p.stage;
+    var oldEntry = p.stageEntryDates && p.stageEntryDates[oldStage];
+    if (oldEntry) {
+      var ts = getStageTimeStats(p, cat, oldStage);
+      if (!p.stageClosed) p.stageClosed = {};
+      p.stageClosed[oldStage] = { start: oldEntry, end: today, est: ts.estDays, real: ts.elapsed };
+    }
     p.stage = newStage;
     if (!p.stageEntryDates) p.stageEntryDates = {};
-    p.stageEntryDates[newStage] = new Date().toISOString().split('T')[0];
+    p.stageEntryDates[newStage] = today;
     seedStageTasks(p, cat, newStage);
     var _isLast = cat.stages.length > 0 && newStage === cat.stages[cat.stages.length - 1];
     var _curFin = _normFinStatus(p);
@@ -3846,375 +3848,70 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
     renderBoard();
   }
 
-  // ── GESTIONAR TAREAS ──────────────────────────────────────────
-  // Lista, fase por fase, todas las tareas del proyecto (sembradas o
-  // no) en un solo lugar: decidir cuáles aplican a este proyecto en
-  // particular y cuáles se agregan a Equipo, sin tener que abrir cada
-  // columna del mini-Kanban una por una.
-  function openTaskManager() {
-    var p = null;
-    for (var i = 0; i < projects.length; i++) { if (projects[i].id === detailProjectId) { p = projects[i]; break; } }
-    if (!p) return;
-    var cat = null;
-    for (var i = 0; i < categories.length; i++) { if (categories[i].id === p.catId) { cat = categories[i]; break; } }
-    if (!cat) return;
-    renderTaskManager(p, cat);
-    document.getElementById('tmOverlay').classList.add('open');
-  }
-  function closeTaskManager() {
-    document.getElementById('tmOverlay').classList.remove('open');
-  }
-  function renderTaskManager(p, cat) {
-    var body = document.getElementById('tmBody');
-    if (!body) return;
-    body.innerHTML = '';
-    var color = cat.color || '#1A6FD4';
-    var rgb = _coRgb(color);
-    (cat.stages || []).forEach(function(stage) {
-      var real = (p.stageTasks && p.stageTasks[stage]) || null;
-      var tpl = (cat.templates && cat.templates[stage]) || [];
-      var count = real ? real.length : tpl.length;
 
-      var group = document.createElement('div'); group.className = 'tm-stage-group';
-      group.style.background = 'rgba(' + rgb + ',.05)';
-
-      var hdr = document.createElement('div'); hdr.className = 'tm-stage-hdr';
-      hdr.style.cssText = 'color:' + color + ';border-bottom-color:rgba(' + rgb + ',.25);';
-      var dot = document.createElement('span'); dot.className = 'tm-stage-dot'; dot.style.background = color;
-      hdr.appendChild(dot);
-      var hdrTxt = document.createElement('span'); hdrTxt.textContent = stage + (stage === p.stage ? ' · fase actual' : '');
-      hdr.appendChild(hdrTxt);
-      group.appendChild(hdr);
-
-      if (count) {
-        for (var idx = 0; idx < count; idx++) { group.appendChild(buildTmRow(p, cat, stage, idx, real, tpl)); }
-      } else {
-        var emptyStage = document.createElement('div'); emptyStage.className = 'tm-stage-empty'; emptyStage.textContent = 'Sin tareas todavía';
-        group.appendChild(emptyStage);
-      }
-
-      var addRow = document.createElement('div'); addRow.className = 'tm-add-row';
-      var addInp = document.createElement('input'); addInp.className = 'tm-add-inp'; addInp.placeholder = '+ tarea en "' + stage + '"…';
-      addInp.addEventListener('keydown', function(e) {
-        if (e.key !== 'Enter') return;
-        var v = addInp.value.trim(); if (!v) return;
-        seedStageTasks(p, cat, stage);
-        if (!p.stageTasks[stage]) p.stageTasks[stage] = [];
-        p.stageTasks[stage].push({ id: Date.now(), text: v, done: false, deadline: '', resp: '', sharedWithTeam: true });
-        saveData(); renderTaskManager(p, cat); renderDetailKanban(); updateCardBadge(detailProjectId);
-      });
-      addRow.appendChild(addInp);
-      group.appendChild(addRow);
-
-      body.appendChild(group);
+  // ── TAREAS DEL PROYECTO (agregadas de todas las fases) ─────────
+  var _pdmTaskFilter = 'pending';
+  function renderProjectTasks(p) {
+    var filterRow = document.getElementById('pdmTaskFilterRow');
+    var listEl = document.getElementById('pdmTasksList');
+    if (!filterRow || !listEl) return;
+    filterRow.innerHTML = '';
+    [['pending', 'Pendientes'], ['done', 'Completadas'], ['all', 'Todas']].forEach(function(pair) {
+      var b = document.createElement('button'); b.className = 'pdm-task-filter-btn' + (_pdmTaskFilter === pair[0] ? ' active' : '');
+      b.textContent = pair[1];
+      b.onclick = function() { _pdmTaskFilter = pair[0]; renderProjectTasks(p); };
+      filterRow.appendChild(b);
     });
-    if (!body.children.length) {
-      var emp = document.createElement('div'); emp.className = 'tm-empty';
-      emp.textContent = 'Este servicio no tiene fases definidas.';
-      body.appendChild(emp);
+    var all = [];
+    Object.keys(p.stageTasks || {}).forEach(function(stage) {
+      (p.stageTasks[stage] || []).forEach(function(t) { if (t.sharedWithTeam) all.push(t); });
+    });
+    var filtered = all.filter(function(t) {
+      if (_pdmTaskFilter === 'pending') return !t.done;
+      if (_pdmTaskFilter === 'done') return t.done;
+      return true;
+    });
+    listEl.innerHTML = '';
+    if (!filtered.length) {
+      var emp = document.createElement('div'); emp.className = 'pdm-tasks-empty';
+      emp.textContent = _pdmTaskFilter === 'pending' ? 'Sin tareas pendientes.' : _pdmTaskFilter === 'done' ? 'Sin tareas completadas.' : 'Sin tareas todavía — agrega la primera abajo.';
+      listEl.appendChild(emp);
+    } else {
+      filtered.forEach(function(t) { listEl.appendChild(buildProjectTaskRow(p, t)); });
     }
   }
-  // Un solo botón por tarea: "Aplica" decide a la vez si se ve en esta
-  // ficha Y si se ve en Equipo — son la misma cosa. Por default nada
-  // aplica (ni sembrado ni de plantilla) hasta que se marca aquí.
-  function buildTmRow(p, cat, stage, idx, real, tpl) {
-    var text = real ? real[idx].text : (typeof tpl[idx] === 'string' ? tpl[idx] : (tpl[idx].text || ''));
-    var applied = !!(real && real[idx].sharedWithTeam);
-    var deadline = real ? (real[idx].deadline || '') : '';
-    var resp = real ? (real[idx].resp || '') : '';
-    var row = document.createElement('div'); row.className = 'tm-row' + (applied ? '' : ' excluded');
-    var txt = document.createElement('div'); txt.className = 'tm-row-txt'; txt.textContent = text;
+
+  function buildProjectTaskRow(p, task) {
+    var row = document.createElement('div'); row.className = 'pdm-task-row' + (task.done ? ' done' : '');
+    var chk = document.createElement('div'); chk.className = 'pdm-task-row-chk' + (task.done ? ' on' : '');
+    chk.onclick = function() {
+      task.done = !task.done;
+      task.colStatus = task.done ? 'done' : (task.deadline ? 'inprogress' : 'notstarted');
+      saveData(); renderProjectTasks(p); updateCardBadge(detailProjectId);
+    };
+    row.appendChild(chk);
+    var txt = document.createElement('div'); txt.className = 'pdm-task-row-txt'; txt.textContent = task.text;
     row.appendChild(txt);
 
-    var respMember = resp ? TEAM_MEMBERS.filter(function(m) { return m.id === resp; })[0] : null;
-    var respBtn = document.createElement('span');
-    respBtn.className = 'tm-resp-pill' + (respMember ? ' has-resp' : '');
+    var respMember = task.resp ? TEAM_MEMBERS.filter(function(m) { return m.id === task.resp; })[0] : null;
+    var respBtn = document.createElement('span'); respBtn.className = 'tm-resp-pill' + (respMember ? ' has-resp' : '');
     respBtn.textContent = respMember ? '👤 ' + respMember.name.split(' ')[0] : '👤 Sin resp.';
     if (respMember) respBtn.style.cssText = 'background:rgba(' + _coRgb(respMember.color) + ',.18);color:' + respMember.color + ';';
-    respBtn.title = 'Responsable de esta tarea';
     respBtn.onclick = function(e) {
       e.stopPropagation();
-      seedStageTasks(p, cat, stage);
-      var arr = p.stageTasks[stage];
-      openPersonPicker(respBtn, arr[idx].resp || '', function(v) {
-        arr[idx].resp = v;
-        saveData(); renderTaskManager(p, cat); renderDetailKanban(); updateCardBadge(detailProjectId);
-      });
+      openPersonPicker(respBtn, task.resp || '', function(v) { task.resp = v; saveData(); renderProjectTasks(p); });
     };
     row.appendChild(respBtn);
 
-    var dateBtn = document.createElement('span');
-    dateBtn.className = 'tm-date-pill' + (deadline ? ' has-date' : '');
-    dateBtn.textContent = deadline ? '📅 ' + fmtDate(deadline) : '📅 Sin fecha';
-    dateBtn.title = 'Fecha de esta tarea';
+    var dateBtn = document.createElement('span'); dateBtn.className = 'tm-date-pill' + (task.deadline ? ' has-date' : '');
+    dateBtn.textContent = task.deadline ? '📅 ' + fmtDate(task.deadline) : '📅 Sin fecha';
     dateBtn.onclick = function(e) {
       e.stopPropagation();
-      seedStageTasks(p, cat, stage);
-      var arr = p.stageTasks[stage];
-      openDatePicker(dateBtn, arr[idx].deadline || '', function(v) {
-        arr[idx].deadline = v;
-        saveData(); renderTaskManager(p, cat); renderDetailKanban(); updateCardBadge(detailProjectId);
-      });
+      openDatePicker(dateBtn, task.deadline || '', function(v) { task.deadline = v; saveData(); renderProjectTasks(p); });
     };
     row.appendChild(dateBtn);
 
-    var applyBtn = document.createElement('span');
-    applyBtn.className = 'tm-toggle ' + (applied ? 'share-on' : 'applies-off');
-    applyBtn.textContent = applied ? '✓ Aplica' : 'No aplica';
-    applyBtn.title = applied ? 'Quitar — deja de verse en esta ficha y en Equipo' : 'Aplicar — aparece en esta ficha y en Equipo';
-    applyBtn.onclick = function() {
-      seedStageTasks(p, cat, stage);
-      var arr = p.stageTasks[stage];
-      arr[idx].sharedWithTeam = !arr[idx].sharedWithTeam;
-      saveData(); renderTaskManager(p, cat); renderDetailKanban(); updateCardBadge(detailProjectId);
-    };
-    row.appendChild(applyBtn);
     return row;
-  }
-
-  function renderDetailTimeline() {
-    var p = null;
-    for (var i = 0; i < projects.length; i++) { if (projects[i].id === detailProjectId) { p = projects[i]; break; } }
-    if (!p) return;
-    var cat = null;
-    for (var i = 0; i < categories.length; i++) { if (categories[i].id === p.catId) { cat = categories[i]; break; } }
-    var wrap = document.getElementById('pdmTimelineWrap');
-    if (!cat || !cat.stages || cat.stages.length < 2) { wrap.style.display = 'none'; return; }
-    wrap.style.display = '';
-    var stages = cat.stages;
-    var currentIdx = stages.indexOf(p.stage);
-    if (currentIdx < 0) currentIdx = 0;
-    var DEFAULT_DAYS = 7;
-    var PX_PER_DAY = 36;
-    var ROW_Y = [6, 54, 102];
-    var BAR_H = 36;
-    var today = new Date(); today.setHours(0,0,0,0);
-    function getDays(s) { return (cat.stageDays && cat.stageDays[s] > 0) ? cat.stageDays[s] : DEFAULT_DAYS; }
-    // Build start dates anchored on current stage
-    var startDates = new Array(stages.length);
-    var anchor = (p.stageEntryDates && p.stageEntryDates[stages[currentIdx]])
-      ? new Date(p.stageEntryDates[stages[currentIdx]] + 'T00:00:00') : new Date(today);
-    startDates[currentIdx] = anchor;
-    var cur = new Date(anchor.getTime() + getDays(stages[currentIdx]) * 86400000);
-    for (var i = currentIdx + 1; i < stages.length; i++) {
-      if (p.stageEntryDates && p.stageEntryDates[stages[i]]) { startDates[i] = new Date(p.stageEntryDates[stages[i]] + 'T00:00:00'); cur = new Date(startDates[i].getTime() + getDays(stages[i]) * 86400000); }
-      else { startDates[i] = new Date(cur); cur = new Date(cur.getTime() + getDays(stages[i]) * 86400000); }
-    }
-    cur = new Date(anchor);
-    for (var i = currentIdx - 1; i >= 0; i--) {
-      if (p.stageEntryDates && p.stageEntryDates[stages[i]]) { startDates[i] = new Date(p.stageEntryDates[stages[i]] + 'T00:00:00'); }
-      else { cur = new Date(cur.getTime() - getDays(stages[i]) * 86400000); startDates[i] = new Date(cur); }
-    }
-    // Timeline range
-    var rangeStart = new Date(startDates[0].getTime() - 4 * 86400000);
-    var lastEnd = new Date(startDates[stages.length-1].getTime() + getDays(stages[stages.length-1]) * 86400000 + 5 * 86400000);
-    if (p.deadline) { var dlE = new Date(p.deadline + 'T00:00:00'); if (dlE > lastEnd) lastEnd = new Date(dlE.getTime() + 5 * 86400000); }
-    var totalDays = Math.ceil((lastEnd - rangeStart) / 86400000);
-    var W = Math.max(totalDays * PX_PER_DAY, 320);
-    var container = document.getElementById('pdmTimeline');
-    var _savedScroll = container.scrollLeft;
-    container.innerHTML = '';
-    var canvas = document.createElement('div');
-    canvas.style.cssText = 'position:relative;width:' + W + 'px;height:180px;';
-    // Day-by-day lines + two-row axis (day-of-week + day number)
-    var MNS = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
-    var DOW = ['Do','Lu','Ma','Mi','Ju','Vi','Sá'];
-    var dayMs = 86400000;
-    var halfPPD = Math.floor(PX_PER_DAY / 2);
-    var curDay = new Date(rangeStart);
-    while (curDay <= lastEnd) {
-      var dx = Math.round((curDay - rangeStart) / dayMs * PX_PER_DAY);
-      var isToday2 = curDay.getTime() === today.getTime();
-      var dow = curDay.getDay();
-      var isSunday = dow === 0;
-      var isWeekend = isSunday || dow === 6;
-      var isMonthStart = curDay.getDate() === 1;
-      if (!isToday2) {
-        var vl = document.createElement('div');
-        var lW = isSunday ? '2' : '1';
-        var lSt = (isMonthStart || isSunday) ? 'solid' : 'dashed';
-        var lOp = isMonthStart ? '0.22' : isSunday ? '0.22' : isWeekend ? '0.09' : '0.05';
-        vl.style.cssText = 'position:absolute;left:'+dx+'px;top:0;height:143px;border-left:'+lW+'px '+lSt+' rgba(255,255,255,'+lOp+');pointer-events:none;';
-        canvas.appendChild(vl);
-        // Day-of-week row
-        var dowLbl = document.createElement('div');
-        var dowCol = isWeekend ? 'rgba(255,255,255,0.32)' : 'rgba(255,255,255,0.18)';
-        dowLbl.style.cssText = 'position:absolute;left:'+(dx-halfPPD)+'px;top:147px;font-size:8px;color:'+dowCol+';width:'+PX_PER_DAY+'px;text-align:center;pointer-events:none;';
-        dowLbl.textContent = DOW[dow];
-        canvas.appendChild(dowLbl);
-        // Day number row
-        var dayLbl = document.createElement('div');
-        var lCol = isMonthStart ? 'rgba(255,255,255,0.5)' : isWeekend ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.2)';
-        var lTxt = isMonthStart ? MNS[curDay.getMonth()] : String(curDay.getDate());
-        dayLbl.style.cssText = 'position:absolute;left:'+(dx-halfPPD)+'px;top:158px;font-size:8px;font-weight:'+(isMonthStart?'700':'400')+';color:'+lCol+';width:'+PX_PER_DAY+'px;text-align:center;pointer-events:none;';
-        dayLbl.textContent = lTxt;
-        canvas.appendChild(dayLbl);
-      }
-      curDay = new Date(curDay.getTime() + dayMs);
-    }
-    // Stage bars
-    stages.forEach(function(stage, idx) {
-      var x = Math.round((startDates[idx] - rangeStart) / 86400000 * PX_PER_DAY);
-      var days = getDays(stage);
-      var w = Math.max(days * PX_PER_DAY - 3, 32);
-      var rowY = ROW_Y[idx % 3];
-      var isCurrent = idx === currentIdx;
-      var isPast = idx < currentIdx;
-      var bg = isCurrent ? cat.color : isPast ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.04)';
-      var tc = isCurrent ? '#fff' : isPast ? 'rgba(255,255,255,0.45)' : 'rgba(255,255,255,0.22)';
-      var border = (!isCurrent && !isPast) ? '0.5px solid rgba(255,255,255,0.1)' : 'none';
-      var shadow = isCurrent ? '0 0 14px ' + cat.color + '44' : 'none';
-      var isSelected = idx === selectedPhaseIdx;
-      var bar = document.createElement('div');
-      bar.style.cssText = 'position:absolute;left:'+x+'px;top:'+rowY+'px;width:'+w+'px;height:'+BAR_H+'px;'
-        + 'background:'+bg+';border-radius:20px;'
-        + (border!=='none'?'border:'+border+';':'')
-        + (shadow!=='none'?'box-shadow:'+shadow+';':'')
-        + 'display:flex;align-items:center;justify-content:center;overflow:hidden;padding:0 8px;'
-        + 'font-size:11px;font-weight:700;color:'+tc+';white-space:nowrap;cursor:pointer;'
-        + (isSelected ? 'outline:2px dashed rgba(255,255,255,0.55);outline-offset:3px;z-index:5;' : '');
-      bar.textContent = stage + (cat.stageDays && cat.stageDays[stage] ? ' · ' + days + 'd' : '');
-      bar.addEventListener('mouseenter', function() { if (!isSelected) bar.style.opacity = '.75'; });
-      bar.addEventListener('mouseleave', function() { bar.style.opacity = ''; });
-      bar.onclick = (function(i) { return function(e) {
-        e.stopPropagation();
-        selectedPhaseIdx = selectedPhaseIdx === i ? -1 : i;
-        renderDetailTimeline();
-      }; })(idx);
-      canvas.appendChild(bar);
-    });
-    // Today line
-    var todayX = Math.round((today - rangeStart) / 86400000 * PX_PER_DAY);
-    if (todayX >= 0 && todayX <= W) {
-      var tl = document.createElement('div');
-      tl.style.cssText = 'position:absolute;left:'+todayX+'px;top:0;height:143px;width:2px;background:rgba(255,255,255,0.85);z-index:4;border-radius:2px;';
-      canvas.appendChild(tl);
-      var tlbl = document.createElement('div');
-      tlbl.style.cssText = 'position:absolute;left:'+(todayX+4)+'px;top:2px;font-size:9px;font-weight:700;color:rgba(255,255,255,0.7);white-space:nowrap;z-index:4;';
-      tlbl.textContent = 'Hoy';
-      canvas.appendChild(tlbl);
-      var tdDow = document.createElement('div');
-      tdDow.style.cssText = 'position:absolute;left:'+(todayX-halfPPD)+'px;top:147px;font-size:8px;font-weight:700;color:rgba(255,255,255,0.7);width:'+PX_PER_DAY+'px;text-align:center;z-index:4;pointer-events:none;';
-      tdDow.textContent = DOW[today.getDay()];
-      canvas.appendChild(tdDow);
-      var tdNum = document.createElement('div');
-      tdNum.style.cssText = 'position:absolute;left:'+(todayX-halfPPD)+'px;top:158px;font-size:8px;font-weight:700;color:rgba(255,255,255,0.7);width:'+PX_PER_DAY+'px;text-align:center;z-index:4;pointer-events:none;';
-      tdNum.textContent = today.getDate();
-      canvas.appendChild(tdNum);
-    }
-    // Deadline line
-    if (p.deadline) {
-      var dlDate = new Date(p.deadline + 'T00:00:00');
-      var dlX = Math.round((dlDate - rangeStart) / 86400000 * PX_PER_DAY);
-      if (dlX >= 0 && dlX <= W) {
-        var dll = document.createElement('div');
-        dll.style.cssText = 'position:absolute;left:'+dlX+'px;top:0;height:143px;width:2px;background:#E24B4A;opacity:.75;z-index:4;border-radius:2px;';
-        canvas.appendChild(dll);
-        var dlLbl = document.createElement('div');
-        dlLbl.style.cssText = 'position:absolute;left:'+(dlX+4)+'px;top:2px;font-size:9px;font-weight:700;color:#E24B4A;white-space:nowrap;z-index:4;';
-        dlLbl.textContent = 'Entrega';
-        canvas.appendChild(dlLbl);
-      }
-    }
-    container.appendChild(canvas);
-    container.scrollLeft = _savedScroll;
-    _detailStartDates = startDates;
-    _detailCat = cat;
-    _detailStages = stages;
-    renderPhaseInfo(p);
-  }
-
-  function renderPhaseInfo(p) {
-    var det = document.getElementById('pdmPhaseDetail');
-    if (!det) return;
-    if (selectedPhaseIdx < 0 || !_detailCat || !_detailStages.length) {
-      det.innerHTML = ''; det.className = ''; return;
-    }
-    var idx = selectedPhaseIdx;
-    var stage = _detailStages[idx];
-    var cat = _detailCat;
-    var stages = _detailStages;
-    var currentIdx = stages.indexOf(p.stage);
-    var isPast = idx < currentIdx;
-    var isCurrent = idx === currentIdx;
-    var today = new Date(); today.setHours(0,0,0,0);
-    var entryDate = p.stageEntryDates && p.stageEntryDates[stage] ? p.stageEntryDates[stage] : null;
-    var days = cat.stageDays && cat.stageDays[stage] ? cat.stageDays[stage] : null;
-    var status = isCurrent ? 'Fase actual' : isPast ? 'Completada' : 'Próxima';
-    var statusBg = isCurrent ? cat.color+'22' : isPast ? 'rgba(39,174,114,0.15)' : 'rgba(255,255,255,0.06)';
-    var statusCol = isCurrent ? cat.color : isPast ? '#27AE72' : 'rgba(255,255,255,0.35)';
-    var tasks = (p.stageTasks && p.stageTasks[stage]) ? p.stageTasks[stage] : [];
-
-    det.className = 'pdm-phase-detail';
-    det.innerHTML = '';
-
-    // Header row
-    var hdr = document.createElement('div'); hdr.className = 'pdm-phase-det-hdr';
-    var nameEl = document.createElement('span'); nameEl.className = 'pdm-phase-det-name'; nameEl.textContent = stage;
-    var pill = document.createElement('span'); pill.className = 'pdm-phase-det-pill';
-    pill.style.cssText = 'background:'+statusBg+';color:'+statusCol+';';
-    pill.textContent = status;
-    hdr.appendChild(nameEl); hdr.appendChild(pill);
-    det.appendChild(hdr);
-
-    // Meta info
-    var metaItems = [];
-    if (entryDate) {
-      var d = new Date(entryDate+'T00:00:00');
-      metaItems.push('Entró: '+d.getDate()+'/'+(d.getMonth()+1)+'/'+d.getFullYear());
-    }
-    if (days) {
-      if (entryDate && isCurrent) {
-        var rem = Math.ceil((new Date(entryDate+'T00:00:00').getTime() + days*86400000 - today.getTime()) / 86400000);
-        metaItems.push(rem > 0 ? rem+' días restantes' : rem === 0 ? 'Vence hoy' : Math.abs(rem)+' días fuera de fase');
-      } else if (entryDate && isPast) {
-        var spent = Math.round((today - new Date(entryDate+'T00:00:00')) / 86400000);
-        metaItems.push(spent+' días trabajados');
-      } else {
-        metaItems.push(days+' días estimados');
-      }
-    }
-    if (metaItems.length) {
-      var meta = document.createElement('div'); meta.className = 'pdm-phase-det-meta';
-      metaItems.forEach(function(txt) {
-        var s = document.createElement('span'); s.className = 'pdm-phase-det-info'; s.textContent = txt;
-        meta.appendChild(s);
-      });
-      det.appendChild(meta);
-    }
-
-    // Tasks
-    if (tasks.length > 0) {
-      var tasksList = document.createElement('div'); tasksList.className = 'pdm-phase-det-tasks';
-      tasks.forEach(function(task) {
-        var tr = document.createElement('div'); tr.className = 'pdm-phase-tk';
-        var chk = document.createElement('div');
-        chk.className = 'pdm-phase-chk' + (task.done ? ' on' : '');
-        if (task.done) chk.innerHTML = '<svg viewBox="0 0 12 12" width="8" height="8"><polyline points="2,6 5,9 10,3" stroke="#fff" stroke-width="2.5" fill="none" stroke-linecap="round"/></svg>';
-        chk.onclick = function() { task.done = !task.done; saveData(); renderPhaseInfo(p); updateCardBadge(detailProjectId); };
-        var txt = document.createElement('span');
-        txt.className = 'pdm-phase-txt' + (task.done ? ' done' : '');
-        txt.textContent = task.text;
-        tr.appendChild(chk); tr.appendChild(txt);
-        if (task.resp && RESP_NAMES[task.resp]) {
-          var rv = document.createElement('span');
-          rv.style.cssText = 'font-size:9px;margin-left:auto;padding:1px 6px;border-radius:5px;background:'+AV_COLORS[task.resp]+'22;color:'+AV_COLORS[task.resp]+';white-space:nowrap;flex-shrink:0;font-weight:700;';
-          rv.textContent = task.resp;
-          tr.appendChild(rv);
-        }
-        if (task.deadline) {
-          var dl = document.createElement('span');
-          dl.style.cssText = 'font-size:9px;color:rgba(255,255,255,0.25);white-space:nowrap;flex-shrink:0;';
-          dl.textContent = fmtDl(task.deadline);
-          tr.appendChild(dl);
-        }
-        tasksList.appendChild(tr);
-      });
-      det.appendChild(tasksList);
-    } else {
-      var nt = document.createElement('div'); nt.className = 'pdm-phase-no-tasks'; nt.textContent = 'Sin tareas configuradas en esta fase';
-      det.appendChild(nt);
-    }
   }
 
 
@@ -4495,9 +4192,22 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
   document.getElementById('pdmConfirmDel').onclick = confirmDeleteProj;
   document.getElementById('pdmSaveBtn').onclick = function(){ saveProjDetail(); document.getElementById('projDetailOverlay').classList.remove('open'); };
   document.getElementById('projDetailOverlay').addEventListener('click', function(e){ if(e.target===document.getElementById('projDetailOverlay')) document.getElementById('projDetailOverlay').classList.remove('open'); });
-  document.getElementById('tmOpenBtn').onclick = openTaskManager;
-  document.getElementById('tmClose').onclick = closeTaskManager;
-  document.getElementById('tmOverlay').addEventListener('click', function(e){ if(e.target===document.getElementById('tmOverlay')) closeTaskManager(); });
+  document.getElementById('pdmChangeStageBtn').onclick = toggleStagePicker;
+  document.getElementById('pdmStageCancel').onclick = cancelStageChange;
+  document.getElementById('pdmStageConfirmBtn').onclick = confirmStageChange;
+  document.getElementById('pdmNewTaskInp').addEventListener('keydown', function(e) {
+    if (e.key !== 'Enter') return;
+    var inp = e.target, v = inp.value.trim(); if (!v) return;
+    var p = null;
+    for (var i = 0; i < projects.length; i++) { if (projects[i].id === detailProjectId) { p = projects[i]; break; } }
+    if (!p) return;
+    var stage = p.stage;
+    if (!p.stageTasks) p.stageTasks = {};
+    if (!p.stageTasks[stage]) p.stageTasks[stage] = [];
+    p.stageTasks[stage].push({ id: Date.now(), text: v, done: false, deadline: '', resp: '', sharedWithTeam: true });
+    inp.value = '';
+    saveData(); renderProjectTasks(p); updateCardBadge(detailProjectId);
+  });
   document.getElementById('cotizClose').onclick = closeCotizKanban;
   document.getElementById('cotizOverlay').addEventListener('click', function(e){ if(e.target===document.getElementById('cotizOverlay')) closeCotizKanban(); });
   document.getElementById('cotizNewBtn').onclick = openSolModal;
