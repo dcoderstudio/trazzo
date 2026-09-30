@@ -13,6 +13,7 @@
 <link rel="stylesheet" href="theme.css">
 <link rel="stylesheet" href="chat-tasks.css">
 <script src="chat-projects.js"></script>
+<script src="chat-tasks.js"></script>
 <title>Proyectos — Dcoder Studio</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,800&display=swap');
@@ -359,6 +360,14 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
 .pdm-tem-cancel{background:rgba(255,255,255,.06);border:.5px solid rgba(255,255,255,.1);border-radius:8px;padding:9px 14px;font-size:11.5px;color:rgba(255,255,255,.4);cursor:pointer;font-family:inherit;}
 .pdm-tem-del{background:rgba(226,75,74,.1);border:.5px solid rgba(226,75,74,.25);border-radius:8px;padding:9px 14px;font-size:11.5px;color:#E24B4A;cursor:pointer;font-family:inherit;transition:background .15s;}
 .pdm-tem-del:hover{background:rgba(226,75,74,.22);}
+.pdm-fab-wrap{position:fixed;right:24px;bottom:24px;z-index:480;display:flex;flex-direction:column;align-items:flex-end;gap:10px;}
+.pdm-fab-btn{width:52px;height:52px;border-radius:50%;background:#1A6FD4;border:none;color:#fff;cursor:pointer;box-shadow:0 8px 24px rgba(26,111,212,.4);display:flex;align-items:center;justify-content:center;transition:transform .15s,background .15s;flex-shrink:0;}
+.pdm-fab-btn:hover{background:#1e7fe8;transform:scale(1.06);}
+.pdm-fab-menu{display:flex;flex-direction:column;gap:5px;align-items:flex-end;}
+.pdm-fab-item{background:#1C2840;border:.5px solid rgba(255,255,255,.12);color:rgba(255,255,255,.85);font-size:12px;font-weight:600;padding:9px 14px;border-radius:10px;cursor:pointer;white-space:nowrap;box-shadow:0 6px 18px rgba(0,0,0,.4);font-family:'Inter',sans-serif;transition:background .15s;}
+.pdm-fab-item:hover{background:#243252;}
+.pdm-fab-sep{font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:rgba(255,255,255,.3);padding:2px 8px 0;align-self:flex-end;}
+.pdm-fab-sep:not(:first-child){margin-top:4px;}
 .phase-card:active{cursor:grabbing;}
 .phase-card:hover{border-color:rgba(255,255,255,0.22);}
 .phase-card.dragging{opacity:0.25;border-color:rgba(255,255,255,0.05);}
@@ -608,6 +617,42 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
   </div>
   <div class="status-board-wrap" id="statusBoard" style="display:none;"></div>
   <div class="summary-view" id="summaryView" style="display:flex;"></div>
+</div>
+
+<!-- FLOATING ADD BUTTON — proyecto/tarea, con chat o manual -->
+<div class="pdm-fab-wrap" id="pdmFabWrap">
+  <div class="pdm-fab-menu" id="pdmFabMenu" style="display:none;">
+    <div class="pdm-fab-sep">Tarea</div>
+    <button class="pdm-fab-item" id="fabTaskChat">💬 Con chat</button>
+    <button class="pdm-fab-item" id="fabTaskManual">✏️ Manualmente</button>
+    <div class="pdm-fab-sep">Proyecto</div>
+    <button class="pdm-fab-item" id="fabProjChat">💬 Con chat</button>
+    <button class="pdm-fab-item" id="fabProjManual">✏️ Manualmente</button>
+  </div>
+  <button class="pdm-fab-btn" id="pdmFabBtn" title="Agregar">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+  </button>
+</div>
+
+<!-- GLOBAL TASK MODAL — crear tarea desde el botón flotante (con o sin proyecto) -->
+<div class="pdm-tem-overlay" id="gtmOverlay" style="display:none;">
+  <div class="pdm-tem-modal" id="gtmModal">
+    <div class="pdm-tem-title">Nueva tarea</div>
+    <div class="pdm-tem-lbl">Nombre de la tarea</div>
+    <input class="pdm-tem-inp" id="gtmInp" placeholder="¿Qué hay que hacer?">
+    <div class="pdm-tem-lbl">Proyecto</div>
+    <select class="pdm-tem-select" id="gtmProjSel"></select>
+    <div class="pdm-tem-lbl">Área de trabajo</div>
+    <select class="pdm-tem-select" id="gtmAreaSel"></select>
+    <div class="pdm-tem-lbl">Encargado</div>
+    <button class="pdm-tem-datebtn" id="gtmRespBtn" type="button">👤 Sin asignar</button>
+    <div class="pdm-tem-lbl">Fecha de entrega</div>
+    <button class="pdm-tem-datebtn" id="gtmDateBtn" type="button">📅 Sin fecha</button>
+    <div class="pdm-tem-btns">
+      <button class="pdm-tem-cancel" id="gtmCancelBtn">Cancelar</button>
+      <button class="pdm-tem-save" id="gtmSaveBtn">Crear tarea</button>
+    </div>
+  </div>
 </div>
 
 <!-- COBRANZA CARD DETAIL -->
@@ -4078,6 +4123,73 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
     inp.focus();
   }
 
+  // ── BOTÓN FLOTANTE: nueva tarea global (con o sin proyecto) ──────
+  function openGlobalTaskModal() {
+    var inp = document.getElementById('gtmInp'); inp.value = '';
+    var projSel = document.getElementById('gtmProjSel'); projSel.innerHTML = '';
+    var opt0 = document.createElement('option'); opt0.value = ''; opt0.textContent = 'Otros (sin proyecto)'; projSel.appendChild(opt0);
+    projects.filter(function(p) { return p.catId !== 'cotizaciones' && !p.concluded && !p.pendingApproval && !p.quoteArchived; }).forEach(function(p) {
+      var o = document.createElement('option'); o.value = String(p.id); o.textContent = p.name; projSel.appendChild(o);
+    });
+    var areaSel = document.getElementById('gtmAreaSel'); areaSel.innerHTML = '';
+    var a0 = document.createElement('option'); a0.value = ''; a0.textContent = 'Sin área'; areaSel.appendChild(a0);
+    WORK_AREAS.forEach(function(a) { var o = document.createElement('option'); o.value = a.name; o.textContent = a.name; areaSel.appendChild(o); });
+
+    var respBtn = document.getElementById('gtmRespBtn'), dateBtn = document.getElementById('gtmDateBtn');
+    var _resp = '', _dl = '';
+    respBtn.textContent = '👤 Sin asignar'; respBtn.style.color = '';
+    dateBtn.textContent = '📅 Sin fecha'; dateBtn.style.color = '';
+    respBtn.onclick = function(e) {
+      e.preventDefault();
+      openPersonPicker(respBtn, _resp, function(v) {
+        _resp = v; var m = v ? TEAM_MEMBERS.filter(function(x) { return x.id === v; })[0] : null;
+        respBtn.textContent = m ? '👤 ' + m.name : '👤 Sin asignar'; respBtn.style.color = m ? 'rgba(255,255,255,.85)' : '';
+      });
+    };
+    dateBtn.onclick = function(e) {
+      e.preventDefault();
+      openDatePicker(dateBtn, _dl, function(v) {
+        _dl = v; dateBtn.textContent = v ? '📅 ' + fmtDate(v) : '📅 Sin fecha'; dateBtn.style.color = v ? 'rgba(255,255,255,.85)' : '';
+      });
+    };
+
+    document.getElementById('gtmSaveBtn').onclick = function() {
+      var v = inp.value.trim(); if (!v) { inp.focus(); return; }
+      var projId = projSel.value ? parseInt(projSel.value) : null;
+      if (projId) {
+        var p = null; for (var i = 0; i < projects.length; i++) { if (projects[i].id === projId) { p = projects[i]; break; } }
+        if (p) {
+          if (!p.stageTasks) p.stageTasks = {};
+          if (!p.stageTasks[p.stage]) p.stageTasks[p.stage] = [];
+          p.stageTasks[p.stage].push({ id: Date.now(), text: v, done: false, deadline: _dl || '', resp: _resp || '', area: areaSel.value || '', sharedWithTeam: true });
+        }
+      } else {
+        standaloneTasks.push({ id: 'st_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7), text: v, done: false, deadline: _dl || '', resp: _resp || '', area: areaSel.value || '', colStatus: null, priority: false, notes: '' });
+      }
+      saveData(); closeGlobalTaskModal();
+      if (_summaryView) renderSummaryView();
+      renderBoard();
+      if (projId && detailProjectId === projId) renderProjDetail();
+      updateCardBadge(projId);
+    };
+    inp.onkeydown = function(e) { if (e.key === 'Enter') document.getElementById('gtmSaveBtn').click(); if (e.key === 'Escape') closeGlobalTaskModal(); };
+
+    document.getElementById('gtmOverlay').style.display = 'flex';
+    inp.focus();
+  }
+  function closeGlobalTaskModal() {
+    document.getElementById('gtmOverlay').style.display = 'none';
+  }
+  function openGlobalTaskChat() {
+    TrazzoChatTasks.open({
+      db: db, doc: DOC,
+      onSaved: function() {
+        if (_summaryView) renderSummaryView();
+        renderBoard();
+        if (detailProjectId) renderProjDetail();
+      }
+    });
+  }
 
   function renderPdmFields(p, cat) {
     var wrap = document.getElementById('pdmDynFields'); if (!wrap) return;
@@ -4319,6 +4431,19 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
 
   // ── EVENTS ────────────────────────────────────────────
   document.getElementById('newProjBtn').onclick = function() { openProjModal(null, null); };
+  document.getElementById('pdmFabBtn').onclick = function() {
+    var menu = document.getElementById('pdmFabMenu');
+    menu.style.display = (menu.style.display === 'flex') ? 'none' : 'flex';
+  };
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('#pdmFabWrap')) document.getElementById('pdmFabMenu').style.display = 'none';
+  });
+  document.getElementById('fabTaskChat').onclick = function() { document.getElementById('pdmFabMenu').style.display = 'none'; openGlobalTaskChat(); };
+  document.getElementById('fabTaskManual').onclick = function() { document.getElementById('pdmFabMenu').style.display = 'none'; openGlobalTaskModal(); };
+  document.getElementById('fabProjChat').onclick = function() { document.getElementById('pdmFabMenu').style.display = 'none'; openProjPasteDialog(); };
+  document.getElementById('fabProjManual').onclick = function() { document.getElementById('pdmFabMenu').style.display = 'none'; openProjModal(null, null); };
+  document.getElementById('gtmCancelBtn').onclick = closeGlobalTaskModal;
+  document.getElementById('gtmOverlay').addEventListener('click', function(e) { if (e.target === document.getElementById('gtmOverlay')) closeGlobalTaskModal(); });
   document.getElementById('addCatBtn').onclick = function(){ openPhaseModal(null); };
   document.getElementById('cancelProjBtn').onclick = closeProjModal;
   document.getElementById('createProjBtn').onclick = createProject;
