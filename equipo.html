@@ -1505,7 +1505,7 @@ function renderOrgDayPanelBody(body,dateStr){
       chk.onclick=function(e){e.stopPropagation();teamTaskUpdate(t,{done:true});renderOrgDayPanelBody(body,dateStr);};
       row.appendChild(chk);
       var info=document.createElement('div');info.className='eq-org-day-row-info';
-      var nm=document.createElement('div');nm.className='eq-org-day-row-name';nm.textContent=t.text;info.appendChild(nm);
+      var nm=document.createElement('div');nm.className='eq-org-day-row-name';nm.textContent=(t.priority?'★ ':'')+t.text;info.appendChild(nm);
       var metaParts=[];
       if(t._type==='project'&&t.source)metaParts.push('🗂 '+t.source);
       if(t.resp){var mb=getMember(t.resp);if(mb)metaParts.push('👤 '+mb.name);}
@@ -1561,7 +1561,7 @@ function buildOrgTask(t){
   var bar=document.createElement('div');bar.className='eq-org-task-bar';bar.style.background='rgba(90,180,232,.55)';card.appendChild(bar);
   card.appendChild(buildOrgChk(t,card,false));
   var info=document.createElement('div');info.className='eq-org-task-info';
-  var name=document.createElement('div');name.className='eq-org-task-name';name.textContent=t.text;
+  var name=document.createElement('div');name.className='eq-org-task-name';name.textContent=(t.priority?'★ ':'')+t.text;
   var meta=document.createElement('div');meta.className='eq-org-task-meta';
   var metaParts=[];
   if(t._type==='project'&&t.source)metaParts.push('🗂 '+t.source);
@@ -1576,7 +1576,7 @@ function buildOrgAreaTask(t,area){
   var bar=document.createElement('div');bar.className='eq-org-atask-bar';bar.style.background=area.color||'rgba(90,180,232,.55)';card.appendChild(bar);
   card.appendChild(buildOrgChk(t,card,true));
   var txtwrap=document.createElement('div');txtwrap.className='eq-org-atask-txtwrap';
-  var nm=document.createElement('span');nm.className='eq-org-atask-name';nm.textContent=t.text;txtwrap.appendChild(nm);
+  var nm=document.createElement('span');nm.className='eq-org-atask-name';nm.textContent=(t.priority?'★ ':'')+t.text;txtwrap.appendChild(nm);
   if(t._type==='project'&&t.source){
     var psrc=document.createElement('span');psrc.className='eq-org-atask-src';psrc.style.color=t.color||'#1A6FD4';psrc.textContent='🗂 '+t.source;txtwrap.appendChild(psrc);
   }
@@ -1600,7 +1600,7 @@ function buildOrgPersonTask(t){
   var bar=document.createElement('div');bar.className='eq-org-atask-bar';bar.style.background=areaColor;card.appendChild(bar);
   card.appendChild(buildOrgChk(t,card,true));
   var txtwrap=document.createElement('div');txtwrap.className='eq-org-atask-txtwrap';
-  var nm=document.createElement('span');nm.className='eq-org-atask-name';nm.textContent=t.text;txtwrap.appendChild(nm);
+  var nm=document.createElement('span');nm.className='eq-org-atask-name';nm.textContent=(t.priority?'★ ':'')+t.text;txtwrap.appendChild(nm);
   if(t._type==='project'&&t.source){
     var psrc=document.createElement('span');psrc.className='eq-org-atask-src';psrc.style.color=t.color||'#1A6FD4';psrc.textContent='🗂 '+t.source;txtwrap.appendChild(psrc);
   }

@@ -25,15 +25,16 @@
     text.split(/\r?\n/).forEach(function(raw,i){
       var line=raw.trim();if(!line||/^```(?:text|txt)?$/.test(line))return;
       var parts=line.split('|').map(function(p){return p.trim();});
-      if(parts.length===5&&norm(parts[0])==='tarea'&&norm(parts[1])==='fecha'&&norm(parts[2])==='responsable'&&norm(parts[3])==='area')return;
+      if(parts.length===6&&norm(parts[0])==='tarea'&&norm(parts[1])==='fecha'&&norm(parts[2])==='responsable'&&norm(parts[3])==='area')return;
       try{
-        if(parts.length!==5)throw Error('Línea '+(i+1)+': usa Tarea | AAAA-MM-DD | Responsable | Área | Proyecto.');
+        if(parts.length!==6)throw Error('Línea '+(i+1)+': usa Tarea | AAAA-MM-DD | Responsable | Área | Proyecto | Prioritaria.');
         var title=parts[0],date=empty(parts[1])?null:parts[1];
         if(!title||title.length>500)throw Error('Línea '+(i+1)+': el nombre debe tener entre 1 y 500 caracteres.');
         if(date&&(!/^\d{4}-\d{2}-\d{2}$/.test(date)||!Number.isFinite(Date.parse(date+'T12:00:00Z'))||new Date(date+'T12:00:00Z').toISOString().slice(0,10)!==date))throw Error('Línea '+(i+1)+': fecha inválida. Usa AAAA-MM-DD, no “viernes” ni “mañana”.');
         var member=resolve(parts[2],members,'el responsable',i+1),area=resolve(parts[3],areas,'el área',i+1);
         var project=resolve(parts[4],activeProjects,'el proyecto',i+1);
-        var t={text:title,deadline:date,resp:member?member.id:null,area:area?area.name:null,projId:project?project.id:null,projName:project?project.name:null};
+        var priority=['si','x','true','1','yes'].indexOf(norm(parts[5]))!==-1;
+        var t={text:title,deadline:date,resp:member?member.id:null,area:area?area.name:null,projId:project?project.id:null,projName:project?project.name:null,priority:priority};
         var signature=key(t);t.duplicate=seen.has(signature);seen.add(signature);tasks.push(t);
       }catch(e){errors.push(e.message);}
     });
@@ -50,7 +51,7 @@
       result.tasks.forEach(function(t,i){
         if(t.duplicate){skipped++;return;}
         if(!ids[i])throw Error('Vuelve a revisar el bloque antes de guardarlo.');
-        var task={id:ids[i],text:t.text,deadline:t.deadline,resp:t.resp,area:t.area,done:false,colStatus:null,priority:false,notes:'',sortOrder:null};
+        var task={id:ids[i],text:t.text,deadline:t.deadline,resp:t.resp,area:t.area,done:false,colStatus:null,priority:t.priority,notes:'',sortOrder:null};
         if(t.projId){
           task.sharedWithTeam=true;
           (projectAdds[t.projId]=projectAdds[t.projId]||[]).push(task);
@@ -80,10 +81,10 @@
     el('h2','Agregar tareas desde chat').id='chat-tasks-title';
     el('p','Pega el bloque preparado en el chat. Revisa las fechas, los responsables y los proyectos antes de crear las tareas. Sin proyecto, se agregan como tareas libres; con proyecto, aparecen dentro de esa ficha (y en Equipo).');
     var guide=el('details');el('summary','Formato y nombres disponibles',guide);
-    el('p','Una tarea por línea: Tarea | Fecha | Responsable | Área | Proyecto. Fecha: AAAA-MM-DD. Usa - para dejar un campo sin asignar (Proyecto: - o "Otros" = tarea libre). El nombre del proyecto debe coincidir exactamente con uno de los activos de abajo. No uses | dentro del nombre.',guide);
+    el('p','Una tarea por línea: Tarea | Fecha | Responsable | Área | Proyecto | Prioritaria. Fecha: AAAA-MM-DD. Usa - para dejar un campo sin asignar (Proyecto: - o "Otros" = tarea libre). Prioritaria: escribe Sí para marcarla como prioritaria, o - / No para dejarla normal. El nombre del proyecto debe coincidir exactamente con uno de los activos de abajo. No uses | dentro del nombre.',guide);
     var names=el('p','Cargando equipo…',guide);
     var label=el('label','Bloque de tareas');label.htmlFor='chat-tasks-input';
-    var input=el('textarea');input.id=label.htmlFor;input.rows=7;input.maxLength=60000;input.placeholder='Tarea | Fecha | Responsable | Área | Proyecto\nPreparar propuesta | 2026-09-25 | - | Diseño | Boda Fernández';
+    var input=el('textarea');input.id=label.htmlFor;input.rows=7;input.maxLength=60000;input.placeholder='Tarea | Fecha | Responsable | Área | Proyecto | Prioritaria\nPreparar propuesta | 2026-09-25 | - | Diseño | Boda Fernández | Sí';
     var status=el('p');status.setAttribute('role','status');status.setAttribute('aria-live','polite');
     var preview=el('div');preview.className='chat-tasks-preview';
     var actions=el('div');actions.className='chat-tasks-actions';
@@ -106,9 +107,9 @@
         var data=await read();showNames(data);var result=parse(input.value,data);
         if(result.errors.length)throw Error(result.errors.join('\n'));
         var table=el('table','',preview),head=el('tr','',el('thead','',table));
-        ['Tarea','Fecha','Responsable','Área','Proyecto','Resultado'].forEach(function(v){el('th',v,head);});
+        ['Tarea','Fecha','Responsable','Área','Proyecto','Prioritaria','Resultado'].forEach(function(v){el('th',v,head);});
         var body=el('tbody','',table);
-        result.tasks.forEach(function(t){var row=el('tr','',body),m=(data.teamMembers||[]).find(function(m){return m.id===t.resp;});[t.text,t.deadline||'Sin fecha',m?m.name:'Sin asignar',t.area||'Sin área',t.projName||'Tarea libre',t.duplicate?'Se omitirá: idéntica':'Nueva'].forEach(function(v){el('td',v,row);});});
+        result.tasks.forEach(function(t){var row=el('tr','',body),m=(data.teamMembers||[]).find(function(m){return m.id===t.resp;});[t.text,t.deadline||'Sin fecha',m?m.name:'Sin asignar',t.area||'Sin área',t.projName||'Tarea libre',t.priority?'★ Sí':'No',t.duplicate?'Se omitirá: idéntica':'Nueva'].forEach(function(v){el('td',v,row);});});
         var count=result.tasks.filter(function(t){return !t.duplicate;}).length;
         status.textContent=count+' tareas nuevas; '+(result.tasks.length-count)+' idénticas se omitirán. Las fechas se muestran como año-mes-día.';
         if(count){reviewed=input.value;ids=result.tasks.map(function(t){return (t.projId?'pt_':'st_')+crypto.randomUUID();});create.textContent='Crear '+count+' tareas';}
