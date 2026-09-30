@@ -745,6 +745,8 @@ select.eq-org-new-inp option{background:#1a1f35;}
 .eq-org-cal-wkrow{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:9px;padding:8px 12px 0;flex-shrink:0;}
 .eq-org-cal-wkhdr{text-align:center;font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:rgba(255,255,255,.25);}
 .eq-org-cols-wrap.eq-cal-mode{grid-template-columns:repeat(7,minmax(0,1fr));}
+.eq-org-cols-wrap.eq-general-mode{grid-template-columns:1fr;}
+.eq-org-general-list{display:flex;flex-direction:column;gap:6px;min-width:0;}
 .eq-orgcol.cal-day{min-height:92px;cursor:pointer;}
 .eq-orgcol.cal-day:hover{border-color:rgba(255,255,255,.18);}
 .eq-orgcol.cal-day.other-month{opacity:.4;}
@@ -1194,7 +1196,7 @@ function renderTeamHeader(main,allTasks){
 function buildGroupToggle(){
   var groupBar=document.createElement('div');groupBar.className='eq-org-groupbar eq-dash-groupbar';
   var glbl=document.createElement('span');glbl.className='eq-org-groupbar-lbl';glbl.textContent='Ver por';groupBar.appendChild(glbl);
-  [['area','🏢 Por área'],['persona','👤 Por persona'],['proyecto','📁 Por proyecto'],['fecha','📅 Por fecha']].forEach(function(pair){
+  [['general','🗂 Todas'],['area','🏢 Por área'],['persona','👤 Por persona'],['proyecto','📁 Por proyecto'],['fecha','📅 Por fecha']].forEach(function(pair){
     var gb=document.createElement('button');gb.className='eq-org-groupbtn'+(_orgGroupBy===pair[0]?' active':'');gb.textContent=pair[1];
     gb.onclick=(function(g){return function(){_orgGroupBy=g;renderDashboard();};})(pair[0]);
     groupBar.appendChild(gb);
@@ -1241,7 +1243,7 @@ function renderDashboard(){
 }
 
 // ── TEAM: ORGANIZAR TAREAS ────────────────────────────────────────
-var _orgDragGhost=null,_orgDragTask=null,_orgDragEl=null,_orgGroupBy='area',_orgCalDate=null;
+var _orgDragGhost=null,_orgDragTask=null,_orgDragEl=null,_orgGroupBy='general',_orgCalDate=null;
 function renderTeamOrganizar(main,allTasks){
   var wrap=document.createElement('div');wrap.className='eq-org-wrap';main.appendChild(wrap);
 
@@ -1279,30 +1281,33 @@ function renderTeamOrganizar(main,allTasks){
   expRow.appendChild(expInp);expRow.appendChild(expBtn);expBar.appendChild(expLbl);expBar.appendChild(expRow);lp.appendChild(expBar);
 
   // ── UNASSIGNED TASK LIST (su criterio depende del modo: sin área / sin encargado) ──
-  var llbl=document.createElement('div');llbl.className='eq-org-left-lbl';
-  var unassignedTasks=_orgGroupBy==='persona'
-    ? allTasks.filter(function(t){return!t.done&&!t.resp;})
-    : _orgGroupBy==='proyecto'
-    ? allTasks.filter(function(t){return!t.done&&t._type==='standalone';})
-    : _orgGroupBy==='fecha'
-    ? allTasks.filter(function(t){return!t.done&&!t.deadline;})
-    : allTasks.filter(function(t){return!t.done&&(!t.area||t.area==='');});
-  var unassignedLbl=_orgGroupBy==='persona'?'Sin encargado · ':_orgGroupBy==='proyecto'?'Sin proyecto · ':_orgGroupBy==='fecha'?'Sin fecha · ':'Sin asignar · ';
-  llbl.textContent=unassignedLbl+unassignedTasks.length;
-  lp.appendChild(llbl);
-  var ll=document.createElement('div');ll.className='eq-org-left-list';lp.appendChild(ll);
-  if(!unassignedTasks.length){
-    var emp=document.createElement('div');emp.className='eq-org-left-empty';
-    emp.textContent=_orgGroupBy==='persona'?'Todas las tareas tienen encargado ✓':_orgGroupBy==='proyecto'?'Todas las tareas libres tienen proyecto ✓':_orgGroupBy==='fecha'?'Todas las tareas tienen fecha ✓':'Todas las tareas están asignadas ✓';
-    ll.appendChild(emp);
-  } else {
-    unassignedTasks.forEach(function(t){
-      var tc=buildOrgTask(t);
-      initOrgDrag(tc,t,wrap);
-      ll.appendChild(tc);
-    });
-    // Left panel is also a drop target → add visual indicator
-    ll.setAttribute('data-drop-unassigned','1');
+  // En "Todas" no aplica — ahí nada queda oculto, así que no hay concepto de "sin asignar".
+  if(_orgGroupBy!=='general'){
+    var llbl=document.createElement('div');llbl.className='eq-org-left-lbl';
+    var unassignedTasks=_orgGroupBy==='persona'
+      ? allTasks.filter(function(t){return!t.done&&!t.resp;})
+      : _orgGroupBy==='proyecto'
+      ? allTasks.filter(function(t){return!t.done&&t._type==='standalone';})
+      : _orgGroupBy==='fecha'
+      ? allTasks.filter(function(t){return!t.done&&!t.deadline;})
+      : allTasks.filter(function(t){return!t.done&&(!t.area||t.area==='');});
+    var unassignedLbl=_orgGroupBy==='persona'?'Sin encargado · ':_orgGroupBy==='proyecto'?'Sin proyecto · ':_orgGroupBy==='fecha'?'Sin fecha · ':'Sin asignar · ';
+    llbl.textContent=unassignedLbl+unassignedTasks.length;
+    lp.appendChild(llbl);
+    var ll=document.createElement('div');ll.className='eq-org-left-list';lp.appendChild(ll);
+    if(!unassignedTasks.length){
+      var emp=document.createElement('div');emp.className='eq-org-left-empty';
+      emp.textContent=_orgGroupBy==='persona'?'Todas las tareas tienen encargado ✓':_orgGroupBy==='proyecto'?'Todas las tareas libres tienen proyecto ✓':_orgGroupBy==='fecha'?'Todas las tareas tienen fecha ✓':'Todas las tareas están asignadas ✓';
+      ll.appendChild(emp);
+    } else {
+      unassignedTasks.forEach(function(t){
+        var tc=buildOrgTask(t);
+        initOrgDrag(tc,t,wrap);
+        ll.appendChild(tc);
+      });
+      // Left panel is also a drop target → add visual indicator
+      ll.setAttribute('data-drop-unassigned','1');
+    }
   }
 
   // ── RIGHT PANEL: COLUMNS (el toggle Ver por área/persona vive en el toolbar) ──
@@ -1313,9 +1318,24 @@ function renderTeamOrganizar(main,allTasks){
     rp.appendChild(buildOrgCalWeekRow());
   }
 
-  var colWrap=document.createElement('div');colWrap.className='eq-org-cols-wrap'+(_orgGroupBy==='fecha'?' eq-cal-mode':'');rp.appendChild(colWrap);
+  var colWrap=document.createElement('div');colWrap.className='eq-org-cols-wrap'+(_orgGroupBy==='fecha'?' eq-cal-mode':_orgGroupBy==='general'?' eq-general-mode':'');rp.appendChild(colWrap);
 
-  if(_orgGroupBy==='fecha'){
+  if(_orgGroupBy==='general'){
+    // ── TODAS — lista plana sin agrupar, garantiza que nada quede oculto
+    // por no tener área/encargado/proyecto/fecha asignados ──
+    var generalTasks=allTasks.filter(function(t){return!t.done;});
+    var genList=document.createElement('div');genList.className='eq-org-general-list';
+    if(!generalTasks.length){
+      var gemp=document.createElement('div');gemp.className='eq-orgcol-empty';gemp.textContent='No hay tareas pendientes.';genList.appendChild(gemp);
+    } else {
+      generalTasks.forEach(function(t){
+        var card=buildOrgPersonTask(t);
+        initOrgDrag(card,t,wrap);
+        genList.appendChild(card);
+      });
+    }
+    colWrap.appendChild(genList);
+  } else if(_orgGroupBy==='fecha'){
     renderOrgCalendarDays(colWrap,allTasks,wrap);
   } else if(_orgGroupBy==='proyecto'){
     // ── COLUMNS PER PROJECT — solo proyectos activos (ni cotizaciones,
@@ -1851,6 +1871,7 @@ function moveTaskToProject(task,newProjId){
 // Groups by area or by encargado depending on the shared _orgGroupBy toggle.
 function addTeamAreaGroups(zone,tasks,buildFn){
   if(!tasks.length)return;
+  if(_orgGroupBy==='general'){tasks.forEach(function(t){zone.appendChild(buildFn(t));});return;}
   var byPerson=_orgGroupBy==='persona';
   var groups={},order=[];
   tasks.forEach(function(t){
