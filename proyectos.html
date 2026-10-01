@@ -1033,6 +1033,7 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
   var editingPhasePayments = [];
   var taskPanelProjectId = null;
   var detailProjectId = null;
+  var _fabActionHandled = false;
   var COMPANIES = [
     {id:'dcoder',    name:'Dcoder Studio', abbr:'DC', color:'#6B7280'},
     {id:'gestchaft', name:'Gestchaft',     abbr:'GS', color:'#27AE72'},
@@ -4708,6 +4709,12 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
     renderCompanyBar();
     renderBoard();
     if (detailProjectId && !_activePicker) { renderDetailKanban(); }
+    if (!_fabActionHandled) {
+      _fabActionHandled = true;
+      var fabAction = new URLSearchParams(location.search).get('fabAction');
+      if (fabAction === 'proj-manual') openProjModal(null, null);
+      else if (fabAction === 'proj-chat') openProjPasteDialog();
+    }
   }, function(e) {
     console.warn('Error al cargar:', e);
     renderTabs();
