@@ -1716,6 +1716,49 @@ function initOrgDrag(cardEl,task,wrap){
   });
 }
 
+// ── TEAM: HOY — drag entre zonas de prioridad/hoy (como en el perfil
+// individual) para alternar la prioridad arrastrando la tarjeta ────
+function initTeamHoyDrag(card,task,prioZone,todayZone,srcZone){
+  card.addEventListener('pointerdown',function(e){
+    if(e.pointerType==='touch'||window.matchMedia('(max-width:900px)').matches)return;
+    if(e.button!==0||e.target.closest('button')||e.target.closest('.eq-hcard-chk'))return;
+    var sx=e.clientX,sy=e.clientY,dragging=false,ghost=null,captured=false;
+    var pid=e.pointerId;
+    var dropZone=srcZone==='prio'?todayZone:prioZone;
+    function onMove(ev){
+      var dx=ev.clientX-sx,dy=ev.clientY-sy;
+      if(!dragging&&Math.sqrt(dx*dx+dy*dy)>8){
+        dragging=true;
+        if(!captured){try{card.setPointerCapture(pid);}catch(err){}captured=true;}
+        ghost=document.createElement('div');ghost.className='eq-hoy-ghost';
+        ghost.textContent=task.text;ghost.style.cssText='position:fixed;z-index:9998;pointer-events:none;';
+        document.body.appendChild(ghost);
+        card.style.opacity='.3';
+      }
+      if(dragging&&ghost){
+        ghost.style.left=(ev.clientX-40)+'px';ghost.style.top=(ev.clientY-22)+'px';
+        var r=dropZone.getBoundingClientRect();
+        var over=ev.clientX>=r.left&&ev.clientX<=r.right&&ev.clientY>=r.top&&ev.clientY<=r.bottom;
+        dropZone.classList.toggle('drop-over',over);
+      }
+    }
+    function onUp(ev){
+      document.removeEventListener('pointermove',onMove);document.removeEventListener('pointerup',onUp);
+      if(ghost){ghost.remove();ghost=null;}
+      card.style.opacity='';dropZone.classList.remove('drop-over');
+      if(dragging){
+        card.addEventListener('click',function stopClick(ce){ce.stopPropagation();ce.preventDefault();},{once:true,capture:true});
+        var r=dropZone.getBoundingClientRect();
+        if(ev.clientX>=r.left&&ev.clientX<=r.right&&ev.clientY>=r.top&&ev.clientY<=r.bottom){
+          toggleTeamTaskPriority(task);
+        }
+      }
+      dragging=false;captured=false;
+    }
+    document.addEventListener('pointermove',onMove);document.addEventListener('pointerup',onUp);
+  });
+}
+
 // ── TEAM: HOY — COLUMNS BY AREA ──────────────────────────────────
 // ── TEAM: HOY — FLAT LIST (mirrors individual member view) ───────
 function renderTeamHoyAll(cont,allTasks){
@@ -1742,16 +1785,19 @@ function renderTeamHoyAll(cont,allTasks){
   prioZone.appendChild(prioHdr);
   var todayZone=document.createElement('div');todayZone.className='eq-hoy-today-zone';
   todayZone.appendChild(mkSHdr('Hoy'+(todayAll.length?' — '+todayAll.length:''),'blue'));
+  var prioDragCards=[],todayDragCards=[];
   if(!prioAll.length){prioZone.appendChild(mkSecEmpty('Sin prioridades para hoy'));}
   else{
-    addTeamAreaGroups(prioZone,prioUndone,function(t){return buildTeamHoyCard(t,true,{});});
+    addTeamAreaGroups(prioZone,prioUndone,function(t){var c=buildTeamHoyCard(t,true,{});prioDragCards.push({card:c,task:t});return c;});
     addTeamAreaGroups(prioZone,prioDone,function(t){return buildTeamHoyCard(t,true,{});});
   }
   if(!todayAll.length){todayZone.appendChild(mkSecEmpty('Todo al día'));}
   else{
-    addTeamAreaGroups(todayZone,todayUndone,function(t){return buildTeamHoyCard(t,false,{showTomorrow:true,section:'today'});});
+    addTeamAreaGroups(todayZone,todayUndone,function(t){var c=buildTeamHoyCard(t,false,{showTomorrow:true,section:'today'});todayDragCards.push({card:c,task:t});return c;});
     addTeamAreaGroups(todayZone,todayDone,function(t){return buildTeamHoyCard(t,false,{section:'today'});});
   }
+  prioDragCards.forEach(function(cd){initTeamHoyDrag(cd.card,cd.task,prioZone,todayZone,'prio');});
+  todayDragCards.forEach(function(cd){initTeamHoyDrag(cd.card,cd.task,prioZone,todayZone,'today');});
   block.appendChild(prioZone);
   var zsep=document.createElement('div');zsep.className='eq-hoy-zone-sep';block.appendChild(zsep);
   block.appendChild(todayZone);
