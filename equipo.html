@@ -1717,13 +1717,15 @@ function initOrgDrag(cardEl,task,wrap){
 }
 
 // ── TEAM: HOY — drag entre zonas de prioridad/hoy (como en el perfil
-// individual) para alternar la prioridad arrastrando la tarjeta ────
-function initTeamHoyDrag(card,task,prioZone,todayZone,srcZone){
+// individual) para alternar la prioridad arrastrando la tarjeta, Y
+// drag DENTRO de la misma zona para reordenar manualmente (sortOrder) ──
+function initTeamHoyDrag(card,task,prioZone,todayZone,srcZone,zoneTasks){
   card.addEventListener('pointerdown',function(e){
     if(e.pointerType==='touch'||window.matchMedia('(max-width:900px)').matches)return;
     if(e.button!==0||e.target.closest('button')||e.target.closest('.eq-hcard-chk'))return;
     var sx=e.clientX,sy=e.clientY,dragging=false,ghost=null,captured=false;
     var pid=e.pointerId;
+    var sameZone=srcZone==='prio'?prioZone:todayZone;
     var dropZone=srcZone==='prio'?todayZone:prioZone;
     function onMove(ev){
       var dx=ev.clientX-sx,dy=ev.clientY-sy;
@@ -1751,6 +1753,8 @@ function initTeamHoyDrag(card,task,prioZone,todayZone,srcZone){
         var r=dropZone.getBoundingClientRect();
         if(ev.clientX>=r.left&&ev.clientX<=r.right&&ev.clientY>=r.top&&ev.clientY<=r.bottom){
           toggleTeamTaskPriority(task);
+        } else if(zoneTasks&&zoneTasks.length>1){
+          reorderTeamHoyTask(task,card,zoneTasks,sameZone,ev.clientY);
         }
       }
       dragging=false;captured=false;
@@ -1758,16 +1762,38 @@ function initTeamHoyDrag(card,task,prioZone,todayZone,srcZone){
     document.addEventListener('pointermove',onMove);document.addEventListener('pointerup',onUp);
   });
 }
+function reorderTeamHoyTask(task,card,zoneTasks,sameZone,clientY){
+  var siblingCards=Array.from(sameZone.querySelectorAll('.eq-hcard:not(.done)')).filter(function(el){return el!==card;});
+  var targetIdx=siblingCards.length;
+  for(var i=0;i<siblingCards.length;i++){
+    var r=siblingCards[i].getBoundingClientRect();
+    if(clientY<r.top+r.height/2){targetIdx=i;break;}
+  }
+  var order=zoneTasks.slice();
+  var curIdx=order.indexOf(task);
+  if(curIdx===-1)return;
+  order.splice(curIdx,1);
+  if(targetIdx>curIdx)targetIdx--;
+  order.splice(targetIdx,0,task);
+  var changed=order.some(function(t,i){return t!==zoneTasks[i];});
+  if(!changed)return;
+  teamTaskUpdateBulk(order.map(function(t,i){return {task:t,changes:{sortOrder:i}};}));
+}
 
 // ── TEAM: HOY — COLUMNS BY AREA ──────────────────────────────────
 // ── TEAM: HOY — FLAT LIST (mirrors individual member view) ───────
 function renderTeamHoyAll(cont,allTasks){
   var ds=today();var t0=new Date();t0.setHours(0,0,0,0);
   var prioAll=allTasks.filter(function(x){return!!x.priority&&(x.deadline===ds||!x.deadline);});
-  var prioUndone=prioAll.filter(function(x){return!x.done;});
+  var bySortOrder=function(a,b){
+    var ao=typeof a.sortOrder==='number'?a.sortOrder:Infinity;
+    var bo=typeof b.sortOrder==='number'?b.sortOrder:Infinity;
+    return ao-bo;
+  };
+  var prioUndone=prioAll.filter(function(x){return!x.done;}).sort(bySortOrder);
   var prioDone=prioAll.filter(function(x){return x.done;});
   var todayAll=allTasks.filter(function(x){return x.deadline===ds&&!x.priority;});
-  var todayUndone=todayAll.filter(function(x){return!x.done;});
+  var todayUndone=todayAll.filter(function(x){return!x.done;}).sort(bySortOrder);
   var todayDone=todayAll.filter(function(x){return x.done;});
   var overdue=allTasks.filter(function(x){if(!x.deadline||x.done)return false;return new Date(x.deadline+'T00:00:00')<t0;});
   var upcoming=allTasks.filter(function(x){
@@ -1796,8 +1822,10 @@ function renderTeamHoyAll(cont,allTasks){
     addTeamAreaGroups(todayZone,todayUndone,function(t){var c=buildTeamHoyCard(t,false,{showTomorrow:true,section:'today'});todayDragCards.push({card:c,task:t});return c;});
     addTeamAreaGroups(todayZone,todayDone,function(t){return buildTeamHoyCard(t,false,{section:'today'});});
   }
-  prioDragCards.forEach(function(cd){initTeamHoyDrag(cd.card,cd.task,prioZone,todayZone,'prio');});
-  todayDragCards.forEach(function(cd){initTeamHoyDrag(cd.card,cd.task,prioZone,todayZone,'today');});
+  var prioOrder=prioDragCards.map(function(cd){return cd.task;});
+  var todayOrder=todayDragCards.map(function(cd){return cd.task;});
+  prioDragCards.forEach(function(cd){initTeamHoyDrag(cd.card,cd.task,prioZone,todayZone,'prio',prioOrder);});
+  todayDragCards.forEach(function(cd){initTeamHoyDrag(cd.card,cd.task,prioZone,todayZone,'today',todayOrder);});
   block.appendChild(prioZone);
   var zsep=document.createElement('div');zsep.className='eq-hoy-zone-sep';block.appendChild(zsep);
   block.appendChild(todayZone);
@@ -1874,6 +1902,28 @@ function teamTaskUpdate(task,changes){
       return Object.assign({},p,{stageTasks:st});
     });
   }
+  saveTaskChange();
+  if(_viewMode==='area'&&_selArea){renderAreaMain(_selArea);renderRightArea(_selArea);renderAreaList();}
+  else{renderDashboard();}
+}
+// Igual que teamTaskUpdate pero aplica varios cambios (p.ej. un
+// reordenamiento manual que toca el sortOrder de toda una lista) antes
+// de guardar y volver a renderizar una sola vez.
+function teamTaskUpdateBulk(updates){
+  updates.forEach(function(u){
+    var task=u.task,changes=u.changes;
+    if(task._type==='standalone'||task.type==='standalone'){
+      standaloneTasks=(standaloneTasks||[]).map(function(t){return t.id===task.id?Object.assign({},t,changes):t;});
+    } else {
+      var pid=task._projId||task.projId;var stg=task._stage||task.stage;
+      projects=(projects||[]).map(function(p){
+        if(p.id!==pid)return p;
+        var st=Object.assign({},p.stageTasks||{});
+        st[stg]=(st[stg]||[]).map(function(t){return t.id===task.id?Object.assign({},t,changes):t;});
+        return Object.assign({},p,{stageTasks:st});
+      });
+    }
+  });
   saveTaskChange();
   if(_viewMode==='area'&&_selArea){renderAreaMain(_selArea);renderRightArea(_selArea);renderAreaList();}
   else{renderDashboard();}
