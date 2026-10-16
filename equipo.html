@@ -2361,6 +2361,14 @@ function createStandaloneTask(text,resp,area,deadline){
 function getActiveProjects(){
   return (projects||[]).filter(function(p){ return p.catId!=='cotizaciones' && !p.concluded && !p.pendingApproval && !p.quoteArchived; });
 }
+// Para el selector de proyecto al crear una tarea: además de los
+// activos, incluye los que están "Pendientes de aprobación" — ya
+// existen (con categoría y fases asignadas), solo falta confirmarlos,
+// y puede haber tareas que haya que ir dejando listas desde antes.
+// Nunca incluye cotizaciones, concluidos ni rechazados.
+function getTaskableProjects(){
+  return (projects||[]).filter(function(p){ return p.catId!=='cotizaciones' && !p.concluded && !p.quoteArchived; });
+}
 
 function createProjectTask(text,resp,area,deadline,projId){
   var pi=-1; for(var i=0;i<projects.length;i++){ if(projects[i].id===projId){ pi=i; break; } }
@@ -2776,7 +2784,7 @@ function showNewTaskModal(){
   var lblP=document.createElement('div');lblP.className='eq-tem-lbl';lblP.textContent='Proyecto';modal.appendChild(lblP);
   var selP=document.createElement('select');selP.className='eq-tem-select';
   var p0=document.createElement('option');p0.value='';p0.textContent='Otros (sin proyecto)';selP.appendChild(p0);
-  getActiveProjects().forEach(function(pr){var o=document.createElement('option');o.value=pr.id;o.textContent=pr.name;selP.appendChild(o);});
+  getTaskableProjects().forEach(function(pr){var o=document.createElement('option');o.value=pr.id;o.textContent=pr.name+(pr.pendingApproval?' (pendiente)':'');selP.appendChild(o);});
   modal.appendChild(selP);
 
   // Área

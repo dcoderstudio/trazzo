@@ -10,7 +10,10 @@
     return matches[0];
   }
   function activeProjectsOf(data){
-    return (data.projects||[]).filter(function(p){return p.catId!=='cotizaciones'&&!p.concluded&&!p.pendingApproval&&!p.quoteArchived;});
+    // Incluye "pendientes de aprobación" — ya existen y pueden necesitar
+    // tareas antes de confirmarse; solo excluye cotizaciones, concluidos
+    // y rechazados.
+    return (data.projects||[]).filter(function(p){return p.catId!=='cotizaciones'&&!p.concluded&&!p.quoteArchived;});
   }
   function key(t){return JSON.stringify([norm(t.text),t.deadline||'',String(t.resp||''),norm(t.area),String(t.projId||'')]);}
   function parse(text,data){

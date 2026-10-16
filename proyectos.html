@@ -4129,8 +4129,8 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
     var inp = document.getElementById('gtmInp'); inp.value = '';
     var projSel = document.getElementById('gtmProjSel'); projSel.innerHTML = '';
     var opt0 = document.createElement('option'); opt0.value = ''; opt0.textContent = 'Otros (sin proyecto)'; projSel.appendChild(opt0);
-    projects.filter(function(p) { return p.catId !== 'cotizaciones' && !p.concluded && !p.pendingApproval && !p.quoteArchived; }).forEach(function(p) {
-      var o = document.createElement('option'); o.value = String(p.id); o.textContent = p.name; projSel.appendChild(o);
+    projects.filter(function(p) { return p.catId !== 'cotizaciones' && !p.concluded && !p.quoteArchived; }).forEach(function(p) {
+      var o = document.createElement('option'); o.value = String(p.id); o.textContent = p.name + (p.pendingApproval ? ' (pendiente)' : ''); projSel.appendChild(o);
     });
     var areaSel = document.getElementById('gtmAreaSel'); areaSel.innerHTML = '';
     var a0 = document.createElement('option'); a0.value = ''; a0.textContent = 'Sin área'; areaSel.appendChild(a0);

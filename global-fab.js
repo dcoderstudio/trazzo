@@ -123,12 +123,12 @@
 
     fsDoc().get().then(function(snap) {
       var d = snap.exists ? snap.data() : {};
-      var projects = (d.projects || []).filter(function(p){ return p.catId !== 'cotizaciones' && !p.concluded && !p.pendingApproval && !p.quoteArchived; });
+      var projects = (d.projects || []).filter(function(p){ return p.catId !== 'cotizaciones' && !p.concluded && !p.quoteArchived; });
       var areas = (d.workAreas && d.workAreas.length) ? d.workAreas : [{name:'Campo'},{name:'Logística'},{name:'Diseño'},{name:'Dirección'},{name:'Administración'},{name:'Taller'}];
       var members = d.teamMembers || [];
 
       var o0 = document.createElement('option'); o0.value = ''; o0.textContent = 'Otros (sin proyecto)'; projSel.appendChild(o0);
-      projects.forEach(function(p){ var o = document.createElement('option'); o.value = String(p.id); o.textContent = p.name; projSel.appendChild(o); });
+      projects.forEach(function(p){ var o = document.createElement('option'); o.value = String(p.id); o.textContent = p.name + (p.pendingApproval ? ' (pendiente)' : ''); projSel.appendChild(o); });
 
       var a0 = document.createElement('option'); a0.value = ''; a0.textContent = 'Sin área'; areaSel.appendChild(a0);
       areas.forEach(function(a){ var o = document.createElement('option'); o.value = a.name; o.textContent = a.name; areaSel.appendChild(o); });
