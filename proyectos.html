@@ -1550,7 +1550,9 @@ html{height:-webkit-fill-available;}body{height:100%;min-height:-webkit-fill-ava
     nameWrap.appendChild(client);
     top.appendChild(nameWrap);
     var badge = document.createElement('span'); badge.className = 'summary-card-pill';
-    badge.textContent = p.concluded ? '✓ Concluido' : (p.client || '—');
+    if (p.concluded) { badge.textContent = '✓ Concluido'; }
+    else if (p.pendingApproval) { badge.textContent = '🕐 Pendiente de aprobación'; badge.style.cssText = 'background:rgba(232,160,32,.18);color:#E8A020;'; }
+    else { badge.textContent = p.client || '—'; }
     top.appendChild(badge);
     card.appendChild(top);
 
