@@ -80,7 +80,7 @@
     overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(8px);z-index:9970;display:flex;align-items:center;justify-content:center;';
     overlay.onclick = function(e){ if (e.target === overlay) closeGenericModal(); };
     var modal = document.createElement('div');
-    modal.style.cssText = 'background:#141c2e;border:.5px solid rgba(255,255,255,.14);border-radius:14px;width:340px;padding:18px 18px 16px;box-shadow:0 24px 64px rgba(0,0,0,.85);font-family:Inter,sans-serif;';
+    modal.style.cssText = 'background:#141c2e;border:.5px solid rgba(255,255,255,.14);border-radius:14px;width:min(340px,calc(100vw - 32px));padding:18px 18px 16px;box-shadow:0 24px 64px rgba(0,0,0,.85);font-family:Inter,sans-serif;';
     modal.onclick = function(e){ e.stopPropagation(); };
 
     function lbl(text) { var d = document.createElement('div'); d.textContent = text; d.style.cssText = 'font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:rgba(255,255,255,.3);margin-bottom:5px;margin-top:10px;'; return d; }

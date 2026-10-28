@@ -110,6 +110,16 @@ html,body{height:100%;background:#0c0c0c;color:#fff;font-family:'Inter',sans-ser
 
 @keyframes pulse{0%,100%{opacity:.1}50%{opacity:.25}}
 .focus-panel.running::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at center,rgba(232,160,32,0.1) 0%,transparent 70%);animation:pulse 3s ease-in-out infinite;pointer-events:none;}
+
+/* ── MOBILE ────────────────────────────────────────────── */
+@media (max-width:760px){
+  html,body{height:auto;min-height:100%;overflow-x:hidden;}
+  .layout{height:auto;flex-direction:column-reverse;}
+  .task-panel{width:100%;border-right:none;border-top:0.5px solid rgba(255,255,255,0.06);overflow:visible;}
+  .focus-panel{padding:28px 16px;}
+  .timer-display{font-size:40px;}
+  .session-log{display:none;}
+}
 </style>
 </head>
 <body>

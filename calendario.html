@@ -505,6 +505,20 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
 .wko-entrega-day-sel{background:rgba(255,255,255,.05);border:0.5px solid rgba(26,111,212,.18);border-radius:8px;padding:4px 6px;font-size:10px;color:rgba(255,255,255,.65);font-family:Inter,sans-serif;outline:none;flex-shrink:0;}
 .wko-entrega-ok{background:rgba(26,111,212,.18);border:none;color:#5AB4E8;font-size:12px;border-radius:8px;padding:0 10px;cursor:pointer;font-family:Inter,sans-serif;transition:all .15s;flex-shrink:0;}
 .wko-entrega-ok:hover{background:rgba(26,111,212,.35);color:#fff;}
+
+/* ── MOBILE ────────────────────────────────────────────── */
+@media (max-width:760px){
+  html,body{height:auto;min-height:100%;overflow-x:hidden;}
+  .topbar-spacer{display:none;}
+  .cal-wrap{height:auto;flex-direction:column-reverse;overflow:visible;}
+  .cal-sidebar{width:100%;border-right:none;border-top:0.5px solid rgba(255,255,255,0.06);max-height:none;overflow-y:visible;}
+  .cal-main{overflow:visible;}
+  .cal-grid-wrap{overflow-y:visible;}
+  .cal-nav-bar{height:auto;flex-wrap:wrap;gap:8px;padding:8px 12px;}
+  .cal-period{min-width:0;}
+  .member-bar{padding:7px 12px;}
+  .month-day{min-height:72px;padding:6px 5px 4px;}
+}
 </style>
 </head>
 <body>
@@ -517,7 +531,7 @@ input[type=date].mi::-webkit-calendar-picker-indicator,input[type=time].mi::-web
     <button class="nav-btn active">Calendario</button>
     <button class="nav-btn" onclick="location.href='equipo.html'">Equipo</button>
   </div>
-  <div style="width:120px;"></div>
+  <div class="topbar-spacer" style="width:120px;"></div>
 </div>
 
 <div class="cal-wrap">

@@ -164,6 +164,23 @@ html,body{
   border:0.5px solid rgba(255,255,255,.09) !important;
 }
 
+/* ── MOBILE: TOPBAR NAV ────────────────────────────────── */
+/* Index, Proyectos, Calendario and Focus share this .topbar/.topbar-center
+   markup (Equipo has its own, already handled by equipo-mobile.css). On
+   phones the centered-absolute nav no longer fits next to the logo and
+   whatever sits on the right, so it becomes a normal flex item that
+   scrolls horizontally instead of overlapping everything else. */
+@media (max-width:640px){
+  .topbar{padding:0 12px;gap:8px;}
+  .topbar-center{
+    position:static;left:auto;top:auto;transform:none;
+    flex:1 1 auto;min-width:0;justify-content:flex-start;
+    overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;
+  }
+  .topbar-center::-webkit-scrollbar{display:none;}
+  .topbar .nav-btn{flex-shrink:0;padding:8px 12px;font-size:12px;min-height:40px;}
+}
+
 /* ── SCROLLBAR global ──────────────────────────────────── */
 ::-webkit-scrollbar{width:4px;height:4px;}
 ::-webkit-scrollbar-track{background:transparent;}

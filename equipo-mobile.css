@@ -60,8 +60,8 @@
  .eq-member-add-btn,.eq-org-new-btn,.eq-back-btn{min-height:44px;font-size:14px}
  #rightGoals,#rightArea,.eq-right-area,.eq-right-area-list,.eq-glist{overflow:visible!important;flex:none!important;height:auto;max-height:none}
  .eq-gcard{flex:none}.eq-gadd{min-width:44px;min-height:44px}.eq-gtitle{font-size:13px}
- .eq-task-edit-overlay,#eqModalOv{padding:12px;overflow-y:auto;align-items:flex-start!important}
- .eq-task-edit-modal,#eqModalOv>div{width:100%!important;max-width:440px!important;max-height:calc(100dvh - 24px);overflow-y:auto;margin:auto;padding:18px!important}
+ .eq-task-edit-overlay,#eqModalOv,.eq-org-day-overlay{padding:12px;overflow-y:auto;align-items:flex-start!important}
+ .eq-task-edit-modal,#eqModalOv>div,.eq-org-day-modal{width:100%!important;max-width:440px!important;max-height:calc(100dvh - 24px);overflow-y:auto;margin:auto;padding:18px!important}
  .eq-tem-title{font-size:20px}.eq-tem-lbl{font-size:12px}.eq-tem-src{font-size:12px;color:#a9b5cb}
  input,select,textarea,.eq-tem-inp,.eq-tem-select{font-size:16px!important;min-height:44px}
  .eq-tem-btns{flex-wrap:wrap}.eq-tem-btns button{min-height:44px;font-size:14px}
