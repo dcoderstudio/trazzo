@@ -4,7 +4,7 @@
   "description": "Dcoder Studio — gestión de proyectos y planificación",
   "start_url": "/equipo.html",
   "display": "standalone",
-  "orientation": "portrait-primary",
+  "orientation": "any",
   "background_color": "#0c0c0c",
   "theme_color": "#000000",
   "icons": [
