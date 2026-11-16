@@ -99,12 +99,16 @@ body{height:100%;min-height:-webkit-fill-available;background:#0c0c0c;color:#fff
 .nb-canvas-wrap{flex:1;min-height:0;position:relative;border:1.5px solid rgba(58,46,28,0.18);border-radius:10px;overflow:hidden;background:repeating-linear-gradient(transparent 0 27px, rgba(140,110,70,0.14) 27px 28px);touch-action:none;}
 #noteCanvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none;}
 
-/* ── MOBILE ── */
+/* ── MOBILE/PORTRAIT ── */
+/* A clear fixed split instead of one long scrolling page: tasks get a
+   bounded area up top (scrolls on its own if the list is long), notes
+   get the rest of the height so the writing surface is never squished. */
 @media (max-width:900px){
   .notebook{flex-direction:column;border-radius:14px;}
-  .nb-rings{width:100%;height:16px;flex-direction:row;background:linear-gradient(180deg,rgba(0,0,0,.3),rgba(0,0,0,.06) 40%,rgba(0,0,0,.06) 60%,rgba(0,0,0,.3));padding:0 18px;}
-  .nb-page{overflow-y:visible;}
-  .nb-canvas-wrap{min-height:280px;}
+  .nb-rings{width:100%;height:14px;flex-shrink:0;flex-direction:row;background:linear-gradient(180deg,rgba(0,0,0,.3),rgba(0,0,0,.06) 40%,rgba(0,0,0,.06) 60%,rgba(0,0,0,.3));padding:0 18px;}
+  .nb-page-left{flex:0 1 42%;min-height:160px;}
+  .nb-page-right{flex:1 1 auto;min-height:0;}
+  .nb-canvas-wrap{min-height:160px;}
 }
 @media (max-width:520px){
   .nb-page-left::after{left:28px;}
@@ -303,6 +307,7 @@ body{height:100%;min-height:-webkit-fill-available;background:#0c0c0c;color:#fff
   }
 
   function shiftDay(delta) {
+    flushSave();
     var d = parseDate(_selDate);
     d.setDate(d.getDate() + delta);
     _selDate = fmt(d);
@@ -311,7 +316,7 @@ body{height:100%;min-height:-webkit-fill-available;background:#0c0c0c;color:#fff
 
   document.getElementById('dayPrevBtn').onclick = function() { shiftDay(-1); };
   document.getElementById('dayNextBtn').onclick = function() { shiftDay(1); };
-  document.getElementById('dayTodayBtn').onclick = function() { _selDate = todayStr(); onDateChanged(); };
+  document.getElementById('dayTodayBtn').onclick = function() { flushSave(); _selDate = todayStr(); onDateChanged(); };
 
   function onDateChanged() {
     renderDayHeader();
@@ -450,12 +455,12 @@ body{height:100%;min-height:-webkit-fill-available;background:#0c0c0c;color:#fff
     ctx.lineCap = 'round'; ctx.lineJoin = 'round';
   }
   // Resizing a raster canvas clears it, so on resize (e.g. rotating the
-  // tablet) just re-size then reload the last saved note scaled to fit —
-  // simpler and more correct than trying to preserve raw pixels across a
-  // dimension change, at the cost of losing only unsaved strokes (saved
-  // automatically 1.2s after the last stroke anyway).
+  // tablet) flush any unsaved stroke FIRST (otherwise it's gone the
+  // instant the canvas buffer is resized), then re-size and reload the
+  // saved note scaled to fit.
   var _resizeTimer = null;
   new ResizeObserver(function() {
+    flushSave();
     sizeCanvas();
     clearTimeout(_resizeTimer);
     _resizeTimer = setTimeout(function() { if (!_drawing) loadNote(); }, 150);
@@ -529,6 +534,7 @@ body{height:100%;min-height:-webkit-fill-available;background:#0c0c0c;color:#fff
     _saveTimer = setTimeout(saveNote, 1200);
   }
   function saveNote() {
+    clearTimeout(_saveTimer);
     if (!_dirty) return;
     _dirty = false;
     var dateAtSave = _selDate;
@@ -537,7 +543,16 @@ body{height:100%;min-height:-webkit-fill-available;background:#0c0c0c;color:#fff
       .then(function() { if (_selDate === dateAtSave) document.getElementById('nbSaveState').textContent = 'Guardado ✓'; })
       .catch(function(e) { console.warn(e); if (_selDate === dateAtSave) document.getElementById('nbSaveState').textContent = 'No se pudo guardar'; });
   }
-  window.addEventListener('beforeunload', function() { if (_dirty) saveNote(); });
+  // Saves immediately instead of waiting out the debounce — called
+  // before anything that would otherwise wipe or swap out the canvas
+  // (changing day, resizing/rotating, backgrounding the app) so a
+  // just-finished stroke is never silently discarded.
+  function flushSave() {
+    if (_dirty) saveNote();
+  }
+  window.addEventListener('beforeunload', flushSave);
+  window.addEventListener('pagehide', flushSave);
+  document.addEventListener('visibilitychange', function() { if (document.visibilityState === 'hidden') flushSave(); });
 
   var _noteLoadToken = 0;
   function loadNote() {
