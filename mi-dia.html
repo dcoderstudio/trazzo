@@ -511,7 +511,11 @@ body{height:100%;min-height:-webkit-fill-available;background:#0c0c0c;color:#fff
     canvas.setPointerCapture(e.pointerId);
     var p = pointerPos(e); _lastX = p.x; _lastY = p.y;
     ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p.x + 0.1, p.y + 0.1);
-    ctx.strokeStyle = _tool === 'eraser' ? '#f6eeda' : _color;
+    // The eraser clears pixels instead of painting over them with a paper
+    // color, so the ruled lines (a CSS background behind the canvas) show
+    // through again instead of getting covered up.
+    ctx.globalCompositeOperation = _tool === 'eraser' ? 'destination-out' : 'source-over';
+    ctx.strokeStyle = _color;
     ctx.lineWidth = strokeWidth(e);
     ctx.stroke();
   });
@@ -519,7 +523,8 @@ body{height:100%;min-height:-webkit-fill-available;background:#0c0c0c;color:#fff
     if (!_drawing || e.pointerId !== _activePointerId) return;
     var p = pointerPos(e);
     ctx.beginPath(); ctx.moveTo(_lastX, _lastY); ctx.lineTo(p.x, p.y);
-    ctx.strokeStyle = _tool === 'eraser' ? '#f6eeda' : _color;
+    ctx.globalCompositeOperation = _tool === 'eraser' ? 'destination-out' : 'source-over';
+    ctx.strokeStyle = _color;
     ctx.lineWidth = strokeWidth(e);
     ctx.stroke();
     _lastX = p.x; _lastY = p.y;
