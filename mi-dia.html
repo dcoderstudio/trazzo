@@ -207,7 +207,14 @@ body{height:100%;min-height:-webkit-fill-available;background:#0c0c0c;color:#fff
   // ── END AUTH GUARD ──────────────────────────────────────────
 
   var DOC = db.collection('workspace').doc('proyectos');
-  var NOTES_COL = db.collection('dailyNotes');
+  // Las notas a mano se guardan DENTRO del mismo documento compartido
+  // (no en una colección aparte): esa es la única ruta de Firestore que
+  // ya tiene permisos de lectura/escritura en toda la app, así que
+  // evitamos depender de reglas de seguridad nuevas que nadie configuró
+  // todavía. Para no acercarnos al límite de 1MB del documento, solo se
+  // conservan las notas de los últimos DAILY_NOTES_KEEP días.
+  var DAILY_NOTES_KEEP = 60;
+  var dailyNotes = {};
 
   var projects = [], standaloneTasks = [], teamMembers = [];
 
@@ -290,6 +297,7 @@ body{height:100%;min-height:-webkit-fill-available;background:#0c0c0c;color:#fff
     if (d.projects) projects = d.projects;
     if (d.standaloneTasks) standaloneTasks = d.standaloneTasks;
     if (d.teamMembers) teamMembers = d.teamMembers;
+    if (d.dailyNotes) dailyNotes = d.dailyNotes;
     renderLists();
   });
 
@@ -539,7 +547,16 @@ body{height:100%;min-height:-webkit-fill-available;background:#0c0c0c;color:#fff
     _dirty = false;
     var dateAtSave = _selDate;
     var png = canvas.toDataURL('image/png');
-    NOTES_COL.doc(dateAtSave).set({ png: png, updatedAt: new Date().toISOString() })
+    var updated = Object.assign({}, dailyNotes);
+    updated[dateAtSave] = { png: png, updatedAt: new Date().toISOString() };
+    // Keep only the most recent N days so this field never approaches
+    // Firestore's 1MB-per-document limit — dates sort fine as strings
+    // since they're all YYYY-MM-DD.
+    var keys = Object.keys(updated).sort();
+    while (keys.length > DAILY_NOTES_KEEP) { delete updated[keys.shift()]; }
+    dailyNotes = updated;
+    _ignoreSnap = true;
+    DOC.set({ dailyNotes: dailyNotes }, { merge: true })
       .then(function() { if (_selDate === dateAtSave) document.getElementById('nbSaveState').textContent = 'Guardado ✓'; })
       .catch(function(e) { console.warn(e); if (_selDate === dateAtSave) document.getElementById('nbSaveState').textContent = 'No se pudo guardar'; });
   }
@@ -554,27 +571,23 @@ body{height:100%;min-height:-webkit-fill-available;background:#0c0c0c;color:#fff
   window.addEventListener('pagehide', flushSave);
   document.addEventListener('visibilitychange', function() { if (document.visibilityState === 'hidden') flushSave(); });
 
-  var _noteLoadToken = 0;
   function loadNote() {
     clearTimeout(_saveTimer); _dirty = false;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     document.getElementById('nbSaveState').textContent = '';
-    var token = ++_noteLoadToken;
-    var dateToLoad = _selDate;
-    NOTES_COL.doc(dateToLoad).get().then(function(snap) {
-      if (token !== _noteLoadToken) return;
-      if (!snap.exists || !snap.data().png) return;
-      var img = new Image();
-      img.onload = function() {
-        if (token !== _noteLoadToken) return;
-        ctx.save();
-        ctx.setTransform(1, 0, 0, 1, 0, 0);
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        ctx.restore();
-      };
-      img.src = snap.data().png;
-    }).catch(function(e) { console.warn(e); });
+    var entry = dailyNotes[_selDate];
+    if (!entry || !entry.png) return;
+    var dateAtLoad = _selDate;
+    var img = new Image();
+    img.onload = function() {
+      if (_selDate !== dateAtLoad) return; // user already flipped to another day
+      ctx.save();
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      ctx.restore();
+    };
+    img.src = entry.png;
   }
 
   renderDayHeader();
