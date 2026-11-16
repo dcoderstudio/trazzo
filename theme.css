@@ -167,11 +167,14 @@ html,body{
 /* ── MOBILE: TOPBAR NAV ────────────────────────────────── */
 /* Index, Proyectos, Calendario and Focus share this .topbar/.topbar-center
    markup (Equipo has its own, already handled by equipo-mobile.css). On
-   phones the centered-absolute nav no longer fits next to the logo and
-   whatever sits on the right, so it becomes a normal flex item that
-   scrolls horizontally instead of overlapping everything else. */
-@media (max-width:640px){
+   phones and tablets the centered-absolute nav no longer fits next to the
+   logo and whatever sits on the right, so the logo is dropped and the nav
+   becomes a normal flex item that scrolls horizontally instead of
+   overlapping everything else. 900px matches the breakpoint already used
+   for Equipo's own mobile layout. */
+@media (max-width:900px){
   .topbar{padding:0 12px;gap:8px;}
+  .logo{display:none;}
   .topbar-center{
     position:static;left:auto;top:auto;transform:none;
     flex:1 1 auto;min-width:0;justify-content:flex-start;

@@ -12,6 +12,7 @@
  .eq-root{height:auto;min-height:100vh;min-height:100dvh;overflow:visible;padding-bottom:env(safe-area-inset-bottom)}
  .nav-bar{overflow-x:auto;justify-content:flex-start;gap:12px;padding:6px max(10px,env(safe-area-inset-left));scrollbar-width:thin}
  .nav-bar>div{flex-shrink:0}.nav-btn{min-height:44px;padding:8px 12px;white-space:nowrap;color:#c2cadc}
+ .logo{display:none}
  .eq-mobile-tools{display:flex;gap:8px;padding:10px;background:#0b0e1c;position:sticky;top:0;z-index:100;border-bottom:1px solid #273047}
  .eq-mobile-tools button{flex:1;min-height:44px;border:1px solid #354560;border-radius:10px;background:#141e32;color:#e8efff;font:600 13px system-ui;padding:8px}
  .eq-mobile-tools button[aria-expanded=true]{background:#1a4779;border-color:#69b6ed}
