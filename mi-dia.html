@@ -14,35 +14,29 @@
 <link rel="stylesheet" href="theme.css">
 <title>Mi día — Dcoder Studio</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,800&family=Playfair+Display:wght@600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,800&display=swap');
 *{box-sizing:border-box;margin:0;padding:0;}
 html{height:-webkit-fill-available;}
 body{height:100%;min-height:-webkit-fill-available;background:#0c0c0c;color:#fff;font-family:'Inter',sans-serif;overflow:hidden;}
 
-/* ── TOPBAR (shared look) ── */
-.topbar{display:flex;align-items:center;justify-content:space-between;padding:0 28px;height:52px;border-bottom:0.5px solid rgba(255,255,255,0.06);flex-shrink:0;}
-.logo{display:flex;align-items:center;gap:10px;}
-.logo-pill{background:#fff;color:#0c0c0c;font-size:11px;font-weight:800;padding:5px 10px;border-radius:8px;}
-.logo-name{font-size:14px;font-weight:700;letter-spacing:.04em;}
-.nav-btn{background:none;border:none;color:rgba(255,255,255,0.32);font-size:12px;font-weight:500;padding:6px 14px;border-radius:20px;cursor:pointer;font-family:'Inter',sans-serif;transition:background .15s,color .15s;}
-.nav-btn:hover{background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.7);}
-.nav-btn.active{background:rgba(255,255,255,0.1);color:#fff;font-weight:700;}
-.topbar-right{width:40px;}
+/* ── PAGE SHELL (no shared topbar here — more room for the notebook) ── */
+.layout{display:flex;flex-direction:column;height:100dvh;height:var(--vh,100vh);overflow:hidden;background:radial-gradient(ellipse at 50% 0%,#17120c 0%,#0c0c0c 60%);}
 
-/* ── PAGE SHELL ── */
-.layout{display:flex;flex-direction:column;height:calc(100dvh - 52px);height:calc(var(--vh,100vh) - 52px);overflow:hidden;background:radial-gradient(ellipse at 50% 0%,#17120c 0%,#0c0c0c 60%);}
-
-/* ── DAY NAV BAR ── */
-.day-nav{flex-shrink:0;display:flex;align-items:center;justify-content:center;gap:14px;padding:8px 20px 4px;}
-.day-arrow{width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,0.06);border:0.5px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.6);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0;}
+/* ── TOP ROW: back button + day nav, all in one compact bar ── */
+.day-nav{flex-shrink:0;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px;padding:8px 14px 4px;}
+.back-btn{justify-self:start;background:rgba(255,255,255,0.06);border:0.5px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.6);font-size:11.5px;font-weight:600;padding:6px 12px;border-radius:20px;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s;}
+.back-btn:hover{background:rgba(255,255,255,0.12);color:#fff;}
+.day-nav-center{display:flex;align-items:center;justify-content:center;gap:12px;}
+.day-nav-spacer{justify-self:end;}
+.day-arrow{width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,0.06);border:0.5px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.6);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0;}
 .day-arrow:hover{background:rgba(255,255,255,0.12);color:#fff;}
-.day-label{font-family:'Playfair Display',serif;font-size:19px;font-weight:700;color:#f3ead9;min-width:200px;text-align:center;text-transform:capitalize;}
+.day-label{font-size:14px;font-weight:700;color:#f3ead9;min-width:170px;text-align:center;text-transform:capitalize;}
 .day-today-btn{background:rgba(232,160,32,0.14);border:0.5px solid rgba(232,160,32,0.32);color:#E8A020;font-size:11px;font-weight:700;padding:5px 13px;border-radius:20px;cursor:pointer;font-family:'Inter',sans-serif;transition:background .15s;}
 .day-today-btn:hover{background:rgba(232,160,32,0.24);}
 .day-today-btn:disabled{opacity:.35;cursor:default;}
 
 /* ── NOTEBOOK ── */
-.notebook-outer{flex:1;min-height:0;display:flex;justify-content:center;padding:2px 8px 8px;overflow:hidden;}
+.notebook-outer{flex:1;min-height:0;display:flex;justify-content:center;padding:2px 8px 6px;overflow:hidden;}
 .notebook{flex:1;max-width:1600px;min-height:0;display:flex;background:linear-gradient(160deg,#2a2018 0%,#1c160f 100%);border-radius:14px;box-shadow:0 30px 70px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,0.04) inset;overflow:hidden;}
 .nb-page{flex:1;min-width:0;background:
     repeating-linear-gradient(transparent 0 30px, rgba(140,110,70,0.1) 30px 31px),
@@ -63,7 +57,7 @@ body{height:100%;min-height:-webkit-fill-available;background:#0c0c0c;color:#fff
 /* Classic ruled-paper margin line */
 .nb-page-left::after{content:'';position:absolute;left:46px;top:0;bottom:0;width:1px;background:rgba(190,70,70,0.28);pointer-events:none;}
 .nb-left-inner{padding:18px 22px 22px 56px;position:relative;}
-.nb-title{font-family:'Playfair Display',serif;font-size:32px;font-weight:700;color:#3a2e1c;line-height:1;position:relative;z-index:1;}
+.nb-title{font-family:'Inter',sans-serif;font-size:26px;font-weight:800;letter-spacing:-.01em;color:#3a2e1c;line-height:1;position:relative;z-index:1;}
 .nb-tape{position:absolute;top:10px;left:40px;width:84px;height:22px;background:rgba(232,160,32,0.28);border:0.5px solid rgba(232,160,32,0.15);transform:rotate(-3deg);box-shadow:0 2px 4px rgba(0,0,0,.08);pointer-events:none;z-index:0;}
 .nb-subtitle{font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(58,46,28,0.4);margin-top:4px;}
 .nb-box{margin-top:20px;border:1.5px solid rgba(58,46,28,0.22);border-radius:10px;padding:14px 16px 10px;background:rgba(255,255,255,0.22);}
@@ -73,8 +67,12 @@ body{height:100%;min-height:-webkit-fill-available;background:#0c0c0c;color:#fff
 .nb-empty{font-size:12px;font-style:italic;color:rgba(58,46,28,0.35);padding:4px 2px 2px;}
 .nb-task-row{display:flex;align-items:center;gap:8px;padding:8px 2px;border-bottom:1px solid rgba(58,46,28,0.1);cursor:grab;touch-action:none;}
 .nb-task-row:last-child{border-bottom:none;}
-.nb-task-row.prio{border-left:2.5px solid #b9790f;padding-left:7px;margin-left:-9px;}
 .nb-task-row.dragging{opacity:.35;}
+.nb-prio-box{background:rgba(232,160,32,0.14);border-color:rgba(160,110,20,0.32);}
+.nb-prio-box .nb-box-title{color:#8a5a0f;}
+.nb-prio-box .nb-task-row{border-bottom-color:rgba(138,90,15,0.16);}
+.nb-prio-box .nb-chk{border-color:rgba(138,90,15,0.45);}
+.nb-prio-box .nb-chk.on{background:#b9790f;border-color:#b9790f;}
 .nb-chk{width:18px;height:18px;border-radius:50%;border:1.6px solid rgba(58,46,28,0.4);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .12s;}
 .nb-chk.on{background:#5c7a4a;border-color:#5c7a4a;}
 .nb-chk.on::after{content:'✓';color:#fff;font-size:11px;font-weight:800;}
@@ -90,7 +88,7 @@ body{height:100%;min-height:-webkit-fill-available;background:#0c0c0c;color:#fff
 /* ── RIGHT PAGE: notes canvas ── */
 .nb-right-inner{padding:18px 18px 18px;flex:1;display:flex;flex-direction:column;min-height:0;}
 .nb-notes-hdr{display:flex;align-items:center;gap:10px;flex-shrink:0;padding:0 4px 10px;}
-.nb-notes-title{font-family:'Playfair Display',serif;font-size:19px;font-weight:700;color:#3a2e1c;}
+.nb-notes-title{font-family:'Inter',sans-serif;font-size:14px;font-weight:800;letter-spacing:-.01em;color:#3a2e1c;}
 .nb-save-state{font-size:10px;color:rgba(58,46,28,0.4);margin-left:auto;}
 .nb-tools{display:flex;align-items:center;gap:6px;}
 .nb-tool-btn{width:30px;height:30px;border-radius:8px;border:1.5px solid rgba(58,46,28,0.2);background:rgba(255,255,255,0.3);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .12s;padding:0;}
@@ -118,24 +116,16 @@ body{height:100%;min-height:-webkit-fill-available;background:#0c0c0c;color:#fff
 </head>
 <body>
 
-<div class="topbar">
-  <div class="logo"><div class="logo-pill">D/</div><span class="logo-name">Dcoder Studio</span></div>
-  <div class="topbar-center">
-    <button class="nav-btn" onclick="location.href='index.html'">Inicio</button>
-    <button class="nav-btn" onclick="location.href='proyectos.html'">Proyectos</button>
-    <button class="nav-btn" onclick="location.href='calendario.html'">Calendario</button>
-    <button class="nav-btn active">Mi día</button>
-    <button class="nav-btn" onclick="location.href='equipo.html'">Equipo</button>
-  </div>
-  <div class="topbar-right"></div>
-</div>
-
 <div class="layout">
   <div class="day-nav">
-    <button class="day-arrow" id="dayPrevBtn" title="Día anterior">&#8249;</button>
-    <div class="day-label" id="dayLabel">—</div>
-    <button class="day-arrow" id="dayNextBtn" title="Día siguiente">&#8250;</button>
-    <button class="day-today-btn" id="dayTodayBtn">Hoy</button>
+    <button class="back-btn" onclick="location.href='equipo.html'" title="Volver a Equipo">&#8249; Equipo</button>
+    <div class="day-nav-center">
+      <button class="day-arrow" id="dayPrevBtn" title="Día anterior">&#8249;</button>
+      <div class="day-label" id="dayLabel">—</div>
+      <button class="day-arrow" id="dayNextBtn" title="Día siguiente">&#8250;</button>
+      <button class="day-today-btn" id="dayTodayBtn">Hoy</button>
+    </div>
+    <div class="day-nav-spacer"></div>
   </div>
 
   <div class="notebook-outer">
@@ -146,9 +136,17 @@ body{height:100%;min-height:-webkit-fill-available;background:#0c0c0c;color:#fff
           <div class="nb-title" id="nbTitle">Today</div>
           <div class="nb-subtitle" id="nbSubtitle"></div>
 
+          <div class="nb-box nb-prio-box">
+            <div class="nb-box-hdr">
+              <span class="nb-box-title">Prioridades</span>
+              <span class="nb-box-cnt" id="nbPrioCnt"></span>
+            </div>
+            <div id="nbPrioList"></div>
+          </div>
+
           <div class="nb-box">
             <div class="nb-box-hdr">
-              <span class="nb-box-title">To Do</span>
+              <span class="nb-box-title">Tareas</span>
               <span class="nb-box-cnt" id="nbTaskCnt"></span>
             </div>
             <div id="nbTaskList"></div>
@@ -397,23 +395,29 @@ body{height:100%;min-height:-webkit-fill-available;background:#0c0c0c;color:#fff
     var bo = typeof b.sortOrder === 'number' ? b.sortOrder : Infinity;
     return ao - bo;
   }
-  function renderLists() {
-    var all = collectAllTasks();
-    var ds = _selDate;
-    var tasks = all.filter(function(t) { return t.deadline === ds || (t.priority && !t.deadline); }).sort(bySortOrder);
-
+  function renderOneList(listEl, cntEl, tasks, emptyText) {
+    listEl.innerHTML = '';
     var done = tasks.filter(function(t) { return t.done; }).length;
-    var taskList = document.getElementById('nbTaskList'); taskList.innerHTML = '';
-    document.getElementById('nbTaskCnt').textContent = tasks.length ? (done + '/' + tasks.length) : '';
+    cntEl.textContent = tasks.length ? (done + '/' + tasks.length) : '';
     if (!tasks.length) {
-      var e2 = document.createElement('div'); e2.className = 'nb-empty'; e2.textContent = 'Sin tareas para este día.'; taskList.appendChild(e2);
+      var e = document.createElement('div'); e.className = 'nb-empty'; e.textContent = emptyText; listEl.appendChild(e);
     } else {
       tasks.forEach(function(t) {
         var row = buildTaskRow(t);
-        initNbDrag(row, t, taskList, tasks);
-        taskList.appendChild(row);
+        initNbDrag(row, t, listEl, tasks);
+        listEl.appendChild(row);
       });
     }
+  }
+  function renderLists() {
+    var all = collectAllTasks();
+    var ds = _selDate;
+    var dayTasks = all.filter(function(t) { return t.deadline === ds || (t.priority && !t.deadline); });
+    var prio = dayTasks.filter(function(t) { return t.priority; }).sort(bySortOrder);
+    var tasks = dayTasks.filter(function(t) { return !t.priority; }).sort(bySortOrder);
+
+    renderOneList(document.getElementById('nbPrioList'), document.getElementById('nbPrioCnt'), prio, 'Sin prioridades para este día.');
+    renderOneList(document.getElementById('nbTaskList'), document.getElementById('nbTaskCnt'), tasks, 'Sin tareas para este día.');
   }
 
   document.getElementById('nbAddInp').addEventListener('keydown', function(e) {
