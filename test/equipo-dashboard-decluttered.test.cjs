@@ -43,3 +43,28 @@ test('equipo landing page: logo removed, left panel decluttered, default tab is 
  assert.deepEqual(h.errors,[]);
  h.dom.window.close();
 });
+
+test('desktop: left panel is a collapsed slide-out tab until opened, and closes after picking a person',async()=>{
+ const h=page();await tick();const d=h.w.document;
+ const left=d.querySelector('.eq-left');
+ const tab=d.getElementById('eqLeftTab');
+ assert.ok(tab,'a desktop toggle tab should exist');
+ assert.equal(left.classList.contains('mobile-open'),false,'left panel should be collapsed by default');
+ assert.equal(tab.getAttribute('aria-expanded'),'false');
+
+ tab.click();
+ assert.ok(left.classList.contains('mobile-open'),'clicking the tab should open the panel');
+ assert.equal(tab.getAttribute('aria-expanded'),'true');
+
+ d.querySelector('.eq-mrow').click();
+ assert.equal(left.classList.contains('mobile-open'),false,'picking a person should close the panel again');
+ assert.equal(tab.getAttribute('aria-expanded'),'false');
+
+ tab.click();
+ assert.ok(left.classList.contains('mobile-open'));
+ tab.click();
+ assert.equal(left.classList.contains('mobile-open'),false,'clicking the tab again while open should close it');
+
+ assert.deepEqual(h.errors,[]);
+ h.dom.window.close();
+});
