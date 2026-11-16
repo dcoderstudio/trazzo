@@ -18,6 +18,7 @@ function page(mobile){
 const tick=()=>new Promise(r=>setImmediate(r));
 test('real mobile page: panels, selection, touch tap, task area edit and all dashboard tabs',async()=>{
  const h=page(true);await tick();const d=h.w.document;
+ h.w._dashTab='organizar';h.w._orgGroupBy='area';h.w.renderDashboard();
  assert.ok(d.querySelector('.eq-org-task'));
  const people=d.getElementById('mobilePeople');people.click();assert.equal(people.getAttribute('aria-expanded'),'true');
  d.getElementById('mobileGoals').click();assert.equal(people.getAttribute('aria-expanded'),'false');
@@ -42,4 +43,4 @@ test('real mobile page: panels, selection, touch tap, task area edit and all das
  }
  h.dom.window.close();
 });
-test('desktop initialization retains existing dashboard without data writes',async()=>{const h=page(false);await tick();assert.ok(h.w.document.querySelector('.eq-org-cols-wrap'));assert.equal(h.writes,0);assert.deepEqual(h.errors,[]);h.dom.window.close();});
+test('desktop initialization retains existing dashboard without data writes',async()=>{const h=page(false);await tick();assert.ok(h.w.document.querySelector('.eq-tab-content-plain'));assert.equal(h.writes,0);assert.deepEqual(h.errors,[]);h.dom.window.close();});
