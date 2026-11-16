@@ -66,25 +66,26 @@ body{height:100%;min-height:-webkit-fill-available;background:#0c0c0c;color:#fff
 .nb-title{font-family:'Playfair Display',serif;font-size:32px;font-weight:700;color:#3a2e1c;line-height:1;position:relative;z-index:1;}
 .nb-tape{position:absolute;top:10px;left:40px;width:84px;height:22px;background:rgba(232,160,32,0.28);border:0.5px solid rgba(232,160,32,0.15);transform:rotate(-3deg);box-shadow:0 2px 4px rgba(0,0,0,.08);pointer-events:none;z-index:0;}
 .nb-subtitle{font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(58,46,28,0.4);margin-top:4px;}
-.nb-box{margin-top:20px;border:1.5px solid rgba(58,46,28,0.22);border-radius:10px;padding:14px 16px 16px;background:rgba(255,255,255,0.22);}
-.nb-box-hdr{display:flex;align-items:center;gap:7px;margin-bottom:10px;}
-.nb-box-icon{font-size:14px;}
-.nb-box-title{font-size:11.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:#5c4425;}
+.nb-box{margin-top:20px;border:1.5px solid rgba(58,46,28,0.22);border-radius:10px;padding:14px 16px 10px;background:rgba(255,255,255,0.22);}
+.nb-box-hdr{display:flex;align-items:center;gap:7px;margin-bottom:6px;}
+.nb-box-title{font-size:11.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#5c4425;}
 .nb-box-cnt{margin-left:auto;font-size:10px;font-weight:700;color:rgba(92,68,37,0.5);}
 .nb-empty{font-size:12px;font-style:italic;color:rgba(58,46,28,0.35);padding:4px 2px 2px;}
-.nb-task-row{display:flex;align-items:flex-start;gap:9px;padding:7px 2px;border-bottom:1px solid rgba(58,46,28,0.1);cursor:pointer;}
+.nb-task-row{display:flex;align-items:center;gap:8px;padding:8px 2px;border-bottom:1px solid rgba(58,46,28,0.1);cursor:grab;touch-action:none;}
 .nb-task-row:last-child{border-bottom:none;}
-.nb-chk{width:18px;height:18px;border-radius:50%;border:1.6px solid rgba(58,46,28,0.4);flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;transition:all .12s;}
+.nb-task-row.prio{border-left:2.5px solid #b9790f;padding-left:7px;margin-left:-9px;}
+.nb-task-row.dragging{opacity:.35;}
+.nb-chk{width:18px;height:18px;border-radius:50%;border:1.6px solid rgba(58,46,28,0.4);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .12s;}
 .nb-chk.on{background:#5c7a4a;border-color:#5c7a4a;}
 .nb-chk.on::after{content:'✓';color:#fff;font-size:11px;font-weight:800;}
-.nb-task-info{flex:1;min-width:0;}
-.nb-task-txt{font-size:13.5px;font-weight:600;color:#3a2e1c;line-height:1.35;}
+.nb-task-txt{flex:1;min-width:0;font-size:13.5px;font-weight:600;color:#3a2e1c;line-height:1.35;}
 .nb-task-row.done .nb-task-txt{text-decoration:line-through;color:rgba(58,46,28,0.38);}
-.nb-task-meta{font-size:10px;color:rgba(58,46,28,0.42);margin-top:1px;}
-.nb-prio-box{background:rgba(232,160,32,0.1);border-color:rgba(160,110,20,0.3);}
-.nb-prio-box .nb-box-title{color:#8a5a0f;}
-.nb-prio-box .nb-chk{border-color:rgba(138,90,15,0.45);}
-.nb-prio-box .nb-chk.on{background:#b9790f;border-color:#b9790f;}
+.nb-star-btn{background:none;border:none;font-size:15px;line-height:1;cursor:pointer;flex-shrink:0;padding:2px;color:rgba(58,46,28,0.22);}
+.nb-star-btn.on{color:#b9790f;}
+.nb-add-row{margin-top:4px;}
+.nb-add-inp{width:100%;background:none;border:none;border-top:1px dashed rgba(58,46,28,0.2);padding:9px 2px 2px;font-size:13px;font-weight:600;color:#3a2e1c;font-family:'Inter',sans-serif;outline:none;}
+.nb-add-inp::placeholder{color:rgba(58,46,28,0.35);}
+.nb-drag-ghost{position:fixed;z-index:9998;pointer-events:none;background:#fdf7ea;border:1px solid rgba(58,46,28,0.3);border-radius:8px;padding:6px 12px;font-size:12.5px;font-weight:600;color:#3a2e1c;box-shadow:0 10px 24px rgba(0,0,0,.35);max-width:240px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 
 /* ── RIGHT PAGE: notes canvas ── */
 .nb-right-inner{padding:18px 18px 18px;flex:1;display:flex;flex-direction:column;min-height:0;}
@@ -145,22 +146,15 @@ body{height:100%;min-height:-webkit-fill-available;background:#0c0c0c;color:#fff
           <div class="nb-title" id="nbTitle">Today</div>
           <div class="nb-subtitle" id="nbSubtitle"></div>
 
-          <div class="nb-box nb-prio-box">
-            <div class="nb-box-hdr">
-              <span class="nb-box-icon">⭐</span>
-              <span class="nb-box-title">Prioridades del día</span>
-              <span class="nb-box-cnt" id="nbPrioCnt"></span>
-            </div>
-            <div id="nbPrioList"></div>
-          </div>
-
           <div class="nb-box">
             <div class="nb-box-hdr">
-              <span class="nb-box-icon">✓</span>
-              <span class="nb-box-title">Tareas de hoy</span>
+              <span class="nb-box-title">To Do</span>
               <span class="nb-box-cnt" id="nbTaskCnt"></span>
             </div>
             <div id="nbTaskList"></div>
+            <div class="nb-add-row">
+              <input class="nb-add-inp" id="nbAddInp" placeholder="+ Agregar tarea…" maxlength="300">
+            </div>
           </div>
         </div>
       </div>
@@ -255,6 +249,36 @@ body{height:100%;min-height:-webkit-fill-available;background:#0c0c0c;color:#fff
     DOC.set({ projects: projects, standaloneTasks: standaloneTasks }, { merge: true }).catch(function(e) { console.warn(e); });
     renderLists();
   }
+  // Applies several task changes (e.g. a whole reordered list's new
+  // sortOrder) in one save + render instead of one round-trip per task.
+  function teamTaskUpdateBulk(updates) {
+    updates.forEach(function(u) {
+      var task = u.task, changes = u.changes;
+      if (task._type === 'standalone') {
+        standaloneTasks = (standaloneTasks || []).map(function(t) { return t.id === task.id ? Object.assign({}, t, changes) : t; });
+      } else {
+        projects = (projects || []).map(function(p) {
+          if (p.id !== task._projId) return p;
+          var st = Object.assign({}, p.stageTasks || {});
+          st[task._stage] = (st[task._stage] || []).map(function(t) { return t.id === task.id ? Object.assign({}, t, changes) : t; });
+          return Object.assign({}, p, { stageTasks: st });
+        });
+      }
+    });
+    _ignoreSnap = true;
+    DOC.set({ projects: projects, standaloneTasks: standaloneTasks }, { merge: true }).catch(function(e) { console.warn(e); });
+    renderLists();
+  }
+  function addNewTask(text) {
+    var ds = _selDate;
+    var existing = collectAllTasks().filter(function(t) { return t.deadline === ds || (t.priority && !t.deadline); });
+    var maxOrder = existing.reduce(function(m, t) { return typeof t.sortOrder === 'number' && t.sortOrder > m ? t.sortOrder : m; }, -1);
+    var task = { id: 'nd_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7), text: text, done: false, deadline: ds, priority: false, sortOrder: maxOrder + 1, colStatus: null, notes: '' };
+    standaloneTasks = (standaloneTasks || []).concat([task]);
+    _ignoreSnap = true;
+    DOC.set({ standaloneTasks: standaloneTasks }, { merge: true }).catch(function(e) { console.warn(e); });
+    renderLists();
+  }
 
   var _ignoreSnap = false;
   DOC.onSnapshot(function(snap) {
@@ -300,40 +324,104 @@ body{height:100%;min-height:-webkit-fill-available;background:#0c0c0c;color:#fff
   // ── PRIORITIES / TASKS LISTS ───────────────────────────────
   function buildTaskRow(t) {
     var row = document.createElement('div');
-    row.className = 'nb-task-row' + (t.done ? ' done' : '');
+    row.className = 'nb-task-row' + (t.done ? ' done' : '') + (t.priority ? ' prio' : '');
     var chk = document.createElement('div'); chk.className = 'nb-chk' + (t.done ? ' on' : '');
     chk.onclick = function(e) { e.stopPropagation(); teamTaskUpdate(t, { done: !t.done }); };
     row.appendChild(chk);
-    var info = document.createElement('div'); info.className = 'nb-task-info';
     var txt = document.createElement('div'); txt.className = 'nb-task-txt'; txt.textContent = t.text;
-    info.appendChild(txt);
-    var metaParts = [];
-    if (t._type === 'project' && t.source) metaParts.push('🗂 ' + t.source);
-    if (t.member) metaParts.push('👤 ' + t.member.name.split(' ')[0]);
-    if (metaParts.length) { var meta = document.createElement('div'); meta.className = 'nb-task-meta'; meta.textContent = metaParts.join(' · '); info.appendChild(meta); }
-    row.appendChild(info);
-    row.onclick = function() { teamTaskUpdate(t, { done: !t.done }); };
+    row.appendChild(txt);
+    var star = document.createElement('button'); star.type = 'button'; star.className = 'nb-star-btn' + (t.priority ? ' on' : '');
+    star.textContent = '★'; star.title = t.priority ? 'Quitar prioridad' : 'Marcar como prioridad';
+    star.onclick = function(e) { e.stopPropagation(); teamTaskUpdate(t, { priority: !t.priority }); };
+    row.appendChild(star);
     return row;
   }
 
+  // Drag a row to reorder it among the others in the same list (persists
+  // via sortOrder); tapping without moving toggles done, same as before.
+  function initNbDrag(row, task, listEl, orderedTasks) {
+    row.addEventListener('pointerdown', function(e) {
+      if (e.target.closest('.nb-chk') || e.target.closest('.nb-star-btn')) return;
+      var sx = e.clientX, sy = e.clientY, dragging = false, ghost = null, captured = false;
+      var pid = e.pointerId;
+      function onMove(ev) {
+        var dx = ev.clientX - sx, dy = ev.clientY - sy;
+        if (!dragging && Math.sqrt(dx * dx + dy * dy) > 8) {
+          dragging = true;
+          if (!captured) { try { row.setPointerCapture(pid); } catch (err) {} captured = true; }
+          row.classList.add('dragging');
+          ghost = document.createElement('div'); ghost.className = 'nb-drag-ghost'; ghost.textContent = task.text;
+          document.body.appendChild(ghost);
+        }
+        if (dragging && ghost) {
+          ghost.style.left = (ev.clientX + 14) + 'px';
+          ghost.style.top = (ev.clientY - 14) + 'px';
+        }
+      }
+      function onUp(ev) {
+        document.removeEventListener('pointermove', onMove);
+        document.removeEventListener('pointerup', onUp);
+        if (ghost) { ghost.remove(); ghost = null; }
+        row.classList.remove('dragging');
+        if (!dragging) {
+          teamTaskUpdate(task, { done: !task.done });
+        } else {
+          row.addEventListener('click', function stop(ce) { ce.stopPropagation(); ce.preventDefault(); }, { once: true, capture: true });
+          reorderNbTask(task, row, orderedTasks, listEl, ev.clientY);
+        }
+      }
+      document.addEventListener('pointermove', onMove);
+      document.addEventListener('pointerup', onUp);
+    });
+  }
+  function reorderNbTask(task, row, orderedTasks, listEl, clientY) {
+    var siblings = Array.from(listEl.querySelectorAll('.nb-task-row')).filter(function(el) { return el !== row; });
+    var targetIdx = siblings.length;
+    for (var i = 0; i < siblings.length; i++) {
+      var r = siblings[i].getBoundingClientRect();
+      if (clientY < r.top + r.height / 2) { targetIdx = i; break; }
+    }
+    var order = orderedTasks.slice();
+    var curIdx = order.indexOf(task);
+    if (curIdx === -1) return;
+    order.splice(curIdx, 1);
+    if (targetIdx > curIdx) targetIdx--;
+    order.splice(targetIdx, 0, task);
+    var changed = order.some(function(t, i) { return t !== orderedTasks[i]; });
+    if (!changed) return;
+    teamTaskUpdateBulk(order.map(function(t, i) { return { task: t, changes: { sortOrder: i } }; }));
+  }
+
+  function bySortOrder(a, b) {
+    var ao = typeof a.sortOrder === 'number' ? a.sortOrder : Infinity;
+    var bo = typeof b.sortOrder === 'number' ? b.sortOrder : Infinity;
+    return ao - bo;
+  }
   function renderLists() {
     var all = collectAllTasks();
     var ds = _selDate;
-    var prio = all.filter(function(t) { return !!t.priority && (t.deadline === ds || !t.deadline); });
-    var tasks = all.filter(function(t) { return t.deadline === ds && !t.priority; });
+    var tasks = all.filter(function(t) { return t.deadline === ds || (t.priority && !t.deadline); }).sort(bySortOrder);
 
-    var prioDone = prio.filter(function(t){return t.done;}).length;
-    var prioList = document.getElementById('nbPrioList'); prioList.innerHTML = '';
-    document.getElementById('nbPrioCnt').textContent = prio.length ? (prioDone + '/' + prio.length) : '';
-    if (!prio.length) { var e1 = document.createElement('div'); e1.className = 'nb-empty'; e1.textContent = 'Sin prioridades para este día.'; prioList.appendChild(e1); }
-    else prio.forEach(function(t) { prioList.appendChild(buildTaskRow(t)); });
-
-    var taskDone = tasks.filter(function(t){return t.done;}).length;
+    var done = tasks.filter(function(t) { return t.done; }).length;
     var taskList = document.getElementById('nbTaskList'); taskList.innerHTML = '';
-    document.getElementById('nbTaskCnt').textContent = tasks.length ? (taskDone + '/' + tasks.length) : '';
-    if (!tasks.length) { var e2 = document.createElement('div'); e2.className = 'nb-empty'; e2.textContent = 'Sin tareas para este día.'; taskList.appendChild(e2); }
-    else tasks.forEach(function(t) { taskList.appendChild(buildTaskRow(t)); });
+    document.getElementById('nbTaskCnt').textContent = tasks.length ? (done + '/' + tasks.length) : '';
+    if (!tasks.length) {
+      var e2 = document.createElement('div'); e2.className = 'nb-empty'; e2.textContent = 'Sin tareas para este día.'; taskList.appendChild(e2);
+    } else {
+      tasks.forEach(function(t) {
+        var row = buildTaskRow(t);
+        initNbDrag(row, t, taskList, tasks);
+        taskList.appendChild(row);
+      });
+    }
   }
+
+  document.getElementById('nbAddInp').addEventListener('keydown', function(e) {
+    if (e.key !== 'Enter') return;
+    var v = this.value.trim(); if (!v) return;
+    addNewTask(v);
+    this.value = '';
+  });
 
   // ── RING BINDING (decorative) ──────────────────────────────
   (function buildRings() {
