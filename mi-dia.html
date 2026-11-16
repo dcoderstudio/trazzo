@@ -377,9 +377,16 @@ body{height:100%;min-height:-webkit-fill-available;background:#0c0c0c;color:#fff
     if (e.pointerType === 'pen' && e.pressure > 0) return base * (0.6 + e.pressure * 0.9);
     return base;
   }
+  // Palm rejection: only an actual stylus ("pen") can draw. A finger or
+  // mouse just does nothing on the canvas — resting your hand while
+  // writing with a pen (e.g. an XP-Pen style tablet) doesn't leave marks.
+  var PEN_ONLY = true;
+  var _activePointerId = null;
   canvas.addEventListener('pointerdown', function(e) {
+    if (PEN_ONLY && e.pointerType !== 'pen') return;
     e.preventDefault();
     _drawing = true;
+    _activePointerId = e.pointerId;
     canvas.setPointerCapture(e.pointerId);
     var p = pointerPos(e); _lastX = p.x; _lastY = p.y;
     ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p.x + 0.1, p.y + 0.1);
@@ -388,7 +395,7 @@ body{height:100%;min-height:-webkit-fill-available;background:#0c0c0c;color:#fff
     ctx.stroke();
   });
   canvas.addEventListener('pointermove', function(e) {
-    if (!_drawing) return;
+    if (!_drawing || e.pointerId !== _activePointerId) return;
     var p = pointerPos(e);
     ctx.beginPath(); ctx.moveTo(_lastX, _lastY); ctx.lineTo(p.x, p.y);
     ctx.strokeStyle = _tool === 'eraser' ? '#f6eeda' : _color;
@@ -397,14 +404,15 @@ body{height:100%;min-height:-webkit-fill-available;background:#0c0c0c;color:#fff
     _lastX = p.x; _lastY = p.y;
   });
   function endStroke(e) {
-    if (!_drawing) return;
+    if (!_drawing || e.pointerId !== _activePointerId) return;
     _drawing = false;
+    _activePointerId = null;
     try { canvas.releasePointerCapture(e.pointerId); } catch (err) {}
     scheduleSave();
   }
   canvas.addEventListener('pointerup', endStroke);
   canvas.addEventListener('pointercancel', endStroke);
-  canvas.addEventListener('pointerleave', function(e) { if (_drawing) endStroke(e); });
+  canvas.addEventListener('pointerleave', function(e) { if (_drawing && e.pointerId === _activePointerId) endStroke(e); });
 
   function scheduleSave() {
     _dirty = true;
