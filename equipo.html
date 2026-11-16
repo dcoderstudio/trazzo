@@ -688,6 +688,12 @@ select.eq-ntask-inp option{background:#1a1f35;color:rgba(255,255,255,.8);}
 .eq-org-left-hdr{padding:11px 12px 7px;flex-shrink:0;}
 .eq-org-new-btn{background:rgba(26,111,212,.14);border:.5px solid rgba(26,111,212,.28);border-radius:8px;padding:9px 12px;font-size:11.5px;font-weight:700;color:rgba(90,180,232,.78);cursor:pointer;font-family:inherit;transition:all .15s;text-align:left;display:flex;align-items:center;gap:7px;}
 .eq-org-new-btn:hover{background:rgba(26,111,212,.22);color:#5AB4E8;}
+.eq-org-add-wrap{position:relative;margin:10px 12px 0;}
+.eq-org-add-btn{width:100%;background:rgba(26,111,212,.14);border:.5px solid rgba(26,111,212,.28);border-radius:8px;padding:9px 12px;font-size:12px;font-weight:700;color:#5AB4E8;cursor:pointer;font-family:inherit;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:6px;}
+.eq-org-add-btn:hover{background:rgba(26,111,212,.22);}
+.eq-org-add-popup{position:absolute;left:0;right:0;top:calc(100% + 4px);background:#161c30;border:.5px solid rgba(255,255,255,.14);border-radius:10px;z-index:200;padding:4px;box-shadow:0 12px 32px rgba(0,0,0,.65);}
+.eq-org-add-opt{display:flex;align-items:center;gap:8px;padding:8px 9px;border-radius:7px;cursor:pointer;font-size:11.5px;font-weight:600;color:rgba(255,255,255,.7);transition:background .12s;}
+.eq-org-add-opt:hover{background:rgba(255,255,255,.08);color:#fff;}
 .eq-org-new-form{padding:0 12px 10px;flex-shrink:0;}
 .eq-org-new-inp{width:100%;box-sizing:border-box;background:rgba(255,255,255,.07);border:.5px solid rgba(255,255,255,.12);border-radius:7px;padding:7px 9px;color:rgba(255,255,255,.88);font-size:11.5px;font-family:inherit;outline:none;}
 .eq-org-new-inp:focus{border-color:rgba(26,111,212,.4);}
@@ -1258,24 +1264,29 @@ function renderTeamOrganizar(main,allTasks){
   // ── LEFT PANEL ──
   var lp=document.createElement('div');lp.className='eq-org-left-panel';wrap.appendChild(lp);
 
-  // ── NUEVA TAREA BUTTON → abre modal ──
-  var nbtn=document.createElement('button');nbtn.className='eq-org-new-btn';
-  nbtn.style.cssText='margin:10px 12px 0;width:calc(100% - 24px);justify-content:center;';
-  nbtn.innerHTML='<span style="font-size:15px;line-height:1;">+</span> Nueva tarea';
-  nbtn.onclick=function(){showNewTaskModal();};
-  lp.appendChild(nbtn);
-  var chatBtn=document.createElement('button');chatBtn.className='eq-org-new-btn';
-  chatBtn.style.cssText='margin:6px 12px 0;width:calc(100% - 24px);justify-content:center;';
-  chatBtn.textContent='Agregar tareas desde chat';
-  chatBtn.onclick=function(){TrazzoChatTasks.open({db:db,doc:DOC,onSaved:function(tasks){standaloneTasks=tasks;renderAll();}});};
-  lp.appendChild(chatBtn);
-
-  // ── NUEVA ENTREGA BUTTON ──
-  var dbtn=document.createElement('button');dbtn.className='eq-org-new-btn';
-  dbtn.style.cssText='margin:6px 12px 0;width:calc(100% - 24px);justify-content:center;background:rgba(26,111,212,.12);border-color:rgba(26,111,212,.3);color:#5AB4E8;';
-  dbtn.innerHTML='📦 Nueva entrega';
-  dbtn.onclick=function(){showNewDeliveryModal();};
-  lp.appendChild(dbtn);
+  // ── BOTÓN "+" CONSOLIDADO (Nueva tarea / desde chat / Nueva entrega) ──
+  var addWrap=document.createElement('div');addWrap.className='eq-org-add-wrap';lp.appendChild(addWrap);
+  var addBtn=document.createElement('button');addBtn.className='eq-org-add-btn';
+  addBtn.innerHTML='<span style="font-size:15px;line-height:1;">+</span> Agregar';
+  addWrap.appendChild(addBtn);
+  var addPopup=null;
+  function closeAddPopup(){if(addPopup){addPopup.remove();addPopup=null;document.removeEventListener('mousedown',onAddPopupOutside,true);}}
+  function onAddPopupOutside(e){if(addPopup&&!addWrap.contains(e.target))closeAddPopup();}
+  function addPopupOpt(label,fn){
+    var o=document.createElement('div');o.className='eq-org-add-opt';o.innerHTML=label;
+    o.onclick=function(){closeAddPopup();fn();};
+    return o;
+  }
+  addBtn.onclick=function(e){
+    e.stopPropagation();
+    if(addPopup){closeAddPopup();return;}
+    addPopup=document.createElement('div');addPopup.className='eq-org-add-popup';
+    addPopup.appendChild(addPopupOpt('✏️ Nueva tarea',function(){showNewTaskModal();}));
+    addPopup.appendChild(addPopupOpt('💬 Agregar desde chat',function(){TrazzoChatTasks.open({db:db,doc:DOC,onSaved:function(tasks){standaloneTasks=tasks;renderAll();}});}));
+    addPopup.appendChild(addPopupOpt('📦 Nueva entrega',function(){showNewDeliveryModal();}));
+    addWrap.appendChild(addPopup);
+    setTimeout(function(){document.addEventListener('mousedown',onAddPopupOutside,true);},0);
+  };
 
   // ── EXPRESS BAR ──
   var expBar=document.createElement('div');expBar.style.cssText='padding:6px 12px 8px;border-top:.5px solid rgba(255,255,255,.06);flex-shrink:0;';
