@@ -14,7 +14,7 @@
 <link rel="stylesheet" href="theme.css">
 <title>Mi día — Dcoder Studio</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,800&family=Caveat:wght@500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,800&family=Playfair+Display:wght@600;700;800&display=swap');
 *{box-sizing:border-box;margin:0;padding:0;}
 html{height:-webkit-fill-available;}
 body{height:100%;min-height:-webkit-fill-available;background:#0c0c0c;color:#fff;font-family:'Inter',sans-serif;overflow:hidden;}
@@ -33,29 +33,38 @@ body{height:100%;min-height:-webkit-fill-available;background:#0c0c0c;color:#fff
 .layout{display:flex;flex-direction:column;height:calc(100dvh - 52px);height:calc(var(--vh,100vh) - 52px);overflow:hidden;background:radial-gradient(ellipse at 50% 0%,#17120c 0%,#0c0c0c 60%);}
 
 /* ── DAY NAV BAR ── */
-.day-nav{flex-shrink:0;display:flex;align-items:center;justify-content:center;gap:14px;padding:14px 20px 8px;}
-.day-arrow{width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,0.06);border:0.5px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.6);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0;}
+.day-nav{flex-shrink:0;display:flex;align-items:center;justify-content:center;gap:14px;padding:8px 20px 4px;}
+.day-arrow{width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,0.06);border:0.5px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.6);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0;}
 .day-arrow:hover{background:rgba(255,255,255,0.12);color:#fff;}
-.day-label{font-family:'Caveat',cursive;font-size:26px;font-weight:700;color:#f3ead9;min-width:200px;text-align:center;text-transform:capitalize;}
-.day-today-btn{background:rgba(232,160,32,0.14);border:0.5px solid rgba(232,160,32,0.32);color:#E8A020;font-size:11px;font-weight:700;padding:6px 14px;border-radius:20px;cursor:pointer;font-family:'Inter',sans-serif;transition:background .15s;}
+.day-label{font-family:'Playfair Display',serif;font-size:19px;font-weight:700;color:#f3ead9;min-width:200px;text-align:center;text-transform:capitalize;}
+.day-today-btn{background:rgba(232,160,32,0.14);border:0.5px solid rgba(232,160,32,0.32);color:#E8A020;font-size:11px;font-weight:700;padding:5px 13px;border-radius:20px;cursor:pointer;font-family:'Inter',sans-serif;transition:background .15s;}
 .day-today-btn:hover{background:rgba(232,160,32,0.24);}
 .day-today-btn:disabled{opacity:.35;cursor:default;}
 
 /* ── NOTEBOOK ── */
-.notebook-outer{flex:1;min-height:0;display:flex;justify-content:center;padding:4px 16px 18px;overflow:hidden;}
-.notebook{flex:1;max-width:1180px;min-height:0;display:flex;background:linear-gradient(160deg,#2a2018 0%,#1c160f 100%);border-radius:18px;box-shadow:0 30px 70px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,0.04) inset;overflow:hidden;}
+.notebook-outer{flex:1;min-height:0;display:flex;justify-content:center;padding:2px 8px 8px;overflow:hidden;}
+.notebook{flex:1;max-width:1600px;min-height:0;display:flex;background:linear-gradient(160deg,#2a2018 0%,#1c160f 100%);border-radius:14px;box-shadow:0 30px 70px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,0.04) inset;overflow:hidden;}
 .nb-page{flex:1;min-width:0;background:
     repeating-linear-gradient(transparent 0 30px, rgba(140,110,70,0.1) 30px 31px),
     linear-gradient(135deg,#f6eeda 0%,#ede1c4 100%);
   display:flex;flex-direction:column;overflow-y:auto;position:relative;}
 .nb-page::-webkit-scrollbar{width:5px;}
 .nb-page::-webkit-scrollbar-thumb{background:rgba(90,60,20,0.18);border-radius:3px;}
+/* Dog-eared corner — a well-loved notebook has a curled page corner */
+.nb-page::before{content:'';position:absolute;right:0;bottom:0;width:30px;height:30px;
+  background:linear-gradient(135deg,transparent 50%,rgba(90,60,20,0.16) 50%);
+  border-top:0.5px solid rgba(90,60,20,0.12);border-left:0.5px solid rgba(90,60,20,0.12);
+  pointer-events:none;}
 .nb-rings{width:26px;flex-shrink:0;background:linear-gradient(90deg,rgba(0,0,0,.35),rgba(0,0,0,.08) 40%,rgba(0,0,0,.08) 60%,rgba(0,0,0,.35));display:flex;flex-direction:column;align-items:center;justify-content:space-evenly;padding:18px 0;}
 .nb-ring{width:14px;height:14px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#8d8d8d,#3a3a3a 70%);box-shadow:0 1px 3px rgba(0,0,0,.5) inset,0 1px 1px rgba(255,255,255,.2);flex-shrink:0;}
 
 /* ── LEFT PAGE: priorities + tasks ── */
-.nb-left-inner{padding:22px 24px 30px;}
-.nb-title{font-family:'Caveat',cursive;font-size:34px;font-weight:700;color:#3a2e1c;line-height:1;}
+.nb-page-left{position:relative;}
+/* Classic ruled-paper margin line */
+.nb-page-left::after{content:'';position:absolute;left:46px;top:0;bottom:0;width:1px;background:rgba(190,70,70,0.28);pointer-events:none;}
+.nb-left-inner{padding:18px 22px 22px 56px;position:relative;}
+.nb-title{font-family:'Playfair Display',serif;font-size:32px;font-weight:700;color:#3a2e1c;line-height:1;position:relative;z-index:1;}
+.nb-tape{position:absolute;top:10px;left:40px;width:84px;height:22px;background:rgba(232,160,32,0.28);border:0.5px solid rgba(232,160,32,0.15);transform:rotate(-3deg);box-shadow:0 2px 4px rgba(0,0,0,.08);pointer-events:none;z-index:0;}
 .nb-subtitle{font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(58,46,28,0.4);margin-top:4px;}
 .nb-box{margin-top:20px;border:1.5px solid rgba(58,46,28,0.22);border-radius:10px;padding:14px 16px 16px;background:rgba(255,255,255,0.22);}
 .nb-box-hdr{display:flex;align-items:center;gap:7px;margin-bottom:10px;}
@@ -80,7 +89,7 @@ body{height:100%;min-height:-webkit-fill-available;background:#0c0c0c;color:#fff
 /* ── RIGHT PAGE: notes canvas ── */
 .nb-right-inner{padding:18px 18px 18px;flex:1;display:flex;flex-direction:column;min-height:0;}
 .nb-notes-hdr{display:flex;align-items:center;gap:10px;flex-shrink:0;padding:0 4px 10px;}
-.nb-notes-title{font-family:'Caveat',cursive;font-size:24px;font-weight:700;color:#3a2e1c;}
+.nb-notes-title{font-family:'Playfair Display',serif;font-size:19px;font-weight:700;color:#3a2e1c;}
 .nb-save-state{font-size:10px;color:rgba(58,46,28,0.4);margin-left:auto;}
 .nb-tools{display:flex;align-items:center;gap:6px;}
 .nb-tool-btn{width:30px;height:30px;border-radius:8px;border:1.5px solid rgba(58,46,28,0.2);background:rgba(255,255,255,0.3);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .12s;padding:0;}
@@ -97,6 +106,12 @@ body{height:100%;min-height:-webkit-fill-available;background:#0c0c0c;color:#fff
   .nb-rings{width:100%;height:16px;flex-direction:row;background:linear-gradient(180deg,rgba(0,0,0,.3),rgba(0,0,0,.06) 40%,rgba(0,0,0,.06) 60%,rgba(0,0,0,.3));padding:0 18px;}
   .nb-page{overflow-y:visible;}
   .nb-canvas-wrap{min-height:280px;}
+}
+@media (max-width:520px){
+  .nb-page-left::after{left:28px;}
+  .nb-left-inner{padding-left:36px;}
+  .nb-tape{left:22px;}
+  .nb-title{font-size:26px;}
 }
 </style>
 </head>
@@ -126,6 +141,7 @@ body{height:100%;min-height:-webkit-fill-available;background:#0c0c0c;color:#fff
     <div class="notebook">
       <div class="nb-page nb-page-left">
         <div class="nb-left-inner">
+          <div class="nb-tape"></div>
           <div class="nb-title" id="nbTitle">Today</div>
           <div class="nb-subtitle" id="nbSubtitle"></div>
 
