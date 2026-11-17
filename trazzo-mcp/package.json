@@ -1,0 +1,16 @@
+{
+  "name": "trazzo-mcp",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "engines": {
+    "node": "22.x"
+  },
+  "scripts": {
+    "test": "node --test"
+  },
+  "dependencies": {
+    "firebase-admin": "^13.0.0",
+    "jose": "^6.0.0"
+  }
+}
