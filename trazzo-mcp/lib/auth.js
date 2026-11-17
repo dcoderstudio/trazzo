@@ -17,7 +17,7 @@ export function resourceUrl() {
   return env("TRAZZO_MCP_PUBLIC_URL").replace(/\/$/, "") + "/mcp";
 }
 export function metadataUrl() {
-  return env("TRAZZO_MCP_PUBLIC_URL").replace(/\/$/, "") + "/.well-known/oauth-protected-resource";
+  return env("TRAZZO_MCP_PUBLIC_URL").replace(/\/$/, "") + "/api/oauth-protected-resource";
 }
 const fail = (status, message, challenge = false) =>
   new Response(JSON.stringify({ error: message }), {
