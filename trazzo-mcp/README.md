@@ -4,7 +4,7 @@ Integración independiente de Trazo con ChatGPT. No modifica la aplicación exis
 
 ## Estado
 
-Primer prototipo de **solo lectura**; no desplegado, no autorizado ni conectado a ChatGPT. Requiere completar configuración de seguridad, autenticación OAuth y pruebas. El código se mantiene en la rama `feature/chatgpt-mcp-readonly`.
+Primer prototipo de **solo lectura**; existe un despliegue aislado y protegido en Vercel, pero **no está autorizado ni conectado a ChatGPT**, ni puede acceder a Firestore sin configuración adicional. Requiere completar configuración de seguridad, autenticación OAuth y pruebas. El código se mantiene en la rama `feature/chatgpt-mcp-readonly`.
 
 ## Datos
 
@@ -38,9 +38,17 @@ Herramientas: `trazzo_resumen`, `trazzo_proyectos`, `trazzo_tareas`.
 - `TRAZZO_ALLOWED_ORIGINS` (opcional): orígenes explícitos permitidos.
 - `TRAZZO_FIREBASE_SERVICE_ACCOUNT_JSON`: credencial de cuenta de servicio del proyecto Firebase correcto, configurada **solo** en Vercel.
 
-## Despliegue propuesto
+## Despliegue de pruebas y puesta en marcha
 
-Crear **otro proyecto de Vercel** vinculado al mismo repositorio y a la rama de pruebas, con directorio raíz `trazzo-mcp`. No vincularlo al proyecto `trazzo` existente, que debe permanecer intacto. Conectar mediante un emisor OAuth que permita a ChatGPT obtener un token firmado verificable. Configurar la app personalizada en ChatGPT solo después de probar `initialize`, `tools/list`, `tools/call`, autorización válida y rechazos 401/403.
+Ya se creó el proyecto separado **`trazzo-chatgpt-mcp`**, vinculado a la rama de pruebas, con raíz `trazzo-mcp`, Node 22 y **protección SSO en todos los entornos**. No se modificó el proyecto `trazzo` existente. El primer despliegue compiló correctamente. Se agregó un workflow de GitHub Actions para los tests de solo lectura; su ejecución sobre el commit de creación resultó exitosa. Conectar mediante un emisor OAuth que permita a ChatGPT obtener un token firmado verificable. Configurar la app personalizada en ChatGPT solo después de probar `initialize`, `tools/list`, `tools/call`, autorización válida y rechazos 401/403.
+
+## Pasos de autorización que requieren configuración en las cuentas del propietario
+
+1. En Firebase/Google Cloud, crear una **cuenta de servicio exclusiva para este conector**, con permisos de **solo lectura en Firestore** (principio de mínimo privilegio). Crear o usar credenciales por la interfaz privada del proveedor; **no pegarlas en ChatGPT ni subirlas a GitHub**.
+2. En **Vercel > proyecto `trazzo-chatgpt-mcp` > Settings > Environment Variables**, establecer `TRAZZO_FIREBASE_SERVICE_ACCOUNT_JSON` como variable sensible y las variables OAuth listadas arriba. Si el proveedor de Firebase permite federación de identidades en lugar de claves persistentes, preferirla en una iteración de seguridad.
+3. Configurar un **proveedor OAuth/OIDC** que permita autorización interactiva de ChatGPT y entregue JWT verificables por JWKS, audiencia y scope `trazzo:read`. El código que valida tokens **no implementa por sí solo** el servidor de autorización OAuth.
+4. Después, validar 401/403 de forma segura y comprobar lectura con una cuenta autorizada. Ajustar protección Vercel (actualmente SSO `all`) solo cuando OAuth esté operativo; con SSO `all` ChatGPT no puede llamar al MCP.
+5. En ChatGPT, registrar el conector MCP personalizado solo después de las pruebas anteriores.
 
 ## Pruebas pendientes
 
