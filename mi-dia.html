@@ -2,7 +2,14 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<script>document.documentElement.style.setProperty("--vh",window.innerHeight+"px");</script>
+<script>
+(function(){
+  function setVh(){document.documentElement.style.setProperty("--vh",window.innerHeight+"px");}
+  setVh();
+  window.addEventListener("resize",setVh);
+  window.addEventListener("orientationchange",setVh);
+})();
+</script>
 <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#1A6FD4">
@@ -20,7 +27,7 @@ html{height:-webkit-fill-available;}
 body{height:100%;min-height:-webkit-fill-available;background:#0c0c0c;color:#fff;font-family:'Inter',sans-serif;overflow:hidden;}
 
 /* ── PAGE SHELL (no shared topbar here — more room for the notebook) ── */
-.layout{display:flex;flex-direction:column;height:100dvh;height:var(--vh,100vh);overflow:hidden;background:radial-gradient(ellipse at 50% 0%,#17120c 0%,#0c0c0c 60%);}
+.layout{display:flex;flex-direction:column;height:var(--vh,100vh);height:100dvh;overflow:hidden;background:radial-gradient(ellipse at 50% 0%,#17120c 0%,#0c0c0c 60%);}
 
 /* ── TOP ROW: back button + day nav, all in one compact bar ── */
 .day-nav{flex-shrink:0;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px;padding:8px 14px 4px;}
