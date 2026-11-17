@@ -75,6 +75,22 @@ test("reject invalid origins, hosts, and invalid bearer tokens", async () => {
   assert.equal(r.error.status, 401);
 });
 
+
+test("WorkOS-issued access tokens are not required to contain a scope claim", async () => {
+  ready();
+  assert.equal(authSettings().requiredScope, "openid");
+  // The WorkOS Connect access token JWT documented by WorkOS has iss,
+  // aud, client_id, sub, sid, iat and exp, but does not promise 'scope'.
+  // We check the read-only tool list and authenticate users independently.
+  const { tools } = await import("../lib/tools.js");
+  assert.deepEqual(tools.map((t) => t.name),
+    ["trazzo_resumen", "trazzo_proyectos", "trazzo_tareas"]);
+  for (const tool of tools) {
+    assert.equal(tool.annotations.readOnlyHint, true);
+    assert.deepEqual(tool.securitySchemes[0].scopes, ["openid"]);
+  }
+});
+
 test.after(() => {
   reset();
   for (const [key, value] of Object.entries(prior)) if (value !== undefined) process.env[key] = value;
