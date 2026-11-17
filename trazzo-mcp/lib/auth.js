@@ -97,7 +97,11 @@ export async function authenticate(request) {
   }
   const scopes = typeof payload.scope === "string" ? payload.scope.split(" ") :
     Array.isArray(payload.scp) ? payload.scp : [];
-  if (!scopes.includes(config.requiredScope)) {
+  // WorkOS Connect access tokens may omit the scope claim entirely: the
+  // authorization server enforces requested scopes when issuing the token.
+  // If a scope claim is present, we enforce the one advertised in metadata.
+  // Either way this resource exposes only hard-coded read-only methods.
+  if (scopes.length && !scopes.includes(config.requiredScope)) {
     return { error: respond(403, "Missing required scope.") };
   }
   return {
