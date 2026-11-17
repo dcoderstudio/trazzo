@@ -2,11 +2,11 @@ import { workspace } from "./firestore.js";
 
 const schema = { type: "object", properties: {}, additionalProperties: false };
 // Metadata for ChatGPT OAuth linking; access is separately checked on every request.
-const security = { annotations: { readOnlyHint: true, destructiveHint: false, openWorldHint: false }, _meta: { securitySchemes: [{ type: "oauth2", scopes: ["openid"] }] } };
+const security = { annotations: { readOnlyHint: true, destructiveHint: false, openWorldHint: false }, securitySchemes: [{ type: "oauth2", scopes: ["openid"] }], _meta: { securitySchemes: [{ type: "oauth2", scopes: ["openid"] }] } };
 export const tools = [
   { name: "trazzo_resumen", description: "Consultar cantidades de proyectos activos, pendientes y tareas sin fecha en Trazo. Solo lectura.", inputSchema: schema, ...security },
   { name: "trazzo_proyectos", description: "Consultar proyectos de Trazo con cliente, fase, fecha, estado y cantidad de tareas pendientes. Solo lectura.", inputSchema: { type: "object", properties: { incluir_concluidos: { type: "boolean", description: "Incluir proyectos concluidos o archivados" }, buscar: { type: "string", description: "Buscar por nombre parcial o cliente, sin exigir coincidencia exacta" } }, additionalProperties: false }, ...security },
-  { name: "trazzo_tareas", description: "Consultar tareas de Trazo, incluyendo tareas sin fecha o vencidas. Solo lectura.", inputSchema: { type: "object", properties: { sin_fecha: { type: "boolean", description: "Filtrar tareas que no tienen fecha" }, pendientes: { type: "boolean", description: "Solo tareas no terminadas (predeterminado verdadero)" }, buscar: { type: "string", description: "Buscar texto de tarea, proyecto o cliente" }, responsable: { type: "string", description: "Filtrar por nombre parcial del responsable" }, limite: { type: "integer", minimum: 1, maximum: 200, description: "Máximo de resultados (predeterminado 100)" } }, additionalProperties: false } }
+  { name: "trazzo_tareas", description: "Consultar tareas de Trazo, incluyendo tareas sin fecha o vencidas. Solo lectura.", inputSchema: { type: "object", properties: { sin_fecha: { type: "boolean", description: "Filtrar tareas que no tienen fecha" }, pendientes: { type: "boolean", description: "Solo tareas no terminadas (predeterminado verdadero)" }, buscar: { type: "string", description: "Buscar texto de tarea, proyecto o cliente" }, responsable: { type: "string", description: "Filtrar por nombre parcial del responsable" }, limite: { type: "integer", minimum: 1, maximum: 200, description: "Máximo de resultados (predeterminado 100)" } }, additionalProperties: false }, ...security }
 ];
 
 function normalized(x) {
