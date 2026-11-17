@@ -38,31 +38,6 @@ async function handler(request) {
     return json({ jsonrpc: "2.0", id, result: { isError: true, content: [{ type: "text", text: "La consulta no pudo completarse. Revisa la configuración del servidor." }] } });
   }
 }
-// Vercel Node.js Functions entrypoint (Node req/res, not Fetch API).
-export default async function vercelHandler(req, res) {
-  try {
-    const base = process.env.TRAZZO_MCP_PUBLIC_URL;
-    if (!base) {
-      res.statusCode = 503;
-      return res.end(JSON.stringify({ error: "Connector not configured" }));
-    }
-    const url = new URL(req.url || "/mcp", base);
-    const headers = new Headers();
-    for (const [name, value] of Object.entries(req.headers || {})) {
-      if (typeof value === "string") headers.set(name, value);
-      else if (Array.isArray(value)) headers.set(name, value.join(", "));
-    }
-    const body = req.method === "POST"
-      ? (typeof req.body === "string" ? req.body : JSON.stringify(req.body ?? null))
-      : undefined;
-    const response = await handler(new Request(url, { method: req.method, headers, body }));
-    res.statusCode = response.status;
-    response.headers.forEach((value, key) => res.setHeader(key, value));
-    res.end(await response.text());
-  } catch (e) {
-    console.error("MCP transport error:", e?.message);
-    res.statusCode = 500;
-    res.setHeader("Content-Type", "application/json");
-    res.end(JSON.stringify({ error: "Transport error" }));
-  }
-}
+
+// Vercel Functions support the Web Standard fetch interface.
+export default { fetch: handler };
